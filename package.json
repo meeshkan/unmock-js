@@ -1,0 +1,14 @@
+{
+  "name": "unmock",
+  "version": "0.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "prepare": "tsc --outDir dist"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.9",
+    "tslint": "^5.11.0",
+    "typescript": "^3.1.6"
+  }
+}
