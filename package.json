@@ -4,11 +4,23 @@
   "main": "dist/index.js",
   "license": "MIT",
   "scripts": {
-    "prepare": "tsc --outDir dist"
+    "prepare": "rm -rf dist && tsc --outDir dist",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.9",
     "@types/node": "^10.12.9",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
     "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "@types/randomstring": "^1.1.6",
+    "axios": "^0.18.0",
+    "follow-redirects": "^1.5.9",
+    "randomstring": "^1.1.5",
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0"
   }
 }
