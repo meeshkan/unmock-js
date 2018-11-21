@@ -2,6 +2,9 @@
   "name": "unmock",
   "version": "0.0.0",
   "main": "dist/index.js",
+  "bin": {
+    "unmock": "./cli.js"
+  },
   "license": "MIT",
   "scripts": {
     "prepare": "rm -rf dist && tsc --outDir dist",
@@ -16,10 +19,10 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
-    "@types/randomstring": "^1.1.6",
     "axios": "^0.18.0",
+    "cli-spinner": "^0.2.8",
     "follow-redirects": "^1.5.9",
-    "randomstring": "^1.1.5",
+    "ora": "^3.0.0",
     "uuid": "^3.3.2",
     "winston": "^3.1.0"
   }
