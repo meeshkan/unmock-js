@@ -83,7 +83,7 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
           if (s === "end") {
             return protoOn.apply(res, [s, (d: any) => {
               hasHash = res.headers["unmock-hashash"] && res.headers["unmock-hashash"] === "true" ? true : false;
-              if (!devnull && (!hasHash || options.verbose)) {
+              if (!devnull && (!hasHash || true /* options.verbose */)) {
                 logger.log({
                   level: "unmock",
                   message: `*****url-called*****`,
@@ -98,19 +98,6 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
                   // tslint:disable-next-line:max-line-length
                   message: `We've sent you mock data back. You can edit your mock at https://app.unmock.io/${hash}. 🚀`,
                 });
-                /* logger.log({
-                  level: "unmock",
-                  // tslint:disable-next-line:max-line-length
-                  message: `To save your mock locally, call unmock({save : ["${hash}"]}). Don't forget to check it into version control!`,
-                });
-                logger.log({
-                  level: "unmock",
-                  message: `To use your mock locally, call unmock({use : ["${hash}"]}).`,
-                });
-                logger.log({
-                  level: "unmock",
-                  message: `To see this message again, call unmock({verbose : true}).`,
-                }); */
               }
               if (save.indexOf(hash) >= 0) {
                 try {
@@ -132,6 +119,7 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
         };
         (second as ((res: IncomingMessage) => void))(res);
       };
+      // require("debug")("unmock-fake")(JSON.stringify(fake, null, 2));
       const output = cb(fake, devnull ? (second as ((res: IncomingMessage) => void)) : resp);
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
