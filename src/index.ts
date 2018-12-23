@@ -8,11 +8,8 @@ import { URL } from "url";
 import winston, { query } from "winston";
 import ax from "./axios";
 
-const HOSTNAME = "unmock-cloud.azurewebsites.net";
+const HOSTNAME = "api.unmock.io";
 const PORT = 443;
-
-// const HOSTNAME = "localhost";
-// const PORT = 3000;
 
 const logger = winston.createLogger({
   levels: { unmock: 2},
@@ -28,13 +25,12 @@ const logger = winston.createLogger({
 });
 
 interface IUnmockOptions {
-  verbose: boolean;
   save: string[];
   use: string[];
 }
 
 winston.addColors({ unmock: "cyan bold" });
-const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
+const mHttp = (story: {story: string[]}, options: IUnmockOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -49,28 +45,21 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
     third?: (res: IncomingMessage) => void): ClientRequest => {
       let data: {} | null = null;
       let devnull = false;
-      let hasHash = false;
       let responseData: Buffer | null = null;
       const save = options.save;
       const ro = first as RequestOptions;
-      require("debug")("story:story")(story.story);
       // tslint:disable-next-line:max-line-length
-      const path = `story=${story.story}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
-      const hash = crypto
-        .createHash("sha256")
-        .update(ro.hostname === HOSTNAME ? ro.path || "" : path).digest("hex").substr(0, 8);
-      if (ro.hostname === HOSTNAME) {
-        devnull = true;
-      } else {
-        // tell the story
-        story.story = story.story + (story.story.length > 0 ? "|" : "") + hash;
-      }
+      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
       const fake = {
         ...ro,
         hostname: HOSTNAME,
-        path: ro.hostname === HOSTNAME ? ro.path : `/x/${hash}/?${path}`,
+        path: ro.hostname === HOSTNAME ? ro.path : `/x/?${path}`,
         port: PORT,
       };
+      if (ro.hostname === HOSTNAME) {
+        // self call, we ignore
+        devnull = true;
+      }
       const resp = (res: IncomingMessage) => {
         const protoOn = res.on;
         res.on = (s: string, f: any) => {
@@ -82,8 +71,9 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
           }
           if (s === "end") {
             return protoOn.apply(res, [s, (d: any) => {
-              hasHash = res.headers["unmock-hashash"] && res.headers["unmock-hashash"] === "true" ? true : false;
-              if (!devnull && (!hasHash || true /* options.verbose */)) {
+              if (!devnull) {
+                const hash = res.headers["unmock-hash"] as string || "null";
+                story.story.push(hash);
                 logger.log({
                   level: "unmock",
                   message: `*****url-called*****`,
@@ -96,21 +86,21 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
                 logger.log({
                   level: "unmock",
                   // tslint:disable-next-line:max-line-length
-                  message: `We've sent you mock data back. You can edit your mock at https://app.unmock.io/${hash}. 🚀`,
+                  message: `We've sent you mock data back. You can edit your mock at https://unmock.io/app/${hash}. 🚀`,
                 });
-              }
-              if (save.indexOf(hash) >= 0) {
-                try {
-                  fs.mkdirSync(".unmock");
-                } catch (e) {
-                  // do nothing
+                if (save.indexOf(hash) >= 0) {
+                  try {
+                    fs.mkdirSync(".unmock");
+                  } catch (e) {
+                    // do nothing
+                  }
+                  // tslint:disable-next-line:max-line-length
+                  fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
+                  logger.log({
+                    level: "unmock",
+                    message: `Saving ${hash} to .unmock_${hash}`,
+                  });
                 }
-                // tslint:disable-next-line:max-line-length
-                fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
-                logger.log({
-                  level: "unmock",
-                  message: `Saving ${hash} to .unmock_${hash}`,
-                });
               }
               f(d);
             }]);
@@ -119,7 +109,6 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
         };
         (second as ((res: IncomingMessage) => void))(res);
       };
-      // require("debug")("unmock-fake")(JSON.stringify(fake, null, 2));
       const output = cb(fake, devnull ? (second as ((res: IncomingMessage) => void)) : resp);
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
@@ -133,7 +122,6 @@ const mHttp = (story: {story: string}, options: IUnmockOptions, cb: {
 const defaultOptions = {
   save: [],
   use: [],
-  verbose: false,
 };
 
 export const axios = ax;
@@ -141,7 +129,7 @@ export const axios = ax;
 export default (fakeOptions?: any) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
   const story = {
-    story: "",
+    story: [],
   };
   const httpreq = fr.http.request;
   fr.http.request = mHttp(story, options, httpreq);
