@@ -1,4 +1,5 @@
 # unmock-js
 
-This is a placeholder for the `unmock-js` client until our beta is completed.
-Stay tuned at [unmock](https://unmock.io)!
+This is the official Javascript client for unmock with TypeScript bindings.
+
+To learn how to use unmock, please check out [the docs](https://www.unmock.io/docs).
