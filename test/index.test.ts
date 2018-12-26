@@ -12,7 +12,6 @@ beforeAll(async () => {
 afterAll(async () => await kcomnu());
 
 test("unmock end to end", async () => {
-  require("debug")("unmock-log")("test running");
-  const { data: { projects }} = await axios("https://www.behance.net/v2/projects=?api_key=u_n_m_o_c_k_200");
-  expect(projects[0].id).toBeGreaterThan(0);
+  const result = await axios("https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200");
+  expect(result.data.projects[0].id).toBeGreaterThan(0);
 });
