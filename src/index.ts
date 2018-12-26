@@ -6,6 +6,7 @@ import querystring from "querystring";
 import { URL } from "url";
 import winston from "winston";
 import ax from "./axios";
+import getToken from "./token";
 import { IUnmockOptions } from "./unmock-options";
 
 const logger = winston.createLogger({
@@ -24,6 +25,7 @@ const logger = winston.createLogger({
 winston.addColors({ unmock: "cyan bold" });
 const mHttp = (
   story: {story: string[]},
+  token: string,
   { unmockHost, unmockPort, save }: IUnmockOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
@@ -103,6 +105,7 @@ const mHttp = (
         (second as ((res: IncomingMessage) => void))(res);
       };
       const output = cb(fake, devnull ? (second as ((res: IncomingMessage) => void)) : resp);
+      output.setHeader("Authorization", `Bearer ${token}`);
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
         data = d;
@@ -121,18 +124,39 @@ const defaultOptions = {
 
 export const axios = ax;
 
-export default (fakeOptions?: any) => {
+let httpreq: any;
+let httpreqmod: any;
+let httpsreq: any;
+let httpsreqmod: any;
+
+export const unmock = async (fakeOptions?: any) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
   const story = {
     story: [],
   };
-  const httpreq = fr.http.request;
-  fr.http.request = mHttp(story, options, httpreq);
-  const httpreqmod = http.request;
-  http.request = mHttp(story, options, httpreqmod);
-  const httpsreq = fr.https.request;
-  fr.https.request = mHttp(story, options, httpsreq);
-  const httpsreqmod = https.request;
-  https.request = mHttp(story, options, httpsreqmod);
+  const token = await getToken(options);
+  httpreq = fr.http.request;
+  fr.http.request = mHttp(story, token, options, httpreq);
+  httpreqmod = http.request;
+  http.request = mHttp(story, token, options, httpreqmod);
+  httpsreq = fr.https.request;
+  fr.https.request = mHttp(story, token, options, httpsreq);
+  httpsreqmod = https.request;
+  https.request = mHttp(story, token, options, httpsreqmod);
   return true;
+};
+
+export const kcomnu = () => {
+  if (httpreq) {
+    fr.http.request = httpreq;
+  }
+  if (httpreqmod) {
+    http.request = httpreqmod;
+  }
+  if (httpsreq) {
+    https.request = httpsreq;
+  }
+  if (httpsreqmod) {
+    https.request = httpsreqmod;
+  }
 };

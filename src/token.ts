@@ -41,22 +41,25 @@ export const refreshTokenIsPresent = () => {
   return fs.existsSync(CONFIG_PATH);
 };
 
-export const canPingWithAccessToken = async (accessToken: string, unmockHost: string) => {
+export const canPingWithAccessToken = async (accessToken: string, unmockHost: string, unmockPort: string) => {
   try {
-    await axios.get(`https://${unmockHost}/ping`, makeHeader(accessToken));
+    await axios.get(`https://${unmockHost}:${unmockPort}/ping`, makeHeader(accessToken));
     return true;
   } catch (e) {
     return false;
   }
 };
 
-export const exchangeRefreshTokenForAccessToken = async (refreshToken: string, unmockHost: string) => {
+// tslint:disable-next-line:max-line-length
+export const exchangeRefreshTokenForAccessToken = async (refreshToken: string, unmockHost: string, unmockPort: string) => {
   try {
-    const { data: { accessToken }} = await axios.post(`https://${unmockHost}/token/access`, {
+    require("debug")("unmock-info")(`envvv ${process.env.NODE_TLS_REJECT_UNAUTHORIZED}`);
+    const { data: { accessToken }} = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
       refreshToken,
     });
     return accessToken;
   } catch (e) {
+    require("debug")("unmock-test:error")(`errorMessage ${e.message} ${e.stack}`);
     throw Error("Invalid token, please check your credentials on https://www.unmock.io/app");
   }
 };
@@ -67,12 +70,12 @@ export const writeAccessTokenToFile = (accessToken: string) => {
 };
 
 let pingable = false;
-export default async ({unmockHost}: IUnmockOptions) => {
+export default async ({unmockHost, unmockPort}: IUnmockOptions) => {
   let accessToken = null;
   if (accessTokenIsPresent()) {
     const maybeAccessToken = getAccessToken();
     if (!pingable) {
-      pingable = await canPingWithAccessToken(maybeAccessToken, unmockHost);
+      pingable = await canPingWithAccessToken(maybeAccessToken, unmockHost, unmockPort);
       if (pingable) {
         accessToken = maybeAccessToken;
       }
@@ -81,7 +84,7 @@ export default async ({unmockHost}: IUnmockOptions) => {
   if (accessToken === null) {
     if (refreshTokenIsPresent()) {
       const refreshToken = getRefreshToken();
-      accessToken = await exchangeRefreshTokenForAccessToken(refreshToken, unmockHost);
+      accessToken = await exchangeRefreshTokenForAccessToken(refreshToken, unmockHost, unmockPort);
       writeAccessTokenToFile(accessToken);
     } else {
       // tslint:disable-next-line:max-line-length
@@ -89,7 +92,7 @@ export default async ({unmockHost}: IUnmockOptions) => {
     }
   }
   if (!pingable) {
-    pingable = await canPingWithAccessToken(accessToken, unmockHost);
+    pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
     if (!pingable) {
       throw Error("Internal authorization error");
     }
