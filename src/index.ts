@@ -1,15 +1,12 @@
-import crypto from "crypto";
 import fr from "follow-redirects";
 import fs from "fs";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import querystring from "querystring";
 import { URL } from "url";
-import winston, { query } from "winston";
+import winston from "winston";
 import ax from "./axios";
-
-const HOSTNAME = "api.unmock.io";
-const PORT = 443;
+import { IUnmockOptions } from "./unmock-options";
 
 const logger = winston.createLogger({
   levels: { unmock: 2},
@@ -24,13 +21,10 @@ const logger = winston.createLogger({
   ],
 });
 
-interface IUnmockOptions {
-  save: string[];
-  use: string[];
-}
-
 winston.addColors({ unmock: "cyan bold" });
-const mHttp = (story: {story: string[]}, options: IUnmockOptions, cb: {
+const mHttp = (
+  story: {story: string[]},
+  { unmockHost, unmockPort, save }: IUnmockOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -46,17 +40,16 @@ const mHttp = (story: {story: string[]}, options: IUnmockOptions, cb: {
       let data: {} | null = null;
       let devnull = false;
       let responseData: Buffer | null = null;
-      const save = options.save;
       const ro = first as RequestOptions;
       // tslint:disable-next-line:max-line-length
       const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
       const fake = {
         ...ro,
-        hostname: HOSTNAME,
-        path: ro.hostname === HOSTNAME ? ro.path : `/x/?${path}`,
-        port: PORT,
+        hostname: unmockHost,
+        path: ro.hostname === unmockHost ? ro.path : `/x/?${path}`,
+        port: unmockPort,
       };
-      if (ro.hostname === HOSTNAME) {
+      if (ro.hostname === unmockHost) {
         // self call, we ignore
         devnull = true;
       }
@@ -86,7 +79,7 @@ const mHttp = (story: {story: string[]}, options: IUnmockOptions, cb: {
                 logger.log({
                   level: "unmock",
                   // tslint:disable-next-line:max-line-length
-                  message: `We've sent you mock data back. You can edit your mock at https://unmock.io/app/${hash}. 🚀`,
+                  message: `We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`,
                 });
                 if (save.indexOf(hash) >= 0) {
                   try {
@@ -121,6 +114,8 @@ const mHttp = (story: {story: string[]}, options: IUnmockOptions, cb: {
 
 const defaultOptions = {
   save: [],
+  unmockHost: "api.unmock.io",
+  unmockPost: 443,
   use: [],
 };
 
