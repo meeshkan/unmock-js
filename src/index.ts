@@ -42,7 +42,7 @@ const mHttp = (
       let data: {} | null = null;
       let devnull = false;
       let responseData: Buffer | null = null;
-      const ro = first as RequestOptions;
+      const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
       // tslint:disable-next-line:max-line-length
       const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
       const pathForFake = (ro.hostname === unmockHost) || (ro.host === unmockHost) ? ro.path : `/x/?${path}`;
@@ -107,12 +107,19 @@ const mHttp = (
                   });
                 }
               }
-              f(d);
+              // https://github.com/nodejs/node/blob/master/lib/_http_client.js
+              // the original res.on('end') has a closure that refers to this
+              // as far as i can understand, 'this' is supposed to refer to res
+              f.apply(res, [d]);
             }]);
           }
           return protoOn.apply(res, [s, f]);
         };
-        (second as ((res: IncomingMessage) => void))(res);
+        if (second && typeof second === "function") {
+          (second as ((res: IncomingMessage) => void))(res);
+        } else if (third && typeof third === "function") {
+          (third as ((res: IncomingMessage) => void))(res);
+        }
       };
       const output = cb(fake, devnull ? (second as ((res: IncomingMessage) => void)) : resp);
       output.setHeader("Authorization", `Bearer ${token}`);
