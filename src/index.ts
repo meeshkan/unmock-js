@@ -40,7 +40,7 @@ const mHttp = (
     second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
     third?: (res: IncomingMessage) => void): ClientRequest => {
       let data: {} | null = null;
-      let devnull = false;
+      let selfcall = false;
       let responseData: Buffer | null = null;
       const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
       // tslint:disable-next-line:max-line-length
@@ -63,7 +63,7 @@ const mHttp = (
       };
       if ((ro.hostname === unmockHost) || (ro.host === unmockHost)) {
         // self call, we ignore
-        devnull = true;
+        selfcall = true;
       }
       const resp = (res: IncomingMessage) => {
         const protoOn = res.on;
@@ -76,35 +76,39 @@ const mHttp = (
           }
           if (s === "end") {
             return protoOn.apply(res, [s, (d: any) => {
-              if (!devnull) {
+              if (!selfcall) {
                 const hash = res.headers["unmock-hash"] as string || "null";
-                story.story.unshift(hash);
-                logger.log({
-                  level: "unmock",
-                  message: `*****url-called*****`,
-                });
-                logger.log({
-                  level: "unmock",
-                  // tslint:disable-next-line:max-line-length
-                  message: `Hi! We see you've called ${ro.method} ${ro.hostname}${ro.path}${data ? ` with data ${data}.` : `.`}`,
-                });
-                logger.log({
-                  level: "unmock",
-                  // tslint:disable-next-line:max-line-length
-                  message: `We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`,
-                });
-                if (save.indexOf(hash) >= 0) {
-                  try {
-                    fs.mkdirSync(".unmock");
-                  } catch (e) {
-                    // do nothing
-                  }
-                  // tslint:disable-next-line:max-line-length
-                  fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
+                // in case the end function has been called multiple times
+                // we skip invoking it again
+                if (story.story.indexOf(hash) === -1) {
+                  story.story.unshift(hash);
                   logger.log({
                     level: "unmock",
-                    message: `Saving ${hash} to .unmock_${hash}`,
+                    message: `*****url-called*****`,
                   });
+                  logger.log({
+                    level: "unmock",
+                    // tslint:disable-next-line:max-line-length
+                    message: `Hi! We see you've called ${ro.method} ${ro.hostname || ro.host}${ro.path}${data ? ` with data ${data}.` : `.`}`,
+                  });
+                  logger.log({
+                    level: "unmock",
+                    // tslint:disable-next-line:max-line-length
+                    message: `We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`,
+                  });
+                  if (save.indexOf(hash) >= 0) {
+                    try {
+                      fs.mkdirSync(".unmock");
+                    } catch (e) {
+                      // do nothing
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
+                    logger.log({
+                      level: "unmock",
+                      message: `Saving ${hash} to .unmock_${hash}`,
+                    });
+                  }
                 }
               }
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
@@ -121,7 +125,7 @@ const mHttp = (
           (third as ((res: IncomingMessage) => void))(res);
         }
       };
-      const output = cb(fake, devnull ? (second as ((res: IncomingMessage) => void)) : resp);
+      const output = cb(fake, selfcall ? (second as ((res: IncomingMessage) => void)) : resp);
       output.setHeader("Authorization", `Bearer ${token}`);
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
