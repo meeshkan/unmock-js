@@ -1,6 +1,6 @@
 {
   "name": "unmock",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/index.js",
   "bin": {
     "unmock": "./cli.js"
