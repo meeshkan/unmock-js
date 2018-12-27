@@ -46,6 +46,7 @@ export const canPingWithAccessToken = async (accessToken: string, unmockHost: st
     await axios.get(`https://${unmockHost}:${unmockPort}/ping`, makeHeader(accessToken));
     return true;
   } catch (e) {
+    require("debug")("unmock-test:error")(`errorMessage on pinging with token ${e.message} ${e.stack}`);
     return false;
   }
 };
@@ -53,13 +54,12 @@ export const canPingWithAccessToken = async (accessToken: string, unmockHost: st
 // tslint:disable-next-line:max-line-length
 export const exchangeRefreshTokenForAccessToken = async (refreshToken: string, unmockHost: string, unmockPort: string) => {
   try {
-    require("debug")("unmock-info")(`envvv ${process.env.NODE_TLS_REJECT_UNAUTHORIZED}`);
     const { data: { accessToken }} = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
       refreshToken,
     });
     return accessToken;
   } catch (e) {
-    require("debug")("unmock-test:error")(`errorMessage ${e.message} ${e.stack}`);
+    require("debug")("unmock-test:error")(`errorMessage on exchanging token ${e.message} ${e.stack}`);
     throw Error("Invalid token, please check your credentials on https://www.unmock.io/app");
   }
 };
