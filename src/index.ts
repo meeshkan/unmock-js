@@ -3,7 +3,7 @@ import fs from "fs";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import querystring from "querystring";
-import { URL } from "url";
+import url, { URL } from "url";
 import winston from "winston";
 import ax from "./axios";
 import getToken from "./token";
@@ -44,14 +44,24 @@ const mHttp = (
       let responseData: Buffer | null = null;
       const ro = first as RequestOptions;
       // tslint:disable-next-line:max-line-length
-      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
+      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
+      const pathForFake = (ro.hostname === unmockHost) || (ro.host === unmockHost) ? ro.path : `/x/?${path}`;
+      const href = `https://${unmockHost}${pathForFake}`;
+      const originalHeaders = ro.headers;
       const fake = {
         ...ro,
+        headers: {
+          ...originalHeaders,
+          host: unmockHost,
+          hostname: unmockHost,
+        },
+        host: unmockHost,
         hostname: unmockHost,
-        path: ro.hostname === unmockHost ? ro.path : `/x/?${path}`,
+        href,
+        path: pathForFake,
         port: unmockPort,
       };
-      if (ro.hostname === unmockHost) {
+      if ((ro.hostname === unmockHost) || (ro.host === unmockHost)) {
         // self call, we ignore
         devnull = true;
       }

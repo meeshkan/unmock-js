@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "prepare": "rm -rf dist && tsc --outDir dist",
+    "pretest": "yarn prepare",
     "test": "jest"
   },
   "devDependencies": {
