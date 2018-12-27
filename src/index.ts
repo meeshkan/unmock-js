@@ -115,10 +115,10 @@ const mHttp = (
   };
 };
 
-const defaultOptions = {
+const defaultOptions: IUnmockOptions = {
   save: [],
   unmockHost: "api.unmock.io",
-  unmockPost: 443,
+  unmockPort: "443",
   use: [],
 };
 
