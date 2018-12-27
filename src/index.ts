@@ -44,7 +44,7 @@ const mHttp = (
       let responseData: Buffer | null = null;
       const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
       // tslint:disable-next-line:max-line-length
-      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}${ignore ? `&ignore=${ignore}` : ""}`;
+      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}`;
       const pathForFake = (ro.hostname === unmockHost) || (ro.host === unmockHost) ? ro.path : `/x/?${path}`;
       const href = `https://${unmockHost}${pathForFake}`;
       const originalHeaders = ro.headers;
