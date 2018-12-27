@@ -3,4 +3,5 @@ export interface IUnmockOptions {
     unmockHost: string;
     unmockPort: string;
     use: string[];
+    ignore?: any;
 }

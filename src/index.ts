@@ -3,7 +3,7 @@ import fs from "fs";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import querystring from "querystring";
-import url, { URL } from "url";
+import { URL } from "url";
 import winston from "winston";
 import ax from "./axios";
 import getToken from "./token";
@@ -26,7 +26,7 @@ winston.addColors({ unmock: "cyan bold" });
 const mHttp = (
   story: {story: string[]},
   token: string,
-  { unmockHost, unmockPort, save }: IUnmockOptions, cb: {
+  { unmockHost, unmockPort, save, ignore }: IUnmockOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -44,7 +44,7 @@ const mHttp = (
       let responseData: Buffer | null = null;
       const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
       // tslint:disable-next-line:max-line-length
-      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}`;
+      const path = `story=${JSON.stringify(story.story)}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}${ignore ? `&ignore=${ignore}` : ""}`;
       const pathForFake = (ro.hostname === unmockHost) || (ro.host === unmockHost) ? ro.path : `/x/?${path}`;
       const href = `https://${unmockHost}${pathForFake}`;
       const originalHeaders = ro.headers;
