@@ -68,7 +68,7 @@ const mHttp = (
             return protoOn.apply(res, [s, (d: any) => {
               if (!devnull) {
                 const hash = res.headers["unmock-hash"] as string || "null";
-                story.story.push(hash);
+                story.story.unshift(hash);
                 logger.log({
                   level: "unmock",
                   message: `*****url-called*****`,
