@@ -19,4 +19,19 @@ test("unmock end to end", async () => {
   const { data: { comments } } =
     await axios(`https://www.behance.net/v2/projects/${projects[0].id}/comments?api_key=u_n_m_o_c_k_200`);
   expect(typeof comments[0].comment).toBe("string");
+  const { data: { vid } } =
+    // tslint:disable-next-line:max-line-length
+    await axios.post(`https://api.hubapi.com/contacts/v1/contact/createOrUpdate/email/testingapis@hubspot.com/?hapikey=demo`, {
+        properties: [
+          {
+            property: "firstname",
+            value: "HubSpot",
+          },
+          {
+            property: "lastname",
+            value: "Test",
+          },
+        ],
+  });
+  expect(typeof vid).toBe("number");
 });
