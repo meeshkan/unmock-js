@@ -1,6 +1,6 @@
 {
   "name": "unmock",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "dist/index.js",
   "bin": {
     "unmock": "./cli.js"
@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@types/debug": "^0.0.31",
     "@types/dotenv": "^6.1.0",
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.9",
