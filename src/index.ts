@@ -27,7 +27,7 @@ winston.addColors({ unmock: "cyan bold" });
 const mHttp = (
   story: {story: string[]},
   token: string,
-  { unmockHost, unmockPort, save, ignore }: IUnmockOptions, cb: {
+  { unmockHost, unmockPort, save, ignore, whitelist }: IUnmockOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -44,6 +44,14 @@ const mHttp = (
       let selfcall = false;
       let responseData: Buffer | null = null;
       const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
+      if (whitelist &&
+        ((ro.host && whitelist.indexOf(ro.host) !== -1)
+          || (ro.hostname && whitelist.indexOf(ro.hostname) !== -1))) {
+        // TODO
+        // we know this will work because this is the original signature, but is there
+        // a better way to make this typesafe?
+        return cb(first as any, second as any, third as any);
+      }
       // tslint:disable-next-line:max-line-length
       const path = `story=${querystring.escape(JSON.stringify(story.story))}&path=${querystring.escape(ro.path || "")}&hostname=${querystring.escape(ro.hostname || ro.host || "")}&method=${querystring.escape(ro.method || "")}&headers=${querystring.escape(JSON.stringify(ro.headers))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}`;
       const pathForFake = (ro.hostname === unmockHost) || (ro.host === unmockHost) ? ro.path : `/x/?${path}`;
@@ -143,6 +151,7 @@ const defaultOptions: IUnmockOptions = {
   unmockHost: "api.unmock.io",
   unmockPort: "443",
   use: [],
+  whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
 };
 
 export const axios = ax;

@@ -4,4 +4,5 @@ export interface IUnmockOptions {
     unmockPort: string;
     use: string[];
     ignore?: any;
+    whitelist?: string[];
 }
