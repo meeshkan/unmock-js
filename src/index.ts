@@ -183,3 +183,13 @@ export const kcomnu = () => {
     https.request = httpsreqmod;
   }
 };
+
+export const unmockDev = async (fakeOptions?: any) => {
+  if (process.env.NODE_ENV !== "production") {
+    const devOptions = { ...{ ignore: "story"}, ...defaultOptions };
+    const options = fakeOptions
+      ? { ...devOptions, ...fakeOptions }
+      : devOptions;
+    await unmock(options);
+  }
+};
