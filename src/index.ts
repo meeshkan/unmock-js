@@ -3,6 +3,7 @@ import fr from "follow-redirects";
 import fs from "fs";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
+import mkdirp from "mkdirp";
 import querystring from "querystring";
 import { URL } from "url";
 import winston from "winston";
@@ -42,7 +43,7 @@ const mHttp = (
     third?: (res: IncomingMessage) => void): ClientRequest => {
       let data: {} | null = null;
       let selfcall = false;
-      let responseData: Buffer | null = null;
+      const responseData: Buffer[] = [];
       const ro = (first instanceof URL || typeof first === "string" ? second : first) as RequestOptions;
       if (whitelist &&
         ((ro.host && whitelist.indexOf(ro.host) !== -1)
@@ -80,7 +81,7 @@ const mHttp = (
         res.on = (s: string, f: any) => {
           if (s === "data") {
             return protoOn.apply(res, [s, (d: any) => {
-              responseData = d;
+              responseData.push(d);
               f(d);
             }]);
           }
@@ -108,13 +109,12 @@ const mHttp = (
                   });
                   if ((typeof save === "boolean" && save) ||
                       (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
-                    try {
-                      fs.mkdirSync(".unmock");
-                    } catch (e) {
-                      // directory already exists nothing
-                    }
+                    const outdir = `.unmock/save/${hash}`;
+                    mkdirp.sync(outdir);
+                    const retval = responseData.map((datum) => datum.toString()).join("");
                     // tslint:disable-next-line:max-line-length
-                    fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
+                    fs.writeFileSync(`${outdir}/response.json`, JSON.stringify(JSON.parse(retval), null, 2));
+                    fs.writeFileSync(`${outdir}/response-header.json`, JSON.stringify(res.headers, null, 2));
                     logger.log({
                       level: "unmock",
                       message: `Saving ${hash} to .unmock_${hash}`,
