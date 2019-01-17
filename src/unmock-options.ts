@@ -1,17 +1,15 @@
 export interface IUnmockInternalOptions {
-    save: string[];
+    save: boolean | string[];
     unmockHost: string;
     unmockPort: string;
-    use: string[];
     ignore?: any;
     whitelist?: string[];
 }
 
 export interface IUnmockOptions {
-    save?: string[];
+    save?: boolean | string[];
     unmockHost?: string;
     unmockPort?: string;
-    use?: string[];
     ignore?: any;
     whitelist?: string[];
 }

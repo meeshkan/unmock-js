@@ -106,11 +106,12 @@ const mHttp = (
                     // tslint:disable-next-line:max-line-length
                     message: `We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`,
                   });
-                  if (save.indexOf(hash) >= 0) {
+                  if ((typeof save === "boolean" && save) ||
+                      (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
                     try {
                       fs.mkdirSync(".unmock");
                     } catch (e) {
-                      // do nothing
+                      // directory already exists nothing
                     }
                     // tslint:disable-next-line:max-line-length
                     fs.writeFileSync(".unmock/.unmock_" + hash, JSON.stringify(JSON.parse((responseData as Buffer).toString()), null, 2));
@@ -147,10 +148,9 @@ const mHttp = (
 };
 
 const defaultOptions: IUnmockInternalOptions = {
-  save: [],
+  save: false,
   unmockHost: "api.unmock.io",
   unmockPort: "443",
-  use: [],
   whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
 };
 
