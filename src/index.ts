@@ -8,7 +8,7 @@ import { URL } from "url";
 import winston from "winston";
 import ax from "./axios";
 import getToken from "./token";
-import { IUnmockOptions } from "./unmock-options";
+import { IUnmockInternalOptions, IUnmockOptions } from "./unmock-options";
 
 const logger = winston.createLogger({
   levels: { unmock: 2},
@@ -27,7 +27,7 @@ winston.addColors({ unmock: "cyan bold" });
 const mHttp = (
   story: {story: string[]},
   token: string,
-  { unmockHost, unmockPort, save, ignore, whitelist }: IUnmockOptions, cb: {
+  { unmockHost, unmockPort, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -146,7 +146,7 @@ const mHttp = (
   };
 };
 
-const defaultOptions: IUnmockOptions = {
+const defaultOptions: IUnmockInternalOptions = {
   save: [],
   unmockHost: "api.unmock.io",
   unmockPort: "443",
@@ -161,7 +161,7 @@ let httpreqmod: any;
 let httpsreq: any;
 let httpsreqmod: any;
 
-export const unmock = async (fakeOptions?: any) => {
+export const unmock = async (fakeOptions?: IUnmockOptions) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
   const story = {
     story: [],
@@ -193,7 +193,7 @@ export const kcomnu = () => {
   }
 };
 
-export const unmockDev = async (fakeOptions?: any) => {
+export const unmockDev = async (fakeOptions?: IUnmockOptions) => {
   if (process.env.NODE_ENV !== "production") {
     const devOptions = { ...{ ignore: "story"}, ...defaultOptions };
     const options = fakeOptions

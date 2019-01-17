@@ -2,7 +2,7 @@ import axios from "axios";
 import * as fs from "fs";
 import * as ini from "ini";
 
-import { IUnmockOptions } from "./unmock-options";
+import { IUnmockInternalOptions } from "./unmock-options";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
@@ -70,7 +70,7 @@ export const writeAccessTokenToFile = (accessToken: string) => {
 };
 
 let pingable = false;
-export default async ({unmockHost, unmockPort}: IUnmockOptions) => {
+export default async ({unmockHost, unmockPort}: IUnmockInternalOptions) => {
   let accessToken = null;
   if (accessTokenIsPresent()) {
     const maybeAccessToken = getAccessToken();
