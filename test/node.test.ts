@@ -14,7 +14,7 @@ beforeEach(async () => {
 });
 afterEach(async () => await kcomnu());
 
-test("unmock end to end", async () => {
+test("unmock end to end node", async () => {
   const { data: { projects } }  = await axios("https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200");
   expect(typeof projects[0].id).toBe("number");
   const { data } =
