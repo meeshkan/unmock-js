@@ -1,3 +1,7 @@
+/**
+ * @jest-environment node
+ */
+
 import axios from "axios";
 import { kcomnu, unmock } from "../dist";
 

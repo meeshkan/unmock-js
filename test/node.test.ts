@@ -1,5 +1,9 @@
+/**
+ * @jest-environment node
+ */
+
 import axios from "axios";
-import { kcomnu, unmock } from "../dist/";
+import { kcomnu, unmock } from "../dist";
 
 beforeEach(async () => {
     require("dotenv").config();
