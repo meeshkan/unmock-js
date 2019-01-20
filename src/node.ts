@@ -1,11 +1,8 @@
 import debug from "debug";
 import fr from "follow-redirects";
-import fs from "fs";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
-import mkdirp from "mkdirp";
 import { URL } from "url";
-import logger from "./logger";
 import { IUnmockInternalOptions } from "./unmock-options";
 import { buildPath, endReporter, hostIsWhitelisted } from "./util";
 
@@ -28,22 +25,10 @@ export const initialize = (story: {story: string[]}, token: string, options: IUn
   https.request = mHttp(story, token, options, httpsreqmod);
 };
 
-const saveCb = (body: string | undefined, hash: string, headers: any) => {
-  const outdir = `.unmock/save/${hash}`;
-  mkdirp.sync(outdir);
-  // tslint:disable-next-line:max-line-length
-  fs.writeFileSync(`${outdir}/response.json`, JSON.stringify(JSON.parse(body || ""), null, 2));
-  fs.writeFileSync(`${outdir}/response-header.json`, JSON.stringify(headers, null, 2));
-  logger.log({
-    level: "unmock",
-    message: `Saving ${hash} to .unmock_${hash}`,
-  });
-};
-
 const mHttp = (
   story: {story: string[]},
   token: string,
-  { unmockHost, unmockPort, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
+  { unmockHost, unmockPort, save, saveCallback, ignore, whitelist }: IUnmockInternalOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -109,7 +94,7 @@ const mHttp = (
                 ro.method,
                 ro.path,
                 save,
-                saveCb,
+                saveCallback,
                 selfcall,
                 story.story);
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js

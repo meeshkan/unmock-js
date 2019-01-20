@@ -31,7 +31,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export const initialize = (
   story: {story: string[]},
   token: string,
-  { ignore, save, unmockHost, unmockPort, whitelist }: IUnmockInternalOptions) => {
+  { ignore, save, saveCallback, unmockHost, unmockPort, whitelist }: IUnmockInternalOptions) => {
   XMLHttpRequest.prototype.open = function(
     method: string,
     url: string,
@@ -82,13 +82,7 @@ export const initialize = (
         method,
         ro.pathname,
         save,
-        () => {
-          logger.log({
-            level: "unmock",
-            // tslint:disable-next-line:max-line-length
-            message: `Saving is not yet available for unmock in the browser.`,
-          });
-        },
+        saveCallback,
         selfcall,
         story.story);
       if (typeof onreadystatechange === "function") {

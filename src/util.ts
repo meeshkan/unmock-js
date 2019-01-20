@@ -29,7 +29,7 @@ export const endReporter = (
   method: string | undefined,
   path: string | undefined,
   save: boolean | string[],
-  saveCb: (body: string | undefined, hash: string, headers: any) => void,
+  saveCallback: (body: string | undefined, hash: string, headers: any) => void,
   selfcall: boolean,
   story: string[]) => {
   if (!selfcall) {
@@ -54,7 +54,7 @@ export const endReporter = (
       });
       if ((typeof save === "boolean" && save) ||
           (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
-        saveCb(body, hash, headers);
+        saveCallback(body, hash, headers);
       }
     }
   }

@@ -20,6 +20,7 @@ const logger = winston.createLogger({
 winston.addColors({ unmock: "cyan bold" });
 const defaultOptions: IUnmockInternalOptions = {
   save: false,
+  saveCallback: () => { /* */ },
   unmockHost: "api.unmock.io",
   unmockPort: "443",
   whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
