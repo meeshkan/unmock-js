@@ -16,6 +16,8 @@ export default class LocalStoragePersistence implements IPersistence {
     window.localStorage[AUTH_KEY] = auth;
   }
   public saveToken(token: string) {
+    // we never save the token to the browser
+    // only ever in memory
     this.token = token;
   }
   public loadHeaders(hash: string) {
