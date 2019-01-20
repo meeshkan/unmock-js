@@ -1,5 +1,4 @@
 import querystring from "querystring";
-import logger from "./logger";
 
 export const hostIsWhitelisted =
   (whitelist: string[] | undefined, host: string | undefined, hostname: string | undefined) =>
@@ -21,40 +20,35 @@ export const buildPath =
   (hostname === unmockHost) || (host === unmockHost) ? path : `/x/?story=${querystring.escape(JSON.stringify(story))}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(hostname || host || "")}&method=${querystring.escape(method || "")}&headers=${querystring.escape(JSON.stringify(headerz))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}`;
 
 export const endReporter = (
-  body: string | undefined,
-  data: {} | null,
-  headers: any,
-  host: string | undefined,
-  hostname: string | undefined,
-  method: string | undefined,
-  path: string | undefined,
-  save: boolean | string[],
-  saveCallback: (body: string | undefined, hash: string, headers: any) => void,
-  selfcall: boolean,
-  story: string[]) => {
+    body: string | undefined,
+    data: {} | null,
+    headers: any,
+    host: string | undefined,
+    hostname: string | undefined,
+    logger: ILogger,
+    method: string | undefined,
+    path: string | undefined,
+    persistence: IPersistence,
+    save: boolean | string[],
+    selfcall: boolean,
+    story: string[]) => {
   if (!selfcall) {
     const hash = headers["unmock-hash"] as string || "null";
     // in case the end function has been called multiple times
     // we skip invoking it again
     if (story.indexOf(hash) === -1) {
       story.unshift(hash);
-      logger.log({
-        level: "unmock",
-        message: `*****url-called*****`,
-      });
-      logger.log({
-        level: "unmock",
-        // tslint:disable-next-line:max-line-length
-        message: `Hi! We see you've called ${method} ${hostname || host}${path}${data ? ` with data ${data}.` : `.`}`,
-      });
-      logger.log({
-        level: "unmock",
-        // tslint:disable-next-line:max-line-length
-        message: `We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`,
-      });
+      logger.log(`*****url-called*****`);
+      // tslint:disable-next-line:max-line-length
+      logger.log(`Hi! We see you've called ${method} ${hostname || host}${path}${data ? ` with data ${data}.` : `.`}`);
+      // tslint:disable-next-line:max-line-length
+      logger.log(`We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`);
       if ((typeof save === "boolean" && save) ||
           (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
-        saveCallback(body, hash, headers);
+        persistence.saveHeaders(hash, headers);
+        if (body) {
+          persistence.saveBody(hash, body);
+        }
       }
     }
   }

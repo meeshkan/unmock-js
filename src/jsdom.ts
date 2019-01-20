@@ -1,5 +1,4 @@
 import debug from "debug";
-import logger from "./logger";
 import { IUnmockInternalOptions } from "./unmock-options";
 import { buildPath, endReporter, hostIsWhitelisted } from "./util";
 
@@ -31,7 +30,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export const initialize = (
   story: {story: string[]},
   token: string,
-  { ignore, save, saveCallback, unmockHost, unmockPort, whitelist }: IUnmockInternalOptions) => {
+  { logger, persistence, ignore, save, unmockHost, unmockPort, whitelist }: IUnmockInternalOptions) => {
   XMLHttpRequest.prototype.open = function(
     method: string,
     url: string,
@@ -79,10 +78,11 @@ export const initialize = (
         parseResponseHeaders(this.getAllResponseHeaders()),
         ro.host,
         ro.hostname,
+        logger,
         method,
         ro.pathname,
+        persistence,
         save,
-        saveCallback,
         selfcall,
         story.story);
       if (typeof onreadystatechange === "function") {

@@ -1,7 +1,4 @@
 import axios from "axios";
-import * as fs from "fs";
-import * as ini from "ini";
-
 import { IUnmockInternalOptions } from "./unmock-options";
 
 const UNMOCK_DIR = ".unmock";
@@ -15,31 +12,6 @@ const makeHeader = (token: string) => ({
     Authorization: `Bearer ${token}`,
   },
 });
-
-const ensureUnmockDirExists = () => {
-  if (fs.existsSync(UNMOCK_DIR)) {
-    return;
-  }
-  fs.mkdirSync(UNMOCK_DIR);
-};
-
-export const getAccessToken = () => {
-  return fs.readFileSync(TOKEN_PATH).toString();
-};
-
-export const accessTokenIsPresent = () => {
-  return fs.existsSync(TOKEN_PATH);
-};
-
-export const getRefreshToken = () => {
-  const config = ini.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
-  return config.unmock.token;
-};
-
-// TODO: combine these two
-export const refreshTokenIsPresent = () => {
-  return fs.existsSync(CONFIG_PATH);
-};
 
 export const canPingWithAccessToken = async (accessToken: string, unmockHost: string, unmockPort: string) => {
   try {
@@ -64,34 +36,29 @@ export const exchangeRefreshTokenForAccessToken = async (refreshToken: string, u
   }
 };
 
-export const writeAccessTokenToFile = (accessToken: string) => {
-  ensureUnmockDirExists();
-  fs.writeFileSync(TOKEN_PATH, accessToken);
-};
-
 let pingable = false;
-export default async ({unmockHost, unmockPort}: IUnmockInternalOptions) => {
-  let accessToken = null;
-  if (accessTokenIsPresent()) {
-    const maybeAccessToken = getAccessToken();
+export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOptions) => {
+  let accessToken = persistence.loadAuth();
+  if (accessToken) {
     if (!pingable) {
-      pingable = await canPingWithAccessToken(maybeAccessToken, unmockHost, unmockPort);
-      if (pingable) {
-        accessToken = maybeAccessToken;
-      }
+      pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
     }
   }
   if (accessToken === null) {
-    if (refreshTokenIsPresent()) {
-      const refreshToken = getRefreshToken();
+    const refreshToken = persistence.loadToken();
+    if (refreshToken) {
       accessToken = await exchangeRefreshTokenForAccessToken(refreshToken, unmockHost, unmockPort);
-      writeAccessTokenToFile(accessToken);
+      if (accessToken) {
+        persistence.saveAuth(accessToken);
+      } else {
+        throw Error("Incorrect server response: did not get accessToken");
+      }
     } else {
       // tslint:disable-next-line:max-line-length
-      throw Error("Unmock token is not present.  Please fetch your unmock token from unmock.io/app to use the service.");
+      throw Error("Unmock token is not present.  Please get your unmock token from unmock.io/app to use the service.");
     }
   }
-  if (!pingable) {
+  if (!pingable && accessToken) {
     pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
     if (!pingable) {
       throw Error("Internal authorization error");

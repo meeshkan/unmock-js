@@ -1,17 +1,21 @@
 export interface IUnmockInternalOptions {
+    logger: ILogger;
+    persistence: IPersistence;
     save: boolean | string[];
-    saveCallback: (body: string | undefined, hash: string, headers: any) => void;
     unmockHost: string;
     unmockPort: string;
     ignore?: any;
+    token?: string;
     whitelist?: string[];
 }
 
 export interface IUnmockOptions {
+    logger?: ILogger;
+    persistence?: IPersistence;
     save?: boolean | string[];
-    saveCallback?: (body: string | undefined, hash: string, headers: any) => void;
     unmockHost?: string;
     unmockPort?: string;
     ignore?: any;
+    token?: string;
     whitelist?: string[];
 }

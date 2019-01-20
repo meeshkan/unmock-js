@@ -1,26 +1,18 @@
 import isNode from "detect-node";
-import winston from "winston";
 import ax from "./axios";
 import getToken from "./token";
 import { IUnmockInternalOptions, IUnmockOptions } from "./unmock-options";
 
-const logger = winston.createLogger({
-  levels: { unmock: 2},
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-         winston.format.simple(),
-      ),
-      level: "unmock",
-    }),
-  ],
-});
+const requireHack = isNode ? require : __non_webpack_require__;
 
-winston.addColors({ unmock: "cyan bold" });
 const defaultOptions: IUnmockInternalOptions = {
+  logger: isNode ?
+    new (requireHack("./logger/winston-logger").default)() :
+    new (require("./logger/browser-logger").default)(),
+  persistence: isNode ?
+    new (requireHack("./persistence/fs-persistence").default)() :
+    new (require("./persistence/local-storage-persistence").default)(),
   save: false,
-  saveCallback: () => { /* */ },
   unmockHost: "api.unmock.io",
   unmockPort: "443",
   whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
@@ -33,8 +25,11 @@ export const unmock = async (fakeOptions?: IUnmockOptions) => {
   const story = {
     story: [],
   };
+  if (options.token) {
+    options.persistence.saveToken(options.token);
+  }
   const token = await getToken(options);
-  (isNode ? require("./node") : require("./jsdom")).initialize(story, token, options);
+  (isNode ? requireHack("./node") : require("./jsdom")).initialize(story, token, options);
   return true;
 };
 

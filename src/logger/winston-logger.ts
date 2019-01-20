@@ -15,4 +15,11 @@ const logger = winston.createLogger({
 
 winston.addColors({ unmock: "cyan bold" });
 
-export default logger;
+export default class WinstonLogger implements ILogger {
+  public log(message: string) {
+    logger.log({
+      level: "unmock",
+      message,
+    });
+  }
+}

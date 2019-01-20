@@ -28,7 +28,7 @@ export const initialize = (story: {story: string[]}, token: string, options: IUn
 const mHttp = (
   story: {story: string[]},
   token: string,
-  { unmockHost, unmockPort, save, saveCallback, ignore, whitelist }: IUnmockInternalOptions, cb: {
+  { logger, persistence, unmockHost, unmockPort, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -91,10 +91,11 @@ const mHttp = (
                 res.headers,
                 ro.host,
                 ro.hostname,
+                logger,
                 ro.method,
                 ro.path,
+                persistence,
                 save,
-                saveCallback,
                 selfcall,
                 story.story);
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
