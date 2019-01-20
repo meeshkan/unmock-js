@@ -5,6 +5,7 @@ const TOKEN_KEY = `${UNMOCK}/${TOKEN}`;
 const AUTH_KEY = `${UNMOCK}/${AUTH}`;
 
 export default class LocalStoragePersistence implements IPersistence {
+  private token: string | undefined;
   public saveHeaders(hash: string, headers: {[key: string]: string}) {
     window.localStorage[`${this.outdir(hash)}/response-header.json`] = JSON.stringify(headers, null, 2);
   }
@@ -15,7 +16,7 @@ export default class LocalStoragePersistence implements IPersistence {
     window.localStorage[AUTH_KEY] = auth;
   }
   public saveToken(token: string) {
-    window.localStorage[TOKEN_KEY] = token;
+    this.token = token;
   }
   public loadHeaders(hash: string) {
     const out = window.localStorage[`${this.outdir(hash)}/response-header.json`];
@@ -28,7 +29,7 @@ export default class LocalStoragePersistence implements IPersistence {
     return window.localStorage[AUTH_KEY];
   }
   public loadToken() {
-    return window.localStorage[TOKEN_KEY];
+    return this.token;
   }
   private outdir(hash: string) {
     const outdir = `.unmock/save/${hash}`;
