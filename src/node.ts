@@ -1,4 +1,3 @@
-import debug from "debug";
 import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
@@ -68,7 +67,6 @@ const mHttp = (
         path: pathForFake,
         port: unmockPort,
       };
-      debug("unmock")(`${pathForFake}`);
       if ((ro.hostname === unmockHost) || (ro.host === unmockHost)) {
         // self call, we ignore
         selfcall = true;

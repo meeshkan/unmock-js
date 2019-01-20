@@ -3,14 +3,16 @@ import ax from "./axios";
 import getToken from "./token";
 import { IUnmockInternalOptions, IUnmockOptions } from "./unmock-options";
 
-const requireHack = isNode ? require : __non_webpack_require__;
+if (isNode) {
+  (global as any).__non_webpack_require__ = require;
+}
 
 const defaultOptions: IUnmockInternalOptions = {
   logger: isNode ?
-    new (requireHack("./logger/winston-logger").default)() :
+    new (__non_webpack_require__("./logger/winston-logger").default)() :
     new (require("./logger/browser-logger").default)(),
   persistence: isNode ?
-    new (requireHack("./persistence/fs-persistence").default)() :
+    new (__non_webpack_require__("./persistence/fs-persistence").default)() :
     new (require("./persistence/local-storage-persistence").default)(),
   save: false,
   unmockHost: "api.unmock.io",
@@ -29,7 +31,7 @@ export const unmock = async (fakeOptions?: IUnmockOptions) => {
     options.persistence.saveToken(options.token);
   }
   const token = await getToken(options);
-  (isNode ? requireHack("./node") : require("./jsdom")).initialize(story, token, options);
+  (isNode ? __non_webpack_require__("./node") : require("./jsdom")).initialize(story, token, options);
   return true;
 };
 

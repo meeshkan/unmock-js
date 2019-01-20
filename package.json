@@ -1,6 +1,6 @@
 {
   "name": "unmock",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "main": "dist/index.js",
   "bin": {
     "unmock": "./cli.js"
@@ -38,6 +38,7 @@
     "ini": "^1.3.5",
     "node-fetch": "^2.3.0",
     "ora": "^3.0.0",
+    "querystring-browser": "^1.0.4",
     "uuid": "^3.3.2",
     "winston": "^3.1.0"
   }

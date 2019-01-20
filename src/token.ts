@@ -42,9 +42,12 @@ export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOpti
   if (accessToken) {
     if (!pingable) {
       pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
+      if (!pingable) {
+        accessToken = undefined;
+      }
     }
   }
-  if (accessToken === null) {
+  if (!accessToken) {
     const refreshToken = persistence.loadToken();
     if (refreshToken) {
       accessToken = await exchangeRefreshTokenForAccessToken(refreshToken, unmockHost, unmockPort);

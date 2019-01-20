@@ -1,4 +1,6 @@
-import querystring from "querystring";
+import isNode from "detect-node";
+// tslint:disable-next-line:no-var-requires
+const querystring = isNode ? require("querystring") : require("querystring-browser");
 
 export const hostIsWhitelisted =
   (whitelist: string[] | undefined, host: string | undefined, hostname: string | undefined) =>
