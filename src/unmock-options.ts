@@ -4,6 +4,7 @@ export interface IUnmockInternalOptions {
     save: boolean | string[];
     unmockHost: string;
     unmockPort: string;
+    useInProduction: boolean;
     ignore?: any;
     token?: string;
     whitelist?: string[];
@@ -18,4 +19,5 @@ export interface IUnmockOptions {
     ignore?: any;
     token?: string;
     whitelist?: string[];
+    useInProduction?: boolean;
 }

@@ -17,6 +17,7 @@ const defaultOptions: IUnmockInternalOptions = {
   save: false,
   unmockHost: "api.unmock.io",
   unmockPort: "443",
+  useInProduction: false,
   whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
 };
 
@@ -24,27 +25,19 @@ export const axios = ax;
 
 export const unmock = async (fakeOptions?: IUnmockOptions) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
-  const story = {
-    story: [],
-  };
-  if (options.token) {
-    options.persistence.saveToken(options.token);
+  if (process.env.NODE_ENV !== "production" || options.useInProduction) {
+    const story = {
+      story: [],
+    };
+    if (options.token) {
+      options.persistence.saveToken(options.token);
+    }
+    const token = await getToken(options);
+    (isNode ? __non_webpack_require__("./node") : require("./jsdom")).initialize(story, token, options);
+    return true;
   }
-  const token = await getToken(options);
-  (isNode ? __non_webpack_require__("./node") : require("./jsdom")).initialize(story, token, options);
-  return true;
 };
 
 export const kcomnu = () => {
   (isNode ? require("./node") : require("./jsdom")).reset();
-};
-
-export const unmockDev = async (fakeOptions?: IUnmockOptions) => {
-  if (process.env.NODE_ENV !== "production") {
-    const devOptions = { ...{ ignore: "story"}, ...defaultOptions };
-    const options = fakeOptions
-      ? { ...devOptions, ...fakeOptions }
-      : devOptions;
-    await unmock(options);
-  }
 };
