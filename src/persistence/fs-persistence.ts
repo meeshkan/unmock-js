@@ -9,6 +9,7 @@ const TOKEN_PATH = `${UNMOCK_DIR}/${TOKEN_FILE}`;
 const CONFIG_PATH = `${UNMOCK_DIR}/${CONFIG_FILE}`;
 
 export default class FSPersistence implements IPersistence {
+  private token: string | undefined;
   public saveHeaders(hash: string, headers: {[key: string]: string}) {
     fs.writeFileSync(`${this.outdir(hash)}/response-header.json`, JSON.stringify(headers, null, 2));  }
   public saveBody(hash: string, body: string) {
@@ -21,7 +22,7 @@ export default class FSPersistence implements IPersistence {
     fs.writeFileSync(TOKEN_PATH, auth);
   }
   public saveToken(token: string) {
-    throw Error(`Token cannot be saved programatically. Please save to .unmock/credentials. See unmock.com/docs`);
+    this.token = token;
   }
   public loadHeaders(hash: string) {
     if (!fs.existsSync(`${this.outdir(hash)}/response-header.json`)) {
@@ -42,6 +43,9 @@ export default class FSPersistence implements IPersistence {
     return fs.readFileSync(TOKEN_PATH).toString();
   }
   public loadToken() {
+    if (this.token) {
+      return this.token;
+    }
     if (!fs.existsSync(CONFIG_PATH)) {
       return;
     }
