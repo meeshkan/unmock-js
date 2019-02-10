@@ -16,10 +16,12 @@ export const buildPath =
     ignore: any,
     method: string | undefined,
     path: string | undefined,
+    signature: string | undefined,
     story: string[],
-    unmockHost: string) =>
+    unmockHost: string,
+    xy: boolean) =>
   // tslint:disable-next-line:max-line-length
-  (hostname === unmockHost) || (host === unmockHost) ? path : `/x/?story=${querystring.escape(JSON.stringify(story))}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(hostname || host || "")}&method=${querystring.escape(method || "")}&headers=${querystring.escape(JSON.stringify(headerz))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}`;
+  (hostname === unmockHost) || (host === unmockHost) ? path : `/${xy ? "x" : "y"}/?story=${querystring.escape(JSON.stringify(story))}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(hostname || host || "")}&method=${querystring.escape(method || "")}&headers=${querystring.escape(JSON.stringify(headerz))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
 
 export const endReporter = (
     body: string | undefined,
@@ -33,7 +35,8 @@ export const endReporter = (
     persistence: IPersistence,
     save: boolean | string[],
     selfcall: boolean,
-    story: string[]) => {
+    story: string[],
+    xy: boolean) => {
   if (!selfcall) {
     const hash = headers["unmock-hash"] as string || "null";
     // in case the end function has been called multiple times
@@ -44,7 +47,7 @@ export const endReporter = (
       // tslint:disable-next-line:max-line-length
       logger.log(`Hi! We see you've called ${method} ${hostname || host}${path}${data ? ` with data ${data}.` : `.`}`);
       // tslint:disable-next-line:max-line-length
-      logger.log(`We've sent you mock data back. You can edit your mock at https://unmock.io/x/${hash}. 🚀`);
+      logger.log(`We've sent you mock data back. You can edit your mock at https://unmock.io/${xy ? "x" : "y"}/${hash}. 🚀`);
       if ((typeof save === "boolean" && save) ||
           (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
         persistence.saveHeaders(hash, headers);

@@ -17,7 +17,7 @@ export const reset = () => {
   https.request = httpsreqmod;
 };
 
-export const initialize = (story: {story: string[]}, token: string, options: IUnmockInternalOptions) => {
+export const initialize = (story: {story: string[]}, token: string | undefined, options: IUnmockInternalOptions) => {
   fr.http.request = mHttp(story, token, options, httpreq);
   http.request = mHttp(story, token, options, httpreqmod);
   fr.https.request = mHttp(story, token, options, httpsreq);
@@ -26,8 +26,8 @@ export const initialize = (story: {story: string[]}, token: string, options: IUn
 
 const mHttp = (
   story: {story: string[]},
-  token: string,
-  { logger, persistence, unmockHost, unmockPort, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
+  token: string | undefined,
+  { logger, persistence, unmockHost, unmockPort, signature, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
     (
         options: string | http.RequestOptions | URL,
         callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
@@ -51,7 +51,18 @@ const mHttp = (
         return cb(first as any, second as any, third as any);
       }
       // tslint:disable-next-line:max-line-length
-      const pathForFake = buildPath(ro.headers, ro.host, ro.hostname, ignore, ro.method, ro.path, story.story, unmockHost);
+      const pathForFake = buildPath(
+        ro.headers,
+        ro.host,
+        ro.hostname,
+        ignore,
+        ro.method,
+        ro.path,
+        signature,
+        story.story,
+        unmockHost,
+        token !== undefined,
+      );
       const href = `https://${unmockHost}${pathForFake}`;
       const originalHeaders = ro.headers;
       const fake = {
@@ -95,7 +106,8 @@ const mHttp = (
                 persistence,
                 save,
                 selfcall,
-                story.story);
+                story.story,
+                token !== undefined);
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
               // the original res.on('end') has a closure that refers to this
               // as far as i can understand, 'this' is supposed to refer to res
@@ -111,7 +123,9 @@ const mHttp = (
         }
       };
       const output = cb(fake, selfcall ? (second as ((res: IncomingMessage) => void)) : resp);
-      output.setHeader("Authorization", `Bearer ${token}`);
+      if (token) {
+        output.setHeader("Authorization", `Bearer ${token}`);
+      }
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
         data = d;

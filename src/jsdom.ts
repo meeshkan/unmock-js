@@ -30,8 +30,8 @@ const parseResponseHeaders = (headerStr: string) => {
 // is there a possible scenario where open is not called first
 export const initialize = (
   story: {story: string[]},
-  token: string,
-  { logger, persistence, ignore, save, unmockHost, whitelist }: IUnmockInternalOptions) => {
+  token: string | undefined,
+  { logger, persistence, ignore, save, signature, unmockHost, whitelist }: IUnmockInternalOptions) => {
   XMLHttpRequest.prototype.open = function(
     method: string,
     url: string,
@@ -46,7 +46,18 @@ export const initialize = (
       return XMLHttpRequestOpen.apply(this, [method, url, async || false, username, password]);
     }
     const headerz: {[name: string]: string} = {};
-    const pathForFake = buildPath(headerz, ro.host, ro.hostname, ignore, method, ro.pathname, story.story, unmockHost);
+    const pathForFake = buildPath(
+      headerz,
+      ro.host,
+      ro.hostname,
+      ignore,
+      method,
+      ro.pathname,
+      signature,
+      story.story,
+      unmockHost,
+      token !== undefined,
+    );
     if ((ro.hostname === unmockHost) || (ro.host === unmockHost)) {
       // self call, we ignore
       selfcall = true;
@@ -84,7 +95,8 @@ export const initialize = (
               persistence,
               save,
               selfcall,
-              story.story);
+              story.story,
+              token !== undefined);
           }
         }
         if (typeof onreadystatechange === "function") {
@@ -105,7 +117,9 @@ export const initialize = (
     setOnReadyStateChange(this);
     const res = XMLHttpRequestOpen
       .apply(this, [method, `https://${unmockHost}${pathForFake}`, async || false, username, password]);
-    this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
+    if (token) {
+      this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
+    }
     return res;
   };
 };

@@ -57,8 +57,8 @@ export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOpti
         throw Error("Incorrect server response: did not get accessToken");
       }
     } else {
-      // tslint:disable-next-line:max-line-length
-      throw Error("Unmock token is not present.  Please get your unmock token from unmock.io/app to use the service.");
+      // if there is no refresh token, we default to the "y" version of the service
+      return;
     }
   }
   if (!pingable && accessToken) {
