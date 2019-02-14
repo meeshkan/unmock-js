@@ -94,15 +94,6 @@ Unmock works out of the box for most APIs that it mocks and does not require any
 
 The URLs printed to the command line are hosted by unmock.io.  You can consult the documentation about that service [here](https://www.unmock.io/docs).
 
-//     save: boolean | string[];
-//    unmockHost: string;
-    unmockPort: string;
-    useInProduction: boolean;
-    ignore?: any;
-    signature?: string;
-    token?: string;
-    whitelist?: string[];
-
 ### Saving mocks
 
 All mocks can be saved to a folder called `.unmock` in your project's root directory by adding a `save` field to the unmock options object like so:
