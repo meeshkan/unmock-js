@@ -2,8 +2,6 @@ import axios from "axios";
 import program from "commander";
 import { unmock } from ".";
 
-import Logger from "./logger/winston-logger";
-
 const collect = (val: string, memo: string[]) => {
   memo.push(val);
   return memo;
@@ -34,7 +32,7 @@ const run = async () => {
     method: program.request || "GET",
     url: last,
   });
-  new Logger().log(JSON.stringify(data, null, 2));
+  process.stdout.write(JSON.stringify(data, null, 2) + "\n");
 };
 
 run();

@@ -9,6 +9,7 @@ const logger = winston.createLogger({
          winston.format.simple(),
       ),
       level: "unmock",
+      stderrLevels: ["unmock"],
     }),
   ],
 });
