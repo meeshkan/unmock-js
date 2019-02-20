@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import axios from "axios";
 import program from "commander";
 import { unmock } from ".";
