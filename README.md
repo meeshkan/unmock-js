@@ -82,10 +82,10 @@ After you create your express, hapi, koa, nextjs or apollo server, call
 
 
 ```js
-await unmock({ ignore: "story" }));
+await unmock(ignoreStory());
 ```
 
-This has the same effect as activating unmock in your tests.  It will intercept http traffic and serve semantically and functionally adequate mocks of the APIs in the unmock catalogue.  The main difference is the `{ ignore: "story" }` object passed to unmock, which tells the service to ignore the order of mocked requests.  Always use this option when the order of mocked data does not matter, ie when you are in sandbox or development mode.  For users of the [unmock.io](https://www.unmock.io) service, this will help unmock better organize your mocks in its web dashboard.
+This has the same effect as activating unmock in your tests.  It will intercept http traffic and serve semantically and functionally adequate mocks of the APIs in the unmock catalogue.  The main difference is the result of `ignoreStory()` passed to unmock, which tells the service to ignore the order of mocked requests.  Always use this option when the order of mocked data does not matter, ie when you are in sandbox or development mode.  For users of the [unmock.io](https://www.unmock.io) service, this will help unmock better organize your mocks in its web dashboard.
 
 ### Headless usage
 
@@ -132,12 +132,16 @@ await unmock({
 The following fields may be ignored:
 
 * `headers`: the headers of the request
-* `headers|regexp-field|regexp-value`: an individual, addressed by a regexp for both its field and value.  To permit all fields or all values, you need to specify the wildcard regexp (`*`) explicitly.
 * `hostname`: the hostname of the request
 * `method`: the method of the request (ie GET, POST, PUT, DELETE). Note that this is *case insensitive*!
 * `path`: the path of the request
-* `path|regexp`: paths matching a regular expression
 * `story`: the story of the request, meaning its order in a series of requests
+
+Ignore evaluates regular expressions, so you can also pass
+`"headers|path"` instead of `["headers", "path"]`.  Furthermore,
+to ignore nested headers, pass an object such as
+`{headers: "Authorization" }`, or to match against the value of
+a header, `{headers: { Authorization: "Bearer *" }}`.
 
 ### Adding a signature
 

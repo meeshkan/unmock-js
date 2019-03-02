@@ -8,6 +8,7 @@ if (isNode) {
 }
 
 const defaultOptions: IUnmockInternalOptions = {
+  ignore: {headers: "\w*User-Agent\w*"},
   logger: isNode ?
     new (__non_webpack_require__("./logger/winston-logger").default)() :
     new (require("./logger/browser-logger").default)(),
@@ -22,6 +23,18 @@ const defaultOptions: IUnmockInternalOptions = {
 };
 
 export const axios = ax;
+
+export const ignoreStory = (fakeOptions?: IUnmockOptions) => {
+  const options = fakeOptions || defaultOptions;
+  return {
+    ...options,
+    ignore: options.ignore ?
+      (options.ignore instanceof Array ?
+        options.ignore.concat("story") :
+        ["story", options.ignore]) :
+      ["story"],
+  };
+};
 
 export const unmock = async (fakeOptions?: IUnmockOptions) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
