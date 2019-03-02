@@ -1,4 +1,4 @@
-interface IPersistence {
+export interface IPersistence {
   saveHeaders: (hash: string, headers: {[key: string]: string}) => void;
   saveBody: (hash: string, body: string) => void;
   saveAuth: (auth: string) => void;

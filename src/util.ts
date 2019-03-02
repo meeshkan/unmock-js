@@ -1,3 +1,6 @@
+import { ILogger } from "./logger/logger";
+import { IPersistence } from "./persistence/persistence";
+
 import isNode from "detect-node";
 // tslint:disable-next-line:no-var-requires
 const querystring = isNode ? require("querystring") : require("querystring-browser");

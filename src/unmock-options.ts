@@ -1,3 +1,6 @@
+import { ILogger } from "./logger/logger";
+import { IPersistence } from "./persistence/persistence";
+
 export interface IUnmockInternalOptions {
     logger: ILogger;
     persistence: IPersistence;

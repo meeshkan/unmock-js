@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as ini from "ini";
 import * as mkdirp from "mkdirp";
+import { IPersistence } from "./persistence";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";

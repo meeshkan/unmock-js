@@ -1,3 +1,5 @@
+import { IPersistence } from "./persistence";
+
 const UNMOCK = ".unmock";
 const AUTH = ".token";
 const TOKEN = ".access-token";
