@@ -7,7 +7,7 @@ if (isNode) {
   (global as any).__non_webpack_require__ = require;
 }
 
-const defaultOptions: IUnmockInternalOptions = {
+export const defaultOptions: IUnmockInternalOptions = {
   ignore: {headers: "\w*User-Agent\w*"},
   logger: isNode ?
     new (__non_webpack_require__("./logger/winston-logger").default)() :
@@ -31,7 +31,7 @@ export const ignoreStory = (fakeOptions?: IUnmockOptions) => {
     ignore: options.ignore ?
       (options.ignore instanceof Array ?
         options.ignore.concat("story") :
-        ["story", options.ignore]) :
+        [options.ignore, "story"]) :
       ["story"],
   };
 };
