@@ -24,7 +24,7 @@ export const defaultOptions: IUnmockInternalOptions = {
 
 export const axios = ax;
 
-export const ignoreStory = (fakeOptions?: IUnmockOptions) => {
+export const ignoreStory = (fakeOptions?: IUnmockOptions): IUnmockOptions => {
   const options = fakeOptions || defaultOptions;
   return {
     ...options,
