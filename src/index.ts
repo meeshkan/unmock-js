@@ -24,17 +24,20 @@ export const defaultOptions: IUnmockInternalOptions = {
 
 export const axios = ax;
 
-export const ignoreStory = (fakeOptions?: IUnmockOptions): IUnmockOptions => {
+const baseIgnore = (ignore: any) => (fakeOptions?: IUnmockOptions): IUnmockOptions => {
   const options = fakeOptions || defaultOptions;
   return {
     ...options,
     ignore: options.ignore ?
       (options.ignore instanceof Array ?
-        options.ignore.concat("story") :
-        [options.ignore, "story"]) :
-      ["story"],
+        options.ignore.concat(ignore) :
+        [options.ignore, ignore]) :
+      [ignore],
   };
 };
+
+export const ignoreStory = baseIgnore("story");
+export const ignoreAuth = baseIgnore({headers: "Authorization" });
 
 export const unmock = async (fakeOptions?: IUnmockOptions) => {
   const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;

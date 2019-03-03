@@ -1,4 +1,4 @@
-import { defaultOptions, ignoreStory } from "../dist";
+import { defaultOptions, ignoreAuth, ignoreStory } from "../dist";
 
 test("ignoreStory produces correct json", () => {
   expect(ignoreStory({})).toEqual({
@@ -10,6 +10,20 @@ test("ignoreStory produces correct json", () => {
   });
   expect(ignoreStory({whitelist: ["a"]})).toEqual({
     ignore: ["story"],
+    whitelist: ["a"],
+  });
+});
+
+test("ignoreAuth produces correct json", () => {
+  expect(ignoreAuth({})).toEqual({
+    ignore: [{headers: "Authorization"}],
+  });
+  expect(ignoreAuth()).toEqual({
+    ...defaultOptions,
+    ignore: [defaultOptions.ignore, {headers: "Authorization"}],
+  });
+  expect(ignoreAuth({whitelist: ["a"]})).toEqual({
+    ignore: [{headers: "Authorization"}],
     whitelist: ["a"],
   });
 });
