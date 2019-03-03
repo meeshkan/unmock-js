@@ -1,6 +1,6 @@
 {
   "name": "unmock",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "main": "dist/index.js",
   "bin": {
     "unmock": "./dist/cli.js"
@@ -28,6 +28,14 @@
     "ts-jest": "^23.10.4",
     "tslint": "^5.11.0",
     "typescript": "^3.1.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
     "@types/detect-node": "^2.0.0",
