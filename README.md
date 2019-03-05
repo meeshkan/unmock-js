@@ -143,6 +143,10 @@ to ignore nested headers, pass an object such as
 `{headers: "Authorization" }`, or to match against the value of
 a header, `{headers: { Authorization: "Bearer *" }}`.
 
+The default ignore is `{headers: "\w*User-Agent\w*"}` and will be incorporated into the ignore pattern unless ignore is explicitly set to an empty object, ie `unmock({ ignore: {} })`.
+
+Helper calls to ignore are composable, ie `unmock(ignoreAuth(ignoreStory()))`.
+
 ### Adding a signature
 
 Sometimes, it is useful to sign a mock with a unique signature.  This is useful, for example, when AB testing code that should serve two different mocks for the same endpoint in otherwise similar conditions.  Do this, use the `signature` field of the unmock options object:
