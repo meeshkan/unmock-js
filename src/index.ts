@@ -32,7 +32,7 @@ const baseIgnore = (ignore: any) => (fakeOptions?: IUnmockOptions): IUnmockOptio
       (options.ignore instanceof Array ?
         options.ignore.concat(ignore) :
         [options.ignore, ignore]) :
-      [ignore],
+      [defaultOptions.ignore, ignore],
   };
 };
 
