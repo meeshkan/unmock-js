@@ -121,7 +121,7 @@ All of our releases are automated using [semantic-release](https://github.com/se
 
 ## GitHub Apps
 
-We use several GitHub apps to help maintain this repository. While we would like to address every issue and while we would like to be on hand to support every person, Nock is pretty much entirely volunteer run, and we simply don't have the time to do everything. Please don't be offended if an automated app posts in your issue! We're doing what we can with with we have.
+We use several GitHub apps to help maintain this repository. While we would like to address every issue and while we would like to be on hand to support every person, unmock is pretty much entirely volunteer run, and we simply don't have the time to do everything. Please don't be offended if an automated app posts in your issue! We're doing what we can with with we have.
 
 Currently, we use the [Stale](https://github.com/apps/stale) and [Lock](https://github.com/apps/lock) apps to mark old issues as stale, and to lock issues which have been closed to stop drive-by comments. You can see the configuration files for these in [.github/](.github).
 
@@ -129,22 +129,22 @@ Currently, we use the [Stale](https://github.com/apps/stale) and [Lock](https://
 
 So you want to do more than file a bug or submit a PR? Awesome!
 
-Nock is actively interested in having more maintainers. That means that we would love to have you (yes, you) get more involved if you want to! We don't have strict tests that you need to pass to become a maintainer. Instead, all we want is to find people who are frequent contributors, understand what Nock does, and are eager to help make this tool better.
+unmock is actively interested in having more maintainers. That means that we would love to have you (yes, you) get more involved if you want to! We don't have strict tests that you need to pass to become a maintainer. Instead, all we want is to find people who are frequent contributors, understand what unmock does, and are eager to help make this tool better.
 
-Here are some things you can do today to actively show the Nock team that you're interested in helping out in the long term:
+Here are some things you can do today to actively show the unmock team that you're interested in helping out in the long term:
 
 - **Triage issues!** We have more issues than we have bandwidth to deal with. For some of these issues, there are no labels, no comments suggesting how the issue could be resolved, and no follow-up after months or years of silence. It would be great if the issues actively reflected the state of the project. Go through old issues and suggesting labels in comments, ask for more information, and generally help out with the resolution process. This would be a great help!
 - **Review PRs.** We have a lot of open PRs! Some of these are probably ready to merge, and some of them probably need more work. Any extra eyes on PRs are encouraged. Comment on code patterns you think need work, suggest extra tests, and let us know if a PR 'LGTM' ("looks good to me"). The more reviewers we have, the faster we can merge issues, the better this project becomes.
-- **Help out!** If someone files a bug and no one has responded yet, see if you can resolve it! Suggest PRs, or file them yourself. While most contributors are going to only be interested in their own bugs, great maintainers help out with other people's bugs. This is one of the best ways to become an expert at Nock (and Node.js, JavaScript, or pretty much any project) - helping others.
+- **Help out!** If someone files a bug and no one has responded yet, see if you can resolve it! Suggest PRs, or file them yourself. While most contributors are going to only be interested in their own bugs, great maintainers help out with other people's bugs. This is one of the best ways to become an expert at unmock (and Node.js, JavaScript, or pretty much any project) - helping others.
 - **Write docs.** Are our docs missing something important? Are they not clear? Could they be better? Open a PR!
-- **Suggest examples.** Right now, we have a few examples, but we could always have more. Submit small example files and tutorials. At some point, we'll have to work on a better way to display these - for now, it's great to show others how to solve difficult mocking problems easily with Nock.
+- **Suggest examples.** Right now, we have a few examples, but we could always have more. Submit small example files and tutorials. At some point, we'll have to work on a better way to display these - for now, it's great to show others how to solve difficult mocking problems easily with unmock.
 - **Refactor.** This is one of the hardest things to do, but one of the most useful. Go through the code, and find examples where it could be written better - with better variable names, more useful abstractions, and more elegant patterns. Taking away ten lines of code that are unnecessary is more valuable than submitting a hundred new lines, sometimes. Open a PR or a comment and defend your position; ask for feedback.
 
-Once you've been around for a bit, ask a current Maintainer - one of [the team members](https://github.com/orgs/unmock/people) - whether you can be elevated to Maintainer status and given permissions to close issues and merge PRs. We're interested in how well you know what Nock is about, and how involved you are in the community - not where you're from, how good your English is, or whether or not you can pass a whiteboard test blindfolded. If you think that you've been helpful, let us know. We're friendly, promise. :)
+Once you've been around for a bit, ask a current Maintainer - one of [the team members](https://github.com/orgs/unmock/people) - whether you can be elevated to Maintainer status and given permissions to close issues and merge PRs. We're interested in how well you know what unmock is about, and how involved you are in the community - not where you're from, how good your English is, or whether or not you can pass a whiteboard test blindfolded. If you think that you've been helpful, let us know. We're friendly, promise. :)
 
 ## Generating the CONTRIBUTORS.md file
 
-We use [`name-your-contributors`](https://github.com/mntnr/name-your-contributors) to generate the CONTRIBUTORS file, which contains the names of everyone who have submitted code to the Nock codebase, or commented on an issue, or opened a pull request, or reviewed anyone else's code. After all, all contributions are welcome, and anyone who works with Nock is part of our community.
+We use [`name-your-contributors`](https://github.com/mntnr/name-your-contributors) to generate the CONTRIBUTORS file, which contains the names of everyone who have submitted code to the unmock codebase, or commented on an issue, or opened a pull request, or reviewed anyone else's code. After all, all contributions are welcome, and anyone who works with unmock is part of our community.
 
 To generate this file, download `name-your-contributors` and set up a GitHub authorization token.
 
