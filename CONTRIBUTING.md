@@ -129,7 +129,7 @@ Currently, we use the [Stale](https://github.com/apps/stale) and [Lock](https://
 
 So you want to do more than file a bug or submit a PR? Awesome!
 
-unmock is actively interested in having more maintainers. That means that we would love to have you (yes, you) get more involved if you want to! We don't have strict tests that you need to pass to become a maintainer. Instead, all we want is to find people who are frequent contributors, understand what unmock does, and are eager to help make this tool better.
+Unmock is actively interested in having more maintainers. That means that we would love to have you (yes, you) get more involved if you want to! We don't have strict tests that you need to pass to become a maintainer. Instead, all we want is to find people who are frequent contributors, understand what unmock does, and are eager to help make this tool better.
 
 Here are some things you can do today to actively show the unmock team that you're interested in helping out in the long term:
 
