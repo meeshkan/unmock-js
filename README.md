@@ -196,4 +196,4 @@ By participating in this project you agree to abide by its terms.
 
 [MIT](LICENSE)
 
-Copyright (c) 2018–2019 [Meeshkan](http://meeshkan.com) and other [contributors](https://github.com/unmock/unmock/graphs/contributors).
+Copyright (c) 2018–2019 [Meeshkan](http://meeshkan.com) and other [contributors](https://github.com/unmock/unmock-js/graphs/contributors).
