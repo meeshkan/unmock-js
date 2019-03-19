@@ -8,7 +8,7 @@ if (isNode) {
 }
 
 export const defaultOptions: IUnmockInternalOptions = {
-  ignore: {headers: "\w*User-Agent\w*"},
+  ignore: {headers: "\\w*User-Agent\\w*"},
   logger: isNode ?
     new (__non_webpack_require__("./logger/winston-logger").default)() :
     new (require("./logger/browser-logger").default)(),

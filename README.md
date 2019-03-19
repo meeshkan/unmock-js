@@ -183,7 +183,7 @@ await unmock({
 }));
 ```
 
-At a certain point this becomes a bit tedious, at which point you will want to create a credentials file.  See [unmock.io/docs](https://wwunmock.io/docs) for more information on credential files.
+At a certain point this becomes a bit tedious, at which point you will want to create a credentials file.  See [unmock.io/docs](https://www.unmock.io/docs) for more information on credential files.
 
 ## Contributing
 
