@@ -1,48 +1,61 @@
 import * as fs from "fs";
 import * as ini from "ini";
 import * as mkdirp from "mkdirp";
+import * as path from "path";
 import { IPersistence } from "./persistence";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
 const CONFIG_FILE = "credentials";
-const TOKEN_PATH = `${UNMOCK_DIR}/${TOKEN_FILE}`;
-const CONFIG_PATH = `${UNMOCK_DIR}/${CONFIG_FILE}`;
+const TOKEN_PATH = path.join(UNMOCK_DIR, TOKEN_FILE);
+const CONFIG_PATH = path.join(UNMOCK_DIR, CONFIG_FILE);
+const SAVE_PATH = path.join(UNMOCK_DIR, "save");
+const RESPONSE_FILE = "response.json";
+const DATA_KEY = "body";
+const HEADER_KEY = "headers";
 
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
-  public saveHeaders(hash: string, headers: {[key: string]: string}) {
-    fs.writeFileSync(`${this.outdir(hash)}/response-header.json`, JSON.stringify(headers, null, 2));  }
-  public saveBody(hash: string, body: string) {
-    fs.writeFileSync(`${this.outdir(hash)}/response.json`, JSON.stringify(JSON.parse(body || ""), null, 2));
+
+  constructor(private savePath = SAVE_PATH) {
   }
+
+  public saveHeaders(hash: string, headers: {[key: string]: string}) {
+    this.saveContents(hash, HEADER_KEY, headers);
+    // fs.writeFileSync(path.join(this.outdir(hash), RESPONSE_FILE), JSON.stringify(headers, null, 2));
+  }
+
+  public saveBody(hash: string, body: string) {
+    this.saveContents(hash, DATA_KEY, body || "");
+    // fs.writeFileSync(path.join(this.outdir(hash), RESPONSE_FILE), JSON.stringify(JSON.parse(body || ""), null, 2));
+  }
+
   public saveAuth(auth: string) {
     if (!fs.existsSync(UNMOCK_DIR)) {
       fs.mkdirSync(UNMOCK_DIR);
     }
     fs.writeFileSync(TOKEN_PATH, auth);
   }
+
   public saveToken(token: string) {
     this.token = token;
   }
+
   public loadHeaders(hash: string) {
-    if (!fs.existsSync(`${this.outdir(hash)}/response-header.json`)) {
-      return {};
-    }
-    return JSON.parse(fs.readFileSync(`${this.outdir(hash)}/response-header.json`).toString());
+    return this.loadContents(hash, HEADER_KEY);
   }
+
   public loadBody(hash: string) {
-    if (!fs.existsSync(`${this.outdir(hash)}/response.json`)) {
-      return;
-    }
-    return fs.readFileSync(`${this.outdir(hash)}/response.json`).toString();
+    return this.loadContents(hash, DATA_KEY);
   }
+
   public loadAuth() {
     if (!fs.existsSync(TOKEN_PATH)) {
       return;
     }
     return fs.readFileSync(TOKEN_PATH).toString();
   }
+
   public loadToken() {
     if (this.token) {
       return this.token;
@@ -53,9 +66,26 @@ export default class FSPersistence implements IPersistence {
     const config = ini.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
     return config.unmock.token;
   }
-  private outdir(hash: string) {
-    const outdir = `.unmock/save/${hash}`;
+
+  private outdir(hash: string, ...args: string[]) {
+    const outdir = path.normalize(path.join(this.savePath, hash));
     mkdirp.sync(outdir);
-    return outdir;
+    return path.join(outdir, ...args);
+  }
+
+  private loadContents(hash: string, key: string) {
+    const target = this.outdir(hash, RESPONSE_FILE);
+    const contents = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
+    if (contents.hasOwnProperty(key)) {
+      return contents[key];
+    }
+    return {};
+  }
+
+  private saveContents(hash: string, key: string, data: any) {
+    const target = this.outdir(hash, RESPONSE_FILE);
+    const contents = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
+    contents[key] = data;
+    fs.writeFileSync(target, JSON.stringify(contents, null, 2));
   }
 }
