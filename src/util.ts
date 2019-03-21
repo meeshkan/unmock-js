@@ -66,11 +66,7 @@ export const endReporter = (
         if (originalRequest !== undefined) {
           persistence.saveMetadata(hash, originalRequest);
         }
-        const clientData = require("../package.json");
-        persistence.saveMetadata(hash, {
-          unmockClient: clientData.displayName,
-          unmockClientVersion: clientData.version,
-        });
+        persistence.saveMetadata(hash, unmockUAHeaderValue());
         if (body) {
           persistence.saveBody(hash, body);
         }
