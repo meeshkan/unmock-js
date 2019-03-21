@@ -22,12 +22,10 @@ export default class FSPersistence implements IPersistence {
 
   public saveHeaders(hash: string, headers: {[key: string]: string}) {
     this.saveContents(hash, HEADER_KEY, headers);
-    // fs.writeFileSync(path.join(this.outdir(hash), RESPONSE_FILE), JSON.stringify(headers, null, 2));
   }
 
   public saveBody(hash: string, body: string) {
     this.saveContents(hash, DATA_KEY, body || "");
-    // fs.writeFileSync(path.join(this.outdir(hash), RESPONSE_FILE), JSON.stringify(JSON.parse(body || ""), null, 2));
   }
 
   public saveAuth(auth: string) {
