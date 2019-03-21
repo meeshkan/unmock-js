@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as ini from "ini";
 import * as yml from "js-yaml";
 import * as mkdirp from "mkdirp";
+import * as os from "os";
 import * as path from "path";
 import { IPersistence } from "./persistence";
 
@@ -11,6 +12,7 @@ const CONFIG_FILE = "credentials";
 const TOKEN_PATH = path.join(UNMOCK_DIR, TOKEN_FILE);
 const CONFIG_PATH = path.join(UNMOCK_DIR, CONFIG_FILE);
 const SAVE_PATH = path.join(UNMOCK_DIR, "save");
+const SECONDARY_CONFIG_PATH = path.join(os.homedir(), UNMOCK_DIR, CONFIG_FILE);
 const RESPONSE_FILE = "response.json";
 const METADATA_FILE = "metadata.unmock.yml";
 const DATA_KEY = "body";
@@ -70,10 +72,14 @@ export default class FSPersistence implements IPersistence {
     if (this.token) {
       return this.token;
     }
-    if (!fs.existsSync(CONFIG_PATH)) {
-      return;
+    let configPath = CONFIG_PATH;
+    if (!fs.existsSync(configPath)) {
+      configPath = SECONDARY_CONFIG_PATH;
+      if (!fs.existsSync(configPath)) {
+        return;
+      }
     }
-    const config = ini.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+    const config = ini.parse(fs.readFileSync(configPath, "utf-8"));
     return config.unmock.token;
   }
 
