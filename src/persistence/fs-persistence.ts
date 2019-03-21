@@ -74,8 +74,7 @@ export default class FSPersistence implements IPersistence {
   }
 
   private loadContents(hash: string, key: string) {
-    const target = this.outdir(hash, RESPONSE_FILE);
-    const contents = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
+    const contents = this.loadContentOrEmpty(hash);
     if (contents.hasOwnProperty(key)) {
       return contents[key];
     }
@@ -84,8 +83,13 @@ export default class FSPersistence implements IPersistence {
 
   private saveContents(hash: string, key: string, data: any) {
     const target = this.outdir(hash, RESPONSE_FILE);
-    const contents = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
+    const contents = this.loadContentOrEmpty(hash);
     contents[key] = data;
     fs.writeFileSync(target, JSON.stringify(contents, null, 2));
+  }
+
+  private loadContentOrEmpty(hash: string) {
+    const target = this.outdir(hash, RESPONSE_FILE);
+    return fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
   }
 }
