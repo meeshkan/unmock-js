@@ -1,6 +1,6 @@
-import debug from "debug";
 import { IUnmockInternalOptions } from "./unmock-options";
-import { buildPath, endReporter, hostIsWhitelisted } from "./util";
+import { buildPath, endReporter, hostIsWhitelisted,
+  UNMOCK_USER_AGENT_HEADER, unmockClientUserAgentHeaders } from "./util";
 
 const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
@@ -120,6 +120,7 @@ export const initialize = (
     if (token) {
       this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
     }
+    this.setRequestHeader(UNMOCK_USER_AGENT_HEADER, JSON.stringify(unmockClientUserAgentHeaders()));
     return res;
   };
 };

@@ -61,3 +61,9 @@ export const endReporter = (
     }
   }
 };
+
+export const unmockUserAgentHeaders = () => {
+  return { lang: isNode ? "node" : "jsdom" };
+};
+
+export const UNMOCK_USER_AGENT_HEADER = "X-Unmock-Client-User-Agent";
