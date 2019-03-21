@@ -3,7 +3,8 @@ import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { URL } from "url";
 import { IUnmockInternalOptions } from "./unmock-options";
-import { buildPath, endReporter, hostIsWhitelisted } from "./util";
+import { buildPath, endReporter, hostIsWhitelisted,
+  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } from "./util";
 
 const httpreq = fr.http.request;
 const httpreqmod = http.request;
@@ -126,6 +127,7 @@ const mHttp = (
       if (token) {
         output.setHeader("Authorization", `Bearer ${token}`);
       }
+      output.setHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify(unmockUAHeaderValue()));
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
         data = d;
