@@ -29,7 +29,7 @@ export default class FSPersistence implements IPersistence {
     // Now add the new data as needed
     const newData = {...existingData, ...data};
     // And save...
-    fs.writeFileSync(target, yml.safeDump(newData, { indent: 2 }), "utf-8");
+    fs.writeFileSync(target, yml.safeDump(newData, { indent: 2 }));
   }
 
   public saveHeaders(hash: string, headers: {[key: string]: string}) {
