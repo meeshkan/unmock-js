@@ -78,3 +78,9 @@ export const endReporter = (
     }
   }
 };
+
+export const unmockUAHeaderValue = () => {
+  return { lang: isNode ? "node" : "jsdom" };
+};
+
+export const UNMOCK_UA_HEADER_NAME = "X-Unmock-Client-User-Agent";
