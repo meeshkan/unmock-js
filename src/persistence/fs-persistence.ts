@@ -27,13 +27,9 @@ export default class FSPersistence implements IPersistence {
     // First attempt to load existing data
     const existingData = fs.existsSync(target) ? yml.safeLoad(fs.readFileSync(target, "utf-8")) : {};
     // Now add the new data as needed
-    for (const key of Object.keys(data)) {
-      existingData[key] = data[key];
-    }
+    const newData = {...existingData, ...data};
     // And save...
-    fs.writeFileSync(target, yml.safeDump(existingData, {
-      indent: 2,
-    }), "utf-8");
+    fs.writeFileSync(target, yml.safeDump(newData, { indent: 2 }), "utf-8");
   }
 
   public saveHeaders(hash: string, headers: {[key: string]: string}) {

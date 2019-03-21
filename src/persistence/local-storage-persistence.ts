@@ -23,13 +23,9 @@ export default class LocalStoragePersistence implements IPersistence {
     // First attempt to load existing data
     const existingData = window.localStorage[target] ? yml.safeLoad(window.localStorage[target]) : {};
     // Now add the new data as needed
-    for (const key of Object.keys(data)) {
-      existingData[key] = data[key];
-    }
+    const newData = {...existingData, ...data};
     // And save...
-    window.localStorage[target] = yml.safeDump(existingData, {
-      indent: 2,
-    });
+    window.localStorage[target] = yml.safeDump(newData, { indent: 2 });
   }
 
   public saveHeaders(hash: string, headers: {[key: string]: string}) {

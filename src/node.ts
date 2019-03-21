@@ -85,7 +85,7 @@ const mHttp = (
       }
       // content being written or end of call!
       const resp = (res: IncomingMessage) => {
-        const protoOn = res.on  ;
+        const protoOn = res.on;
         res.on = (s: string, f: any) => {
           if (s === "data") {
             return protoOn.apply(res, [s, (d: any) => {

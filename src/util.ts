@@ -19,9 +19,6 @@ export const hostIsWhitelisted =
       ((host && whitelist.indexOf(host) !== -1)
         || (hostname && whitelist.indexOf(hostname) !== -1));
 
-// TODO: buildPath and endReporter have to be made easier and simpler to use...
-//        --> perhaps part of UnmockOptions as it is in unmock-python?
-
 export const buildPath =
   (
     headerz: any,
