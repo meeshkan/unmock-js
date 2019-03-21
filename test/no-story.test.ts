@@ -9,6 +9,7 @@ beforeEach(async () => {
     require("dotenv").config();
     await unmock({
         ignore: "story",
+        save: true,
         token: process.env.UNMOCK_TOKEN,
         unmockHost: process.env.UNMOCK_HOST,
         unmockPort: process.env.UNMOCK_PORT,

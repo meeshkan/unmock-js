@@ -1,3 +1,4 @@
+import * as yml from "js-yaml";
 import * as path from "path";
 import { IPersistence } from "./persistence";
 
@@ -6,7 +7,8 @@ const UNMOCK_KEY = ".unmock";
 const TOKEN_KEY = ".token";
 const TOKEN_FULL_KEY = path.join(UNMOCK_KEY, TOKEN_KEY);
 const SAVE_PATH = path.join(UNMOCK_KEY, "save");
-const RESPONSE_FILE = "response.json";
+const RESPONSE_KEY = "response.json";
+const METADATA_KEY = "metadata.unmock.yml";
 const DATA_KEY = "body";
 const HEADER_KEY = "headers";
 
@@ -14,6 +16,20 @@ export default class LocalStoragePersistence implements IPersistence {
   private token: string | undefined;
 
   constructor(private savePath = SAVE_PATH) {
+  }
+
+  public saveMetadata(hash: string, data: {[key: string]: string}) {
+    const target = this.outdir(hash, METADATA_KEY);
+    // First attempt to load existing data
+    const existingData = window.localStorage[target] ? yml.safeLoad(window.localStorage[target]) : {};
+    // Now add the new data as needed
+    for (const key of Object.keys(data)) {
+      existingData[key] = data[key];
+    }
+    // And save...
+    window.localStorage[target] = yml.safeDump(existingData, {
+      indent: 2,
+    });
   }
 
   public saveHeaders(hash: string, headers: {[key: string]: string}) {
@@ -64,13 +80,13 @@ export default class LocalStoragePersistence implements IPersistence {
 
   private saveContents(hash: string, key: string, data: any) {
     const contents = this.loadContentsOrEmpty(hash);
-    const target = this.outdir(hash, RESPONSE_FILE);
+    const target = this.outdir(hash, RESPONSE_KEY);
     contents[key] = data;
     window.localStorage[target] = JSON.stringify(contents, null, 2);
   }
 
   private loadContentsOrEmpty(hash: string) {
-    const target = this.outdir(hash, RESPONSE_FILE);
+    const target = this.outdir(hash, RESPONSE_KEY);
     const contents = window.localStorage[target];
     return contents ? JSON.parse(contents) : {};
   }

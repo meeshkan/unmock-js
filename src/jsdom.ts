@@ -96,7 +96,13 @@ export const initialize = (
               save,
               selfcall,
               story.story,
-              token !== undefined);
+              token !== undefined,
+              {
+                requestHeaders: headerz,
+                requestHost: ro.host || ro.hostname,
+                requestMethod: method,
+                requestPath: ro.pathname,
+              });
           }
         }
         if (typeof onreadystatechange === "function") {

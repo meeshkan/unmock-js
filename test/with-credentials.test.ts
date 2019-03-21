@@ -9,15 +9,14 @@ import { kcomnu, unmock } from "../dist";
 
 beforeEach(async () => {
   require("dotenv").config();
-  const CREDENTIALS = `[unmock]
-token=${process.env.UNMOCK_TOKEN}
-`;
+  const CREDENTIALS = `[unmock]\ntoken=${process.env.UNMOCK_TOKEN}\n`;
   rimraf.sync(".unmock");
   fs.mkdirSync(".unmock");
   fs.writeFileSync(".unmock/credentials", CREDENTIALS);
   await unmock({
-      unmockHost: process.env.UNMOCK_HOST,
-      unmockPort: process.env.UNMOCK_PORT,
+    save: true,
+    unmockHost: process.env.UNMOCK_HOST,
+    unmockPort: process.env.UNMOCK_PORT,
   });
 });
 

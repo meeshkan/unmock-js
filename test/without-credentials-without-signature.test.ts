@@ -8,8 +8,9 @@ import { kcomnu, unmock } from "../dist";
 beforeEach(async () => {
   require("dotenv").config();
   await unmock({
-      unmockHost: process.env.UNMOCK_HOST,
-      unmockPort: process.env.UNMOCK_PORT,
+    save: true,
+    unmockHost: process.env.UNMOCK_HOST,
+    unmockPort: process.env.UNMOCK_PORT,
   });
 });
 
