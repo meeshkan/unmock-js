@@ -5,6 +5,14 @@ import isNode from "detect-node";
 // tslint:disable-next-line:no-var-requires
 const querystring = isNode ? require("querystring") : require("querystring-browser");
 
+interface IOriginalRequestMetadata {
+  [key: string]: any;
+  requestHeaders: any;
+  requestHost: string;
+  requestMethod: string;
+  requestPath: string;
+}
+
 export const hostIsWhitelisted =
   (whitelist: string[] | undefined, host: string | undefined, hostname: string | undefined) =>
     whitelist &&
@@ -39,7 +47,8 @@ export const endReporter = (
     save: boolean | string[],
     selfcall: boolean,
     story: string[],
-    xy: boolean) => {
+    xy: boolean,
+    originalRequest?: IOriginalRequestMetadata) => {
   if (!selfcall) {
     const hash = headers["unmock-hash"] as string || "null";
     // in case the end function has been called multiple times
@@ -54,6 +63,10 @@ export const endReporter = (
       if ((typeof save === "boolean" && save) ||
           (typeof save !== "boolean" && save.indexOf(hash) >= 0)) {
         persistence.saveHeaders(hash, headers);
+        if (originalRequest !== undefined) {
+          persistence.saveMetadata(hash, originalRequest);
+        }
+        persistence.saveMetadata(hash, unmockUAHeaderValue());
         if (body) {
           persistence.saveBody(hash, body);
         }

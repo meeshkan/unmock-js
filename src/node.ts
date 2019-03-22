@@ -28,19 +28,20 @@ export const initialize = (story: {story: string[]}, token: string | undefined, 
 const mHttp = (
   story: {story: string[]},
   token: string | undefined,
-  { logger, persistence, unmockHost, unmockPort, signature, save, ignore, whitelist }: IUnmockInternalOptions, cb: {
-    (
-        options: string | http.RequestOptions | URL,
-        callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
-    (
-        url: string | URL,
-        options: http.RequestOptions,
-        callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
+  { logger, persistence, unmockHost, unmockPort, signature, save, ignore, whitelist }: IUnmockInternalOptions,
+  cb: {
+    // tslint:disable-next-line:max-line-length
+    (options: string | http.RequestOptions | URL, callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
+    // tslint:disable-next-line:max-line-length
+    (url: string | URL, options: http.RequestOptions, callback?: ((res: http.IncomingMessage) => void) | undefined): http.ClientRequest;
   }) => {
-  return (
-    first: RequestOptions | string | URL,
-    second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
-    third?: (res: IncomingMessage) => void): ClientRequest => {
+    // Return a function that will work for the overloaded methods
+    // parameters will correspond to either of the following signatures:
+    // request(options: RequestOptions | string | URL, callback?: (res: IncomingMessage) => void): ClientRequest;
+    // request(url: string | URL, options: RequestOptions, callback?: (res: IncomingMessage) => void): ClientRequest;
+  return (first: RequestOptions | string | URL,
+          second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
+          third?: (res: IncomingMessage) => void): ClientRequest => {
       let data: {} | null = null;
       let selfcall = false;
       const responseData: Buffer[] = [];
@@ -83,6 +84,7 @@ const mHttp = (
         // self call, we ignore
         selfcall = true;
       }
+      // content being written or end of call!
       const resp = (res: IncomingMessage) => {
         const protoOn = res.on;
         res.on = (s: string, f: any) => {
@@ -108,7 +110,13 @@ const mHttp = (
                 save,
                 selfcall,
                 story.story,
-                token !== undefined);
+                token !== undefined,
+                {
+                  requestHeaders: ro.headers,
+                  requestHost: ro.hostname || ro.host || "",
+                  requestMethod: ro.method || "",
+                  requestPath: ro.path || "",
+                });
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
               // the original res.on('end') has a closure that refers to this
               // as far as i can understand, 'this' is supposed to refer to res

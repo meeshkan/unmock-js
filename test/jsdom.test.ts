@@ -6,12 +6,13 @@ import axios from "axios";
 import { kcomnu, unmock } from "../dist";
 
 beforeEach(async () => {
-    require("dotenv").config();
-    await unmock({
-        token: process.env.UNMOCK_TOKEN,
-        unmockHost: process.env.UNMOCK_HOST,
-        unmockPort: process.env.UNMOCK_PORT,
-    });
+  require("dotenv").config();
+  await unmock({
+      save: true,
+      token: process.env.UNMOCK_TOKEN,
+      unmockHost: process.env.UNMOCK_HOST,
+      unmockPort: process.env.UNMOCK_PORT,
+  });
 });
 afterEach(async () => await kcomnu());
 

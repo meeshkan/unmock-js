@@ -4,20 +4,20 @@
 
 import axios from "axios";
 import fs from "fs";
+import * as mkdirp from "mkdirp";
 import * as rimraf from "rimraf";
 import { kcomnu, unmock } from "../dist";
 
 beforeEach(async () => {
   require("dotenv").config();
-  const CREDENTIALS = `[unmock]
-token=${process.env.UNMOCK_TOKEN}
-`;
-  rimraf.sync(".unmock");
-  fs.mkdirSync(".unmock");
+  const CREDENTIALS = `[unmock]\ntoken=${process.env.UNMOCK_TOKEN}\n`;
+  rimraf.sync(".unmock/!(save)");
+  mkdirp.sync(".unmock");
   fs.writeFileSync(".unmock/credentials", CREDENTIALS);
   await unmock({
-      unmockHost: process.env.UNMOCK_HOST,
-      unmockPort: process.env.UNMOCK_PORT,
+    save: true,
+    unmockHost: process.env.UNMOCK_HOST,
+    unmockPort: process.env.UNMOCK_PORT,
   });
 });
 

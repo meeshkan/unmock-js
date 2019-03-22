@@ -1,12 +1,6 @@
 import axios from "axios";
 import { IUnmockInternalOptions } from "./unmock-options";
 
-const UNMOCK_DIR = ".unmock";
-const TOKEN_FILE = ".token";
-const CONFIG_FILE = "credentials";
-const TOKEN_PATH = `${UNMOCK_DIR}/${TOKEN_FILE}`;
-const CONFIG_PATH = `${UNMOCK_DIR}/${CONFIG_FILE}`;
-
 const makeHeader = (token: string) => ({
   headers: {
     Authorization: `Bearer ${token}`,
