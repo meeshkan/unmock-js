@@ -10,7 +10,7 @@ const collect = (val: string, memo: string[]) => {
 };
 
 program
-  .version("0.0.28")
+  .usage("[options] <url>")
   .option("-d, --data [data]", "HTTP POST data")
   .option("-H, --header [header]", "Pass custom header(s) to server", collect, [])
   .option("-X", "--request [command]", "Specify request command to use")
