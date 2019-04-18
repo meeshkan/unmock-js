@@ -4,6 +4,7 @@ import * as yml from "js-yaml";
 import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
+import { IPersistableData } from "../util";
 import { IPersistence } from "./persistence";
 
 const UNMOCK_DIR = ".unmock";
@@ -24,7 +25,7 @@ export default class FSPersistence implements IPersistence {
   constructor(private savePath = SAVE_PATH) {
   }
 
-  public saveMetadata(hash: string, data: {[key: string]: string}) {
+  public saveMetadata(hash: string, data: IPersistableData) {
     const target = this.outdir(hash, METADATA_FILE);
     // First attempt to load existing data
     const existingData = fs.existsSync(target) ? yml.safeLoad(fs.readFileSync(target, "utf-8")) : {};

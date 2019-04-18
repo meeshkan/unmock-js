@@ -1,5 +1,6 @@
 import * as yml from "js-yaml";
 import * as path from "path";
+import { IPersistableData } from "../util";
 import { IPersistence } from "./persistence";
 
 // Uses directory structure for keys in window local storage
@@ -18,7 +19,7 @@ export default class LocalStoragePersistence implements IPersistence {
   constructor(private savePath = SAVE_PATH) {
   }
 
-  public saveMetadata(hash: string, data: {[key: string]: string}) {
+  public saveMetadata(hash: string, data: IPersistableData) {
     const target = this.outdir(hash, METADATA_KEY);
     // First attempt to load existing data
     const existingData = window.localStorage[target] ? yml.safeLoad(window.localStorage[target]) : {};
