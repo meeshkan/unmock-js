@@ -2,9 +2,9 @@ import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { URL } from "url";
-import { IUnmockInternalOptions } from "./unmock-options";
+import { IUnmockInternalOptions } from "unmock/unmock-options";
 import { buildPath, endReporter, hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } from "./util";
+  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } from "unmock/util";
 
 const httpreq = fr.http.request;
 const httpreqmod = http.request;

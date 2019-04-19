@@ -6,11 +6,6 @@
     "unmock": "./dist/cli.js"
   },
   "license": "MIT",
-  "scripts": {
-    "prepare": "tsc --outDir dist",
-    "pretest": "yarn prepare",
-    "test": "jest"
-  },
   "devDependencies": {
     "@types/jest": "^24.0.11",
     "@types/js-yaml": "^3.12.1",

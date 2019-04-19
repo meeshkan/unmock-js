@@ -1,4 +1,4 @@
-import { ILogger } from "./logger";
+import { ILogger } from "unmock/logger";
 
 export default class BrowserLogger implements ILogger {
   public log(message: string) {
