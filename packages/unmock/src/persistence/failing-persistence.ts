@@ -27,5 +27,5 @@ export default class FailingPersistence implements IPersistence {
   }
   public loadToken() {
     throw new Error("not implemented");
-  } 
+  }
 }

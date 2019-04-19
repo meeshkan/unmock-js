@@ -15,20 +15,21 @@ const HEADER_KEY = "headers";
 export default class LocalStoragePersistence implements IPersistence {
   private token: string | undefined;
 
-  constructor(private savePath = SAVE_PATH) {
-  }
+  constructor(private savePath = SAVE_PATH) {}
 
   public saveMetadata(hash: string, data: IPersistableData) {
     const target = this.outdir(hash, METADATA_KEY);
     // First attempt to load existing data
-    const existingData = window.localStorage[target] ? yml.safeLoad(window.localStorage[target]) : {};
+    const existingData = window.localStorage[target]
+      ? yml.safeLoad(window.localStorage[target])
+      : {};
     // Now add the new data as needed
-    const newData = {...existingData, ...data};
+    const newData = { ...existingData, ...data };
     // And save...
     window.localStorage[target] = yml.safeDump(newData, { indent: 2 });
   }
 
-  public saveHeaders(hash: string, headers: {[key: string]: string}) {
+  public saveHeaders(hash: string, headers: { [key: string]: string }) {
     this.saveContents(hash, HEADER_KEY, headers);
   }
 

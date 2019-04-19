@@ -4,7 +4,7 @@ import {
   ignoreStory as _ignoreStory,
   IUnmockInternalOptions,
   kcomnu as _kcomnu,
-  unmock as _unmock,
+  unmock as _unmock
 } from "unmock";
 import NodeBackend from "./backend";
 import WinstonLogger from "./logger/winston-logger";
@@ -14,7 +14,7 @@ export const defaultOptions: IUnmockInternalOptions = {
   ..._defaultOptions,
   backend: new NodeBackend(),
   logger: new WinstonLogger(),
-  persistence: new FSPersistence(),
+  persistence: new FSPersistence()
 };
 
 export const ignoreStory = _ignoreStory(defaultOptions);

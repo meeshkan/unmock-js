@@ -2,12 +2,17 @@ import { IUnmockInternalOptions } from "unmock";
 import { util } from "unmock";
 import { IBackend } from "unmock";
 
-const { buildPath, endReporter, hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME } = util;
+const {
+  buildPath,
+  endReporter,
+  hostIsWhitelisted,
+  UNMOCK_UA_HEADER_NAME
+} = util;
 
 const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
-const XMLHttpRequestSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+const XMLHttpRequestSetRequestHeader =
+  XMLHttpRequest.prototype.setRequestHeader;
 const XMLHttpRequestSend = XMLHttpRequest.prototype.send;
 
 const parseResponseHeaders = (headerStr: string) => {
@@ -33,23 +38,44 @@ export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
   public initialize(
-    story: {story: string[]},
+    story: { story: string[] },
     token: string | undefined,
-    { logger, persistence, ignore, save, signature, unmockHost, whitelist }: IUnmockInternalOptions) {
+    {
+      logger,
+      persistence,
+      ignore,
+      save,
+      signature,
+      unmockHost,
+      whitelist
+    }: IUnmockInternalOptions
+  ) {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
       async?: boolean,
       username?: string | null,
-      password?: string | null): void {
-
+      password?: string | null
+    ): void {
       let data: Document | BodyInit | null = null;
       let selfcall = false;
       const ro = new URL(url);
-      if (hostIsWhitelisted(whitelist ? whitelist.concat(unmockHost) : [], ro.host, ro.hostname)) {
-        return XMLHttpRequestOpen.apply(this, [method, url, async || false, username, password]);
+      if (
+        hostIsWhitelisted(
+          whitelist ? whitelist.concat(unmockHost) : [],
+          ro.host,
+          ro.hostname
+        )
+      ) {
+        return XMLHttpRequestOpen.apply(this, [
+          method,
+          url,
+          async || false,
+          username,
+          password
+        ]);
       }
-      const headerz: {[name: string]: string} = {};
+      const headerz: { [name: string]: string } = {};
       const pathForFake = buildPath(
         headerz,
         ro.host,
@@ -62,12 +88,18 @@ export default class JSDomBackend implements IBackend {
         unmockHost,
         token !== undefined
       );
-      if ((ro.hostname === unmockHost) || (ro.host === unmockHost)) {
+      if (ro.hostname === unmockHost || ro.host === unmockHost) {
         // self call, we ignore
         selfcall = true;
       }
       this.setRequestHeader = function(name: string, value: string) {
-        if (hostIsWhitelisted(whitelist ? whitelist.concat(unmockHost) : [], ro.host, ro.hostname)) {
+        if (
+          hostIsWhitelisted(
+            whitelist ? whitelist.concat(unmockHost) : [],
+            ro.host,
+            ro.hostname
+          )
+        ) {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
         if (name === "Authorization") {
@@ -75,7 +107,10 @@ export default class JSDomBackend implements IBackend {
           headerz[name] = value;
         } else if (name === UNMOCK_AUTH) {
           // do not store, but pass onto request
-          return XMLHttpRequestSetRequestHeader.apply(this, ["Authorization", value]);
+          return XMLHttpRequestSetRequestHeader.apply(this, [
+            "Authorization",
+            value
+          ]);
         } else {
           // store and pass onto request
           headerz[name] = value;
@@ -86,7 +121,13 @@ export default class JSDomBackend implements IBackend {
         const onreadystatechange = request.onreadystatechange;
         request.onreadystatechange = (ev: Event) => {
           if (request.readyState === 4) {
-            if (!hostIsWhitelisted(whitelist ? whitelist.concat(unmockHost) : [], ro.host, ro.hostname)) {
+            if (
+              !hostIsWhitelisted(
+                whitelist ? whitelist.concat(unmockHost) : [],
+                ro.host,
+                ro.hostname
+              )
+            ) {
               endReporter(
                 request.response,
                 data,
@@ -106,8 +147,9 @@ export default class JSDomBackend implements IBackend {
                   requestHeaders: headerz,
                   requestHost: ro.host || ro.hostname,
                   requestMethod: method,
-                  requestPath: ro.pathname,
-                });
+                  requestPath: ro.pathname
+                }
+              );
             }
           }
           if (typeof onreadystatechange === "function") {
@@ -116,7 +158,13 @@ export default class JSDomBackend implements IBackend {
         };
       };
       this.send = function(body?: Document | BodyInit | null): void {
-        if (hostIsWhitelisted(whitelist ? whitelist.concat(unmockHost) : [], ro.host, ro.hostname)) {
+        if (
+          hostIsWhitelisted(
+            whitelist ? whitelist.concat(unmockHost) : [],
+            ro.host,
+            ro.hostname
+          )
+        ) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
         setOnReadyStateChange(this);
@@ -126,15 +174,20 @@ export default class JSDomBackend implements IBackend {
         return XMLHttpRequestSend.apply(this, [body]);
       };
       setOnReadyStateChange(this);
-      const res = XMLHttpRequestOpen
-        .apply(this, [method, `https://${unmockHost}${pathForFake}`, async || false, username, password]);
+      const res = XMLHttpRequestOpen.apply(this, [
+        method,
+        `https://${unmockHost}${pathForFake}`,
+        async || false,
+        username,
+        password
+      ]);
       if (token) {
         this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
       }
       this.setRequestHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify("jsdom"));
       return res;
     };
-  };
+  }
 
   public reset() {
     XMLHttpRequest.prototype.open = XMLHttpRequestOpen;

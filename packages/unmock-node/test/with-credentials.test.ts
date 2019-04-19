@@ -17,7 +17,7 @@ beforeEach(async () => {
   await unmock({
     save: true,
     unmockHost: process.env.UNMOCK_HOST,
-    unmockPort: process.env.UNMOCK_PORT,
+    unmockPort: process.env.UNMOCK_PORT
   });
 });
 
@@ -27,6 +27,10 @@ afterEach(async () => {
 });
 
 test("credentials written to .unmock/credentials work just like a token", async () => {
-  const { data: { projects } }  = await axios("https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200");
+  const {
+    data: { projects }
+  } = await axios(
+    "https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200"
+  );
   expect(typeof projects[0].id).toBe("number");
 });

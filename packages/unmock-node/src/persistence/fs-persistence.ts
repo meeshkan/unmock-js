@@ -21,20 +21,21 @@ const HEADER_KEY = "headers";
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
 
-  constructor(private savePath = SAVE_PATH) {
-  }
+  constructor(private savePath = SAVE_PATH) {}
 
   public saveMetadata(hash: string, data: IPersistableData) {
     const target = this.outdir(hash, METADATA_FILE);
     // First attempt to load existing data
-    const existingData = fs.existsSync(target) ? yml.safeLoad(fs.readFileSync(target, "utf-8")) : {};
+    const existingData = fs.existsSync(target)
+      ? yml.safeLoad(fs.readFileSync(target, "utf-8"))
+      : {};
     // Now add the new data as needed
-    const newData = {...existingData, ...data};
+    const newData = { ...existingData, ...data };
     // And save...
     fs.writeFileSync(target, yml.safeDump(newData, { indent: 2 }));
   }
 
-  public saveHeaders(hash: string, headers: {[key: string]: string}) {
+  public saveHeaders(hash: string, headers: { [key: string]: string }) {
     this.saveContents(hash, HEADER_KEY, headers);
   }
 
@@ -106,6 +107,8 @@ export default class FSPersistence implements IPersistence {
 
   private loadContentOrEmpty(hash: string) {
     const target = this.outdir(hash, RESPONSE_FILE);
-    return fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf-8")) : {};
+    return fs.existsSync(target)
+      ? JSON.parse(fs.readFileSync(target, "utf-8"))
+      : {};
   }
 }

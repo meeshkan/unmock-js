@@ -3,13 +3,20 @@ import { IUnmockInternalOptions } from "./options";
 
 const makeHeader = (token: string) => ({
   headers: {
-    Authorization: `Bearer ${token}`,
-  },
+    Authorization: `Bearer ${token}`
+  }
 });
 
-export const canPingWithAccessToken = async (accessToken: string, unmockHost: string, unmockPort: string) => {
+export const canPingWithAccessToken = async (
+  accessToken: string,
+  unmockHost: string,
+  unmockPort: string
+) => {
   try {
-    await axios.get(`https://${unmockHost}:${unmockPort}/ping`, makeHeader(accessToken));
+    await axios.get(
+      `https://${unmockHost}:${unmockPort}/ping`,
+      makeHeader(accessToken)
+    );
     return true;
   } catch (e) {
     return false;
@@ -17,23 +24,39 @@ export const canPingWithAccessToken = async (accessToken: string, unmockHost: st
 };
 
 // tslint:disable-next-line:max-line-length
-export const exchangeRefreshTokenForAccessToken = async (refreshToken: string, unmockHost: string, unmockPort: string) => {
+export const exchangeRefreshTokenForAccessToken = async (
+  refreshToken: string,
+  unmockHost: string,
+  unmockPort: string
+) => {
   try {
-    const { data: { accessToken }} = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
-      refreshToken,
+    const {
+      data: { accessToken }
+    } = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
+      refreshToken
     });
     return accessToken;
   } catch (e) {
-    throw Error("Invalid token, please check your credentials on https://www.unmock.io/app");
+    throw Error(
+      "Invalid token, please check your credentials on https://www.unmock.io/app"
+    );
   }
 };
 
 let pingable = false;
-export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOptions) => {
+export default async ({
+  persistence,
+  unmockHost,
+  unmockPort
+}: IUnmockInternalOptions) => {
   let accessToken = persistence.loadAuth();
   if (accessToken) {
     if (!pingable) {
-      pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
+      pingable = await canPingWithAccessToken(
+        accessToken,
+        unmockHost,
+        unmockPort
+      );
       if (!pingable) {
         accessToken = undefined;
       }
@@ -42,7 +65,11 @@ export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOpti
   if (!accessToken) {
     const refreshToken = persistence.loadToken();
     if (refreshToken) {
-      accessToken = await exchangeRefreshTokenForAccessToken(refreshToken, unmockHost, unmockPort);
+      accessToken = await exchangeRefreshTokenForAccessToken(
+        refreshToken,
+        unmockHost,
+        unmockPort
+      );
       if (accessToken) {
         persistence.saveAuth(accessToken);
       } else {
@@ -54,7 +81,11 @@ export default async ({persistence, unmockHost, unmockPort}: IUnmockInternalOpti
     }
   }
   if (!pingable && accessToken) {
-    pingable = await canPingWithAccessToken(accessToken, unmockHost, unmockPort);
+    pingable = await canPingWithAccessToken(
+      accessToken,
+      unmockHost,
+      unmockPort
+    );
     if (!pingable) {
       throw Error("Internal authorization error");
     }

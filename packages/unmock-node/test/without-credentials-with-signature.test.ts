@@ -11,7 +11,7 @@ beforeEach(async () => {
     save: true,
     signature: process.env.UNMOCK_SIGNATURE,
     unmockHost: process.env.UNMOCK_HOST,
-    unmockPort: process.env.UNMOCK_PORT,
+    unmockPort: process.env.UNMOCK_PORT
   });
 });
 
@@ -20,6 +20,10 @@ afterEach(async () => {
 });
 
 test("no credentials but with a signature works", async () => {
-  const { data: { projects } }  = await axios("https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200");
+  const {
+    data: { projects }
+  } = await axios(
+    "https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200"
+  );
   expect(typeof projects[0].id).toBe("number");
 });

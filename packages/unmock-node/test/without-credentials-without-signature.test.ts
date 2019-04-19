@@ -10,7 +10,7 @@ beforeEach(async () => {
   await unmock({
     save: true,
     unmockHost: process.env.UNMOCK_HOST,
-    unmockPort: process.env.UNMOCK_PORT,
+    unmockPort: process.env.UNMOCK_PORT
   });
 });
 
@@ -19,7 +19,7 @@ afterEach(async () => {
 });
 
 test("without credentials without credentials returns something", async () => {
-  const { data }  = await axios("https://www.example.com");
+  const { data } = await axios("https://www.example.com");
   // just get the ball over the net, as signatureless is wild west
   expect(data !== undefined).toBe(true);
 });
