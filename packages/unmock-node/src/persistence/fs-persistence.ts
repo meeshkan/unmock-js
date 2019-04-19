@@ -4,8 +4,7 @@ import * as yml from "js-yaml";
 import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
-import { IPersistableData } from "unmock/util";
-import { IPersistence } from "unmock/persistence";
+import { IPersistableData, IPersistence } from "unmock";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";

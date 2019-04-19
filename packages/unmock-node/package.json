@@ -2,9 +2,6 @@
   "name": "unmock-node",
   "displayName": "unmock-node",
   "main": "dist/index.js",
-  "bin": {
-    "unmock": "./dist/cli.js"
-  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,6 +15,7 @@
     "ini": "^1.3.5",
     "js-yaml": "^3.13.1",
     "mkdirp": "^0.5.1",
+    "unmock": "file:../unmock",
     "winston": "^3.2.1"
   }
 }

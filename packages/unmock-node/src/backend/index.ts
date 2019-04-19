@@ -2,28 +2,16 @@ import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { URL } from "url";
-import { IUnmockInternalOptions } from "unmock/unmock-options";
-import { buildPath, endReporter, hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } from "unmock/util";
+import { IBackend, IUnmockInternalOptions } from "unmock";
+import { util } from "unmock";
+
+const { buildPath, endReporter, hostIsWhitelisted,
+  UNMOCK_UA_HEADER_NAME } = util;
 
 const httpreq = fr.http.request;
 const httpreqmod = http.request;
 const httpsreq = fr.https.request;
 const httpsreqmod = https.request;
-
-export const reset = () => {
-  fr.http.request = httpreq;
-  http.request = httpreqmod;
-  https.request = httpsreq;
-  https.request = httpsreqmod;
-};
-
-export const initialize = (story: {story: string[]}, token: string | undefined, options: IUnmockInternalOptions) => {
-  fr.http.request = mHttp(story, token, options, httpreq);
-  http.request = mHttp(story, token, options, httpreqmod);
-  fr.https.request = mHttp(story, token, options, httpsreq);
-  https.request = mHttp(story, token, options, httpsreqmod);
-};
 
 const mHttp = (
   story: {story: string[]},
@@ -111,6 +99,7 @@ const mHttp = (
                 selfcall,
                 story.story,
                 token !== undefined,
+                "node",
                 {
                   requestHeaders: ro.headers,
                   requestHost: ro.hostname || ro.host || "",
@@ -135,7 +124,7 @@ const mHttp = (
       if (token) {
         output.setHeader("Authorization", `Bearer ${token}`);
       }
-      output.setHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify(unmockUAHeaderValue()));
+      output.setHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify("node"));
       const protoWrite = output.write;
       output.write = (d: Buffer, q?: any, z?: any) => {
         data = d;
@@ -144,3 +133,18 @@ const mHttp = (
       return output;
   };
 };
+
+export default class NodeBackend implements IBackend {
+  public reset() {
+    fr.http.request = httpreq;
+    http.request = httpreqmod;
+    https.request = httpsreq;
+    https.request = httpsreqmod;
+  }
+  public initialize(story: {story: string[]}, token: string | undefined, options: IUnmockInternalOptions) {
+    fr.http.request = mHttp(story, token, options, httpreq);
+    http.request = mHttp(story, token, options, httpreqmod);
+    fr.https.request = mHttp(story, token, options, httpsreq);
+    https.request = mHttp(story, token, options, httpsreqmod);
+  }
+}

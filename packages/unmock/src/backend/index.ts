@@ -6,5 +6,4 @@ export interface IBackend {
     token: string | undefined,
     { logger, persistence, ignore, save, signature, unmockHost, whitelist }: IUnmockInternalOptions) => void;
   reset: () => void;
-  unmockUAHeaderValue: () => string;
 }

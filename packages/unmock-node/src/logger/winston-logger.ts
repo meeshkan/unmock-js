@@ -1,5 +1,5 @@
 import winston from "winston";
-import { ILogger } from "unmock/logger";
+import { ILogger } from "unmock";
 
 const logger = winston.createLogger({
   levels: { unmock: 2},

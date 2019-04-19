@@ -2,9 +2,6 @@
   "name": "unmock-jsdom",
   "displayName": "unmock-jsdom",
   "main": "dist/index.js",
-  "bin": {
-    "unmock": "./dist/cli.js"
-  },
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -15,6 +12,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "js-yaml": "^3.13.1"
+    "js-yaml": "^3.13.1",
+    "unmock": "file:../unmock"
   }
 }

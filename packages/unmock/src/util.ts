@@ -1,3 +1,4 @@
+import querystring from "querystring";
 import { ILogger } from "./logger";
 import { IPersistence } from "./persistence";
 
@@ -26,8 +27,7 @@ export const buildPath =
     signature: string | undefined,
     story: string[],
     unmockHost: string,
-    xy: boolean,
-    querystring: { escape: (s: string) => string }) =>
+    xy: boolean) =>
   // tslint:disable-next-line:max-line-length
   (hostname === unmockHost) || (host === unmockHost) ? path : `/${xy ? "x" : "y"}/?story=${querystring.escape(JSON.stringify(story))}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(hostname || host || "")}&method=${querystring.escape(method || "")}&headers=${querystring.escape(JSON.stringify(headerz))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
 
@@ -45,7 +45,7 @@ export const endReporter = (
     selfcall: boolean,
     story: string[],
     xy: boolean,
-    unmockUAHeaderValue: () => string,
+    unmockUAHeaderValue: string,
     persistableData?: IPersistableData) => {
   if (!selfcall) {
     const hash = headers["unmock-hash"] as string || "null";
@@ -64,7 +64,7 @@ export const endReporter = (
         if (persistableData !== undefined) {
           persistence.saveMetadata(hash, persistableData);
         }
-        persistence.saveMetadata(hash, {lang: unmockUAHeaderValue()});
+        persistence.saveMetadata(hash, {lang: unmockUAHeaderValue });
         if (body) {
           persistence.saveBody(hash, body);
         }

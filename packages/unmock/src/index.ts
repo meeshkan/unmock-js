@@ -8,8 +8,10 @@ import { buildPath, endReporter, hostIsWhitelisted,
 
 // top-level exports
 export { IUnmockInternalOptions, IUnmockOptions } from "./options";
+export { IBackend } from "./backend";
 export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
+export { IPersistableData } from "./util";
 export const util = { buildPath, endReporter, hostIsWhitelisted,
 UNMOCK_UA_HEADER_NAME };
 
@@ -26,23 +28,23 @@ export const defaultOptions: IUnmockInternalOptions = {
   whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
 };
 
-const baseIgnore = (ignore: any) => (fakeOptions?: IUnmockOptions): IUnmockOptions => {
-  const options = fakeOptions || defaultOptions;
+const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (maybeOptions?: IUnmockOptions): IUnmockOptions => {
+  const options = maybeOptions || baseOptions;
   return {
     ...options,
     ignore: options.ignore ?
       (options.ignore instanceof Array ?
         options.ignore.concat(ignore) :
         [options.ignore, ignore]) :
-      [defaultOptions.ignore, ignore],
+      [baseOptions.ignore, ignore],
   };
 };
 
 export const ignoreStory = baseIgnore("story");
 export const ignoreAuth = baseIgnore({headers: "Authorization" });
 
-export const unmock = async (fakeOptions?: IUnmockOptions) => {
-  const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
+export const unmock = (baseOptions: IUnmockInternalOptions) => async (maybeOptions?: IUnmockOptions) => {
+  const options = maybeOptions ? { ...baseOptions, ...maybeOptions } : baseOptions;
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story = {
       story: [],
@@ -52,11 +54,10 @@ export const unmock = async (fakeOptions?: IUnmockOptions) => {
     }
     const token = await getToken(options);
     options.backend.initialize(story, token, options);
-    return true;
   }
 };
 
-export const kcomnu = (fakeOptions?: IUnmockOptions) => {
-  const options = fakeOptions ? { ...defaultOptions, ...fakeOptions } : defaultOptions;
+export const kcomnu = (baseOptions: IUnmockInternalOptions) => (maybeOptions?: IUnmockOptions) => {
+  const options = maybeOptions ? { ...baseOptions, ...maybeOptions } : baseOptions;
   options.backend.reset();
 };

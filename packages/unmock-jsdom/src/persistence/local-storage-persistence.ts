@@ -1,7 +1,6 @@
 import * as yml from "js-yaml";
 import * as path from "path";
-import { IPersistableData } from "unmock/util";
-import { IPersistence } from "unmock/persistence";
+import { IPersistableData, IPersistence } from "unmock";
 
 // Uses directory structure for keys in window local storage
 const UNMOCK_KEY = ".unmock";
