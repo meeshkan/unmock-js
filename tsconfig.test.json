@@ -6,6 +6,7 @@
   "include": [],
   "references": [
     { "path": "./packages/unmock/test" },
+    { "path": "./packages/unmock-cli/test" },
     { "path": "./packages/unmock-jsdom/test" },
     { "path": "./packages/unmock-node/test" }
   ]
