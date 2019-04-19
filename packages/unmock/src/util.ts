@@ -1,10 +1,6 @@
 import { ILogger } from "./logger/logger";
 import { IPersistence } from "./persistence/persistence";
 
-import isNode from "detect-node";
-// tslint:disable-next-line:no-var-requires
-const querystring = isNode ? require("querystring") : require("querystring-browser");
-
 export interface IPersistableData {
   lang?: string;
   requestHeaders?: any;
@@ -30,7 +26,8 @@ export const buildPath =
     signature: string | undefined,
     story: string[],
     unmockHost: string,
-    xy: boolean) =>
+    xy: boolean,
+    querystring: { escape: (s: string) => string }) =>
   // tslint:disable-next-line:max-line-length
   (hostname === unmockHost) || (host === unmockHost) ? path : `/${xy ? "x" : "y"}/?story=${querystring.escape(JSON.stringify(story))}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(hostname || host || "")}&method=${querystring.escape(method || "")}&headers=${querystring.escape(JSON.stringify(headerz))}${ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""}${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
 
@@ -48,6 +45,7 @@ export const endReporter = (
     selfcall: boolean,
     story: string[],
     xy: boolean,
+    unmockUAHeaderValue: () => string,
     persistableData?: IPersistableData) => {
   if (!selfcall) {
     const hash = headers["unmock-hash"] as string || "null";
@@ -66,17 +64,13 @@ export const endReporter = (
         if (persistableData !== undefined) {
           persistence.saveMetadata(hash, persistableData);
         }
-        persistence.saveMetadata(hash, unmockUAHeaderValue());
+        persistence.saveMetadata(hash, {lang: unmockUAHeaderValue()});
         if (body) {
           persistence.saveBody(hash, body);
         }
       }
     }
   }
-};
-
-export const unmockUAHeaderValue = () => {
-  return { lang: isNode ? "node" : "jsdom" };
 };
 
 export const UNMOCK_UA_HEADER_NAME = "X-Unmock-Client-User-Agent";
