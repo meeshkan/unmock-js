@@ -1,0 +1,18 @@
+{
+  "name": "unmock-jsdom",
+  "displayName": "unmock-jsdom",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "js-yaml": "^3.13.1",
+    "unmock": "file:../unmock"
+  }
+}
