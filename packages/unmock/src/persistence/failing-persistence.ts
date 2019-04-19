@@ -1,4 +1,4 @@
-import { IPersistence } from "./persistence";
+import { IPersistence } from ".";
 
 export default class FailingPersistence implements IPersistence {
   public saveBody() {

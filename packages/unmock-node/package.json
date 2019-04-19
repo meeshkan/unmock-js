@@ -1,6 +1,6 @@
 {
-  "name": "unmock",
-  "displayName": "unmock-js",
+  "name": "unmock-node",
+  "displayName": "unmock-node",
   "main": "dist/index.js",
   "bin": {
     "unmock": "./dist/cli.js"

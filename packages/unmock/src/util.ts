@@ -1,5 +1,5 @@
-import { ILogger } from "./logger/logger";
-import { IPersistence } from "./persistence/persistence";
+import { ILogger } from "./logger";
+import { IPersistence } from "./persistence";
 
 export interface IPersistableData {
   lang?: string;

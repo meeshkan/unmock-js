@@ -1,4 +1,4 @@
-import {IUnmockInternalOptions} from "../unmock-options";
+import {IUnmockInternalOptions} from "../options";
 
 export interface IBackend {
   initialize: (

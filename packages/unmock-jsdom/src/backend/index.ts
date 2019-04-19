@@ -1,6 +1,8 @@
-import { IUnmockInternalOptions } from "unmock/unmock-options";
-import { buildPath, endReporter, hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } from "unmock/util";
+import { IUnmockInternalOptions } from "unmock";
+import { util } from "unmock";
+
+const { buildPath, endReporter, hostIsWhitelisted,
+  UNMOCK_UA_HEADER_NAME, unmockUAHeaderValue } = util;
 
 const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;

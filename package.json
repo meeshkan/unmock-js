@@ -1,15 +1,31 @@
 {
-  "name": "unmock",
-  "displayName": "unmock-js",
-  "main": "dist/index.js",
-  "bin": {
-    "unmock": "./dist/cli.js"
-  },
   "license": "MIT",
   "scripts": {
-    "prepare": "tsc --outDir dist",
-    "pretest": "yarn prepare",
-    "test": "jest"
+    "clean": "git clean -dfqX -- ./node_modules **/{dist,node_modules}/ ./packages/*/tsconfig*tsbuildinfo",
+    "compile": "tsc --build tsconfig.build.json",
+    "compile:clean": "tsc --build tsconfig.build.json --clean",
+    "watch": "tsc --build tsconfig.build.json --watch",
+    "release": "npm run clean && npm ci && lerna publish --exact --force-publish=unmock --include-merged-tags",
+    "postinstall": "lerna run prepare && npm run compile",
+    "lint": "prettier-check '**/*.{js,ts}'",
+    "lint-fix": "prettier '**/*.{js,ts}' --write",
+    "test": "jest --verbose",
+    "test:clean": "jest --clearCache",
+    "test:watch": "jest --verbose --watchAll",
+    "testonly": "npm test",
+    "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
+    "coverage": "npm test -- --coverage",
+    "coverage:upload": "codecov"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "devDependencies": {
     "lerna": "^3.13.3"
@@ -22,6 +38,5 @@
   "bugs": {
     "url": "https://github.com/unmock/unmock-js/issues"
   },
-  "dependencies": {    
-  }
+  "dependencies": {}
 }

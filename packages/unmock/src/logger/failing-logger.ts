@@ -1,4 +1,4 @@
-import { ILogger } from "./logger";
+import { ILogger } from ".";
 
 export default class FailingLogger implements ILogger {
   public log() {

@@ -1,4 +1,4 @@
-import { IBackend } from "./backend";
+import { IBackend } from ".";
 
 export default class FailingBackend implements IBackend {
   public initialize() {

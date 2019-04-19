@@ -1,6 +1,6 @@
-import { ILogger } from "./logger/logger";
-import { IPersistence } from "./persistence/persistence";
-import { IBackend } from "./backend/backend";
+import { IBackend } from "./backend";
+import { ILogger } from "./logger";
+import { IPersistence } from "./persistence";
 
 export interface IUnmockInternalOptions {
     backend: IBackend;

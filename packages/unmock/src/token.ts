@@ -1,5 +1,5 @@
 import axios from "axios";
-import { IUnmockInternalOptions } from "./unmock-options";
+import { IUnmockInternalOptions } from "./options";
 
 const makeHeader = (token: string) => ({
   headers: {
