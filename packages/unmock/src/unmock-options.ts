@@ -1,7 +1,9 @@
 import { ILogger } from "./logger/logger";
 import { IPersistence } from "./persistence/persistence";
+import { IBackend } from "./backend/backend";
 
 export interface IUnmockInternalOptions {
+    backend: IBackend;
     logger: ILogger;
     persistence: IPersistence;
     save: boolean | string[];
@@ -15,6 +17,7 @@ export interface IUnmockInternalOptions {
 }
 
 export interface IUnmockOptions {
+    backend?: IBackend;
     logger?: ILogger;
     persistence?: IPersistence;
     save?: boolean | string[];
