@@ -8,7 +8,7 @@ import {
 } from "unmock";
 import NodeBackend from "./backend";
 import WinstonLogger from "./logger/winston-logger";
-import FSPersistence from "./persistence/local-storage-persistence";
+import FSPersistence from "./persistence/fs-persistence";
 
 export const defaultOptions: IUnmockInternalOptions = {
   ..._defaultOptions,
