@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import program from "commander";
-import { unmock } from ".";
+import { unmock } from "unmock-node";
 
 const collect = (val: string, memo: string[]) => {
   memo.push(val);
@@ -24,7 +24,7 @@ const makeHeaders = (headers: string[]) =>
     .map((h) => ({[h.substring(0, h.indexOf(":")).trim()] : h.substring(h.indexOf(":") + 1).trim()}))
     .reduce((a, b) => ({...a, ...b}), {});
 
-const run = async () => {
+export const run = async () => {
   await unmock({
     ...(program.signature ? { signature: program.signature } : {}),
   });
@@ -36,5 +36,3 @@ const run = async () => {
   });
   process.stdout.write(JSON.stringify(data, null, 2) + "\n");
 };
-
-run();
