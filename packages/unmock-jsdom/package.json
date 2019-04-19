@@ -6,15 +6,6 @@
     "unmock": "./dist/cli.js"
   },
   "license": "MIT",
-  "devDependencies": {
-    "@types/jest": "^24.0.11",
-    "@types/js-yaml": "^3.12.1",
-    "@types/node": "^11.13.5",
-    "jest": "^24.7.1",
-    "ts-jest": "^24.0.2",
-    "tslint": "^5.16.0",
-    "typescript": "^3.4.4"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
