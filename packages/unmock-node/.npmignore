@@ -3,3 +3,8 @@ src
 __tests__
 .env
 .env.example
+node_modules
+jest.config.js
+tsconfig.json
+tsconfig.tsbuildinfo
+tslint.json
