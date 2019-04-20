@@ -86,11 +86,11 @@ export const endReporter = (
         (typeof save === "boolean" && save) ||
         (typeof save !== "boolean" && save.indexOf(hash) >= 0)
       ) {
-        persistence.saveMock(hash, { responseHeaders: headers });
         if (persistableData !== undefined) {
           persistence.saveMock(hash, persistableData);
         }
         persistence.saveMock(hash, { lang: unmockUAHeaderValue });
+        persistence.saveMock(hash, { responseHeaders: headers });
         if (body) {
           persistence.saveMock(hash, { responseBody: body});
         }
