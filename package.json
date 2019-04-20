@@ -1,11 +1,12 @@
 {
+  "version": "0.0.41",
   "license": "MIT",
   "scripts": {
     "clean": "rm -rf node_modules ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
     "compile": "tsc --build tsconfig.build.json",
     "compile:clean": "tsc --build tsconfig.build.json --clean",
     "watch": "tsc --build tsconfig.build.json --watch",
-    "release": "npm run clean && npm install && npm ci && lerna publish --exact --force-publish=unmock --include-merged-tags",
+    "release": "npm run clean && npm ci && lerna publish --exact --force-publish=unmock-core --include-merged-tags",
     "postinstall": "lerna run prepare && npm run compile",
     "lint": "prettier-check '**/*.{js,ts}'",
     "lint-fix": "prettier '**/*.{js,ts}' --write",

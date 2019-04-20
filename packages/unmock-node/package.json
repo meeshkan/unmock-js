@@ -1,4 +1,5 @@
 {
+  "version": "0.0.41",
   "name": "unmock-node",
   "displayName": "unmock-node",
   "main": "dist/index.js",
