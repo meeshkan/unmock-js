@@ -2,7 +2,7 @@ import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { URL } from "url";
-import { IBackend, IUnmockInternalOptions } from "unmock-core";
+import { IBackend, IUnmockInternalOptions, snapshot } from "unmock-core";
 import { util } from "unmock-core";
 
 const {
@@ -111,6 +111,14 @@ const mHttp = (
           ]);
         }
         if (s === "end") {
+          // Attempt a snapshot to link an intercepted call and unmock response
+          // (currently only supports Jest)
+          snapshot({
+            hash: res.headers["unmock-hash"],
+            host: ro.host || ro.hostname,
+            method: ro.method,
+            path: ro.path,
+          });
           return protoOn.apply(res, [
             s,
             (d: any) => {

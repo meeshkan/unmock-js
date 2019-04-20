@@ -5,7 +5,7 @@
 import axios from "axios";
 import fs from "fs";
 import * as mkdirp from "mkdirp";
-import { kcomnu, unmock } from "../dist";
+import { kcomnu, unmock } from "../";
 
 beforeEach(async () => {
   require("dotenv").config();
