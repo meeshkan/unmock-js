@@ -13,18 +13,15 @@ const TOKEN_PATH = path.join(UNMOCK_DIR, TOKEN_FILE);
 const CONFIG_PATH = path.join(UNMOCK_DIR, CONFIG_FILE);
 const SAVE_PATH = path.join(UNMOCK_DIR, "save");
 const SECONDARY_CONFIG_PATH = path.join(os.homedir(), UNMOCK_DIR, CONFIG_FILE);
-const RESPONSE_FILE = "response.json";
-const METADATA_FILE = "metadata.unmock.yml";
-const DATA_KEY = "body";
-const HEADER_KEY = "headers";
+const UNMOCK_FILE = "unmock.yml";
 
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
 
   constructor(private savePath = SAVE_PATH) {}
 
-  public saveMetadata(hash: string, data: IPersistableData) {
-    const target = this.outdir(hash, METADATA_FILE);
+  public saveMock(hash: string, data: IPersistableData) {
+    const target = this.outdir(hash, UNMOCK_FILE);
     // First attempt to load existing data
     const existingData = fs.existsSync(target)
       ? yml.safeLoad(fs.readFileSync(target, "utf-8"))
@@ -33,14 +30,6 @@ export default class FSPersistence implements IPersistence {
     const newData = { ...existingData, ...data };
     // And save...
     fs.writeFileSync(target, yml.safeDump(newData, { indent: 2 }));
-  }
-
-  public saveHeaders(hash: string, headers: { [key: string]: string }) {
-    this.saveContents(hash, HEADER_KEY, headers);
-  }
-
-  public saveBody(hash: string, body: string) {
-    this.saveContents(hash, DATA_KEY, body || "");
   }
 
   public saveAuth(auth: string) {
@@ -52,14 +41,6 @@ export default class FSPersistence implements IPersistence {
 
   public saveToken(token: string) {
     this.token = token;
-  }
-
-  public loadHeaders(hash: string) {
-    return this.loadContents(hash, HEADER_KEY);
-  }
-
-  public loadBody(hash: string) {
-    return this.loadContents(hash, DATA_KEY);
   }
 
   public loadAuth() {
@@ -90,25 +71,4 @@ export default class FSPersistence implements IPersistence {
     return path.join(outdir, ...args);
   }
 
-  private loadContents(hash: string, key: string) {
-    const contents = this.loadContentOrEmpty(hash);
-    if (contents.hasOwnProperty(key)) {
-      return contents[key];
-    }
-    return {};
-  }
-
-  private saveContents(hash: string, key: string, data: any) {
-    const target = this.outdir(hash, RESPONSE_FILE);
-    const contents = this.loadContentOrEmpty(hash);
-    contents[key] = data;
-    fs.writeFileSync(target, JSON.stringify(contents, null, 2));
-  }
-
-  private loadContentOrEmpty(hash: string) {
-    const target = this.outdir(hash, RESPONSE_FILE);
-    return fs.existsSync(target)
-      ? JSON.parse(fs.readFileSync(target, "utf-8"))
-      : {};
-  }
 }

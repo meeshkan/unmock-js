@@ -8,6 +8,8 @@ export interface IPersistableData {
   requestHost?: string;
   requestMethod?: string;
   requestPath?: string;
+  responseHeaders?: any;
+  responseBody?: string;
 }
 
 export const hostIsWhitelisted = (
@@ -84,13 +86,13 @@ export const endReporter = (
         (typeof save === "boolean" && save) ||
         (typeof save !== "boolean" && save.indexOf(hash) >= 0)
       ) {
-        persistence.saveHeaders(hash, headers);
+        persistence.saveMock(hash, { responseHeaders: headers });
         if (persistableData !== undefined) {
-          persistence.saveMetadata(hash, persistableData);
+          persistence.saveMock(hash, persistableData);
         }
-        persistence.saveMetadata(hash, { lang: unmockUAHeaderValue });
+        persistence.saveMock(hash, { lang: unmockUAHeaderValue });
         if (body) {
-          persistence.saveBody(hash, body);
+          persistence.saveMock(hash, { responseBody: body});
         }
       }
     }

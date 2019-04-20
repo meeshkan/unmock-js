@@ -7,18 +7,15 @@ const UNMOCK_KEY = ".unmock";
 const TOKEN_KEY = ".token";
 const TOKEN_FULL_KEY = path.join(UNMOCK_KEY, TOKEN_KEY);
 const SAVE_PATH = path.join(UNMOCK_KEY, "save");
-const RESPONSE_KEY = "response.json";
-const METADATA_KEY = "metadata.unmock.yml";
-const DATA_KEY = "body";
-const HEADER_KEY = "headers";
+const UNMOCK_FILE = "unmock.yml";
 
 export default class LocalStoragePersistence implements IPersistence {
   private token: string | undefined;
 
   constructor(private savePath = SAVE_PATH) {}
 
-  public saveMetadata(hash: string, data: IPersistableData) {
-    const target = this.outdir(hash, METADATA_KEY);
+  public saveMock(hash: string, data: IPersistableData) {
+    const target = this.outdir(hash, UNMOCK_FILE);
     // First attempt to load existing data
     const existingData = window.localStorage[target]
       ? yml.safeLoad(window.localStorage[target])
@@ -29,14 +26,6 @@ export default class LocalStoragePersistence implements IPersistence {
     window.localStorage[target] = yml.safeDump(newData, { indent: 2 });
   }
 
-  public saveHeaders(hash: string, headers: { [key: string]: string }) {
-    this.saveContents(hash, HEADER_KEY, headers);
-  }
-
-  public saveBody(hash: string, body: string) {
-    this.saveContents(hash, DATA_KEY, body || "");
-  }
-
   public saveAuth(auth: string) {
     window.localStorage[TOKEN_FULL_KEY] = auth;
   }
@@ -44,14 +33,6 @@ export default class LocalStoragePersistence implements IPersistence {
   public saveToken(token: string) {
     // we never save the token to the browser only ever in memory
     this.token = token;
-  }
-
-  public loadHeaders(hash: string) {
-    return this.loadContents(hash, HEADER_KEY);
-  }
-
-  public loadBody(hash: string) {
-    return this.loadContents(hash, DATA_KEY);
   }
 
   public loadAuth() {
@@ -67,24 +48,4 @@ export default class LocalStoragePersistence implements IPersistence {
     return path.join(outdir, ...args);
   }
 
-  private loadContents(hash: string, key: string) {
-    const contents = this.loadContentsOrEmpty(hash);
-    if (contents.hasOwnProperty(key)) {
-      return contents[key];
-    }
-    return {};
-  }
-
-  private saveContents(hash: string, key: string, data: any) {
-    const contents = this.loadContentsOrEmpty(hash);
-    const target = this.outdir(hash, RESPONSE_KEY);
-    contents[key] = data;
-    window.localStorage[target] = JSON.stringify(contents, null, 2);
-  }
-
-  private loadContentsOrEmpty(hash: string) {
-    const target = this.outdir(hash, RESPONSE_KEY);
-    const contents = window.localStorage[target];
-    return contents ? JSON.parse(contents) : {};
-  }
 }
