@@ -26,4 +26,4 @@ test("unmock whitelists localhost", async () => {
     .get("/")
     .expect(200);
   expect(body).toEqual({ success: true });
-}, 20000);
+});

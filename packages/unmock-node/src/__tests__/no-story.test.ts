@@ -26,4 +26,4 @@ test("unmock no story", async () => {
     );
     expect(typeof projects[0].id).toBe("number");
   }
-}, 20000);
+});

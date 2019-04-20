@@ -11,6 +11,7 @@ module.exports = {
     "^(unmock|unmock-cli|unmock-jsdom|unmock-node)(?:/dist)?((?:/.*)|$)":
       "<rootDir>/../../packages/$1/src$2"
   },
+  setupFilesAfterEnv: ["<rootDir>/../../jest.setup.js"],
   clearMocks: true,
   globals: {
     "ts-jest": {

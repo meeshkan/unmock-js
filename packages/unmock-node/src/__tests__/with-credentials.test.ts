@@ -33,4 +33,4 @@ test("credentials written to .unmock/credentials work just like a token", async 
     "https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200",
   );
   expect(typeof projects[0].id).toBe("number");
-}, 20000);
+});
