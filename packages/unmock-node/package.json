@@ -16,7 +16,7 @@
     "ini": "^1.3.5",
     "js-yaml": "^3.13.1",
     "mkdirp": "^0.5.1",
-    "unmock": "file:../unmock",
+    "unmock-core": "file:../unmock-core",
     "winston": "^3.2.1"
   }
 }

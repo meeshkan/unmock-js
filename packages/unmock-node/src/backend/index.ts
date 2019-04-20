@@ -2,8 +2,8 @@ import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { URL } from "url";
-import { IBackend, IUnmockInternalOptions } from "unmock";
-import { util } from "unmock";
+import { IBackend, IUnmockInternalOptions } from "unmock-core";
+import { util } from "unmock-core";
 
 const {
   buildPath,

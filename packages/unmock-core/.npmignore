@@ -1,5 +1,5 @@
 src
 .unmock
-test
+__tests__
 .env
 .env.example

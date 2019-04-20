@@ -5,7 +5,7 @@ import {
   IUnmockInternalOptions,
   kcomnu as _kcomnu,
   unmock as _unmock,
-} from "unmock";
+} from "unmock-core";
 import NodeBackend from "./backend";
 import WinstonLogger from "./logger/winston-logger";
 import FSPersistence from "./persistence/fs-persistence";

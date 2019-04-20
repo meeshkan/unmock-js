@@ -55,7 +55,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock": "file:packages/unmock",
+    "unmock-core": "file:packages/unmock-core",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-jsdom": "file:packages/unmock-jsdom",
     "unmock-node": "file:packages/unmock-node"

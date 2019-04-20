@@ -1,6 +1,6 @@
 {
-  "name": "unmock",
-  "displayName": "unmock",
+  "name": "unmock-core",
+  "displayName": "unmock-core",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {

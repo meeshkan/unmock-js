@@ -13,6 +13,6 @@
   },
   "dependencies": {
     "js-yaml": "^3.13.1",
-    "unmock": "file:../unmock"
+    "unmock-core": "file:../unmock-core"
   }
 }

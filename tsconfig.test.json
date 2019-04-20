@@ -5,7 +5,7 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "./packages/unmock/src/__tests__" },
+    { "path": "./packages/unmock-core/src/__tests__" },
     { "path": "./packages/unmock-cli/src/__tests__" },
     { "path": "./packages/unmock-jsdom/src/__tests__" },
     { "path": "./packages/unmock-node/src/__tests__" }

@@ -1,4 +1,4 @@
-import { defaultOptions, ignoreAuth } from "unmock";
+import { defaultOptions, ignoreAuth } from "unmock-core";
 import computeHash, { makeHashable } from "../../../hash/v0";
 
 describe("Hash function", () => {

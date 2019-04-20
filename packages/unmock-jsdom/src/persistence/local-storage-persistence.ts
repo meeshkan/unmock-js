@@ -1,6 +1,6 @@
 import * as yml from "js-yaml";
 import * as path from "path";
-import { IPersistableData, IPersistence } from "unmock";
+import { IPersistableData, IPersistence } from "unmock-core";
 
 // Uses directory structure for keys in window local storage
 const UNMOCK_KEY = ".unmock";
@@ -9,7 +9,7 @@ const TOKEN_FULL_KEY = path.join(UNMOCK_KEY, TOKEN_KEY);
 const SAVE_PATH = path.join(UNMOCK_KEY, "save");
 const UNMOCK_FILE = "unmock.yml";
 
-export default class LocalStoragePersistence implements IPersistence {
+export default class BrowserStoragePersistence implements IPersistence {
   private token: string | undefined;
 
   constructor(private savePath = SAVE_PATH) {}

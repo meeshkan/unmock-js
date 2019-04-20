@@ -1,6 +1,6 @@
-import { IUnmockInternalOptions } from "unmock";
-import { util } from "unmock";
-import { IBackend } from "unmock";
+import { IUnmockInternalOptions } from "unmock-core";
+import { util } from "unmock-core";
+import { IBackend } from "unmock-core";
 
 const {
   buildPath,
