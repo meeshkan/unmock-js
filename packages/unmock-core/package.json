@@ -1,0 +1,20 @@
+{
+  "name": "unmock-core",
+  "displayName": "unmock-core",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "commander": "^2.20.0",
+    "object-hash": "^1.3.1",
+    "querystring": "^0.2.0"
+  }
+}

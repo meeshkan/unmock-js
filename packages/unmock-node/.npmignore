@@ -1,0 +1,5 @@
+src
+.unmock
+__tests__
+.env
+.env.example

@@ -62,7 +62,7 @@ The latest version of unmock supports all currently maintained Node versions, se
 In your unit tests, you can invoke unmock like this:
 
 ```js
-import { unmock } from "unmock";
+import { unmock } from "unmock-core";
 
 beforeEach(async () => await unmock());
 

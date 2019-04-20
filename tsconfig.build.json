@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "composite": true
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./packages/unmock-core" },
+    { "path": "./packages/unmock-cli" },
+    { "path": "./packages/unmock-jsdom" },
+    { "path": "./packages/unmock-node" }
+  ]
+}
