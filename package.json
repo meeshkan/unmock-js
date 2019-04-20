@@ -32,10 +32,13 @@
     "@types/js-yaml": "^3.12.1",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^11.13.5",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
     "jest": "^24.7.1",
     "lerna": "^3.13.3",
     "prettier": "^1.17.0",
     "prettier-check": "^2.0.0",
+    "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "typescript": "^3.4.4"
@@ -54,5 +57,10 @@
     "unmock-jsdom": "file:packages/unmock-jsdom",
     "unmock-node": "file:packages/unmock-node"
   },
-  "name": "unmock"
+  "name": "unmock",
+  "jest": {
+    "projects": [
+      "<rootDir>/packages/*"
+    ]
+  }
 }

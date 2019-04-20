@@ -1,8 +1,3 @@
-module.exports = {
-  roots: ["<rootDir>/test"],
-  transform: {
-    "^.+\\.tsx?$": "ts-jest"
-  },
-  testRegex: "(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$",
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"]
-};
+const config = require("../../jest.config.base");
+
+module.exports = Object.assign(Object.create(null), config);

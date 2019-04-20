@@ -9,7 +9,7 @@ const {
   buildPath,
   endReporter,
   hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME
+  UNMOCK_UA_HEADER_NAME,
 } = util;
 
 const httpreq = fr.http.request;
@@ -28,21 +28,21 @@ const mHttp = (
     signature,
     save,
     ignore,
-    whitelist
+    whitelist,
   }: IUnmockInternalOptions,
   cb: {
     // tslint:disable-next-line:max-line-length
     (
       options: string | http.RequestOptions | URL,
-      callback?: ((res: http.IncomingMessage) => void) | undefined
+      callback?: ((res: http.IncomingMessage) => void) | undefined,
     ): http.ClientRequest;
     // tslint:disable-next-line:max-line-length
     (
       url: string | URL,
       options: http.RequestOptions,
-      callback?: ((res: http.IncomingMessage) => void) | undefined
+      callback?: ((res: http.IncomingMessage) => void) | undefined,
     ): http.ClientRequest;
-  }
+  },
 ) => {
   // Return a function that will work for the overloaded methods
   // parameters will correspond to either of the following signatures:
@@ -51,7 +51,7 @@ const mHttp = (
   return (
     first: RequestOptions | string | URL,
     second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
-    third?: (res: IncomingMessage) => void
+    third?: (res: IncomingMessage) => void,
   ): ClientRequest => {
     let data: {} | null = null;
     let selfcall = false;
@@ -76,7 +76,7 @@ const mHttp = (
       signature,
       story.story,
       unmockHost,
-      token !== undefined
+      token !== undefined,
     );
     const href = `https://${unmockHost}${pathForFake}`;
     const originalHeaders = ro.headers;
@@ -85,13 +85,13 @@ const mHttp = (
       headers: {
         ...originalHeaders,
         host: unmockHost,
-        hostname: unmockHost
+        hostname: unmockHost,
       },
       host: unmockHost,
       hostname: unmockHost,
       href,
       path: pathForFake,
-      port: unmockPort
+      port: unmockPort,
     };
     if (ro.hostname === unmockHost || ro.host === unmockHost) {
       // self call, we ignore
@@ -107,7 +107,7 @@ const mHttp = (
             (d: any) => {
               responseData.push(d);
               f(d);
-            }
+            },
           ]);
         }
         if (s === "end") {
@@ -134,14 +134,14 @@ const mHttp = (
                   requestHeaders: ro.headers,
                   requestHost: ro.hostname || ro.host || "",
                   requestMethod: ro.method || "",
-                  requestPath: ro.path || ""
-                }
+                  requestPath: ro.path || "",
+                },
               );
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
               // the original res.on('end') has a closure that refers to this
               // as far as i can understand, 'this' is supposed to refer to res
               f.apply(res, [d]);
-            }
+            },
           ]);
         }
         return protoOn.apply(res, [s, f]);
@@ -154,7 +154,7 @@ const mHttp = (
     };
     const output = cb(
       fake,
-      selfcall ? (second as ((res: IncomingMessage) => void)) : resp
+      selfcall ? (second as ((res: IncomingMessage) => void)) : resp,
     );
     if (token) {
       output.setHeader("Authorization", `Bearer ${token}`);
@@ -179,7 +179,7 @@ export default class NodeBackend implements IBackend {
   public initialize(
     story: { story: string[] },
     token: string | undefined,
-    options: IUnmockInternalOptions
+    options: IUnmockInternalOptions,
   ) {
     fr.http.request = mHttp(story, token, options, httpreq);
     http.request = mHttp(story, token, options, httpreqmod);

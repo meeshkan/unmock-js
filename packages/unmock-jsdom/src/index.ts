@@ -4,7 +4,7 @@ import {
   ignoreStory as _ignoreStory,
   IUnmockInternalOptions,
   kcomnu as _kcomnu,
-  unmock as _unmock
+  unmock as _unmock,
 } from "unmock";
 import JSDomBackend from "./backend";
 import BrowserLogger from "./logger/browser-logger";
@@ -14,7 +14,7 @@ export const defaultOptions: IUnmockInternalOptions = {
   ..._defaultOptions,
   backend: new JSDomBackend(),
   logger: new BrowserLogger(),
-  persistence: new LocalStoragePersistence()
+  persistence: new LocalStoragePersistence(),
 };
 
 export const ignoreStory = _ignoreStory(defaultOptions);

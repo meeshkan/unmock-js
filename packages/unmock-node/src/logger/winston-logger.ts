@@ -7,12 +7,12 @@ const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
+        winston.format.simple(),
       ),
       level: "unmock",
-      stderrLevels: ["unmock"]
-    })
-  ]
+      stderrLevels: ["unmock"],
+    }),
+  ],
 });
 
 winston.addColors({ unmock: "cyan bold" });
@@ -21,7 +21,7 @@ export default class WinstonLogger implements ILogger {
   public log(message: string) {
     logger.log({
       level: "unmock",
-      message
+      message,
     });
   }
 }

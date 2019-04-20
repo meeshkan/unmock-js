@@ -7,7 +7,7 @@ import {
   buildPath,
   endReporter,
   hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME
+  UNMOCK_UA_HEADER_NAME,
 } from "./util";
 
 // top-level exports
@@ -20,7 +20,7 @@ export const util = {
   buildPath,
   endReporter,
   hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME
+  UNMOCK_UA_HEADER_NAME,
 };
 
 export const defaultOptions: IUnmockInternalOptions = {
@@ -32,11 +32,11 @@ export const defaultOptions: IUnmockInternalOptions = {
   unmockHost: "api.unmock.io",
   unmockPort: "443",
   useInProduction: false,
-  whitelist: ["127.0.0.1", "127.0.0.0", "localhost"]
+  whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
 };
 
 const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
-  maybeOptions?: IUnmockOptions
+  maybeOptions?: IUnmockOptions,
 ): IUnmockOptions => {
   const options = maybeOptions || baseOptions;
   return {
@@ -45,7 +45,7 @@ const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
       ? options.ignore instanceof Array
         ? options.ignore.concat(ignore)
         : [options.ignore, ignore]
-      : [baseOptions.ignore, ignore]
+      : [baseOptions.ignore, ignore],
   };
 };
 
@@ -53,14 +53,14 @@ export const ignoreStory = baseIgnore("story");
 export const ignoreAuth = baseIgnore({ headers: "Authorization" });
 
 export const unmock = (baseOptions: IUnmockInternalOptions) => async (
-  maybeOptions?: IUnmockOptions
+  maybeOptions?: IUnmockOptions,
 ) => {
   const options = maybeOptions
     ? { ...baseOptions, ...maybeOptions }
     : baseOptions;
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story = {
-      story: []
+      story: [],
     };
     if (options.token) {
       options.persistence.saveToken(options.token);
@@ -71,7 +71,7 @@ export const unmock = (baseOptions: IUnmockInternalOptions) => async (
 };
 
 export const kcomnu = (baseOptions: IUnmockInternalOptions) => (
-  maybeOptions?: IUnmockOptions
+  maybeOptions?: IUnmockOptions,
 ) => {
   const options = maybeOptions
     ? { ...baseOptions, ...maybeOptions }

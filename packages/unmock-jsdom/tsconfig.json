@@ -5,7 +5,7 @@
     "outDir": "./dist"
   },
   "include": ["src/**/*"],
-  "exclude": ["test/**/*"],
+  "exclude": ["**/__tests__"],
   "references": [
     { "path": "../unmock" }
   ]

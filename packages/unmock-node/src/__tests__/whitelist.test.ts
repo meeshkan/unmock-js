@@ -4,7 +4,7 @@
 
 import express from "express";
 import request from "supertest";
-import { kcomnu, unmock } from "../dist";
+import { kcomnu, unmock } from "../";
 
 beforeEach(async () => {
   require("dotenv").config();
@@ -12,7 +12,7 @@ beforeEach(async () => {
     save: true,
     token: process.env.UNMOCK_TOKEN,
     unmockHost: process.env.UNMOCK_HOST,
-    unmockPort: process.env.UNMOCK_PORT
+    unmockPort: process.env.UNMOCK_PORT,
   });
 });
 afterEach(async () => await kcomnu());

@@ -6,7 +6,7 @@ const {
   buildPath,
   endReporter,
   hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME
+  UNMOCK_UA_HEADER_NAME,
 } = util;
 
 const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
@@ -47,15 +47,15 @@ export default class JSDomBackend implements IBackend {
       save,
       signature,
       unmockHost,
-      whitelist
-    }: IUnmockInternalOptions
+      whitelist,
+    }: IUnmockInternalOptions,
   ) {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
       async?: boolean,
       username?: string | null,
-      password?: string | null
+      password?: string | null,
     ): void {
       let data: Document | BodyInit | null = null;
       let selfcall = false;
@@ -64,7 +64,7 @@ export default class JSDomBackend implements IBackend {
         hostIsWhitelisted(
           whitelist ? whitelist.concat(unmockHost) : [],
           ro.host,
-          ro.hostname
+          ro.hostname,
         )
       ) {
         return XMLHttpRequestOpen.apply(this, [
@@ -72,7 +72,7 @@ export default class JSDomBackend implements IBackend {
           url,
           async || false,
           username,
-          password
+          password,
         ]);
       }
       const headerz: { [name: string]: string } = {};
@@ -86,7 +86,7 @@ export default class JSDomBackend implements IBackend {
         signature,
         story.story,
         unmockHost,
-        token !== undefined
+        token !== undefined,
       );
       if (ro.hostname === unmockHost || ro.host === unmockHost) {
         // self call, we ignore
@@ -97,7 +97,7 @@ export default class JSDomBackend implements IBackend {
           hostIsWhitelisted(
             whitelist ? whitelist.concat(unmockHost) : [],
             ro.host,
-            ro.hostname
+            ro.hostname,
           )
         ) {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
@@ -109,7 +109,7 @@ export default class JSDomBackend implements IBackend {
           // do not store, but pass onto request
           return XMLHttpRequestSetRequestHeader.apply(this, [
             "Authorization",
-            value
+            value,
           ]);
         } else {
           // store and pass onto request
@@ -125,7 +125,7 @@ export default class JSDomBackend implements IBackend {
               !hostIsWhitelisted(
                 whitelist ? whitelist.concat(unmockHost) : [],
                 ro.host,
-                ro.hostname
+                ro.hostname,
               )
             ) {
               endReporter(
@@ -147,8 +147,8 @@ export default class JSDomBackend implements IBackend {
                   requestHeaders: headerz,
                   requestHost: ro.host || ro.hostname,
                   requestMethod: method,
-                  requestPath: ro.pathname
-                }
+                  requestPath: ro.pathname,
+                },
               );
             }
           }
@@ -162,7 +162,7 @@ export default class JSDomBackend implements IBackend {
           hostIsWhitelisted(
             whitelist ? whitelist.concat(unmockHost) : [],
             ro.host,
-            ro.hostname
+            ro.hostname,
           )
         ) {
           return XMLHttpRequestSend.apply(this, [body]);
@@ -179,7 +179,7 @@ export default class JSDomBackend implements IBackend {
         `https://${unmockHost}${pathForFake}`,
         async || false,
         username,
-        password
+        password,
       ]);
       if (token) {
         this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);

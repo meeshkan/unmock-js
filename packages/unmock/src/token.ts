@@ -3,19 +3,19 @@ import { IUnmockInternalOptions } from "./options";
 
 const makeHeader = (token: string) => ({
   headers: {
-    Authorization: `Bearer ${token}`
-  }
+    Authorization: `Bearer ${token}`,
+  },
 });
 
 export const canPingWithAccessToken = async (
   accessToken: string,
   unmockHost: string,
-  unmockPort: string
+  unmockPort: string,
 ) => {
   try {
     await axios.get(
       `https://${unmockHost}:${unmockPort}/ping`,
-      makeHeader(accessToken)
+      makeHeader(accessToken),
     );
     return true;
   } catch (e) {
@@ -27,18 +27,18 @@ export const canPingWithAccessToken = async (
 export const exchangeRefreshTokenForAccessToken = async (
   refreshToken: string,
   unmockHost: string,
-  unmockPort: string
+  unmockPort: string,
 ) => {
   try {
     const {
-      data: { accessToken }
+      data: { accessToken },
     } = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
-      refreshToken
+      refreshToken,
     });
     return accessToken;
   } catch (e) {
     throw Error(
-      "Invalid token, please check your credentials on https://www.unmock.io/app"
+      "Invalid token, please check your credentials on https://www.unmock.io/app",
     );
   }
 };
@@ -47,7 +47,7 @@ let pingable = false;
 export default async ({
   persistence,
   unmockHost,
-  unmockPort
+  unmockPort,
 }: IUnmockInternalOptions) => {
   let accessToken = persistence.loadAuth();
   if (accessToken) {
@@ -55,7 +55,7 @@ export default async ({
       pingable = await canPingWithAccessToken(
         accessToken,
         unmockHost,
-        unmockPort
+        unmockPort,
       );
       if (!pingable) {
         accessToken = undefined;
@@ -68,7 +68,7 @@ export default async ({
       accessToken = await exchangeRefreshTokenForAccessToken(
         refreshToken,
         unmockHost,
-        unmockPort
+        unmockPort,
       );
       if (accessToken) {
         persistence.saveAuth(accessToken);
@@ -84,7 +84,7 @@ export default async ({
     pingable = await canPingWithAccessToken(
       accessToken,
       unmockHost,
-      unmockPort
+      unmockPort,
     );
     if (!pingable) {
       throw Error("Internal authorization error");

@@ -16,13 +16,13 @@ program
     "-H, --header [header]",
     "Pass custom header(s) to server",
     collect,
-    []
+    [],
   )
   .option("-X", "--request [command]", "Specify request command to use")
   .option(
     "-S",
     "--signature [signature]",
-    "Specify a signature for a request in tokenless mode"
+    "Specify a signature for a request in tokenless mode",
   )
   .parse(process.argv);
 
@@ -33,19 +33,19 @@ const makeHeaders = (headers: string[]) =>
     .map(h => ({
       [h.substring(0, h.indexOf(":")).trim()]: h
         .substring(h.indexOf(":") + 1)
-        .trim()
+        .trim(),
     }))
     .reduce((a, b) => ({ ...a, ...b }), {});
 
 export const run = async () => {
   await unmock({
-    ...(program.signature ? { signature: program.signature } : {})
+    ...(program.signature ? { signature: program.signature } : {}),
   });
   const { data } = await axios({
     ...(program.data ? { data: JSON.parse(program.data) } : {}),
     ...(program.headers ? { headers: makeHeaders(program.header) } : {}),
     method: program.request || "GET",
-    url: last
+    url: last,
   });
   process.stdout.write(JSON.stringify(data, null, 2) + "\n");
 };

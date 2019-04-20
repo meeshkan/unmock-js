@@ -13,7 +13,7 @@ export interface IPersistableData {
 export const hostIsWhitelisted = (
   whitelist: string[] | undefined,
   host: string | undefined,
-  hostname: string | undefined
+  hostname: string | undefined,
 ) =>
   whitelist &&
   ((host && whitelist.indexOf(host) !== -1) ||
@@ -29,17 +29,17 @@ export const buildPath = (
   signature: string | undefined,
   story: string[],
   unmockHost: string,
-  xy: boolean
+  xy: boolean,
 ) =>
   // tslint:disable-next-line:max-line-length
   hostname === unmockHost || host === unmockHost
     ? path
     : `/${xy ? "x" : "y"}/?story=${querystring.escape(
-        JSON.stringify(story)
+        JSON.stringify(story),
       )}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(
-        hostname || host || ""
+        hostname || host || "",
       )}&method=${querystring.escape(
-        method || ""
+        method || "",
       )}&headers=${querystring.escape(JSON.stringify(headerz))}${
         ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""
       }${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
@@ -59,7 +59,7 @@ export const endReporter = (
   story: string[],
   xy: boolean,
   unmockUAHeaderValue: string,
-  persistableData?: IPersistableData
+  persistableData?: IPersistableData,
 ) => {
   if (!selfcall) {
     const hash = (headers["unmock-hash"] as string) || "null";
@@ -72,13 +72,13 @@ export const endReporter = (
       logger.log(
         `Hi! We see you've called ${method} ${hostname || host}${path}${
           data ? ` with data ${data}.` : `.`
-        }`
+        }`,
       );
       // tslint:disable-next-line:max-line-length
       logger.log(
         `We've sent you mock data back. You can edit your mock at https://unmock.io/${
           xy ? "x" : "y"
-        }/${hash}. 🚀`
+        }/${hash}. 🚀`,
       );
       if (
         (typeof save === "boolean" && save) ||

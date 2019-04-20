@@ -11,8 +11,8 @@ export interface IBackend {
       save,
       signature,
       unmockHost,
-      whitelist
-    }: IUnmockInternalOptions
+      whitelist,
+    }: IUnmockInternalOptions,
   ) => void;
   reset: () => void;
 }
