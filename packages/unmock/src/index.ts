@@ -1,8 +1,8 @@
-import getToken from "./token";
-import { IUnmockInternalOptions, IUnmockOptions } from "./options";
-import FailingLogger from "./logger/failing-logger";
-import FailingPersistence from "./persistence/failing-persistence";
 import FailingBackend from "./backend/failing-backend";
+import FailingLogger from "./logger/failing-logger";
+import { IUnmockInternalOptions, IUnmockOptions } from "./options";
+import FailingPersistence from "./persistence/failing-persistence";
+import getToken from "./token";
 import {
   buildPath,
   endReporter,
@@ -17,10 +17,10 @@ export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
 export { IPersistableData } from "./util";
 export const util = {
+  UNMOCK_UA_HEADER_NAME,
   buildPath,
   endReporter,
   hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME,
 };
 
 export const defaultOptions: IUnmockInternalOptions = {
