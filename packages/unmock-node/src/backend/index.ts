@@ -1,9 +1,8 @@
 import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
+import { IBackend, IUnmockInternalOptions, util } from "unmock-core";
 import { URL } from "url";
-import { IBackend, IUnmockInternalOptions, snapshot } from "unmock-core";
-import { util } from "unmock-core";
 
 const {
   buildPath,
@@ -122,7 +121,7 @@ const mHttp = (
           return protoOn.apply(res, [
             s,
             (d: any) => {
-              const body = responseData.map(datum => datum.toString()).join("");
+              const body = responseData.map((datum) => datum.toString()).join("");
               endReporter(
                 body,
                 data,
