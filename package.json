@@ -9,7 +9,7 @@
     "postinstall": "lerna run prepare && npm run compile",
     "lint": "prettier-check '**/*.{js,ts}'",
     "lint-fix": "prettier '**/*.{js,ts}' --write",
-    "test": "jest --verbose --updateSnapshot",
+    "test": "jest --verbose",
     "test:clean": "jest --clearCache",
     "test:watch": "jest --verbose --watchAll",
     "testonly": "npm test",
