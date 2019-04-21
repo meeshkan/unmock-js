@@ -1,8 +1,10 @@
 import FailingBackend from "./backend/failing-backend";
+import hashV0 from "./hash/v0";
 import FailingLogger from "./logger/failing-logger";
-import { IUnmockInternalOptions, IUnmockOptions } from "./options";
+import { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
 import FailingPersistence from "./persistence/failing-persistence";
 import getToken from "./token";
+import getUserId from "./user";
 import {
   buildPath,
   endReporter,
@@ -11,11 +13,12 @@ import {
 } from "./util";
 
 // top-level exports
-export { IUnmockInternalOptions, IUnmockOptions } from "./options";
+export { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
 export { IBackend } from "./backend";
 export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
 export { IPersistableData } from "./util";
+export const hash = { v0: hashV0 };
 export const util = {
   UNMOCK_UA_HEADER_NAME,
   buildPath,
@@ -27,8 +30,10 @@ export const defaultOptions: IUnmockInternalOptions = {
   backend: new FailingBackend(),
   ignore: { headers: "\\w*User-Agent\\w*" },
   logger: new FailingLogger(),
+  mode: Mode.CALL_UNMOCK_FOR_NEW_MOCKS,
   persistence: new FailingPersistence(),
-  save: false,
+  save: true,
+  share: true,
   unmockHost: "api.unmock.io",
   unmockPort: "443",
   useInProduction: false,
@@ -51,6 +56,7 @@ const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
 
 export const ignoreStory = baseIgnore("story");
 export const ignoreAuth = baseIgnore({ headers: "Authorization" });
+const MOSES = "MOSES";
 
 export const unmock = (baseOptions: IUnmockInternalOptions) => async (
   maybeOptions?: IUnmockOptions,
@@ -66,7 +72,8 @@ export const unmock = (baseOptions: IUnmockInternalOptions) => async (
       options.persistence.saveToken(options.token);
     }
     const token = await getToken(options);
-    options.backend.initialize(story, token, options);
+    const userId = token ? await getUserId(token, options.unmockHost, options.unmockPort) : MOSES;
+    options.backend.initialize(userId, story, token, options);
   }
 };
 

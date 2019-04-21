@@ -50,6 +50,18 @@ export default class FSPersistence implements IPersistence {
     return fs.readFileSync(TOKEN_PATH).toString();
   }
 
+  public hasHash(hash: string) {
+    const target = this.outdir(hash, UNMOCK_FILE);
+    return fs.existsSync(target);
+  }
+
+  public loadMock(hash: string) {
+    const target = this.outdir(hash, UNMOCK_FILE);
+    return fs.existsSync(target)
+      ? yml.safeLoad(fs.readFileSync(target, "utf-8"))
+      : {};
+  }
+
   public loadToken() {
     if (this.token) {
       return this.token;

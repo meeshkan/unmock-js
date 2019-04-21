@@ -2,6 +2,7 @@ import { IUnmockInternalOptions } from "../options";
 
 export interface IBackend {
   initialize: (
+    userId: string,
     story: { story: string[] },
     token: string | undefined,
     {

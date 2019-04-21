@@ -2,6 +2,12 @@ import { IBackend } from "./backend";
 import { ILogger } from "./logger";
 import { IPersistence } from "./persistence";
 
+export enum Mode {
+  ALWAYS_CALL_UNMOCK,
+  CALL_UNMOCK_FOR_NEW_MOCKS,
+  DO_NOT_CALL_UNMOCK,
+}
+
 export interface IUnmockInternalOptions {
   backend: IBackend;
   logger: ILogger;
@@ -10,6 +16,8 @@ export interface IUnmockInternalOptions {
   unmockHost: string;
   unmockPort: string;
   useInProduction: boolean;
+  mode: Mode;
+  share: boolean;
   ignore?: any;
   signature?: string;
   token?: string;
@@ -25,7 +33,9 @@ export interface IUnmockOptions {
   unmockPort?: string;
   ignore?: any;
   signature?: string;
+  share?: boolean;
   token?: string;
   whitelist?: string[];
   useInProduction?: boolean;
+  mode?: Mode;
 }

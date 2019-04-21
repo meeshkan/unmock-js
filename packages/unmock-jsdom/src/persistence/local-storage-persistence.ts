@@ -39,6 +39,20 @@ export default class BrowserStoragePersistence implements IPersistence {
     return window.localStorage[TOKEN_FULL_KEY];
   }
 
+  public loadMock(hash: string): IPersistableData {
+    const target = this.outdir(hash, UNMOCK_FILE);
+    // First attempt to load existing data
+    return window.localStorage[target]
+      ? yml.safeLoad(window.localStorage[target])
+      : {};
+  }
+
+  public hasHash(hash: string): boolean {
+    const target = this.outdir(hash, UNMOCK_FILE);
+    // First attempt to load existing data
+    return window.localStorage[target] ? true : false;
+  }
+
   public loadToken() {
     return this.token;
   }

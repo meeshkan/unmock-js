@@ -13,6 +13,14 @@ export default class FailingPersistence implements IPersistence {
   public loadAuth() {
     throw new Error("not implemented");
   }
+  public hasHash() {
+    throw new Error("not implemented");
+    return false;
+  }
+  public loadMock() {
+    throw new Error("not implemented");
+    return {};
+  }
   public loadToken() {
     throw new Error("not implemented");
   }

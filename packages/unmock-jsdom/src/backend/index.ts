@@ -1,6 +1,8 @@
-import { IUnmockInternalOptions } from "unmock-core";
-import { util } from "unmock-core";
+import { IUnmockInternalOptions, Mode } from "unmock-core";
+import { hash as _hash, util } from "unmock-core";
 import { IBackend } from "unmock-core";
+
+const { v0 } = _hash;
 
 const {
   buildPath,
@@ -38,12 +40,14 @@ export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
   public initialize(
+    userId: string,
     story: { story: string[] },
     token: string | undefined,
     {
       logger,
       persistence,
       ignore,
+      mode,
       save,
       signature,
       unmockHost,
@@ -117,6 +121,29 @@ export default class JSDomBackend implements IBackend {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
       };
+      const doEndReporting = (responseBody: string, responseHeaders: any) =>
+        endReporter(
+          responseBody,
+          data,
+          responseHeaders,
+          ro.host,
+          ro.hostname,
+          logger,
+          method,
+          ro.pathname,
+          persistence,
+          save,
+          selfcall,
+          story.story,
+          token !== undefined,
+          "jsdom",
+          {
+            requestHeaders: headerz,
+            requestHost: ro.host || ro.hostname,
+            requestMethod: method,
+            requestPath: ro.pathname,
+          },
+        );
       const setOnReadyStateChange = (request: XMLHttpRequest) => {
         const onreadystatechange = request.onreadystatechange;
         request.onreadystatechange = (ev: Event) => {
@@ -128,28 +155,7 @@ export default class JSDomBackend implements IBackend {
                 ro.hostname,
               )
             ) {
-              endReporter(
-                request.response,
-                data,
-                parseResponseHeaders(request.getAllResponseHeaders()),
-                ro.host,
-                ro.hostname,
-                logger,
-                method,
-                ro.pathname,
-                persistence,
-                save,
-                selfcall,
-                story.story,
-                token !== undefined,
-                "jsdom",
-                {
-                  requestHeaders: headerz,
-                  requestHost: ro.host || ro.hostname,
-                  requestMethod: method,
-                  requestPath: ro.pathname,
-                },
-              );
+              doEndReporting(request.response, parseResponseHeaders(request.getAllResponseHeaders()));
             }
           }
           if (typeof onreadystatechange === "function") {
@@ -167,11 +173,30 @@ export default class JSDomBackend implements IBackend {
         ) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
-        setOnReadyStateChange(this);
+        const hash = v0({
+          body: data,
+          headers: headerz,
+          hostname: ro.hostname || ro.host,
+          method,
+          path: ro.pathname,
+          story,
+          ...(signature ? {signature} : {}),
+          ...(userId ? {user_id: userId} : {}),
+        }, ignore);
+        const hasHash = persistence.hasHash(hash);
+        const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
+          (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
         if (body) {
           data = body;
         }
-        return XMLHttpRequestSend.apply(this, [body]);
+        if (!makesNetworkCall) {
+          const { responseHeaders, responseBody } = persistence.loadMock(hash);
+          // todo, should we allow an undefined body?
+          doEndReporting(responseBody || "", responseHeaders);
+        } else {
+          setOnReadyStateChange(this);
+          return XMLHttpRequestSend.apply(this, [body]);
+        }
       };
       setOnReadyStateChange(this);
       const res = XMLHttpRequestOpen.apply(this, [

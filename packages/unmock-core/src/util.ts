@@ -8,6 +8,7 @@ export interface IPersistableData {
   requestHost?: string;
   requestMethod?: string;
   requestPath?: string;
+  requestBody?: string;
   responseHeaders?: any;
   responseBody?: string;
 }
@@ -48,7 +49,7 @@ export const buildPath = (
 
 export const endReporter = (
   body: string | undefined,
-  data: {} | null,
+  data: any | null,
   headers: any,
   host: string | undefined,
   hostname: string | undefined,
@@ -88,6 +89,9 @@ export const endReporter = (
       ) {
         if (persistableData !== undefined) {
           persistence.saveMock(hash, persistableData);
+        }
+        if (data) {
+          persistence.saveMock(hash, { requestBody: data });
         }
         persistence.saveMock(hash, { lang: unmockUAHeaderValue });
         persistence.saveMock(hash, { responseHeaders: headers });

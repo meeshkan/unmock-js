@@ -1,8 +1,10 @@
 import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
-import { IBackend, IUnmockInternalOptions, util } from "unmock-core";
+import { hash as _hash, IBackend, IUnmockInternalOptions, Mode, util } from "unmock-core";
 import { URL } from "url";
+
+const { v0 } = _hash;
 
 const {
   buildPath,
@@ -16,11 +18,27 @@ const httpreqmod = http.request;
 const httpsreq = fr.https.request;
 const httpsreqmod = https.request;
 
+const handleData = (responseData: Buffer[]) => (s: any) => responseData.push(s);
+const foldData = (data: Buffer[]) => data.map((datum) => datum.toString()).join("");
+
+/*
+    body: req.body,
+    headers: JSON.parse(req.query.headers),
+    hostname: req.query.hostname,
+    method: req.query.method.toUpperCase(),
+    path: req.query.path,
+    story: JSON.parse(req.query.story),
+    user_id: userId,
+    ...(req.query && req.query.signature ? {signature: req.query.signature} : {}),
+*/
+
 const mHttp = (
+  userId: string,
   story: { story: string[] },
   token: string | undefined,
   {
     logger,
+    mode,
     persistence,
     unmockHost,
     unmockPort,
@@ -52,9 +70,12 @@ const mHttp = (
     second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
     third?: (res: IncomingMessage) => void,
   ): ClientRequest => {
-    let data: {} | null = null;
+    let data: string | null = null;
     let selfcall = false;
+    const requsetData: Buffer[] = [];
     const responseData: Buffer[] = [];
+    const pushRequestData = handleData(requsetData);
+    const pushResponseData = handleData(responseData);
     const ro = (first instanceof URL || typeof first === "string"
       ? second
       : first) as RequestOptions;
@@ -96,6 +117,28 @@ const mHttp = (
       // self call, we ignore
       selfcall = true;
     }
+    const doEndReporting = (body: any, headers: any) => endReporter(
+      body,
+      data,
+      headers,
+      ro.host,
+      ro.hostname,
+      logger,
+      ro.method,
+      ro.path,
+      persistence,
+      save,
+      selfcall,
+      story.story,
+      token !== undefined,
+      "node",
+      {
+        requestHeaders: ro.headers,
+        requestHost: ro.hostname || ro.host || "",
+        requestMethod: ro.method || "",
+        requestPath: ro.path || "",
+      },
+    );
     // content being written or end of call!
     const resp = (res: IncomingMessage) => {
       const protoOn = res.on;
@@ -104,7 +147,7 @@ const mHttp = (
           return protoOn.apply(res, [
             s,
             (d: any) => {
-              responseData.push(d);
+              pushResponseData(d);
               f(d);
             },
           ]);
@@ -113,29 +156,8 @@ const mHttp = (
           return protoOn.apply(res, [
             s,
             (d: any) => {
-              const body = responseData.map((datum) => datum.toString()).join("");
-              endReporter(
-                body,
-                data,
-                res.headers,
-                ro.host,
-                ro.hostname,
-                logger,
-                ro.method,
-                ro.path,
-                persistence,
-                save,
-                selfcall,
-                story.story,
-                token !== undefined,
-                "node",
-                {
-                  requestHeaders: ro.headers,
-                  requestHost: ro.hostname || ro.host || "",
-                  requestMethod: ro.method || "",
-                  requestPath: ro.path || "",
-                },
-              );
+              const body = foldData(responseData);
+              doEndReporting(body, res.headers);
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
               // the original res.on('end') has a closure that refers to this
               // as far as i can understand, 'this' is supposed to refer to res
@@ -151,18 +173,46 @@ const mHttp = (
         (third as ((res: IncomingMessage) => void))(res);
       }
     };
-    const output = cb(
-      fake,
-      selfcall ? (second as ((res: IncomingMessage) => void)) : resp,
-    );
+    const output = cb(fake, selfcall ? (second as ((res: IncomingMessage) => void)) : resp);
     if (token) {
       output.setHeader("Authorization", `Bearer ${token}`);
     }
     output.setHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify("node"));
     const protoWrite = output.write;
     output.write = (d: Buffer, q?: any, z?: any) => {
-      data = d;
+      pushRequestData(d);
       return protoWrite.apply(output, [d, q, z]);
+    };
+    const protoEnd = output.end;
+    output.end = (chunk: any, encoding?: any, maybeCallback?: () => void) => {
+      if (typeof chunk !== "function") {
+        pushRequestData(chunk);
+      }
+      data = foldData(requsetData);
+      const fn = typeof chunk === "function" ?
+        chunk : typeof encoding === "function" ?
+        encoding : typeof maybeCallback === "function" ?
+        maybeCallback : () => undefined;
+      const hash = v0({
+        body: data,
+        headers: ro.headers,
+        hostname: ro.hostname || ro.host,
+        method: ro.method ? ro.method.toUpperCase() : "",
+        path: ro.path,
+        story,
+        ...(signature ? {signature} : {}),
+        ...(userId ? {user_id: userId} : {}),
+      }, ignore);
+      const hasHash = persistence.hasHash(hash);
+      const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
+        (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
+      if (!makesNetworkCall) {
+        const { responseHeaders, responseBody } = persistence.loadMock(hash);
+        doEndReporting(responseBody, responseHeaders);
+        fn();
+      } else {
+        return protoEnd.apply(output, [chunk, encoding, maybeCallback]);
+      }
     };
     return output;
   };
@@ -176,13 +226,14 @@ export default class NodeBackend implements IBackend {
     https.request = httpsreqmod;
   }
   public initialize(
+    userId: string,
     story: { story: string[] },
     token: string | undefined,
     options: IUnmockInternalOptions,
   ) {
-    fr.http.request = mHttp(story, token, options, httpreq);
-    http.request = mHttp(story, token, options, httpreqmod);
-    fr.https.request = mHttp(story, token, options, httpsreq);
-    https.request = mHttp(story, token, options, httpsreqmod);
+    fr.http.request = mHttp(userId, story, token, options, httpreq);
+    http.request = mHttp(userId, story, token, options, httpreqmod);
+    fr.https.request = mHttp(userId, story, token, options, httpsreq);
+    https.request = mHttp(userId, story, token, options, httpsreqmod);
   }
 }
