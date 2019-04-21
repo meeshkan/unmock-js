@@ -51,7 +51,8 @@ expect.extend({
 
 export const snapshot = (obj: any) => {
   if (process.env.JEST_WORKER_ID !== undefined) {
-    // IDE might highlight `snapshot`, but it is well declared above, so we can ignore this...
+    // @ts-ignore
+    // We ignore the following as `snapshot` is clearly declared above in the namespace
     expect(obj).snapshot();  // Creates the snapshot with the above serializer
     // Reserved to add snapshots for other backends
   }
