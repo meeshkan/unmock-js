@@ -40,7 +40,7 @@ export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
   public initialize(
-    userId: string,
+    userId: string | null,
     story: { story: string[] },
     token: string | undefined,
     {
@@ -121,7 +121,7 @@ export default class JSDomBackend implements IBackend {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
       };
-      const doEndReporting = (responseBody: string, responseHeaders: any) =>
+      const doEndReporting = (fromCache: boolean, responseBody: string, responseHeaders: any) =>
         endReporter(
           responseBody,
           data,
@@ -137,6 +137,7 @@ export default class JSDomBackend implements IBackend {
           story.story,
           token !== undefined,
           "jsdom",
+          fromCache,
           {
             requestHeaders: headerz,
             requestHost: ro.host || ro.hostname,
@@ -155,7 +156,7 @@ export default class JSDomBackend implements IBackend {
                 ro.hostname,
               )
             ) {
-              doEndReporting(request.response, parseResponseHeaders(request.getAllResponseHeaders()));
+              doEndReporting(false, request.response, parseResponseHeaders(request.getAllResponseHeaders()));
             }
           }
           if (typeof onreadystatechange === "function") {
@@ -192,7 +193,7 @@ export default class JSDomBackend implements IBackend {
         if (!makesNetworkCall) {
           const { responseHeaders, responseBody } = persistence.loadMock(hash);
           // todo, should we allow an undefined body?
-          doEndReporting(responseBody || "", responseHeaders);
+          doEndReporting(true, responseBody || "", responseHeaders);
         } else {
           setOnReadyStateChange(this);
           return XMLHttpRequestSend.apply(this, [body]);

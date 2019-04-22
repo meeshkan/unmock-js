@@ -21,7 +21,7 @@ export default class FSPersistence implements IPersistence {
   constructor(private savePath = SAVE_PATH) {}
 
   public saveMock(hash: string, data: IPersistableData) {
-    const target = this.outdir(hash, UNMOCK_FILE);
+    const target = this.outdir(hash, true, UNMOCK_FILE);
     // First attempt to load existing data
     const existingData = fs.existsSync(target)
       ? yml.safeLoad(fs.readFileSync(target, "utf-8"))
@@ -51,12 +51,12 @@ export default class FSPersistence implements IPersistence {
   }
 
   public hasHash(hash: string) {
-    const target = this.outdir(hash, UNMOCK_FILE);
+    const target = this.outdir(hash, false, UNMOCK_FILE);
     return fs.existsSync(target);
   }
 
   public loadMock(hash: string) {
-    const target = this.outdir(hash, UNMOCK_FILE);
+    const target = this.outdir(hash, false, UNMOCK_FILE);
     return fs.existsSync(target)
       ? yml.safeLoad(fs.readFileSync(target, "utf-8"))
       : {};
@@ -77,9 +77,9 @@ export default class FSPersistence implements IPersistence {
     return config.unmock.token;
   }
 
-  private outdir(hash: string, ...args: string[]) {
+  private outdir(hash: string, mkd: boolean, ...args: string[]) {
     const outdir = path.normalize(path.join(this.savePath, hash));
-    mkdirp.sync(outdir);
+    if (mkd) { mkdirp.sync(outdir); }
     return path.join(outdir, ...args);
   }
 

@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
@@ -18,8 +19,9 @@ const httpreqmod = http.request;
 const httpsreq = fr.https.request;
 const httpsreqmod = https.request;
 
+const MOSES = "MOSES";
 const handleData = (responseData: Buffer[]) => (s: any) => responseData.push(s);
-const foldData = (data: Buffer[]) => data.map((datum) => datum.toString()).join("");
+const foldData = (data: Buffer[]) => data.length > 0 ? data.map((datum) => datum.toString()).join("") : undefined;
 
 /*
     body: req.body,
@@ -33,7 +35,7 @@ const foldData = (data: Buffer[]) => data.map((datum) => datum.toString()).join(
 */
 
 const mHttp = (
-  userId: string,
+  userId: string | null,
   story: { story: string[] },
   token: string | undefined,
   {
@@ -70,11 +72,11 @@ const mHttp = (
     second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
     third?: (res: IncomingMessage) => void,
   ): ClientRequest => {
-    let data: string | null = null;
+    let data: string | undefined;
     let selfcall = false;
-    const requsetData: Buffer[] = [];
+    const requestData: Buffer[] = [];
     const responseData: Buffer[] = [];
-    const pushRequestData = handleData(requsetData);
+    const pushRequestData = handleData(requestData);
     const pushResponseData = handleData(responseData);
     const ro = (first instanceof URL || typeof first === "string"
       ? second
@@ -117,7 +119,7 @@ const mHttp = (
       // self call, we ignore
       selfcall = true;
     }
-    const doEndReporting = (body: any, headers: any) => endReporter(
+    const doEndReporting = (fromCache: boolean, body: any, headers: any) => endReporter(
       body,
       data,
       headers,
@@ -132,6 +134,7 @@ const mHttp = (
       story.story,
       token !== undefined,
       "node",
+      fromCache,
       {
         requestHeaders: ro.headers,
         requestHost: ro.hostname || ro.host || "",
@@ -157,7 +160,7 @@ const mHttp = (
             s,
             (d: any) => {
               const body = foldData(responseData);
-              doEndReporting(body, res.headers);
+              doEndReporting(false, body, res.headers);
               // https://github.com/nodejs/node/blob/master/lib/_http_client.js
               // the original res.on('end') has a closure that refers to this
               // as far as i can understand, 'this' is supposed to refer to res
@@ -185,31 +188,41 @@ const mHttp = (
     };
     const protoEnd = output.end;
     output.end = (chunk: any, encoding?: any, maybeCallback?: () => void) => {
-      if (typeof chunk !== "function") {
+      if (typeof chunk !== "function" && chunk) {
         pushRequestData(chunk);
       }
-      data = foldData(requsetData);
+      data = foldData(requestData);
       const fn = typeof chunk === "function" ?
         chunk : typeof encoding === "function" ?
         encoding : typeof maybeCallback === "function" ?
         maybeCallback : () => undefined;
-      const hash = v0({
-        body: data,
+      const hashable = {
+        body: data ? data : {},
         headers: ro.headers,
         hostname: ro.hostname || ro.host,
         method: ro.method ? ro.method.toUpperCase() : "",
         path: ro.path,
-        story,
+        story: story.story,
+        user_id: userId ? userId : MOSES,
         ...(signature ? {signature} : {}),
-        ...(userId ? {user_id: userId} : {}),
-      }, ignore);
+      };
+      const hash = v0(hashable, ignore);
       const hasHash = persistence.hasHash(hash);
       const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
         (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
       if (!makesNetworkCall) {
         const { responseHeaders, responseBody } = persistence.loadMock(hash);
-        doEndReporting(responseBody, responseHeaders);
-        fn();
+        doEndReporting(true, responseBody, responseHeaders);
+        const msg = new IncomingMessage(new EventEmitter());
+        msg.headers = responseHeaders;
+        msg.statusCode = 200;
+        msg.push(responseBody);
+        msg.push(null);
+        process.nextTick(() => {
+          // tslint:disable-next-line
+          console.log("emitting message");
+          output.emit("response", msg);
+        });
       } else {
         return protoEnd.apply(output, [chunk, encoding, maybeCallback]);
       }

@@ -56,7 +56,6 @@ const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
 
 export const ignoreStory = baseIgnore("story");
 export const ignoreAuth = baseIgnore({ headers: "Authorization" });
-const MOSES = "MOSES";
 
 export const unmock = (baseOptions: IUnmockInternalOptions) => async (
   maybeOptions?: IUnmockOptions,
@@ -72,7 +71,7 @@ export const unmock = (baseOptions: IUnmockInternalOptions) => async (
       options.persistence.saveToken(options.token);
     }
     const token = await getToken(options);
-    const userId = token ? await getUserId(token, options.unmockHost, options.unmockPort) : MOSES;
+    const userId = token ? await getUserId(token, options.unmockHost, options.unmockPort) : null;
     options.backend.initialize(userId, story, token, options);
   }
 };

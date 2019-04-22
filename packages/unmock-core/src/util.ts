@@ -62,6 +62,7 @@ export const endReporter = (
   story: string[],
   xy: boolean,
   unmockUAHeaderValue: string,
+  fromCache: boolean,
   persistableData?: IPersistableData,
 ) => {
   if (!selfcall) {
@@ -77,9 +78,9 @@ export const endReporter = (
           data ? ` with data ${data}.` : `.`
         }`,
       );
-      // tslint:disable-next-line:max-line-length
+      const cachemsg = fromCache ? "served you cached" : "sent you";
       logger.log(
-        `We've sent you mock data back. You can edit your mock at https://unmock.io/${
+        `We've ${cachemsg} mock data back. You can edit your mock at https://unmock.io/${
           xy ? "x" : "y"
         }/${hash}. 🚀`,
       );
