@@ -219,8 +219,6 @@ const mHttp = (
         msg.push(responseBody);
         msg.push(null);
         process.nextTick(() => {
-          // tslint:disable-next-line
-          console.log("emitting message");
           output.emit("response", msg);
         });
       } else {
