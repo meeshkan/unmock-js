@@ -1,9 +1,9 @@
-import { EventEmitter } from "events";
 import fr from "follow-redirects";
 import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
 import https from "https";
 import { hash as _hash, IBackend, IUnmockInternalOptions, Mode, util } from "unmock-core";
 import { URL } from "url";
+import Socket from "./socket";
 
 const { v0 } = _hash;
 
@@ -35,6 +35,7 @@ const foldData = (data: Buffer[]) => data.length > 0 ? data.map((datum) => datum
 */
 
 const mHttp = (
+  proto: string,
   userId: string | null,
   story: { story: string[] },
   token: string | undefined,
@@ -213,11 +214,14 @@ const mHttp = (
       if (!makesNetworkCall) {
         const { responseHeaders, responseBody } = persistence.loadMock(hash);
         doEndReporting(true, responseBody, responseHeaders);
-        const msg = new IncomingMessage(new EventEmitter());
+        const socket = new Socket({ proto });
+        const msg = new IncomingMessage(socket);
         msg.headers = responseHeaders;
+        msg.headers["unmock-hash"] = hash;
         msg.statusCode = 200;
         msg.push(responseBody);
         msg.push(null);
+        fn(msg);
         process.nextTick(() => {
           output.emit("response", msg);
         });
@@ -242,9 +246,9 @@ export default class NodeBackend implements IBackend {
     token: string | undefined,
     options: IUnmockInternalOptions,
   ) {
-    fr.http.request = mHttp(userId, story, token, options, httpreq);
-    http.request = mHttp(userId, story, token, options, httpreqmod);
-    fr.https.request = mHttp(userId, story, token, options, httpsreq);
-    https.request = mHttp(userId, story, token, options, httpsreqmod);
+    fr.http.request = mHttp("http", userId, story, token, options, httpreq);
+    http.request = mHttp("http", userId, story, token, options, httpreqmod);
+    fr.https.request = mHttp("https", userId, story, token, options, httpsreq);
+    https.request = mHttp("https", userId, story, token, options, httpsreqmod);
   }
 }

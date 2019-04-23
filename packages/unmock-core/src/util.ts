@@ -65,40 +65,41 @@ export const endReporter = (
   fromCache: boolean,
   persistableData?: IPersistableData,
 ) => {
+  logger.log(`selfcall ${selfcall} ${hostname} ${headers["unmock-hash"]} ${JSON.stringify(story)} `);
   if (!selfcall) {
     const hash = (headers["unmock-hash"] as string) || "null";
     // in case the end function has been called multiple times
     // we skip invoking it again
     if (story.indexOf(hash) === -1) {
       story.unshift(hash);
-      logger.log(`*****url-called*****`);
-      // tslint:disable-next-line:max-line-length
-      logger.log(
-        `Hi! We see you've called ${method} ${hostname || host}${path}${
-          data ? ` with data ${data}.` : `.`
-        }`,
-      );
-      const cachemsg = fromCache ? "served you cached" : "sent you";
-      logger.log(
-        `We've ${cachemsg} mock data back. You can edit your mock at https://unmock.io/${
-          xy ? "x" : "y"
-        }/${hash}. 🚀`,
-      );
-      if (
-        (typeof save === "boolean" && save) ||
-        (typeof save !== "boolean" && save.indexOf(hash) >= 0)
-      ) {
-        if (persistableData !== undefined) {
-          persistence.saveMock(hash, persistableData);
-        }
-        if (data) {
-          persistence.saveMock(hash, { requestBody: data });
-        }
-        persistence.saveMock(hash, { lang: unmockUAHeaderValue });
-        persistence.saveMock(hash, { responseHeaders: headers });
-        if (body) {
-          persistence.saveMock(hash, { responseBody: body});
-        }
+    }
+    logger.log(`*****url-called*****`);
+    // tslint:disable-next-line:max-line-length
+    logger.log(
+      `Hi! We see you've called ${method} ${hostname || host}${path}${
+        data ? ` with data ${data}.` : `.`
+      }`,
+    );
+    const cachemsg = fromCache ? "served you cached" : "sent you";
+    logger.log(
+      `We've ${cachemsg} mock data back. You can edit your mock at https://unmock.io/${
+        xy ? "x" : "y"
+      }/${hash}. 🚀`,
+    );
+    if (
+      (typeof save === "boolean" && save) ||
+      (typeof save !== "boolean" && save.indexOf(hash) >= 0)
+    ) {
+      if (persistableData !== undefined) {
+        persistence.saveMock(hash, persistableData);
+      }
+      if (data) {
+        persistence.saveMock(hash, { requestBody: data });
+      }
+      persistence.saveMock(hash, { lang: unmockUAHeaderValue });
+      persistence.saveMock(hash, { responseHeaders: headers });
+      if (body) {
+        persistence.saveMock(hash, { responseBody: body});
       }
     }
   }
