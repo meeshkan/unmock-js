@@ -5,13 +5,11 @@
 import axios from "axios";
 import fs from "fs";
 import * as mkdirp from "mkdirp";
-import * as rimraf from "rimraf";
 import { kcomnu, unmock } from "../";
 
 beforeEach(async () => {
   require("dotenv").config();
   const CREDENTIALS = `[unmock]\ntoken=${process.env.UNMOCK_TOKEN}\n`;
-  rimraf.sync(".unmock/!(save)");
   mkdirp.sync(".unmock");
   fs.writeFileSync(".unmock/credentials", CREDENTIALS);
   await unmock({
@@ -23,7 +21,6 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await kcomnu();
-  rimraf.sync(".unmock");
 });
 
 test("credentials written to .unmock/credentials work just like a token", async () => {
