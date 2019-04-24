@@ -62,7 +62,6 @@ export default class JSDomBackend implements IBackend {
       password?: string | null,
     ): void {
       let data: Document | BodyInit | null = null;
-      let selfcall = false;
       const ro = new URL(url);
       if (
         hostIsWhitelisted(
@@ -92,10 +91,6 @@ export default class JSDomBackend implements IBackend {
         unmockHost,
         token !== undefined,
       );
-      if (ro.hostname === unmockHost || ro.host === unmockHost) {
-        // self call, we ignore
-        selfcall = true;
-      }
       this.setRequestHeader = function(name: string, value: string) {
         if (
           hostIsWhitelisted(
@@ -124,26 +119,23 @@ export default class JSDomBackend implements IBackend {
       const doEndReporting = (fromCache: boolean, responseBody: string, responseHeaders: any) =>
         endReporter(
           "HASH", // fix!
-          responseBody,
-          data,
-          responseHeaders,
-          ro.host,
-          ro.hostname,
           logger,
-          method,
-          ro.pathname,
           persistence,
           save,
-          selfcall,
           story.story,
           token !== undefined,
-          "jsdom",
           fromCache,
+          { lang: "jsdom" },
           {
-            requestHeaders: headerz,
-            requestHost: ro.host || ro.hostname,
-            requestMethod: method,
-            requestPath: ro.pathname,
+            ...(data ? { body : data.toString()} : {}),
+            headers: headerz,
+            host: ro.host || ro.hostname,
+            method,
+            path: ro.pathname,
+          },
+          {
+            body: responseBody,
+            headers: responseHeaders,
           },
         );
       const setOnReadyStateChange = (request: XMLHttpRequest) => {
@@ -192,9 +184,9 @@ export default class JSDomBackend implements IBackend {
           data = body;
         }
         if (!makesNetworkCall) {
-          const { responseHeaders, responseBody } = persistence.loadMock(hash);
+          const response = persistence.loadResponse(hash);
           // todo, should we allow an undefined body?
-          doEndReporting(true, responseBody || "", responseHeaders);
+          doEndReporting(true, response.headers, response.body);
         } else {
           setOnReadyStateChange(this);
           return XMLHttpRequestSend.apply(this, [body]);

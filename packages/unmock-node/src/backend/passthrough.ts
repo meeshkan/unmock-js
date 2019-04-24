@@ -33,7 +33,7 @@ export default (
     path: string,
     port: number,
   },
-  callback: (hash: string, headers: any, body: any, data: any) => void) => {
+  callback: (hash: string, requestBody: Buffer[], responseHeaders: any, responseBody: Buffer[]) => void) => {
   const { Host, ...rawHeaders } = rawHeadersToHeaders(req.rawHeaders);
   const [h, p] = Host.split(":");
   const outgoingData: Buffer[] = [];
@@ -57,7 +57,7 @@ export default (
     // TODO: un-hardcode https
     // TODO: passes hackish property to options to get bypassing to work. fix?
     const request = (p === "443" || !p ? httpsRequest : httpRequest)({
-      headers,
+      headers: { ...rawHeaders, ...headers},
       host,
       method,
       path,
@@ -78,9 +78,9 @@ export default (
         newRes.on("end", () => {
           callback(
             hash,
+            outgoingData,
             newRes.headers,
-            incomingData.map((buffer) => buffer.toString()).join(""),
-            outgoingData.map((buffer) => buffer.toString()).join());
+            incomingData);
           res.end();
         });
     });

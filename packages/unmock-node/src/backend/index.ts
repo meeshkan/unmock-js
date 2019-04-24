@@ -35,10 +35,9 @@ const mHttp = (
   req: IncomingMessage,
   res: ServerResponse,
 ) => {
-  let selfcall = false;
   const { Host, ...rawHeaders } = rawHeadersToHeaders(req.rawHeaders);
-  const [host, port] = Host.split(":");
-  if (hostIsWhitelisted(whitelist, host, host)) {
+  const [h, p] = Host.split(":");
+  if (hostIsWhitelisted(whitelist, h, p)) {
     passthrough(
       req,
       res,
@@ -46,11 +45,11 @@ const mHttp = (
         body,
         hash: "", // hash not relevant as this is not an unmock call
         headers: rawHeaders,
-        host,
+        host: h,
         intercepted: false,
         method: req.method || "",
         path: req.url || "",
-        port: port ? parseInt(port, 10) : 443,
+        port: p ? parseInt(p, 10) : 443,
         req,
         res,
        }),
@@ -61,8 +60,8 @@ const mHttp = (
   // tslint:disable-next-line:max-line-length
   const pathForFake = buildPath(
     rawHeaders,
-    host,
-    host,
+    h,
+    p,
     ignore,
     req.method,
     req.url,
@@ -71,32 +70,28 @@ const mHttp = (
     unmockHost,
     token !== undefined,
   );
-  if (host === unmockHost) {
-    // self call, we ignore
-    selfcall = true;
-  }
-  const doEndReporting = (fromCache: boolean) => (hash: string, headers: any, body: any, data: any) => endReporter(
+  const doEndReporting = (fromCache: boolean) =>
+    (hash: string, requestBody: Buffer[], responseHeaders: any, responseBody: Buffer[]) => endReporter(
     hash,
-    body,
-    data,
-    headers,
-    host,
-    host,
     logger,
-    req.method,
-    req.url,
     persistence,
     save,
-    selfcall,
     story.story,
     token !== undefined,
-    "node",
     fromCache,
     {
-      requestHeaders: rawHeaders,
-      requestHost: host,
-      requestMethod: req.method,
-      requestPath: req.url,
+      lang: "node",
+    },
+    {
+      ...(requestBody.length > 0 ? { body: requestBody.map((buffer) => buffer.toString()).join("")} : {}),
+      headers: rawHeaders,
+      host: h,
+      method: req.method,
+      path: req.url,
+    },
+    {
+      headers: responseHeaders,
+      ...(responseBody.length > 0 ? { body: responseBody.map((buffer) => buffer.toString()).join("")} : {}),
     },
   );
   const unmockHeaders = {
@@ -113,9 +108,8 @@ const mHttp = (
       method,
       path,
      }) => {
-      const incoming = body ? body.map((buffer) => buffer.toString()).join("") : {};
       const hashable = {
-        body: incoming,
+        body: body.length > 0 ? body.map((buffer) => buffer.toString()).join("") : {},
         headers,
         hostname: host,
         method,
@@ -129,13 +123,13 @@ const mHttp = (
       const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
         (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
       if (!makesNetworkCall) {
-        const { responseHeaders, responseBody } = persistence.loadMock(hash);
-        Object.entries(responseHeaders).forEach(([k, v]) => {
+        const response = persistence.loadResponse(hash);
+        Object.entries(response.headers).forEach(([k, v]) => {
           res.setHeader(k, `${v}`);
         });
-        res.write(responseBody);
+        res.write(response.body);
         res.end();
-        doEndReporting(true)(hash, responseHeaders, responseBody, incoming);
+        doEndReporting(true)(hash, body, response.headers, !response.body ? [] : [Buffer.from(response.body)]);
         return {
           body,
           hash,

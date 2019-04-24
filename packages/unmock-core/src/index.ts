@@ -17,7 +17,7 @@ export { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
 export { IBackend } from "./backend";
 export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
-export { IPersistableData } from "./util";
+export { IMetaData, IRequestData, IResponseData } from "./util";
 export const hash = { v0: hashV0 };
 export const util = {
   UNMOCK_UA_HEADER_NAME,

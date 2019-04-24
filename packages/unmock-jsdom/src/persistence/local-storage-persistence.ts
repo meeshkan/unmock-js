@@ -1,29 +1,30 @@
-import * as yml from "js-yaml";
 import * as path from "path";
-import { IPersistableData, IPersistence } from "unmock-core";
+import { IMetaData, IPersistence, IRequestData, IResponseData } from "unmock-core";
 
 // Uses directory structure for keys in window local storage
-const UNMOCK_KEY = ".unmock";
+const UNMOCK_FILE = ".unmock";
 const TOKEN_KEY = ".token";
-const TOKEN_FULL_KEY = path.join(UNMOCK_KEY, TOKEN_KEY);
-const SAVE_PATH = path.join(UNMOCK_KEY, "save");
-const UNMOCK_FILE = "unmock.yml";
+const TOKEN_FULL_KEY = path.join(UNMOCK_FILE, TOKEN_KEY);
+const SAVE_PATH = path.join(UNMOCK_FILE, "save");
+const META_FILE = "meta.json";
+const REQUEST_FILE = "request.json";
+const RESPONSE_FILE = "response.json";
 
 export default class BrowserStoragePersistence implements IPersistence {
   private token: string | undefined;
 
   constructor(private savePath = SAVE_PATH) {}
 
-  public saveMock(hash: string, data: IPersistableData) {
-    const target = this.outdir(hash, UNMOCK_FILE);
-    // First attempt to load existing data
-    const existingData = window.localStorage[target]
-      ? yml.safeLoad(window.localStorage[target])
-      : {};
-    // Now add the new data as needed
-    const newData = { ...existingData, ...data };
-    // And save...
-    window.localStorage[target] = yml.safeDump(newData, { indent: 2 });
+  public saveMeta(hash: string, data: IMetaData) {
+    this.genericSave(hash, META_FILE, data);
+  }
+
+  public saveRequest(hash: string, data: IRequestData) {
+    this.genericSave(hash, REQUEST_FILE, data);
+  }
+
+  public saveResponse(hash: string, data: IResponseData) {
+    this.genericSave(hash, RESPONSE_FILE, data);
   }
 
   public saveAuth(auth: string) {
@@ -39,16 +40,20 @@ export default class BrowserStoragePersistence implements IPersistence {
     return window.localStorage[TOKEN_FULL_KEY];
   }
 
-  public loadMock(hash: string): IPersistableData {
-    const target = this.outdir(hash, UNMOCK_FILE);
-    // First attempt to load existing data
-    return window.localStorage[target]
-      ? yml.safeLoad(window.localStorage[target])
-      : {};
+  public loadMeta(hash: string): IMetaData {
+    return this.genericLoad(hash, META_FILE);
+  }
+
+  public loadRequest(hash: string): IRequestData {
+    return this.genericLoad(hash, REQUEST_FILE);
+  }
+
+  public loadResponse(hash: string): IResponseData {
+    return this.genericLoad(hash, RESPONSE_FILE);
   }
 
   public hasHash(hash: string): boolean {
-    const target = this.outdir(hash, UNMOCK_FILE);
+    const target = this.outdir(hash);
     // First attempt to load existing data
     return window.localStorage[target] ? true : false;
   }
@@ -60,6 +65,26 @@ export default class BrowserStoragePersistence implements IPersistence {
   private outdir(hash: string, ...args: string[]) {
     const outdir = path.normalize(path.join(this.savePath, hash));
     return path.join(outdir, ...args);
+  }
+
+  private genericSave<T>(hash: string, fn: string, data: T) {
+    const target = this.outdir(hash, fn);
+    // First attempt to load existing data
+    const existingData = window.localStorage[target]
+      ? JSON.parse(window.localStorage[target])
+      : {};
+    // Now add the new data as needed
+    const newData = { ...existingData, ...data };
+    // And save...
+    window.localStorage[target] = JSON.stringify(newData, null, 2);
+  }
+
+  private genericLoad<T>(hash: string, fn: string): T {
+    const target = this.outdir(hash, fn);
+    // First attempt to load existing data
+    return window.localStorage[target]
+      ? JSON.parse(window.localStorage[target])
+      : {};
   }
 
 }

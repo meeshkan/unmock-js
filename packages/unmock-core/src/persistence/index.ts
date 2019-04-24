@@ -1,10 +1,15 @@
-import { IPersistableData } from "../util";
+import { IMetaData, IRequestData, IResponseData } from "../util";
+
 export interface IPersistence {
   saveAuth: (auth: string) => void;
   saveToken: (token: string) => void;
-  saveMock: (hash: string, data: IPersistableData) => void;
+  saveMeta: (hash: string, data: IMetaData) => void;
+  saveRequest: (hash: string, data: IRequestData) => void;
+  saveResponse: (hash: string, data: IResponseData) => void;
   loadAuth: () => string | void;
-  loadMock: (hash: string) => IPersistableData;
+  loadMeta: (hash: string) => IMetaData;
+  loadRequest: (hash: string) => IRequestData;
+  loadResponse: (hash: string) => IResponseData;
   loadToken: () => string | void;
   hasHash: (hash: string) => boolean;
 }
