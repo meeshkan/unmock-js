@@ -17,7 +17,6 @@ export interface IUnmockInternalOptions {
   unmockPort: string;
   useInProduction: boolean;
   mode: Mode;
-  share: boolean;
   ignore?: any;
   signature?: string;
   token?: string;
@@ -33,7 +32,6 @@ export interface IUnmockOptions {
   unmockPort?: string;
   ignore?: any;
   signature?: string;
-  share?: boolean;
   token?: string;
   whitelist?: string[];
   useInProduction?: boolean;

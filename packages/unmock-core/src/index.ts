@@ -33,7 +33,6 @@ export const defaultOptions: IUnmockInternalOptions = {
   logger: new FailingLogger(),
   mode: Mode.CALL_UNMOCK_FOR_NEW_MOCKS,
   persistence: new FailingPersistence(),
-  save: true,
   share: true,
   unmockHost: "api.unmock.io",
   unmockPort: "443",
