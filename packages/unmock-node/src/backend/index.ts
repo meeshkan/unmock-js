@@ -183,7 +183,7 @@ export default class NodeBackend implements IBackend {
         socket.bypass();
       }
     });
-    mitm.on("request", async (req: IncomingMessage, res: ServerResponse) => {
+    mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
       mHttp(userId, story, token, options, req, res);
     });
   }
