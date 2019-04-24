@@ -123,6 +123,7 @@ export default class JSDomBackend implements IBackend {
       };
       const doEndReporting = (fromCache: boolean, responseBody: string, responseHeaders: any) =>
         endReporter(
+          "HASH", // fix!
           responseBody,
           data,
           responseHeaders,

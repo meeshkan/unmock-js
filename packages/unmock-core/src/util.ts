@@ -48,6 +48,7 @@ export const buildPath = (
       }${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
 
 export const endReporter = (
+  hash: string,
   body: string | undefined,
   data: any | null,
   headers: any,
@@ -65,9 +66,7 @@ export const endReporter = (
   fromCache: boolean,
   persistableData?: IPersistableData,
 ) => {
-  logger.log(`selfcall ${selfcall} ${hostname} ${headers["unmock-hash"]} ${JSON.stringify(story)} `);
   if (!selfcall) {
-    const hash = (headers["unmock-hash"] as string) || "null";
     // in case the end function has been called multiple times
     // we skip invoking it again
     if (story.indexOf(hash) === -1) {
