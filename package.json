@@ -56,7 +56,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "expect": "^24.7.1",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",
