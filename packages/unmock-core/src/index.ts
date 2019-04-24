@@ -25,6 +25,7 @@ export const util = {
   endReporter,
   hostIsWhitelisted,
 };
+export { snapshot } from "./snapshot";
 
 export const defaultOptions: IUnmockInternalOptions = {
   backend: new FailingBackend(),

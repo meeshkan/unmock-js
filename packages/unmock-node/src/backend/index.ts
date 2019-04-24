@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
-import { hash as _hash, IBackend, IUnmockInternalOptions, Mode, util } from "unmock-core";
+import { hash as _hash, IBackend, IUnmockInternalOptions, Mode, snapshot, util } from "unmock-core";
 import passthrough from "./passthrough";
 import { rawHeadersToHeaders } from "./util";
 
@@ -122,6 +122,12 @@ const mHttp = (
       const hasHash = persistence.hasHash(hash);
       const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
         (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
+      snapshot({
+        hash,
+        host,
+        method,
+        path,
+      });
       if (!makesNetworkCall) {
         const response = persistence.loadResponse(hash);
         Object.entries(response.headers).forEach(([k, v]) => {
