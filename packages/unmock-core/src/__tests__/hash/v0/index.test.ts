@@ -4,26 +4,26 @@ import computeHash, { makeHashable } from "../../../hash/v0";
 describe("Hash function", () => {
     test("is stable", async () => {
         const object = { a: 1, b: "foobar" };
-        const hash = computeHash(object, "[]");
+        const hash = computeHash(object, []);
         expect(hash).toBe("35447ce7");
     });
     test("is invariant to the order of keys", async () => {
         const object1 = { a: 1, b: "foobar" };
         const object2 = { b: object1.b, a: object1.a };
-        const hash1 = computeHash(object1, "[]");
-        const hash2 = computeHash(object2, "[]");
+        const hash1 = computeHash(object1, []);
+        const hash2 = computeHash(object2, []);
         expect(hash2).toBe(hash1);
     });
     test("changes when ignoring a key", async () => {
         const object = { a: 1, b: "foobar" };
-        const hash1 = computeHash(object, "[]");
-        const hash2 = computeHash(object, "[\"a\"]");
+        const hash1 = computeHash(object, []);
+        const hash2 = computeHash(object, ["a"]);
         expect(hash2).not.toBe(hash1);
     });
     test("does not change when ignoring an unknown key", async () => {
       const object = { a: 1, b: "foobar" };
-      const hash1 = computeHash(object, "[]");
-      const hash2 = computeHash(object, "[\"c\"]");
+      const hash1 = computeHash(object, []);
+      const hash2 = computeHash(object, ["c"]);
       expect(hash2).toBe(hash1);
     });
     test("real life stripe example that was generating different hashes", () => {
@@ -64,8 +64,8 @@ describe("Hash function", () => {
       const hashy = ignoreAuth(defaultOptions)({
         ignore: {headers: "\w*User-Agent\w*"},
       });
-      expect(computeHash(incoming0, JSON.stringify(hashy.ignore)))
-        .toEqual(computeHash(incoming1, JSON.stringify(hashy.ignore)));
+      expect(computeHash(incoming0, hashy.ignore))
+        .toEqual(computeHash(incoming1, hashy.ignore));
     });
 });
 

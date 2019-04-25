@@ -1,28 +1,26 @@
 /**
- * @jest-environment node
+ * @jest-environment jsdom
  */
 
 import axios from "axios";
 import fs from "fs";
-import { kcomnu, unmock } from "../";
+import { ignoreStory, kcomnu, unmock } from "../";
 
 beforeEach(async () => {
   require("dotenv").config();
-  const CREDENTIALS = `[unmock]\ntoken=${process.env.UNMOCK_TOKEN}\n`;
-  fs.writeFileSync(".unmock/credentials", CREDENTIALS);
-  await unmock({
-    ignore: "story",
+  await unmock(ignoreStory({
     save: true,
+    token: process.env.UNMOCK_TOKEN,
     unmockHost: process.env.UNMOCK_HOST,
     unmockPort: process.env.UNMOCK_PORT,
-  });
+  }));
 });
 
 afterEach(async () => {
   await kcomnu();
 });
 
-test("credentials written to .unmock/credentials work just like a token", async () => {
+test("back to back requests yield from cache", async () => {
   const {
     data: { projects },
   } = await axios(

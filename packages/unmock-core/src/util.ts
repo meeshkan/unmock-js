@@ -2,14 +2,21 @@ import querystring from "querystring";
 import { ILogger } from "./logger";
 import { IPersistence } from "./persistence";
 
-export interface IPersistableData {
+export interface IMetaData {
   lang?: string;
-  requestHeaders?: any;
-  requestHost?: string;
-  requestMethod?: string;
-  requestPath?: string;
-  responseHeaders?: any;
-  responseBody?: string;
+}
+
+export interface IRequestData {
+  body?: string;
+  headers?: any;
+  host?: string;
+  method?: string;
+  path?: string;
+}
+
+export interface IResponseData {
+  body?: string;
+  headers?: any;
 }
 
 export const hostIsWhitelisted = (
@@ -47,55 +54,42 @@ export const buildPath = (
       }${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
 
 export const endReporter = (
-  body: string | undefined,
-  data: {} | null,
-  headers: any,
-  host: string | undefined,
-  hostname: string | undefined,
+  hash: string,
   logger: ILogger,
-  method: string | undefined,
-  path: string | undefined,
   persistence: IPersistence,
   save: boolean | string[],
-  selfcall: boolean,
   story: string[],
   xy: boolean,
-  unmockUAHeaderValue: string,
-  persistableData?: IPersistableData,
+  fromCache: boolean,
+  metaData: IMetaData,
+  requestData: IRequestData,
+  responseData: IResponseData,
 ) => {
-  if (!selfcall) {
-    const hash = (headers["unmock-hash"] as string) || "null";
-    // in case the end function has been called multiple times
-    // we skip invoking it again
-    if (story.indexOf(hash) === -1) {
-      story.unshift(hash);
-      logger.log(`*****url-called*****`);
-      // tslint:disable-next-line:max-line-length
-      logger.log(
-        `Hi! We see you've called ${method} ${hostname || host}${path}${
-          data ? ` with data ${data}.` : `.`
-        }`,
-      );
-      // tslint:disable-next-line:max-line-length
-      logger.log(
-        `We've sent you mock data back. You can edit your mock at https://unmock.io/${
-          xy ? "x" : "y"
-        }/${hash}. 🚀`,
-      );
-      if (
-        (typeof save === "boolean" && save) ||
-        (typeof save !== "boolean" && save.indexOf(hash) >= 0)
-      ) {
-        if (persistableData !== undefined) {
-          persistence.saveMock(hash, persistableData);
-        }
-        persistence.saveMock(hash, { lang: unmockUAHeaderValue });
-        persistence.saveMock(hash, { responseHeaders: headers });
-        if (body) {
-          persistence.saveMock(hash, { responseBody: body});
-        }
-      }
-    }
+  // in case the end function has been called multiple times
+  // we skip invoking it again
+  if (story.indexOf(hash) === -1) {
+    story.unshift(hash);
+  }
+  logger.log(`*****url-called*****`);
+  // tslint:disable-next-line:max-line-length
+  logger.log(
+    `Hi! We see you've called ${requestData.method} ${requestData.host}${requestData.path}${
+      requestData.body ? ` with data ${requestData.body}.` : `.`
+    }`,
+  );
+  const cachemsg = fromCache ? "served you cached" : "sent you";
+  logger.log(
+    `We've ${cachemsg} mock data back. You can edit your mock at https://unmock.io/${
+      xy ? "x" : "y"
+    }/${hash}. 🚀`,
+  );
+  if (
+    (typeof save === "boolean" && save) ||
+    (typeof save !== "boolean" && save.indexOf(hash) >= 0)
+  ) {
+    persistence.saveMeta(hash, metaData);
+    persistence.saveRequest(hash, requestData);
+    persistence.saveResponse(hash, responseData);
   }
 };
 

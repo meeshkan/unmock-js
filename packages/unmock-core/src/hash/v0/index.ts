@@ -42,5 +42,5 @@ export const makeHashable = (initialInput: any, bigIgnore: any): any => {
 
 const TRUNCATE_HASH_AT = 8;
 
-export default (initialInput: any, ignore: string) =>
-  objectHash(makeHashable(initialInput, JSON.parse(ignore))).substring(0, TRUNCATE_HASH_AT);
+export default (initialInput: any, ignore?: any) =>
+  objectHash(ignore ? makeHashable(initialInput, ignore) : initialInput).substring(0, TRUNCATE_HASH_AT);

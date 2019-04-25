@@ -1,8 +1,10 @@
-import fr from "follow-redirects";
-import http, { ClientRequest, IncomingMessage, RequestOptions } from "http";
-import https from "https";
-import { IBackend, IUnmockInternalOptions, snapshot, util } from "unmock-core";
-import { URL } from "url";
+import { IncomingMessage, ServerResponse } from "http";
+import Mitm from "mitm";
+import { hash as _hash, IBackend, IUnmockInternalOptions, Mode, snapshot, util } from "unmock-core";
+import passthrough from "./passthrough";
+import { rawHeadersToHeaders } from "./util";
+
+const { v0 } = _hash;
 
 const {
   buildPath,
@@ -11,16 +13,17 @@ const {
   UNMOCK_UA_HEADER_NAME,
 } = util;
 
-const httpreq = fr.http.request;
-const httpreqmod = http.request;
-const httpsreq = fr.https.request;
-const httpsreqmod = https.request;
+const MOSES = "MOSES";
+
+let mitm: any;
 
 const mHttp = (
+  userId: string | null,
   story: { story: string[] },
   token: string | undefined,
   {
     logger,
+    mode,
     persistence,
     unmockHost,
     unmockPort,
@@ -29,168 +32,159 @@ const mHttp = (
     ignore,
     whitelist,
   }: IUnmockInternalOptions,
-  cb: {
-    // tslint:disable-next-line:max-line-length
-    (
-      options: string | http.RequestOptions | URL,
-      callback?: ((res: http.IncomingMessage) => void) | undefined,
-    ): http.ClientRequest;
-    // tslint:disable-next-line:max-line-length
-    (
-      url: string | URL,
-      options: http.RequestOptions,
-      callback?: ((res: http.IncomingMessage) => void) | undefined,
-    ): http.ClientRequest;
-  },
+  req: IncomingMessage,
+  res: ServerResponse,
 ) => {
-  // Return a function that will work for the overloaded methods
-  // parameters will correspond to either of the following signatures:
-  // request(options: RequestOptions | string | URL, callback?: (res: IncomingMessage) => void): ClientRequest;
-  // request(url: string | URL, options: RequestOptions, callback?: (res: IncomingMessage) => void): ClientRequest;
-  return (
-    first: RequestOptions | string | URL,
-    second: RequestOptions | ((res: IncomingMessage) => void) | undefined,
-    third?: (res: IncomingMessage) => void,
-  ): ClientRequest => {
-    let data: {} | null = null;
-    let selfcall = false;
-    const responseData: Buffer[] = [];
-    const ro = (first instanceof URL || typeof first === "string"
-      ? second
-      : first) as RequestOptions;
-    if (hostIsWhitelisted(whitelist, ro.host, ro.hostname)) {
-      // TODO
-      // we know this will work because this is the original signature, but is there
-      // a better way to make this typesafe?
-      return cb(first as any, second as any, third as any);
-    }
-    // tslint:disable-next-line:max-line-length
-    const pathForFake = buildPath(
-      ro.headers,
-      ro.host,
-      ro.hostname,
-      ignore,
-      ro.method,
-      ro.path,
-      signature,
-      story.story,
-      unmockHost,
-      token !== undefined,
+  const { Host, ...rawHeaders } = rawHeadersToHeaders(req.rawHeaders);
+  const [h, p] = Host.split(":");
+  if (hostIsWhitelisted(whitelist, h, p)) {
+    passthrough(
+      req,
+      res,
+      ({ body }) => ({
+        body,
+        hash: "", // hash not relevant as this is not an unmock call
+        headers: rawHeaders,
+        host: h,
+        intercepted: false,
+        method: req.method || "",
+        path: req.url || "",
+        port: p ? parseInt(p, 10) : 443,
+        req,
+        res,
+       }),
+      () => undefined,
     );
-    const href = `https://${unmockHost}${pathForFake}`;
-    const originalHeaders = ro.headers;
-    const fake = {
-      ...ro,
-      headers: {
-        ...originalHeaders,
-        host: unmockHost,
-        hostname: unmockHost,
-      },
-      host: unmockHost,
-      hostname: unmockHost,
-      href,
-      path: pathForFake,
-      port: unmockPort,
-    };
-    if (ro.hostname === unmockHost || ro.host === unmockHost) {
-      // self call, we ignore
-      selfcall = true;
-    }
-    // content being written or end of call!
-    const resp = (res: IncomingMessage) => {
-      const protoOn = res.on;
-      res.on = (s: string, f: any) => {
-        if (s === "data") {
-          return protoOn.apply(res, [
-            s,
-            (d: any) => {
-              responseData.push(d);
-              f(d);
-            },
-          ]);
-        }
-        if (s === "end") {
-          // Attempt a snapshot to link an intercepted call and unmock response
-          // (currently only supports Jest)
-          snapshot({
-            hash: res.headers["unmock-hash"],
-            host: ro.host || ro.hostname,
-            method: ro.method,
-            path: ro.path,
-          });
-          return protoOn.apply(res, [
-            s,
-            (d: any) => {
-              const body = responseData.map((datum) => datum.toString()).join("");
-              endReporter(
-                body,
-                data,
-                res.headers,
-                ro.host,
-                ro.hostname,
-                logger,
-                ro.method,
-                ro.path,
-                persistence,
-                save,
-                selfcall,
-                story.story,
-                token !== undefined,
-                "node",
-                {
-                  requestHeaders: ro.headers,
-                  requestHost: ro.hostname || ro.host || "",
-                  requestMethod: ro.method || "",
-                  requestPath: ro.path || "",
-                },
-              );
-              // https://github.com/nodejs/node/blob/master/lib/_http_client.js
-              // the original res.on('end') has a closure that refers to this
-              // as far as i can understand, 'this' is supposed to refer to res
-              f.apply(res, [d]);
-            },
-          ]);
-        }
-        return protoOn.apply(res, [s, f]);
-      };
-      if (second && typeof second === "function") {
-        (second as ((res: IncomingMessage) => void))(res);
-      } else if (third && typeof third === "function") {
-        (third as ((res: IncomingMessage) => void))(res);
-      }
-    };
-    const output = cb(
-      fake,
-      selfcall ? (second as ((res: IncomingMessage) => void)) : resp,
-    );
-    if (token) {
-      output.setHeader("Authorization", `Bearer ${token}`);
-    }
-    output.setHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify("node"));
-    const protoWrite = output.write;
-    output.write = (d: Buffer, q?: any, z?: any) => {
-      data = d;
-      return protoWrite.apply(output, [d, q, z]);
-    };
-    return output;
+    return;
+  }
+  // tslint:disable-next-line:max-line-length
+  const pathForFake = buildPath(
+    rawHeaders,
+    h,
+    p,
+    ignore,
+    req.method,
+    req.url,
+    signature,
+    story.story,
+    unmockHost,
+    token !== undefined,
+  );
+  const doEndReporting = (fromCache: boolean) =>
+    (hash: string, requestBody: Buffer[], responseHeaders: any, responseBody: Buffer[]) => endReporter(
+    hash,
+    logger,
+    persistence,
+    save,
+    story.story,
+    token !== undefined,
+    fromCache,
+    {
+      lang: "node",
+    },
+    {
+      ...(requestBody.length > 0 ? { body: requestBody.map((buffer) => buffer.toString()).join("")} : {}),
+      headers: rawHeaders,
+      host: h,
+      method: req.method,
+      path: req.url,
+    },
+    {
+      headers: responseHeaders,
+      ...(responseBody.length > 0 ? { body: responseBody.map((buffer) => buffer.toString()).join("")} : {}),
+    },
+  );
+  const unmockHeaders = {
+    [UNMOCK_UA_HEADER_NAME]: JSON.stringify("node"),
+    ...(token ? {Authorization: `Bearer ${token}`} : {}),
   };
+  passthrough(
+    req,
+    res,
+     ({
+      body,
+      headers,
+      host,
+      method,
+      path,
+     }) => {
+      const hashable = {
+        body: body.length > 0 ? body.map((buffer) => buffer.toString()).join("") : {},
+        headers,
+        hostname: host,
+        method,
+        path,
+        story: story.story,
+        user_id: userId ? userId : MOSES,
+        ...(signature ? {signature} : {}),
+      };
+      const hash = v0(hashable, ignore);
+      const hasHash = persistence.hasHash(hash);
+      const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
+        (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
+      snapshot({
+        hash,
+        host,
+        method,
+        path,
+      });
+      if (!makesNetworkCall) {
+        const response = persistence.loadResponse(hash);
+        Object.entries(response.headers).forEach(([k, v]) => {
+          res.setHeader(k, `${v}`);
+        });
+        res.write(response.body);
+        res.end();
+        doEndReporting(true)(hash, body, response.headers, !response.body ? [] : [Buffer.from(response.body)]);
+        return {
+          body,
+          hash,
+          headers,
+          host,
+          intercepted: true,
+          method,
+          path,
+          port: 443,
+          req,
+          res,
+        };
+      } else {
+        return {
+          body,
+          hash,
+          headers: unmockHeaders,
+          host: unmockHost,
+          intercepted: false,
+          method,
+          path: pathForFake || "",
+          port: parseInt(unmockPort, 10),
+          req,
+          res,
+        };
+      }
+     },
+     doEndReporting(false),
+  );
 };
 
 export default class NodeBackend implements IBackend {
   public reset() {
-    fr.http.request = httpreq;
-    http.request = httpreqmod;
-    https.request = httpsreq;
-    https.request = httpsreqmod;
+    mitm.disable();
   }
   public initialize(
+    userId: string,
     story: { story: string[] },
     token: string | undefined,
     options: IUnmockInternalOptions,
   ) {
-    fr.http.request = mHttp(story, token, options, httpreq);
-    http.request = mHttp(story, token, options, httpreqmod);
-    fr.https.request = mHttp(story, token, options, httpsreq);
-    https.request = mHttp(story, token, options, httpsreqmod);
+    mitm = Mitm();
+    mitm.on("connect", (socket: any, opts: any) => {
+      if (opts.shouldBypass) {
+        socket.bypass();
+      }
+    });
+    mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
+      mHttp(userId, story, token, options, req, res);
+    });
   }
 }
