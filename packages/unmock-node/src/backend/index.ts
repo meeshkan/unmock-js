@@ -1,48 +1,36 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
 import {
+  constants,
+  hash as _hash,
   IBackend,
-  IUnmockInternalOptions,
-  Mode,
+  IStories,
   snapshot,
+  UnmockOptions,
   util,
 } from "unmock-core";
 import { computeHashV0 } from "unmock-hash";
 import passthrough from "./passthrough";
 import { rawHeadersToHeaders } from "./util";
 
-const {
-  buildPath,
-  endReporter,
-  hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME,
-} = util;
-
+const { buildPath, endReporter, makeAuthHeader } = util;
+const { UNMOCK_UA_HEADER_NAME } = constants;
 const MOSES = "MOSES";
 
 let mitm: any;
 
 const mHttp = (
   userId: string | null,
-  story: { story: string[] },
+  story: IStories,
   token: string | undefined,
-  {
-    logger,
-    mode,
-    persistence,
-    unmockHost,
-    unmockPort,
-    signature,
-    save,
-    ignore,
-    whitelist,
-  }: IUnmockInternalOptions,
+  opts: UnmockOptions,
   req: IncomingMessage,
   res: ServerResponse,
 ) => {
   const { Host, ...rawHeaders } = rawHeadersToHeaders(req.rawHeaders);
-  const [h, p] = Host.split(":");
-  if (hostIsWhitelisted(whitelist, h, p)) {
+  const [reqHost, reqPort] = Host.split(":");
+  const { signature, ignore, persistence, unmockHost, unmockPort } = opts;
+  if (opts.isWhitelisted(reqHost)) {
     passthrough(
       req,
       res,
@@ -50,11 +38,11 @@ const mHttp = (
         body,
         hash: "", // hash not relevant as this is not an unmock call
         headers: rawHeaders,
-        host: h,
+        host: reqHost,
         intercepted: false,
         method: req.method || "",
         path: req.url || "",
-        port: p ? parseInt(p, 10) : 443,
+        port: reqPort ? parseInt(reqPort, 10) : 443,
         req,
         res,
       }),
@@ -64,15 +52,12 @@ const mHttp = (
   }
   // tslint:disable-next-line:max-line-length
   const pathForFake = buildPath(
+    opts,
     rawHeaders,
-    h,
-    p,
-    ignore,
+    reqHost,
     req.method,
     req.url,
-    signature,
     story.story,
-    unmockHost,
     token !== undefined,
   );
   const doEndReporting = (fromCache: boolean) => (
@@ -82,10 +67,8 @@ const mHttp = (
     responseBody: Buffer[],
   ) =>
     endReporter(
+      opts,
       hash,
-      logger,
-      persistence,
-      save,
       story.story,
       token !== undefined,
       fromCache,
@@ -94,23 +77,23 @@ const mHttp = (
       },
       {
         ...(requestBody.length > 0
-          ? { body: requestBody.map(buffer => buffer.toString()).join("") }
+          ? { body: requestBody.map((buffer) => buffer.toString()).join("") }
           : {}),
         headers: rawHeaders,
-        host: h,
+        host: reqHost,
         method: req.method,
         path: req.url,
       },
       {
         headers: responseHeaders,
         ...(responseBody.length > 0
-          ? { body: responseBody.map(buffer => buffer.toString()).join("") }
+          ? { hostname: responseBody.map((buffer) => buffer.toString()).join("") }
           : {}),
       },
     );
   const unmockHeaders = {
     [UNMOCK_UA_HEADER_NAME]: JSON.stringify("node"),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token ? makeAuthHeader(token) : {}),
   };
   passthrough(
     req,
@@ -118,7 +101,7 @@ const mHttp = (
     ({ body, headers, host, method, path }) => {
       const hashable = {
         body:
-          body.length > 0 ? body.map(buffer => buffer.toString()).join("") : {},
+          body.length > 0 ? body.map((buffer) => buffer.toString()).join("") : {},
         headers,
         hostname: host,
         method,
@@ -128,10 +111,7 @@ const mHttp = (
         ...(signature ? { signature } : {}),
       };
       const hash = computeHashV0(hashable, ignore);
-      const hasHash = persistence.hasHash(hash);
-      const makesNetworkCall =
-        mode === Mode.ALWAYS_CALL_UNMOCK ||
-        (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
+      const makesNetworkCall = opts.shouldMakeNetworkCall(hash);
       snapshot({
         hash,
         host,
@@ -190,7 +170,7 @@ export default class NodeBackend implements IBackend {
     userId: string,
     story: { story: string[] },
     token: string | undefined,
-    options: IUnmockInternalOptions,
+    options: UnmockOptions,
   ) {
     mitm = Mitm();
     mitm.on("connect", (socket: any, opts: any) => {

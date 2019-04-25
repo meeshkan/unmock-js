@@ -98,7 +98,11 @@ export default (
         });
       },
     );
+<<<<<<< HEAD
     body.forEach(buffer => {
+=======
+    body.forEach((buffer) => {
+>>>>>>> 985db5c... Stable version
       request.write(buffer);
     });
     request.end();

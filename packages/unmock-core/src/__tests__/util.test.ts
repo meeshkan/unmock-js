@@ -1,4 +1,4 @@
-import { defaultOptions, ignoreAuth, ignoreStory } from "../";
+import { ignoreAuth, ignoreStory } from "../";
 import { buildPath } from "../util";
 
 test("build correct path", () => {
