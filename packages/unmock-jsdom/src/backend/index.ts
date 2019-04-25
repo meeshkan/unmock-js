@@ -1,8 +1,7 @@
 import { IUnmockInternalOptions, Mode } from "unmock-core";
-import { hash as _hash, util } from "unmock-core";
+import { util } from "unmock-core";
 import { IBackend } from "unmock-core";
-
-const { v0 } = _hash;
+import { computeHashV0 } from "unmock-hash";
 
 const {
   buildPath,
@@ -40,7 +39,7 @@ export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
   public initialize(
-    userId: string | null,
+    userId: string,
     story: { story: string[] },
     token: string | undefined,
     {
@@ -110,7 +109,12 @@ export default class JSDomBackend implements IBackend {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
       };
-      const doEndReporting = (hash: string, fromCache: boolean, responseBody: string, responseHeaders: any) =>
+      const doEndReporting = (
+        hash: string,
+        fromCache: boolean,
+        responseBody: string,
+        responseHeaders: any,
+      ) =>
         endReporter(
           hash,
           logger,
@@ -121,7 +125,7 @@ export default class JSDomBackend implements IBackend {
           fromCache,
           { lang: "jsdom" },
           {
-            ...(data ? { body : data.toString()} : {}),
+            ...(data ? { body: data.toString() } : {}),
             headers: headerz,
             host: ro.host || ro.hostname,
             method,
@@ -132,7 +136,11 @@ export default class JSDomBackend implements IBackend {
             headers: responseHeaders,
           },
         );
-      const setOnReadyStateChange = (hash: string, request: XMLHttpRequest, shouldEndReport: boolean) => {
+      const setOnReadyStateChange = (
+        hash: string,
+        request: XMLHttpRequest,
+        shouldEndReport: boolean,
+      ) => {
         const onreadystatechange = request.onreadystatechange;
         request.onreadystatechange = (ev: Event) => {
           if (request.readyState === 4) {
@@ -144,7 +152,12 @@ export default class JSDomBackend implements IBackend {
               )
             ) {
               if (shouldEndReport) {
-                doEndReporting(hash, false, request.response, parseResponseHeaders(request.getAllResponseHeaders()));
+                doEndReporting(
+                  hash,
+                  false,
+                  request.response,
+                  parseResponseHeaders(request.getAllResponseHeaders()),
+                );
               }
             }
           }
@@ -163,18 +176,22 @@ export default class JSDomBackend implements IBackend {
         ) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
-        const hash = v0({
-          body: data || {},
-          headers: headerz,
-          hostname: ro.hostname || ro.host,
-          method,
-          path: ro.pathname,
-          story: story.story,
-          ...(signature ? {signature} : {}),
-          ...(userId ? {user_id: userId} : {}),
-        }, ignore);
+        const hash = computeHashV0(
+          {
+            body: data || {},
+            headers: headerz,
+            hostname: ro.hostname || ro.host,
+            method,
+            path: ro.pathname,
+            story: story.story,
+            user_id: userId,
+            ...(signature ? { signature } : {}),
+          },
+          ignore,
+        );
         const hasHash = persistence.hasHash(hash);
-        const makesNetworkCall = mode === Mode.ALWAYS_CALL_UNMOCK ||
+        const makesNetworkCall =
+          mode === Mode.ALWAYS_CALL_UNMOCK ||
           (mode === Mode.CALL_UNMOCK_FOR_NEW_MOCKS && !hasHash);
         if (body) {
           data = body;
@@ -208,10 +225,18 @@ export default class JSDomBackend implements IBackend {
             value: `https://${ro.hostname || ro.host}${ro.pathname}`,
             writable: false,
           });
-          if (this.onloadstart) { this.onloadstart(new ProgressEvent("unmock-cache")); }
-          if (this.onload) { this.onload(new ProgressEvent("unmock-cache")); }
-          if (this.onloadend) { this.onloadend(new ProgressEvent("unmock-cache")); }
-          if (this.onreadystatechange) { this.onreadystatechange(new Event("unmock-cache")); }
+          if (this.onloadstart) {
+            this.onloadstart(new ProgressEvent("unmock-cache"));
+          }
+          if (this.onload) {
+            this.onload(new ProgressEvent("unmock-cache"));
+          }
+          if (this.onloadend) {
+            this.onloadend(new ProgressEvent("unmock-cache"));
+          }
+          if (this.onreadystatechange) {
+            this.onreadystatechange(new Event("unmock-cache"));
+          }
         } else {
           setOnReadyStateChange(hash, this, true);
           return XMLHttpRequestSend.apply(this, [body]);

@@ -1,4 +1,3 @@
-import { v0 } from "unmock-hash";
 import FailingBackend from "./backend/failing-backend";
 import FailingLogger from "./logger/failing-logger";
 import { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
@@ -18,7 +17,6 @@ export { IBackend } from "./backend";
 export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
 export { IMetaData, IRequestData, IResponseData } from "./util";
-export const hash = { v0 };
 export const util = {
   UNMOCK_UA_HEADER_NAME,
   buildPath,
@@ -71,7 +69,9 @@ export const unmock = (baseOptions: IUnmockInternalOptions) => async (
       options.persistence.saveToken(options.token);
     }
     const token = await getToken(options);
-    const userId = token ? await getUserId(token, options.unmockHost, options.unmockPort) : null;
+    const userId = token
+      ? await getUserId(token, options.unmockHost, options.unmockPort)
+      : null;
     options.backend.initialize(userId, story, token, options);
   }
 };
