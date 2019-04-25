@@ -1,2 +1,1 @@
-import run from "./dist/cli.js";
-run();
+import "./dist/cli.js";
