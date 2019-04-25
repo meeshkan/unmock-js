@@ -19,7 +19,7 @@ export class UnmockOptions {
   public persistence: IPersistence = new FailingPersistence();
   public logger: ILogger = { log: () => undefined }; // Default logger does nothing
   public signature?: string;
-  public whitelist?: RegExp[];
+  public whitelist?: RegExp[]; // TODO - use getter/setter
   private internalIgnore: any = DEFAULT_IGNORE_HEADER;
   private refreshToken?: string;
 
