@@ -124,40 +124,40 @@ export const makeIgnorable = (initialInput: IHashableV0, bigIgnore: IgnoreV0): I
   return out;
 };
 
-export const makeSerializable = (initialInput: IHashableWithIgnoreV0, serializable: SerializableV0):
+export const applyActions = (initialInput: IHashableWithIgnoreV0, actions: ActionsV0):
     ISerializedHashableWithIgnoreV0 => {
   const out: ISerializedHashableWithIgnoreV0 = {
     ...initialInput,
     ...(initialInput.headers ? {headers: {...initialInput.headers}} : {}),
     ...(initialInput.story ? { story: [...initialInput.story] } : {}),
   };
-  for (const serialize of (typeof serializable === "string" ? [serializable] : serializable)) {
-    if (serialize === "make-header-keys-lowercase" && out.headers) {
+  for (const action of (typeof actions === "string" ? [actions] : actions)) {
+    if (action === "make-header-keys-lowercase" && out.headers) {
       out.headers = Object.entries(out.headers)
         .map(([k, v]) => ({[k.toLowerCase()]: v})).reduce((a, b) => ({ ...a, ...b }), {});
     }
-    if (serialize === "deserialize-x-www-form-urlencoded-body" && typeof out.body === "string") {
+    if (action === "deserialize-x-www-form-urlencoded-body" && typeof out.body === "string") {
       out.body = out.body
         .split("&")
         .map((kv) => kv.split("="))
         .map(([k, v]) => ({ [querystring.unescape(k)]: querystring.unescape(v) }))
         .reduce((a, b) => ({ ...a, ...b }), {});
     }
-    if (serialize === "deserialize-json-body" && typeof out.body === "string") {
+    if (action === "deserialize-json-body" && typeof out.body === "string") {
       out.body = JSON.parse(out.body);
     }
   }
   return out;
 };
 
-export type SerializableActionsV0 = "make-header-keys-lowercase"
+export type ActionsActionsV0 = "make-header-keys-lowercase"
   | "deserialize-json-body" |
   "deserialize-x-www-form-urlencoded-body";
-export type SerializableV0 = SerializableActionsV0 | SerializableActionsV0[];
+export type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
 
 export const TRUNCATE_HASH_AT = 8;
 
-export default (initialInput: IHashableV0, ignore?: IgnoreV0, serialize?: SerializableV0) =>
+export default (initialInput: IHashableV0, ignore?: IgnoreV0, action?: ActionsV0) =>
   objectHash(
-    makeSerializable(
-      makeIgnorable(initialInput, ignore || []), serialize || [])).substring(0, TRUNCATE_HASH_AT);
+    applyActions(
+      makeIgnorable(initialInput, ignore || []), action || [])).substring(0, TRUNCATE_HASH_AT);

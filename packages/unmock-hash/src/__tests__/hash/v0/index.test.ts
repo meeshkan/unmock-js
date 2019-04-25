@@ -2,32 +2,90 @@ import { defaultOptions, ignoreAuth } from "unmock-core";
 import computeHash, { makeIgnorable } from "../../../hash/v0";
 
 describe("hash function", () => {
-    test("sanity test for simple object", () => {
+    const base = {
+      body : "foo",
+      headers : {
+        hello: "world",
+      },
+      hostname : "api.example.com",
+      method : "POST",
+      path : "/v1/hello",
+      story : [ ],
+      user_id : "me",
+    };
+    test("sanity test", () => {
       const incoming0 = {
-        body : "foo",
-        headers : {
-          hello: "world",
-        },
-        hostname : "api.example.com",
-        method : "POST",
-        path : "/v1/hello",
-        story : [ ],
-        user_id : "me",
+        ...base,
       };
       const incoming1 = {
-        body : "foo",
-        hostname : "api.example.com",
-        // tslint:disable-next-line:object-literal-sort-keys
-        headers : {
-          hello: "world",
-        },
-        method : "POST",
-        path : "/v1/hello",
-        story : [ ],
-        user_id : "me",
+        ...base,
+        body: "bar",
       };
-      expect(computeHash(incoming0))
-      .toEqual(computeHash(incoming1));
+      expect(computeHash(incoming0) === computeHash(incoming1))
+        .toEqual(false);
+    });
+    test("simple ignore", () => {
+      const incoming0 = {
+        ...base,
+      };
+      const incoming1 = {
+        ...base,
+        body: "bar",
+      };
+      expect(computeHash(incoming0, "body"))
+        .toEqual(computeHash(incoming1, "body"));
+    });
+    test("header case invariance", () => {
+      const incoming0 = {
+        ...base,
+        headers: {
+          foo: "Bar",
+        },
+      };
+      const incoming1 = {
+        ...base,
+        headers: {
+          Foo: "Bar",
+        },
+      };
+      expect(computeHash(incoming0, undefined, "make-header-keys-lowercase"))
+        .toEqual(computeHash(incoming1, undefined, "make-header-keys-lowercase"));
+    });
+    test("json deserialization", () => {
+      const incoming0 = {
+        ...base,
+        body: "{\"foo\":1,    \"bar\":\"baz\" } ",
+      };
+      const incoming1 = {
+        ...base,
+        body: "   { \"bar\":\"baz\", \"foo\":     1 }",
+      };
+      expect(computeHash(incoming0, undefined, "deserialize-json-body"))
+        .toEqual(computeHash(incoming1, undefined, "deserialize-json-body"));
+    });
+    test("no json deserialization", () => {
+      const incoming0 = {
+        ...base,
+        body: "{\"foo\":1,    \"bar\":\"baz\" } ",
+      };
+      const incoming1 = {
+        ...base,
+        body: "   { \"bar\":\"baz\", \"foo\":     1 }",
+      };
+      expect(computeHash(incoming0) === computeHash(incoming1))
+        .toEqual(false);
+    });
+    test("json deserialization", () => {
+      const incoming0 = {
+        ...base,
+        body: "hello=world&foo=bar",
+      };
+      const incoming1 = {
+        ...base,
+        body: "foo=bar&hello=world",
+      };
+      expect(computeHash(incoming0, undefined, "deserialize-x-www-form-urlencoded-body"))
+        .toEqual(computeHash(incoming1, undefined, "deserialize-x-www-form-urlencoded-body"));
     });
     test("real life stripe example that was generating different hashes", () => {
       const incoming0 = {
