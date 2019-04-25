@@ -16,7 +16,6 @@
     "axios": "^0.18.0",
     "commander": "^2.20.0",
     "expect": "^24.7.1",
-    "querystring": "^0.2.0",
-    "unmock-hash": "file:../unmock-hash"
+    "querystring": "^0.2.0"
   }
 }
