@@ -4,6 +4,7 @@ import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import {
+  ILogger,
   IMetaData,
   IPersistence,
   IRequestData,
@@ -24,7 +25,7 @@ const RESPONSE_FILE = "response.json";
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
 
-  constructor(private savePath = SAVE_PATH) {}
+  constructor(private logger: ILogger, private savePath = SAVE_PATH) {}
 
   public saveMeta(hash: string, data: IMetaData) {
     this.genericSave<IMetaData>(hash, META_FILE, data);
@@ -98,14 +99,19 @@ export default class FSPersistence implements IPersistence {
 
   private genericSave<T>(hash: string, fn: string, data: T) {
     const target = this.outdir(hash, true, fn);
-    // First attempt to load existing data
-    const existingData = fs.existsSync(target)
-      ? JSON.parse(fs.readFileSync(target, "utf-8"))
-      : {};
-    // Now add the new data as needed
-    const newData = { ...existingData, ...data };
-    // And save...
-    fs.writeFileSync(target, JSON.stringify(newData, null, 2));
+    try {
+      // First attempt to load existing data
+      const existingData = fs.existsSync(target)
+        ? JSON.parse(fs.readFileSync(target, "utf-8"))
+        : {};
+      // Now add the new data as needed
+      const newData = { ...existingData, ...data };
+      // And save...
+      fs.writeFileSync(target, JSON.stringify(newData, null, 2));
+    } catch (e) {
+      this.logger.log(`Error converting this to JSON ${fs.readFileSync(target, "utf-8")}`);
+      throw e;
+    }
   }
 
   private genericLoad<T>(hash: string, fn: string): T {
