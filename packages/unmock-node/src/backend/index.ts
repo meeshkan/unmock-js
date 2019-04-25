@@ -92,7 +92,7 @@ const mHttp = (
         },
         {
           headers: responseHeaders,
-          ...BufferToStringOrEmpty(responseBody, "hostname"),
+          ...BufferToStringOrEmpty(responseBody, "body"),
         },
       );
 
