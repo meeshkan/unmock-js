@@ -6,11 +6,11 @@ import {
   IBackend,
   IMetaData,
   IStories,
-  snapshot,
   UnmockOptions,
   util,
 } from "unmock-core";
 import { computeHashV0 } from "unmock-hash";
+import { snapshot } from "../persistence/snapshot";
 
 const { buildPath, endReporter, makeAuthHeader } = util;
 const { UNMOCK_UA_HEADER_NAME, MOSES } = constants;

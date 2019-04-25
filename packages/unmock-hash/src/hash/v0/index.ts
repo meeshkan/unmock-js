@@ -3,6 +3,7 @@ import querystring from "querystring";
 import { IJSONValue } from "../../jsonType";
 
 export interface IHashableV0 {
+  [key: string]: string | undefined | string[] | {};
   body: string | {};
   headers: { [key: string]: string };
   hostname: string;
@@ -36,6 +37,7 @@ export interface ISerializedHashableWithIgnoreV0 {
 }
 
 export interface IIgnoreObjectV0 {
+  [key: string]: string | undefined | string[] | {};
   body?: string;
   headers?: string | string[] | { [key: string]: string };
   hostname?: string;
@@ -58,6 +60,32 @@ export type IgnoreFieldV0 =
 export type SingleIgnoreV0 = IIgnoreObjectV0 | IgnoreFieldV0;
 export type IgnoreV0 = SingleIgnoreV0 | SingleIgnoreV0[];
 
+const shouldIgnoreByRemoving = (
+  ignore: IIgnoreObjectV0,
+  out: IHashableV0,
+  attributeName: string,
+): boolean => {
+  const ignoreAttr = ignore[attributeName];
+  if (ignoreAttr === undefined || typeof ignoreAttr !== "string") {
+    return false;
+  }
+  const outAttr = out[attributeName];
+  if (typeof outAttr !== "string") {
+    return false;
+  }
+  return new RegExp(ignoreAttr).test(outAttr);
+};
+
+const ignoreByRemoving = (
+  ignore: IIgnoreObjectV0,
+  out: IHashableV0,
+  attributeName: string,
+) => {
+  if (shouldIgnoreByRemoving(ignore, out, attributeName)) {
+    delete out[attributeName];
+  }
+};
+
 export const makeIgnorable = (
   initialInput: IHashableV0,
   bigIgnore: IgnoreV0,
@@ -71,59 +99,17 @@ export const makeIgnorable = (
     bigIgnore = [bigIgnore];
   }
   for (const ignore of bigIgnore) {
-    if (ignore === "body") {
-      delete out.body;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.body &&
-      typeof out.body === "string" &&
-      new RegExp(ignore.body).test(out.body)
-    ) {
-      delete out.body;
-    } else if (ignore === "hostname") {
-      delete out.hostname;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.hostname &&
-      new RegExp(ignore.hostname).test(out.hostname)
-    ) {
-      delete out.hostname;
-    } else if (ignore === "method") {
-      delete out.method;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.method &&
-      new RegExp(ignore.method).test(out.method)
-    ) {
-      delete out.method;
-    } else if (ignore === "path") {
-      delete out.path;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.path &&
-      new RegExp(ignore.path).test(out.path)
-    ) {
-      delete out.path;
-    } else if (ignore === "user_id") {
-      delete out.user_id;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.user_id &&
-      new RegExp(ignore.user_id).test(out.user_id)
-    ) {
-      delete out.user_id;
-    } else if (ignore === "signature") {
-      delete out.signature;
-    } else if (
-      typeof ignore !== "string" &&
-      ignore.signature &&
-      out.signature &&
-      new RegExp(ignore.signature).test(out.signature)
-    ) {
-      delete out.signature;
-    } else if (ignore === "story") {
-      delete out.story;
-    } else if (typeof ignore !== "string" && ignore.story) {
+    if (typeof ignore === "string") {
+      delete out[ignore];
+      continue;
+    }
+    ignoreByRemoving(ignore, out, "body");
+    ignoreByRemoving(ignore, out, "hostname");
+    ignoreByRemoving(ignore, out, "method");
+    ignoreByRemoving(ignore, out, "path");
+    ignoreByRemoving(ignore, out, "user_id");
+    ignoreByRemoving(ignore, out, "signature");
+    if (ignore.story) {
       out.story = out.story.filter(
         (story) =>
           !(
@@ -135,9 +121,8 @@ export const makeIgnorable = (
             ignore.story.filter((sub) => new RegExp(sub).test(story)).length > 0
           ),
       );
-    } else if (ignore === "headers") {
-      delete out.headers;
-    } else if (typeof ignore !== "string" && ignore.headers) {
+    }
+    if (ignore.headers) {
       out.headers = Object.keys(out.headers)
         .filter(
           (header) =>
@@ -174,7 +159,8 @@ export const applyActions = (
     ...(initialInput.headers ? { headers: { ...initialInput.headers } } : {}),
     ...(initialInput.story ? { story: [...initialInput.story] } : {}),
   };
-  for (const action of typeof actions === "string" ? [actions] : actions) {
+  actions = typeof actions === "string" ? [actions] : actions;
+  for (const action of actions) {
     if (action === "make-header-keys-lowercase" && out.headers) {
       out.headers = Object.entries(out.headers)
         .map(([k, v]) => ({ [k.toLowerCase()]: v }))
@@ -184,12 +170,8 @@ export const applyActions = (
       action === "deserialize-x-www-form-urlencoded-body" &&
       typeof out.body === "string"
     ) {
-      out.body = out.body
-        .split("&")
-        .map((kv) => kv.split("="))
-        .map(([k, v]) => ({
-          [querystring.unescape(k)]: querystring.unescape(v),
-        }))
+      out.body = querystring
+        .parse(out.body)
         .reduce((a, b) => ({ ...a, ...b }), {});
     }
     if (action === "deserialize-json-body" && typeof out.body === "string") {
