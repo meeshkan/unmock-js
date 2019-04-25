@@ -53,9 +53,11 @@ export default class BrowserStoragePersistence implements IPersistence {
   }
 
   public hasHash(hash: string): boolean {
-    const target = this.outdir(hash);
-    // First attempt to load existing data
-    return window.localStorage[target] ? true : false;
+    const od = this.outdir(hash);
+    // console.log(hash, Object.keys(window.localStorage));
+    return Object.keys(window.localStorage)
+      .map((k) => k.substr(0, od.length) === od)
+      .reduce((a, b) => a || b, false);
   }
 
   public loadToken() {

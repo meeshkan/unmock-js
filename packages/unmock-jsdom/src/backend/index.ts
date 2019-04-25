@@ -79,18 +79,6 @@ export default class JSDomBackend implements IBackend {
         ]);
       }
       const headerz: { [name: string]: string } = {};
-      const pathForFake = buildPath(
-        headerz,
-        ro.host,
-        ro.hostname,
-        ignore,
-        method,
-        ro.pathname,
-        signature,
-        story.story,
-        unmockHost,
-        token !== undefined,
-      );
       this.setRequestHeader = function(name: string, value: string) {
         if (
           hostIsWhitelisted(
@@ -104,7 +92,7 @@ export default class JSDomBackend implements IBackend {
         if (name === "Authorization") {
           // store, but do not pass onto request
           headerz[name] = value;
-        } else if (name === UNMOCK_AUTH) {
+        } else if (name === UNMOCK_AUTH || name === UNMOCK_UA_HEADER_NAME) {
           // do not store, but pass onto request
           return XMLHttpRequestSetRequestHeader.apply(this, [
             "Authorization",
@@ -116,9 +104,9 @@ export default class JSDomBackend implements IBackend {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
       };
-      const doEndReporting = (fromCache: boolean, responseBody: string, responseHeaders: any) =>
+      const doEndReporting = (hash: string, fromCache: boolean, responseBody: string, responseHeaders: any) =>
         endReporter(
-          "HASH", // fix!
+          hash,
           logger,
           persistence,
           save,
@@ -138,7 +126,7 @@ export default class JSDomBackend implements IBackend {
             headers: responseHeaders,
           },
         );
-      const setOnReadyStateChange = (request: XMLHttpRequest) => {
+      const setOnReadyStateChange = (hash: string, request: XMLHttpRequest, shouldEndReport: boolean) => {
         const onreadystatechange = request.onreadystatechange;
         request.onreadystatechange = (ev: Event) => {
           if (request.readyState === 4) {
@@ -149,7 +137,9 @@ export default class JSDomBackend implements IBackend {
                 ro.hostname,
               )
             ) {
-              doEndReporting(false, request.response, parseResponseHeaders(request.getAllResponseHeaders()));
+              if (shouldEndReport) {
+                doEndReporting(hash, false, request.response, parseResponseHeaders(request.getAllResponseHeaders()));
+              }
             }
           }
           if (typeof onreadystatechange === "function") {
@@ -167,6 +157,16 @@ export default class JSDomBackend implements IBackend {
         ) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
+        console.log("computing hash", {
+          body: data,
+          headers: headerz,
+          hostname: ro.hostname || ro.host,
+          method,
+          path: ro.pathname,
+          story,
+          ...(signature ? {signature} : {}),
+          ...(userId ? {user_id: userId} : {}),
+        });
         const hash = v0({
           body: data,
           headers: headerz,
@@ -185,14 +185,56 @@ export default class JSDomBackend implements IBackend {
         }
         if (!makesNetworkCall) {
           const response = persistence.loadResponse(hash);
-          // todo, should we allow an undefined body?
-          doEndReporting(true, response.headers, response.body);
+          doEndReporting(hash, true, response.headers, response.body);
+          setOnReadyStateChange(hash, this, false);
+          // uggggh...
+          Object.defineProperty(this, "readyState", {
+            value: 4,
+            writable: false,
+          });
+          Object.defineProperty(this, "response", {
+            value: response.body ? JSON.parse(response.body) : undefined,
+            writable: false,
+          });
+          Object.defineProperty(this, "responseText", {
+            value: response.body,
+            writable: false,
+          });
+          Object.defineProperty(this, "status", {
+            value: 200,
+            writable: false,
+          });
+          Object.defineProperty(this, "statusText", {
+            value: "OK",
+            writable: false,
+          });
+          Object.defineProperty(this, "responseURL", {
+            value: `https://${ro.hostname || ro.host}${ro.pathname}`,
+            writable: false,
+          });
+          if (this.onloadstart) { this.onloadstart(new ProgressEvent("unmock-cache")); }
+          if (this.onload) { this.onload(new ProgressEvent("unmock-cache")); }
+          if (this.onloadend) { this.onloadend(new ProgressEvent("unmock-cache")); }
+          if (this.onreadystatechange) { this.onreadystatechange(new Event("unmock-cache")); }
         } else {
-          setOnReadyStateChange(this);
+          setOnReadyStateChange(hash, this, true);
           return XMLHttpRequestSend.apply(this, [body]);
         }
       };
-      setOnReadyStateChange(this);
+      // there should be no end reporting (=== 4) yet
+      setOnReadyStateChange("<placeholder>", this, true);
+      const pathForFake = buildPath(
+        headerz,
+        ro.host,
+        ro.hostname,
+        ignore,
+        method,
+        ro.pathname,
+        signature,
+        story.story,
+        unmockHost,
+        token !== undefined,
+      );
       const res = XMLHttpRequestOpen.apply(this, [
         method,
         `https://${unmockHost}${pathForFake}`,
