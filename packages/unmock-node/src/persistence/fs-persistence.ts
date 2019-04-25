@@ -4,12 +4,26 @@ import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import {
+  deserializer as _deserializer,
   ILogger,
   IMetaData,
   IPersistence,
   IRequestData,
   IResponseData,
+  serializer as _serializer,
 } from "unmock-core";
+
+const {
+  CompositeDeserializer,
+  FormDeserializer,
+  JSONDeserializer,
+} = _deserializer;
+
+const {
+  CompositeSerializer,
+  FormSerializer,
+  JSONSerializer,
+} = _serializer;
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
@@ -25,7 +39,12 @@ const RESPONSE_FILE = "response.json";
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
 
-  constructor(private logger: ILogger, private savePath = SAVE_PATH) {}
+  constructor(
+    private logger: ILogger,
+    private serializer = new CompositeSerializer(new FormSerializer(), new JSONSerializer()),
+    private deserializer = new CompositeDeserializer(new FormDeserializer(), new JSONDeserializer()),
+    private savePath = SAVE_PATH,
+  ) {}
 
   public saveMeta(hash: string, data: IMetaData) {
     this.genericSave<IMetaData>(hash, META_FILE, data);
@@ -107,17 +126,19 @@ export default class FSPersistence implements IPersistence {
       // Now add the new data as needed
       const newData = { ...existingData, ...data };
       // And save...
-      fs.writeFileSync(target, JSON.stringify(newData, null, 2));
+      fs.writeFileSync(target,
+        JSON.stringify(fn === "response.json" ? this.serializer.serialize(newData) : newData, null, 2));
     } catch (e) {
-      this.logger.log(`Error converting this to JSON ${fs.readFileSync(target, "utf-8")}`);
+      this.logger.log(`Error converting ${target} to JSON. ${e.message} ${e.stack}`);
       throw e;
     }
   }
 
   private genericLoad<T>(hash: string, fn: string): T {
     const target = this.outdir(hash, false, fn);
+    const parsed = JSON.parse(fs.readFileSync(target, "utf-8"));
     return (fs.existsSync(target)
-      ? JSON.parse(fs.readFileSync(target, "utf-8"))
+      ? fn === "response.json" ? this.deserializer.deserialize(parsed) : parsed
       : {}) as T;
   }
 }
