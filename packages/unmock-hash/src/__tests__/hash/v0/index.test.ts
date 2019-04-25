@@ -1,30 +1,33 @@
 import { defaultOptions, ignoreAuth } from "unmock-core";
-import computeHash, { makeHashable } from "../../../hash/v0";
+import computeHash, { makeIgnorable } from "../../../hash/v0";
 
-describe("Hash function", () => {
-    test("is stable", async () => {
-        const object = { a: 1, b: "foobar" };
-        const hash = computeHash(object, []);
-        expect(hash).toBe("35447ce7");
-    });
-    test("is invariant to the order of keys", async () => {
-        const object1 = { a: 1, b: "foobar" };
-        const object2 = { b: object1.b, a: object1.a };
-        const hash1 = computeHash(object1, []);
-        const hash2 = computeHash(object2, []);
-        expect(hash2).toBe(hash1);
-    });
-    test("changes when ignoring a key", async () => {
-        const object = { a: 1, b: "foobar" };
-        const hash1 = computeHash(object, []);
-        const hash2 = computeHash(object, ["a"]);
-        expect(hash2).not.toBe(hash1);
-    });
-    test("does not change when ignoring an unknown key", async () => {
-      const object = { a: 1, b: "foobar" };
-      const hash1 = computeHash(object, []);
-      const hash2 = computeHash(object, ["c"]);
-      expect(hash2).toBe(hash1);
+describe("hash function", () => {
+    test("sanity test for simple object", () => {
+      const incoming0 = {
+        body : "foo",
+        headers : {
+          hello: "world",
+        },
+        hostname : "api.example.com",
+        method : "POST",
+        path : "/v1/hello",
+        story : [ ],
+        user_id : "me",
+      };
+      const incoming1 = {
+        body : "foo",
+        hostname : "api.example.com",
+        // tslint:disable-next-line:object-literal-sort-keys
+        headers : {
+          hello: "world",
+        },
+        method : "POST",
+        path : "/v1/hello",
+        story : [ ],
+        user_id : "me",
+      };
+      expect(computeHash(incoming0))
+      .toEqual(computeHash(incoming1));
     });
     test("real life stripe example that was generating different hashes", () => {
       const incoming0 = {
@@ -69,41 +72,7 @@ describe("Hash function", () => {
     });
 });
 
-describe("makeHashable", () => {
-  test("filters correctly with string", () => {
-    expect(makeHashable({ a: 1, b: 2, c: 3},  "a")).toEqual({b: 2, c: 3});
-  });
-
-  test("filters correctly with two strings", () => {
-    expect(makeHashable({ a: 1, b: 2, c: 3},  ["a", "b"])).toEqual({ c: 3});
-  });
-
-  test("filters correctly with regexp", () => {
-    expect(makeHashable({ a: 1, b: 2, c: 3},  "a|b")).toEqual({ c: 3});
-  });
-
-  test("filters correctly with nested object", () => {
-    expect(makeHashable({ a: {q: 1, r: 2}, b: 2, c: 3},  {a: "q"})).toEqual({ a: {r: 2}, b: 2, c: 3});
-  });
-
-  test("filters correctly with nested object and array", () => {
-    expect(makeHashable({ a: {q: 1, r: 2, s: 5}, b: 2, c: 3},  {a: ["q", "r"]})).toEqual({ a: {s: 5}, b: 2, c: 3});
-  });
-
-  test("filters correctly with nested object and regexp", () => {
-    expect(makeHashable({ a: {q: 1, r: 2, s: 5}, b: 2, c: 3},  {a: "q|r"})).toEqual({ a: {s: 5}, b: 2, c: 3});
-  });
-
-  test("filters correctly based on value", () => {
-    expect(makeHashable({ a: {q: 1, r: 2, s: "m"}, b: 2, c: 3},  {a: { s: "m"}}))
-     .toEqual({ a: {q: 1, r: 2}, b: 2, c: 3});
-  });
-
-  test("filters correctly based on value with regexp", () => {
-    expect(makeHashable({ a: {q: 1, r: 2, s: "moooo"}, b: 2, c: 3},  {a: { s: "mo*"}}))
-      .toEqual({ a: {q: 1, r: 2}, b: 2, c: 3});
-  });
-
+describe("make ignorable", () => {
   test("filters something realistic", () => {
     const real = {
       headers : {
@@ -178,10 +147,10 @@ describe("makeHashable", () => {
       path : "/v1/subscriptions",
       user_id : "github|525350",
     };
-    expect(makeHashable(real, "story")).toEqual(noStory);
-    expect(makeHashable(real, {headers: "\w*User-Agent\w*"})).toEqual(noAgent);
-    expect(makeHashable(real, ["story", {headers: "\w*User-Agent\w*"}])).toEqual(noStoryNoAgent);
-    expect(makeHashable(real, ["story", {headers: ["\w*User-Agent\w*", "Authorization"]}]))
+    expect(makeIgnorable(real, "story")).toEqual(noStory);
+    expect(makeIgnorable(real, {headers: "\w*User-Agent\w*"})).toEqual(noAgent);
+    expect(makeIgnorable(real, ["story", {headers: "\w*User-Agent\w*"}])).toEqual(noStoryNoAgent);
+    expect(makeIgnorable(real, ["story", {headers: ["\w*User-Agent\w*", "Authorization"]}]))
       .toEqual(noStoryNoAgentNoAuth);
   });
 });

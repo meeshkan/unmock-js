@@ -1,4 +1,6 @@
 import objectHash from "object-hash";
+import querystring from "querystring";
+import { IJSONValue } from "../../jsonType";
 
 export interface IHashableV0 {
     body: string | {};
@@ -13,6 +15,17 @@ export interface IHashableV0 {
 
 export interface IHashableWithIgnoreV0 {
   body?: string | {};
+  headers?: {[key: string]: string};
+  hostname?: string;
+  method?: string;
+  path?: string;
+  story?: string[];
+  user_id?: string;
+  signature?: string;
+}
+
+export interface ISerializedHashableWithIgnoreV0 {
+  body?: string | {} | IJSONValue | { [key: string]: string };
   headers?: {[key: string]: string};
   hostname?: string;
   method?: string;
@@ -37,7 +50,7 @@ export type IgnoreFieldV0 = "body" | "headers" | "hostname" | "method" | "path" 
 export type SingleIgnoreV0 = IIgnoreObjectV0 | IgnoreFieldV0;
 export type IgnoreV0 = SingleIgnoreV0 | SingleIgnoreV0[];
 
-export const makeHashable = (initialInput: IHashableV0, bigIgnore: IgnoreV0): IHashableWithIgnoreV0 => {
+export const makeIgnorable = (initialInput: IHashableV0, bigIgnore: IgnoreV0): IHashableWithIgnoreV0 => {
   const out = {
     ...initialInput,
     headers: {...initialInput.headers},
@@ -111,7 +124,40 @@ export const makeHashable = (initialInput: IHashableV0, bigIgnore: IgnoreV0): IH
   return out;
 };
 
-const TRUNCATE_HASH_AT = 8;
+export const makeSerializable = (initialInput: IHashableWithIgnoreV0, serializable: SerializableV0):
+    ISerializedHashableWithIgnoreV0 => {
+  const out: ISerializedHashableWithIgnoreV0 = {
+    ...initialInput,
+    ...(initialInput.headers ? {headers: {...initialInput.headers}} : {}),
+    ...(initialInput.story ? { story: [...initialInput.story] } : {}),
+  };
+  for (const serialize of (typeof serializable === "string" ? [serializable] : serializable)) {
+    if (serialize === "make-header-keys-lowercase" && out.headers) {
+      out.headers = Object.entries(out.headers)
+        .map(([k, v]) => ({[k.toLowerCase()]: v})).reduce((a, b) => ({ ...a, ...b }), {});
+    }
+    if (serialize === "deserialize-x-www-form-urlencoded-body" && typeof out.body === "string") {
+      out.body = out.body
+        .split("&")
+        .map((kv) => kv.split("="))
+        .map(([k, v]) => ({ [querystring.unescape(k)]: querystring.unescape(v) }))
+        .reduce((a, b) => ({ ...a, ...b }), {});
+    }
+    if (serialize === "deserialize-json-body" && typeof out.body === "string") {
+      out.body = JSON.parse(out.body);
+    }
+  }
+  return out;
+};
 
-export default (initialInput: IHashableV0, ignore?: IgnoreV0) =>
-  objectHash(ignore ? makeHashable(initialInput, ignore) : initialInput).substring(0, TRUNCATE_HASH_AT);
+export type SerializableActionsV0 = "make-header-keys-lowercase"
+  | "deserialize-json-body" |
+  "deserialize-x-www-form-urlencoded-body";
+export type SerializableV0 = SerializableActionsV0 | SerializableActionsV0[];
+
+export const TRUNCATE_HASH_AT = 8;
+
+export default (initialInput: IHashableV0, ignore?: IgnoreV0, serialize?: SerializableV0) =>
+  objectHash(
+    makeSerializable(
+      makeIgnorable(initialInput, ignore || []), serialize || [])).substring(0, TRUNCATE_HASH_AT);
