@@ -157,23 +157,13 @@ export default class JSDomBackend implements IBackend {
         ) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
-        console.log("computing hash", {
-          body: data,
-          headers: headerz,
-          hostname: ro.hostname || ro.host,
-          method,
-          path: ro.pathname,
-          story,
-          ...(signature ? {signature} : {}),
-          ...(userId ? {user_id: userId} : {}),
-        });
         const hash = v0({
-          body: data,
+          body: data || {},
           headers: headerz,
           hostname: ro.hostname || ro.host,
           method,
           path: ro.pathname,
-          story,
+          story: story.story,
           ...(signature ? {signature} : {}),
           ...(userId ? {user_id: userId} : {}),
         }, ignore);

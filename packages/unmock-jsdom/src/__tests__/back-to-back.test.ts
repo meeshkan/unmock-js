@@ -4,17 +4,16 @@
 
 import axios from "axios";
 import fs from "fs";
-import { kcomnu, unmock } from "../";
+import { ignoreStory, kcomnu, unmock } from "../";
 
 beforeEach(async () => {
   require("dotenv").config();
-  await unmock({
-    ignore: "story",
+  await unmock(ignoreStory({
     save: true,
     token: process.env.UNMOCK_TOKEN,
     unmockHost: process.env.UNMOCK_HOST,
     unmockPort: process.env.UNMOCK_PORT,
-  });
+  }));
 });
 
 afterEach(async () => {

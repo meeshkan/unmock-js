@@ -40,6 +40,7 @@ test("build correct path", () => {
 
 test("ignoreStory produces correct json", () => {
   expect(ignoreStory(defaultOptions)({})).toEqual({
+    ...defaultOptions,
     ignore: [defaultOptions.ignore, "story"],
   });
   expect(ignoreStory(defaultOptions)()).toEqual({
@@ -47,16 +48,19 @@ test("ignoreStory produces correct json", () => {
     ignore: [defaultOptions.ignore, "story"],
   });
   expect(ignoreStory(defaultOptions)({ whitelist: ["a"] })).toEqual({
+    ...defaultOptions,
     ignore: [defaultOptions.ignore, "story"],
     whitelist: ["a"],
   });
   expect(ignoreStory(defaultOptions)({ ignore: {} })).toEqual({
+    ...defaultOptions,
     ignore: [{}, "story"],
   });
 });
 
 test("ignoreAuth produces correct json", () => {
   expect(ignoreAuth(defaultOptions)({})).toEqual({
+    ...defaultOptions,
     ignore: [defaultOptions.ignore, { headers: "Authorization" }],
   });
   expect(ignoreAuth(defaultOptions)()).toEqual({
@@ -64,6 +68,7 @@ test("ignoreAuth produces correct json", () => {
     ignore: [defaultOptions.ignore, { headers: "Authorization" }],
   });
   expect(ignoreAuth(defaultOptions)({ whitelist: ["a"] })).toEqual({
+    ...defaultOptions,
     ignore: [defaultOptions.ignore, { headers: "Authorization" }],
     whitelist: ["a"],
   });

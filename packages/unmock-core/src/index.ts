@@ -43,7 +43,7 @@ export const defaultOptions: IUnmockInternalOptions = {
 const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
   maybeOptions?: IUnmockOptions,
 ): IUnmockOptions => {
-  const options = maybeOptions || baseOptions;
+  const options = { ...baseOptions, ...(maybeOptions ? maybeOptions : {}) };
   return {
     ...options,
     ignore: options.ignore
