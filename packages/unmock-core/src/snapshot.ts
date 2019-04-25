@@ -27,10 +27,10 @@ expect.extend({
   snapshot(obj: any) {
     const snapFile = path.join(
       SNAPSHOTS_FOLDER,
-      `${path.basename(this.testPath)}.snap`,
+      `${this.testPath.substr(process.cwd().length)}.snap`,
     );
-    if (!fs.existsSync(SNAPSHOTS_FOLDER)) {
-      mkdirp.sync(SNAPSHOTS_FOLDER);
+    if (!fs.existsSync(path.dirname(snapFile))) {
+      mkdirp.sync(path.dirname(snapFile));
     }
     let contents: { [testCallNumber: string]: string } = {};
     if (fs.existsSync(snapFile)) {
