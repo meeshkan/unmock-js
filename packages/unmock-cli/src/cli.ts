@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import axios from "axios";
 import child_process from "child_process";
 import program from "commander";
