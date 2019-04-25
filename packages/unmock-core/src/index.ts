@@ -2,6 +2,12 @@ import FailingBackend from "./backend/failing-backend";
 import FailingLogger from "./logger/failing-logger";
 import { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
 import FailingPersistence from "./persistence/failing-persistence";
+import CompositeDeserializer from "./serialize/deserializer/composite";
+import FormDeserializer from "./serialize/deserializer/form";
+import JSONDeserializer from "./serialize/deserializer/json";
+import CompositeSerializer from "./serialize/serializer/composite";
+import FormSerializer from "./serialize/serializer/form";
+import JSONSerializer from "./serialize/serializer/json";
 import getToken from "./token";
 import getUserId from "./user";
 import {
@@ -10,6 +16,18 @@ import {
   hostIsWhitelisted,
   UNMOCK_UA_HEADER_NAME,
 } from "./util";
+
+export const serializer = {
+  CompositeSerializer,
+  FormSerializer,
+  JSONSerializer,
+};
+
+export const deserializer = {
+  CompositeDeserializer,
+  FormDeserializer,
+  JSONDeserializer,
+};
 
 // top-level exports
 export { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
