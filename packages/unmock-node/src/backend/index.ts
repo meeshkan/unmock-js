@@ -3,7 +3,6 @@ import { request as httpsRequest, RequestOptions } from "https";
 import Mitm from "mitm";
 import {
   constants,
-  hash as _hash,
   IBackend,
   IMetaData,
   IStories,

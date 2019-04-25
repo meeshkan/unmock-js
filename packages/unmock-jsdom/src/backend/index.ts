@@ -1,5 +1,5 @@
 import { IStories, UnmockOptions } from "unmock-core";
-import { constants, hash as _hash, util } from "unmock-core";
+import { constants, util } from "unmock-core";
 import { IBackend } from "unmock-core";
 import { computeHashV0 } from "unmock-hash";
 

@@ -9,9 +9,11 @@ import NodeBackend from "./backend";
 import WinstonLogger from "./logger/winston-logger";
 import FSPersistence from "./persistence/fs-persistence";
 
+const logger = new WinstonLogger();
+
 const defaultOptions = new UnmockOptions({
-  logger: new WinstonLogger(),
-  persistence: new FSPersistence(),
+  logger,
+  persistence: new FSPersistence(logger),
 });
 
 const backend = new NodeBackend();
