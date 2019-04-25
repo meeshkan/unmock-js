@@ -1,5 +1,5 @@
+import { v0 } from "unmock-hash";
 import FailingBackend from "./backend/failing-backend";
-import hashV0 from "./hash/v0";
 import FailingLogger from "./logger/failing-logger";
 import { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
 import FailingPersistence from "./persistence/failing-persistence";
@@ -18,7 +18,7 @@ export { IBackend } from "./backend";
 export { ILogger } from "./logger";
 export { IPersistence } from "./persistence";
 export { IMetaData, IRequestData, IResponseData } from "./util";
-export const hash = { v0: hashV0 };
+export const hash = { v0 };
 export const util = {
   UNMOCK_UA_HEADER_NAME,
   buildPath,

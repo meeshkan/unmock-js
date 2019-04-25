@@ -1,7 +1,7 @@
 {
   "version": "0.0.41",
-  "name": "unmock-core",
-  "displayName": "unmock-core",
+  "name": "unmock-hash",
+  "displayName": "unmock-hash",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {
@@ -13,10 +13,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "commander": "^2.20.0",
-    "expect": "^24.7.1",
-    "querystring": "^0.2.0",
-    "unmock-hash": "file:../unmock-hash"
+    "object-hash": "^1.3.1"
   }
 }
