@@ -57,7 +57,7 @@ export interface IUnmockOptions {
   ignore?: any;
   signature?: string;
   token?: string;
-  whitelist?: string[];
+  whitelist?: string[] | string;
   useInProduction?: boolean;
   mode?: Mode;
 }

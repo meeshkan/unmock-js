@@ -33,12 +33,12 @@ export const buildPath = (
   }
   const { ignore, signature } = opts;
   const queryObject = {
-    headers,
+    headers: JSON.stringify(headers),
     hostname,
-    ignore,
+    ...(ignore ? { ignore: JSON.stringify(ignore) } : {}),
     method,
     path,
-    story,
+    story: JSON.stringify(story),
     ...(signature ? { signature } : {}),
   };
   return `/${xy ? "x" : "y"}/?${querystring.stringify(queryObject)}`;

@@ -1,4 +1,4 @@
-import { escapeRegExp } from "lodash";
+import { escapeRegExp, isEmpty } from "lodash";
 import { DEFAULT_IGNORE_HEADER, UNMOCK_HOST, UNMOCK_PORT } from "./constants";
 import { ILogger, IPersistence, IUnmockOptions } from "./interfaces";
 import { FailingPersistence } from "./persistence";
@@ -23,13 +23,16 @@ export class UnmockOptions {
   private internalIgnore: any = DEFAULT_IGNORE_HEADER;
   private refreshToken?: string;
 
-  constructor(options: IUnmockOptions) {
+  constructor(options?: IUnmockOptions) {
     this.reset(options); // Save internally
-    const { whitelist } = options;
-    // Override with defaults if needed.
-    this.whitelist = this.whitelistToRegex(
-      whitelist || ["127.0.0.1", "127.0.0.0", "localhost", this.unmockHost],
-    );
+    this.whitelist =
+      this.whitelist ||
+      this.whitelistToRegex([
+        "127.0.0.1",
+        "127.0.0.0",
+        "localhost",
+        this.unmockHost,
+      ]);
   }
 
   public reset(options?: IUnmockOptions): UnmockOptions {
@@ -57,7 +60,9 @@ export class UnmockOptions {
     this.internalIgnore = ignore || this.internalIgnore;
     this.signature = signature || this.signature;
     this.refreshToken = token || this.refreshToken;
-    this.whitelist = this.whitelistToRegex(whitelist) || this.whitelist;
+    this.whitelist = whitelist
+      ? this.whitelistToRegex(whitelist)
+      : this.whitelist;
     this.useInProduction = useInProduction || this.useInProduction;
     this.mode = mode || this.mode;
 
@@ -65,6 +70,10 @@ export class UnmockOptions {
       this.persistence.saveToken(this.refreshToken);
     }
     return this;
+  }
+
+  public get token() {
+    return this.refreshToken;
   }
 
   public addIgnore(ignore: any) {
@@ -75,10 +84,12 @@ export class UnmockOptions {
   }
 
   public get ignore() {
-    return this.internalIgnore;
+    // Allows passing ignore as {} or [] on initialization
+    // to override default ignore with empty ignore.
+    return isEmpty(this.internalIgnore) ? undefined : this.internalIgnore;
   }
 
-  public async token() {
+  public async getAccessToken() {
     return await getToken(this);
   }
 
@@ -87,7 +98,8 @@ export class UnmockOptions {
     if (args.length === 0) {
       return base;
     }
-    return `${base}/${args.join("/")}`;
+    const maybeSlash = args[0].startsWith("/") ? "" : "/";
+    return `${base}${maybeSlash}${args.join("/")}`;
   }
 
   public isWhitelisted(host: string) {
@@ -105,22 +117,20 @@ export class UnmockOptions {
     );
   }
 
-  private whitelistToRegex(
-    whitelist: string[] | undefined,
-  ): RegExp[] | undefined {
-    if (whitelist === undefined) {
-      return;
-    }
-    return whitelist.map(
-      (item) =>
-        new RegExp(
-          "^" +
-            item
-              .split(/\*+/)
-              .map(escapeRegExp)
-              .join(".*") +
-            "$",
-        ),
-    );
+  private whitelistToRegex(whitelist: string[] | string): RegExp[] {
+    whitelist = whitelist instanceof Array ? whitelist : [whitelist];
+    return whitelist.map((item: any) => {
+      if (item instanceof RegExp) {
+        return item;
+      }
+      return new RegExp(
+        "^" +
+          item
+            .split(/\*+/)
+            .map(escapeRegExp)
+            .join(".*") +
+          "$",
+      );
+    });
   }
 }

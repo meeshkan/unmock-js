@@ -34,7 +34,16 @@ export const constants = {
 };
 export { snapshot } from "./snapshot";
 
-const baseIgnore = (ignore: any) => (opts: UnmockOptions): UnmockOptions => {
+// First level indirection defines what to ignore
+// Second level indirection provides basic/default options
+// Third indirection provides the final call + optional parameters to modify
+const baseIgnore = (ignore: any) => (opts?: UnmockOptions) => (
+  maybeOptions?: IUnmockOptions,
+) => {
+  if (opts === undefined) {
+    opts = new UnmockOptions();
+  }
+  opts.reset(maybeOptions);
   opts.addIgnore(ignore);
   return opts;
 };
@@ -48,7 +57,7 @@ export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story: IStories = { story: [] };
-    const accessToken = await options.token();
+    const accessToken = await options.getAccessToken();
     const userId = accessToken ? await getUserId(options, accessToken) : null;
     backend.initialize(userId, story, accessToken, options);
   }
