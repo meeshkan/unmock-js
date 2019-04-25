@@ -6,10 +6,11 @@ import {
   UnmockOptions,
 } from "unmock-core";
 import NodeBackend from "./backend";
-import WinstonLogger from "./logger/winston-logger";
+import _WinstonLogger from "./logger/winston-logger";
 import FSPersistence from "./persistence/fs-persistence";
+export const WinstonLogger = _WinstonLogger;
 
-const logger = new WinstonLogger();
+const logger = new _WinstonLogger();
 
 const defaultOptions = new UnmockOptions({
   logger,

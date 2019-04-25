@@ -64,7 +64,8 @@
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",
-    "unmock-node": "file:packages/unmock-node"
+    "unmock-node": "file:packages/unmock-node",
+    "unmock-hash": "file:packages/unmock-hash"
   },
   "name": "unmock",
   "jest": {

@@ -125,14 +125,14 @@ export const makeIgnorable = (
       delete out.story;
     } else if (typeof ignore !== "string" && ignore.story) {
       out.story = out.story.filter(
-        story =>
+        (story) =>
           !(
             typeof ignore.story === "string" &&
             new RegExp(ignore.story).test(story)
           ) &&
           !(
             ignore.story instanceof Array &&
-            ignore.story.filter(sub => new RegExp(sub).test(story)).length > 0
+            ignore.story.filter((sub) => new RegExp(sub).test(story)).length > 0
           ),
       );
     } else if (ignore === "headers") {
@@ -140,14 +140,14 @@ export const makeIgnorable = (
     } else if (typeof ignore !== "string" && ignore.headers) {
       out.headers = Object.keys(out.headers)
         .filter(
-          header =>
+          (header) =>
             !(
               typeof ignore.headers === "string" &&
               new RegExp(ignore.headers).test(header)
             ) &&
             !(
               ignore.headers instanceof Array &&
-              ignore.headers.filter(sub => new RegExp(sub).test(header))
+              ignore.headers.filter((sub) => new RegExp(sub).test(header))
                 .length > 0
             ) &&
             !(
@@ -158,7 +158,7 @@ export const makeIgnorable = (
               ).length > 0
             ),
         )
-        .map(k => ({ [k]: out.headers[k] }))
+        .map((k) => ({ [k]: out.headers[k] }))
         .reduce((a, b) => ({ ...a, ...b }), {});
     }
   }
@@ -186,7 +186,7 @@ export const applyActions = (
     ) {
       out.body = out.body
         .split("&")
-        .map(kv => kv.split("="))
+        .map((kv) => kv.split("="))
         .map(([k, v]) => ({
           [querystring.unescape(k)]: querystring.unescape(v),
         }))

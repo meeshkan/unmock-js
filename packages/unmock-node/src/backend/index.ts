@@ -13,8 +13,7 @@ import {
 import { computeHashV0 } from "unmock-hash";
 
 const { buildPath, endReporter, makeAuthHeader } = util;
-const { UNMOCK_UA_HEADER_NAME } = constants;
-const MOSES = "MOSES";
+const { UNMOCK_UA_HEADER_NAME, MOSES } = constants;
 const metaData: IMetaData = {
   lang: "node",
 };
@@ -62,10 +61,10 @@ const mHttp = (
   req.on("end", () => {
     const hashable = {
       body: BufferToStringOrEmpty(outgoingData, "body"),
-      hostname: host,
-      method,
+      headers: rawHeaders as { [key: string]: string },
+      hostname: host || "",
+      method: method || "",
       path: req.url || "",
-      rawHeaders,
       story: story.story,
       user_id: userId ? userId : MOSES,
       ...(signature ? { signature } : {}),

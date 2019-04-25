@@ -1,10 +1,14 @@
-import { IStories, UnmockOptions } from "unmock-core";
-import { constants, util } from "unmock-core";
-import { IBackend } from "unmock-core";
+import {
+  constants,
+  IBackend,
+  IStories,
+  UnmockOptions,
+  util,
+} from "unmock-core";
 import { computeHashV0 } from "unmock-hash";
 
 const { buildPath, endReporter } = util;
-const { UNMOCK_UA_HEADER_NAME } = constants;
+const { UNMOCK_UA_HEADER_NAME, MOSES } = constants;
 
 const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
@@ -147,8 +151,8 @@ export default class JSDomBackend implements IBackend {
             method,
             path: ro.pathname,
             story: story.story,
+            user_id: userId ? userId : MOSES,
             ...(signature ? { signature } : {}),
-            ...(userId ? { user_id: userId } : {}),
           },
           ignore,
         );

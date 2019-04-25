@@ -30,6 +30,7 @@ export const util = {
   makeAuthHeader,
 };
 export const constants = {
+  MOSES: importedConstants.MOSES,
   UNMOCK_UA_HEADER_NAME: importedConstants.UNMOCK_UA_HEADER_NAME,
 };
 export { snapshot } from "./snapshot";
