@@ -30,7 +30,7 @@ const last = process.argv[process.argv.length - 1];
 
 const makeHeaders = (headers: string[]) =>
   headers
-    .map((h) => ({
+    .map(h => ({
       [h.substring(0, h.indexOf(":")).trim()]: h
         .substring(h.indexOf(":") + 1)
         .trim(),

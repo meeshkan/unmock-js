@@ -1,5 +1,10 @@
 import * as path from "path";
-import { IMetaData, IPersistence, IRequestData, IResponseData } from "unmock-core";
+import {
+  IMetaData,
+  IPersistence,
+  IRequestData,
+  IResponseData,
+} from "unmock-core";
 
 // Uses directory structure for keys in window local storage
 const UNMOCK_FILE = ".unmock";
@@ -56,7 +61,7 @@ export default class BrowserStoragePersistence implements IPersistence {
     const od = this.outdir(hash);
     // console.log(hash, Object.keys(window.localStorage));
     return Object.keys(window.localStorage)
-      .map((k) => k.substr(0, od.length) === od)
+      .map(k => k.substr(0, od.length) === od)
       .reduce((a, b) => a || b, false);
   }
 
@@ -88,5 +93,4 @@ export default class BrowserStoragePersistence implements IPersistence {
       ? JSON.parse(window.localStorage[target])
       : {};
   }
-
 }

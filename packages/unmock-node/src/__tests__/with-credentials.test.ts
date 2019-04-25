@@ -30,9 +30,7 @@ test("credentials written to .unmock/credentials work just like a token", async 
   );
   expect(typeof projects[0].id).toBe("number");
   // test to make sure cache works
-  const {
-    data,
-  } = await axios(
+  const { data } = await axios(
     "https://www.behance.net/v2/projects?api_key=u_n_m_o_c_k_200",
   );
   expect(typeof data.projects[0].id).toBe("number");

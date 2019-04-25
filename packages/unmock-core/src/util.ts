@@ -73,9 +73,9 @@ export const endReporter = (
   logger.log(`*****url-called*****`);
   // tslint:disable-next-line:max-line-length
   logger.log(
-    `Hi! We see you've called ${requestData.method} ${requestData.host}${requestData.path}${
-      requestData.body ? ` with data ${requestData.body}.` : `.`
-    }`,
+    `Hi! We see you've called ${requestData.method} ${requestData.host}${
+      requestData.path
+    }${requestData.body ? ` with data ${requestData.body}.` : `.`}`,
   );
   const cachemsg = fromCache ? "served you cached" : "sent you";
   logger.log(

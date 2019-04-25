@@ -3,7 +3,12 @@ import * as ini from "ini";
 import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
-import { IMetaData, IPersistence, IRequestData, IResponseData } from "unmock-core";
+import {
+  IMetaData,
+  IPersistence,
+  IRequestData,
+  IResponseData,
+} from "unmock-core";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
@@ -85,7 +90,9 @@ export default class FSPersistence implements IPersistence {
 
   private outdir(hash: string, mkd: boolean, ...args: string[]) {
     const outdir = path.normalize(path.join(this.savePath, hash));
-    if (mkd) { mkdirp.sync(outdir); }
+    if (mkd) {
+      mkdirp.sync(outdir);
+    }
     return path.join(outdir, ...args);
   }
 
@@ -107,5 +114,4 @@ export default class FSPersistence implements IPersistence {
       ? JSON.parse(fs.readFileSync(target, "utf-8"))
       : {}) as T;
   }
-
 }
