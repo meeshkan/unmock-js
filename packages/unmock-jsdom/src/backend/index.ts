@@ -92,10 +92,16 @@ export default class JSDomBackend implements IBackend {
         if (name === "Authorization") {
           // store, but do not pass onto request
           headerz[name] = value;
-        } else if (name === UNMOCK_AUTH || name === UNMOCK_UA_HEADER_NAME) {
+        } else if (name === UNMOCK_AUTH) {
           // do not store, but pass onto request
           return XMLHttpRequestSetRequestHeader.apply(this, [
             "Authorization",
+            value,
+          ]);
+        } else if (name === UNMOCK_UA_HEADER_NAME) {
+          // do not store, but pass onto request
+          return XMLHttpRequestSetRequestHeader.apply(this, [
+            UNMOCK_UA_HEADER_NAME,
             value,
           ]);
         } else {
