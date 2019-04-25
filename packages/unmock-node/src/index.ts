@@ -10,11 +10,13 @@ import NodeBackend from "./backend";
 import WinstonLogger from "./logger/winston-logger";
 import FSPersistence from "./persistence/fs-persistence";
 
+const logger = new WinstonLogger();
+
 export const defaultOptions: IUnmockInternalOptions = {
   ..._defaultOptions,
   backend: new NodeBackend(),
-  logger: new WinstonLogger(),
-  persistence: new FSPersistence(),
+  logger,
+  persistence: new FSPersistence(logger),
 };
 
 export const ignoreStory = _ignoreStory(defaultOptions);
