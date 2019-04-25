@@ -2,32 +2,27 @@ import objectHash from "object-hash";
 import querystring from "querystring";
 import { IJSONValue } from "../../jsonType";
 
+interface IStringMap {
+  [key: string]: string;
+}
+
 export interface IHashableV0 {
-  [key: string]: string | undefined | string[] | {};
-  body: string | {};
-  headers: { [key: string]: string };
-  hostname: string;
-  method: string;
-  path: string;
-  story: string[];
-  user_id: string;
+  // Used as input/filtered input (after `ignore`ing as needed)
+  [key: string]: string | undefined | string[] | IStringMap | {};
+  body: string | {} | undefined; // Keys are mandatory, their content is not.
+  headers: IStringMap | undefined;
+  hostname: string | undefined;
+  method: string | undefined;
+  path: string | undefined;
+  story: string[] | undefined;
+  user_id: string | undefined;
   signature?: string;
 }
 
-export interface IHashableWithIgnoreV0 {
-  body?: string | {};
-  headers?: { [key: string]: string };
-  hostname?: string;
-  method?: string;
-  path?: string;
-  story?: string[];
-  user_id?: string;
-  signature?: string;
-}
-
-export interface ISerializedHashableWithIgnoreV0 {
-  body?: string | {} | IJSONValue | { [key: string]: string };
-  headers?: { [key: string]: string };
+interface ISerializedHashableWithIgnoreV0 {
+  // Identical to above, represents content after certain actions has taken place
+  body?: string | {} | IJSONValue | IStringMap;
+  headers?: IStringMap;
   hostname?: string;
   method?: string;
   path?: string;
@@ -37,9 +32,10 @@ export interface ISerializedHashableWithIgnoreV0 {
 }
 
 export interface IIgnoreObjectV0 {
-  [key: string]: string | undefined | string[] | {};
+  // Describes how and which fields from IHashableV0 to ignore.
+  [key: string]: string | undefined | string[] | IStringMap;
   body?: string;
-  headers?: string | string[] | { [key: string]: string };
+  headers?: string | string[] | IStringMap;
   hostname?: string;
   method?: string;
   path?: string;
@@ -48,7 +44,7 @@ export interface IIgnoreObjectV0 {
   signature?: string;
 }
 
-export type IgnoreFieldV0 =
+type IgnoreFieldV0 =
   | "body"
   | "headers"
   | "hostname"
@@ -57,8 +53,8 @@ export type IgnoreFieldV0 =
   | "story"
   | "user_id"
   | "signature";
-export type SingleIgnoreV0 = IIgnoreObjectV0 | IgnoreFieldV0;
-export type IgnoreV0 = SingleIgnoreV0 | SingleIgnoreV0[];
+type SingleIgnoreV0 = IIgnoreObjectV0 | IgnoreFieldV0;
+type IgnoreV0 = SingleIgnoreV0 | SingleIgnoreV0[];
 
 const shouldIgnoreByRemoving = (
   ignore: IIgnoreObjectV0,
@@ -86,18 +82,20 @@ const ignoreByRemoving = (
   }
 };
 
+const makeArray = (input: any) => (input instanceof Array ? input : [input]);
+
 export const makeIgnorable = (
   initialInput: IHashableV0,
   bigIgnore: IgnoreV0,
-): IHashableWithIgnoreV0 => {
+): IHashableV0 => {
   const out = {
     ...initialInput,
-    headers: { ...initialInput.headers },
-    story: [...initialInput.story],
+    headers: {
+      ...(initialInput.headers !== undefined ? initialInput.headers : {}),
+    },
+    story: [...(initialInput.story !== undefined ? initialInput.story : [])],
   };
-  if (!(bigIgnore instanceof Array)) {
-    bigIgnore = [bigIgnore];
-  }
+  bigIgnore = makeArray(bigIgnore);
   for (const ignore of bigIgnore) {
     if (typeof ignore === "string") {
       delete out[ignore];
@@ -150,8 +148,8 @@ export const makeIgnorable = (
   return out;
 };
 
-export const applyActions = (
-  initialInput: IHashableWithIgnoreV0,
+const applyActions = (
+  initialInput: IHashableV0,
   actions: ActionsV0,
 ): ISerializedHashableWithIgnoreV0 => {
   const out: ISerializedHashableWithIgnoreV0 = {
@@ -159,7 +157,7 @@ export const applyActions = (
     ...(initialInput.headers ? { headers: { ...initialInput.headers } } : {}),
     ...(initialInput.story ? { story: [...initialInput.story] } : {}),
   };
-  actions = typeof actions === "string" ? [actions] : actions;
+  actions = makeArray(actions);
   for (const action of actions) {
     if (action === "make-header-keys-lowercase" && out.headers) {
       out.headers = Object.entries(out.headers)
@@ -170,9 +168,7 @@ export const applyActions = (
       action === "deserialize-x-www-form-urlencoded-body" &&
       typeof out.body === "string"
     ) {
-      out.body = querystring
-        .parse(out.body)
-        .reduce((a, b) => ({ ...a, ...b }), {});
+      out.body = querystring.parse(out.body);
     }
     if (action === "deserialize-json-body" && typeof out.body === "string") {
       out.body = JSON.parse(out.body);
@@ -181,13 +177,13 @@ export const applyActions = (
   return out;
 };
 
-export type ActionsActionsV0 =
+type ActionsActionsV0 =
   | "make-header-keys-lowercase"
   | "deserialize-json-body"
   | "deserialize-x-www-form-urlencoded-body";
-export type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
+type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
 
-export const TRUNCATE_HASH_AT = 8;
+const TRUNCATE_HASH_AT = 8;
 
 export default (
   initialInput: IHashableV0,
