@@ -4,22 +4,20 @@ import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import {
-  deserializer as _deserializer,
   ILogger,
   IMetaData,
   IPersistence,
   IRequestData,
   IResponseData,
-  serializer as _serializer,
 } from "unmock-core";
-
-const {
+import {
   CompositeDeserializer,
+  CompositeSerializer,
   FormDeserializer,
+  FormSerializer,
   JSONDeserializer,
-} = _deserializer;
-
-const { CompositeSerializer, FormSerializer, JSONSerializer } = _serializer;
+  JSONSerializer,
+} from "../serialize";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
