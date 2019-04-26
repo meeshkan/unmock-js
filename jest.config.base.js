@@ -8,7 +8,7 @@ module.exports = {
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
   moduleNameMapper: {
-    "^(unmock-cli|unmock-core|unmock-hash|unmock-jsdom|unmock-node)(?:/dist)?((?:/.*)|$)":
+    "^(unmock|unmock-cli|unmock-core|unmock-hash|unmock-jsdom|unmock-node)(?:/dist)?((?:/.*)|$)":
       "<rootDir>/../../packages/$1/src$2"
   },
   setupFilesAfterEnv: ["<rootDir>/../../jest.setup.js"],
