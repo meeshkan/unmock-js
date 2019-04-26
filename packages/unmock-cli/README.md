@@ -19,7 +19,9 @@ Commands:
   curl [options] <url>
   open [options] <hash>
   list
+```
 
+```bash
 $ unmock curl --help
 Usage: curl [options] <url>
 
@@ -29,7 +31,9 @@ Options:
   -X                     --request [command]
   -S                     --signature [signature]
   -h, --help             output usage information
+```
 
+```bash
 $ unmock list --help
 Usage: list [options]
 
