@@ -1,6 +1,8 @@
 import glob from "glob";
 import { WinstonLogger } from "unmock-node";
 
+const removeTrailingNumber = (s: string) => s.split(" ").slice(0, -1).join(" ");
+
 export default () => {
   const logger = new WinstonLogger();
   glob("__snapshots__/**/*.snap", (e, matches) => {
@@ -11,11 +13,11 @@ export default () => {
       logger.log(match.substring(0, match.length - 5).substring(14));
       const snapshots = require(`${process.cwd()}/${match}`);
       const tests = Object.keys(snapshots)
-        .map(name => ({[name.split(" ").slice(0, -1).join(" ")]: new Array<string>()}))
+        .map(name => ({[removeTrailingNumber(name)]: new Array<string>()}))
         .reduce((a, b) => ({ ...a, ...b}), {});
       Object.keys(snapshots)
         .forEach(name => {
-          tests[name.split(" ").slice(0, -1).join(" ")].push(name);
+          tests[removeTrailingNumber(name)].push(name);
         });
       Object.keys(tests)
         .forEach(test => {

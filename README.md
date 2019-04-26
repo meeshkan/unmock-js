@@ -27,7 +27,8 @@ Unmock works by overriding Node's `http.request` and `https.request` functions i
 Any of the subpackages in this project can be installed via `npm` or `yarn`.
 
 ```sh
-$ npm install --save unmock unmock-node
+$ npm install --save unmock # the cli
+$ npm install --save unmock-<platform> # node, jsdom
 ```
 
 ## Usage
