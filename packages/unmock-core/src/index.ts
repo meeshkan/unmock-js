@@ -1,6 +1,7 @@
 import * as importedConstants from "./constants";
 import { IBackend, IStories, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
+import getToken from "./token";
 import { buildPath, endReporter, getUserId, makeAuthHeader } from "./util";
 
 // top-level exports
@@ -39,10 +40,8 @@ export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story: IStories = { story: [] };
-    // TODO these might be called many times (if used with `beforeEach`).
-    // Some caching for userId should be put in place to prevent this.
-    const accessToken = await options.getAccessToken();
-    const userId = accessToken ? await getUserId(options, accessToken) : null;
+    const accessToken = await getToken(options);
+    const userId = await getUserId(options, accessToken);
     backend.initialize(userId, story, accessToken, options);
   }
 };

@@ -9,10 +9,17 @@ export const makeAuthHeader = (token: string) => ({
   headers: { Authorization: `Bearer ${token}` },
 });
 
-export const getUserId = async (opts: UnmockOptions, accessToken: string) => {
+export const getUserId = async (opts: UnmockOptions, accessToken?: string) => {
+  if (accessToken === undefined) {
+    return null;
+  }
+  if (accessToken === opts.persistence.loadAuth()) {
+    return opts.persistence.loadUserId();
+  }
   const {
     data: { userId },
   } = await axios.get(opts.buildPath("user"), makeAuthHeader(accessToken));
+  opts.persistence.saveUserId(userId);
   return userId;
 };
 
