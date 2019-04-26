@@ -2,8 +2,6 @@ import { escapeRegExp, isEmpty } from "lodash";
 import { DEFAULT_IGNORE_HEADER, UNMOCK_HOST, UNMOCK_PORT } from "./constants";
 import { ILogger, IPersistence, IUnmockOptions } from "./interfaces";
 import { FailingPersistence } from "./persistence";
-import getToken from "./token";
-import { getUserId } from "./util";
 
 export enum Mode {
   ALWAYS_CALL_UNMOCK,
@@ -88,20 +86,6 @@ export class UnmockOptions {
     // Allows passing ignore as {} or [] on initialization
     // to override default ignore with empty ignore.
     return isEmpty(this.internalIgnore) ? undefined : this.internalIgnore;
-  }
-
-  public async getAccessToken() {
-    return await getToken(this);
-  }
-
-  public async getUserId(accessToken?: string) {
-    if (accessToken === undefined) {
-      return null;
-    }
-    if (accessToken === this.persistence.loadAuth()) {
-      return this.persistence.loadUserId();
-    }
-    return await getUserId(this, accessToken);
   }
 
   public buildPath(...args: string[]) {

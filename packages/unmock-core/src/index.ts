@@ -1,7 +1,8 @@
 import * as importedConstants from "./constants";
 import { IBackend, IStories, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
-import { buildPath, endReporter, makeAuthHeader } from "./util";
+import getToken from "./token";
+import { buildPath, endReporter, getUserId, makeAuthHeader } from "./util";
 
 // top-level exports
 export { UnmockOptions, Mode } from "./options";
@@ -39,8 +40,8 @@ export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story: IStories = { story: [] };
-    const accessToken = await options.getAccessToken();
-    const userId = await options.getUserId(accessToken);
+    const accessToken = await getToken(options);
+    const userId = await getUserId(options, accessToken);
     backend.initialize(userId, story, accessToken, options);
   }
 };
