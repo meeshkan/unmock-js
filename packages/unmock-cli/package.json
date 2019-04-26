@@ -3,7 +3,7 @@
   "name": "unmock-cli",
   "displayName": "unmock-cli",
   "license": "MIT",
-  "main": "dist/cli.js",
+  "main": "dist/index.js",
   "bin": {
     "unmock": "./index.js"
   },
