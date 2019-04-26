@@ -16,7 +16,13 @@ export class FailingPersistence implements IPersistence {
   public saveToken() {
     throw new Error("not implemented");
   }
+  public saveUserId() {
+    throw new Error("not implemented");
+  }
   public loadAuth() {
+    throw new Error("not implemented");
+  }
+  public loadUserId() {
     throw new Error("not implemented");
   }
   public hasHash(): never {

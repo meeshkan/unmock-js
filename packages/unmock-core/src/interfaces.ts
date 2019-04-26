@@ -5,6 +5,7 @@ export interface ILogger {
 }
 export interface IPersistence {
   saveAuth: (auth: string) => void;
+  saveUserId: (userId: string) => void;
   saveToken: (token: string) => void;
   saveMeta: (hash: string, data: IMetaData) => void;
   saveRequest: (hash: string, data: IRequestData) => void;
@@ -14,6 +15,7 @@ export interface IPersistence {
   loadRequest: (hash: string) => IRequestData;
   loadResponse: (hash: string) => IResponseData;
   loadToken: () => string | void;
+  loadUserId: () => string | void;
   hasHash: (hash: string) => boolean;
 }
 
