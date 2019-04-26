@@ -9,6 +9,7 @@ import {
 // Uses directory structure for keys in window local storage
 const UNMOCK_FILE = ".unmock";
 const TOKEN_KEY = ".token";
+const USERID_KEY = ".userid";
 const TOKEN_FULL_KEY = path.join(UNMOCK_FILE, TOKEN_KEY);
 const SAVE_PATH = path.join(UNMOCK_FILE, "save");
 const META_FILE = "meta.json";
@@ -36,9 +37,17 @@ export default class BrowserStoragePersistence implements IPersistence {
     window.localStorage[TOKEN_FULL_KEY] = auth;
   }
 
+  public saveUserId(userId: string) {
+    window.localStorage[USERID_KEY] = userId;
+  }
+
   public saveToken(token: string) {
     // we never save the token to the browser only ever in memory
     this.token = token;
+  }
+
+  public loadUserId() {
+    return window.localStorage[USERID_KEY];
   }
 
   public loadAuth() {
