@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-const run = require("./dist/cli.js");
-run();
+const run = require("./dist/index.js");
+run.default();

@@ -12,6 +12,7 @@ export const open = (hash: string, options: any) => {
           ? `Could not find ${hash}`
           : `Too many matches: ${matches}`,
       );
+      return;
     }
     const path = matches[0];
     const child = child_process.spawn(editor, [path], {
