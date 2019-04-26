@@ -41,7 +41,7 @@ const saveMaybeCreate = (filepath: string, content: string) => {
 };
 
 const loadOrNone = (filepath: string) => {
-  if (!fs.existsSync(path.dirname(filepath))) {
+  if (!fs.existsSync(filepath)) {
     return;
   }
   return fs.readFileSync(filepath).toString();
