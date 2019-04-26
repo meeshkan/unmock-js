@@ -1,8 +1,7 @@
-import { access } from "fs";
 import * as importedConstants from "./constants";
 import { IBackend, IStories, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
-import { buildPath, endReporter, getUserId, makeAuthHeader } from "./util";
+import { buildPath, endReporter, makeAuthHeader } from "./util";
 
 // top-level exports
 export { UnmockOptions, Mode } from "./options";
