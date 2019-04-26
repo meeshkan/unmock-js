@@ -10,9 +10,13 @@ const removeTrailingNumber = (s: string) =>
 
 const SNAP_SUFFIX = ".snap";
 const DEFAULT_SNAPSHOTS_FOLDER = "__snapshots__";
+interface IStringMap {
+  [key: string]: string[];
+}
 
 export const list = () => {
   const logger = new WinstonLogger();
+  logger.log("Fetching mocks and relevant tests...");
   glob(
     `${process.cwd()}/**/${DEFAULT_SNAPSHOTS_FOLDER}/**/*${SNAP_SUFFIX}`,
     (e, matches) => {
@@ -22,12 +26,14 @@ export const list = () => {
       matches.forEach((match) => {
         logger.log(path.basename(match, SNAP_SUFFIX));
         const snapshots = require(match);
-        const tests = Object.keys(snapshots)
-          .map((name) => ({ [removeTrailingNumber(name)]: new Array<string>() }))
-          .reduce((a, b) => ({ ...a, ...b }), {});
-        Object.keys(snapshots).forEach((name) => {
-          tests[removeTrailingNumber(name)].push(name);
-        });
+        const tests: IStringMap = Object.keys(snapshots).reduce(
+          (obj: IStringMap, name) => {
+            const key = removeTrailingNumber(name);
+            (obj[key] = obj[key] || []).push(name);
+            return obj;
+          },
+          {},
+        );
         Object.keys(tests).forEach((test) => {
           logger.log(`  ${test}`);
           tests[test].forEach((call) => {
