@@ -1,4 +1,4 @@
-import { IDeserializer } from "./deserializer";
+import { IDeserializer } from "../interfaces";
 
 export default class CompositeDeserializer implements IDeserializer {
   private deserializers: IDeserializer[];
@@ -6,6 +6,9 @@ export default class CompositeDeserializer implements IDeserializer {
     this.deserializers = [...args];
   }
   public deserialize(json: any) {
-    return this.deserializers.reduce((prev, cur) => cur.deserialize(prev), json);
+    return this.deserializers.reduce(
+      (prev, cur) => cur.deserialize(prev),
+      json,
+    );
   }
 }

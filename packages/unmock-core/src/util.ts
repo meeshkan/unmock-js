@@ -1,63 +1,52 @@
+import axios from "axios";
 import querystring from "querystring";
-import { ILogger } from "./logger";
-import { IPersistence } from "./persistence";
+import { IMetaData, IRequestData, IResponseData } from "./interfaces";
+import { UnmockOptions } from "./options";
 
-export interface IMetaData {
-  lang?: string;
-}
+const inputOrEmptyString = (inp: string | undefined) => inp || "";
 
-export interface IRequestData {
-  body?: string;
-  headers?: any;
-  host?: string;
-  method?: string;
-  path?: string;
-}
+export const makeAuthHeader = (token: string) => ({
+  headers: { Authorization: `Bearer ${token}` },
+});
 
-export interface IResponseData {
-  body?: string;
-  headers?: any;
-}
-
-export const hostIsWhitelisted = (
-  whitelist: string[] | undefined,
-  host: string | undefined,
-  hostname: string | undefined,
-) =>
-  whitelist &&
-  ((host && whitelist.indexOf(host) !== -1) ||
-    (hostname && whitelist.indexOf(hostname) !== -1));
+export const getUserId = async (opts: UnmockOptions, accessToken: string) => {
+  const {
+    data: { userId },
+  } = await axios.get(opts.buildPath("user"), makeAuthHeader(accessToken));
+  return userId;
+};
 
 export const buildPath = (
-  headerz: any,
-  host: string | undefined,
+  opts: UnmockOptions,
+  headers: any,
   hostname: string | undefined,
-  ignore: any,
   method: string | undefined,
   path: string | undefined,
-  signature: string | undefined,
   story: string[],
-  unmockHost: string,
   xy: boolean,
-) =>
-  // tslint:disable-next-line:max-line-length
-  hostname === unmockHost || host === unmockHost
-    ? path
-    : `/${xy ? "x" : "y"}/?story=${querystring.escape(
-        JSON.stringify(story),
-      )}&path=${querystring.escape(path || "")}&hostname=${querystring.escape(
-        hostname || host || "",
-      )}&method=${querystring.escape(
-        method || "",
-      )}&headers=${querystring.escape(JSON.stringify(headerz))}${
-        ignore ? `&ignore=${querystring.escape(JSON.stringify(ignore))}` : ""
-      }${signature ? `&signature=${querystring.escape(signature)}` : ""}`;
+) => {
+  hostname = inputOrEmptyString(hostname);
+  path = inputOrEmptyString(path);
+  method = inputOrEmptyString(method);
+  if (hostname === opts.unmockHost) {
+    return path;
+  }
+  const { ignore, signature } = opts;
+  const queryObject = {
+    headers: JSON.stringify(headers),
+    hostname,
+    ...(ignore ? { ignore: JSON.stringify(ignore) } : {}),
+    method,
+    path,
+    story: JSON.stringify(story),
+    ...(signature ? { signature } : {}),
+  };
+  return `/${xy ? "x" : "y"}/?${querystring.stringify(queryObject)}`;
+};
 
 export const endReporter = (
+  opts: UnmockOptions,
   hash: string,
-  logger: ILogger,
-  persistence: IPersistence,
-  save: boolean | string[],
   story: string[],
   xy: boolean,
   fromCache: boolean,
@@ -70,12 +59,14 @@ export const endReporter = (
   if (story.indexOf(hash) === -1) {
     story.unshift(hash);
   }
+  const { logger, save, persistence } = opts;
+  const { method, host, path, body } = requestData;
   logger.log(`*****url-called*****`);
   // tslint:disable-next-line:max-line-length
   logger.log(
-    `Hi! We see you've called ${requestData.method} ${requestData.host}${
-      requestData.path
-    }${requestData.body ? ` with data ${requestData.body}.` : `.`}`,
+    `Hi! We see you've called ${method} ${host}${path}${
+      body ? ` with data ${body}.` : `.`
+    }`,
   );
   const cachemsg = fromCache ? "served you cached" : "sent you";
   logger.log(
@@ -92,5 +83,3 @@ export const endReporter = (
     persistence.saveResponse(hash, responseData);
   }
 };
-
-export const UNMOCK_UA_HEADER_NAME = "X-Unmock-Client-User-Agent";

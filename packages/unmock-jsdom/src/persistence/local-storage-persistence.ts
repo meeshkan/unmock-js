@@ -61,7 +61,7 @@ export default class BrowserStoragePersistence implements IPersistence {
     const od = this.outdir(hash);
     // console.log(hash, Object.keys(window.localStorage));
     return Object.keys(window.localStorage)
-      .map(k => k.substr(0, od.length) === od)
+      .map((k) => k.substr(0, od.length) === od)
       .reduce((a, b) => a || b, false);
   }
 

@@ -13,6 +13,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "expect": "^24.7.1",
     "ini": "^1.3.5",
     "js-yaml": "^3.13.1",
     "mitm": "^1.7.0",

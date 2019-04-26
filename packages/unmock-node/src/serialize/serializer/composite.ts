@@ -1,4 +1,4 @@
-import { ISerializer } from "./serializer";
+import { ISerializer } from "../interfaces";
 
 export default class CompositeSerializer implements ISerializer {
   private serializers: ISerializer[];
