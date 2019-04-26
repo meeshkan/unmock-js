@@ -9,13 +9,13 @@ interface IStringMap {
 export interface IHashableV0 {
   // Used as input/filtered input (after `ignore`ing as needed)
   [key: string]: string | undefined | string[] | IStringMap | {};
-  body: string | {} | undefined; // Keys are mandatory, their content is not.
-  headers: IStringMap | undefined;
-  hostname: string | undefined;
-  method: string | undefined;
-  path: string | undefined;
-  story: string[] | undefined;
-  user_id: string | undefined;
+  body: string | {};
+  headers: IStringMap;
+  hostname: string;
+  method: string;
+  path: string;
+  story: string[];
+  user_id: string;
   signature?: string;
 }
 
@@ -87,7 +87,7 @@ const makeArray = (input: any) => (input instanceof Array ? input : [input]);
 export const makeIgnorable = (
   initialInput: IHashableV0,
   bigIgnore: IgnoreV0,
-): IHashableV0 => {
+): Partial<IHashableV0> => {
   const out = {
     ...initialInput,
     headers: {
@@ -149,7 +149,7 @@ export const makeIgnorable = (
 };
 
 const applyActions = (
-  initialInput: IHashableV0,
+  initialInput: Partial<IHashableV0>,
   actions: ActionsV0,
 ): ISerializedHashableWithIgnoreV0 => {
   const out: ISerializedHashableWithIgnoreV0 = {
