@@ -14,7 +14,7 @@ const DEFAULT_SNAPSHOTS_FOLDER = "__snapshots__";
 export const list = () => {
   const logger = new WinstonLogger();
   glob(
-    `${process.cwd()}/${DEFAULT_SNAPSHOTS_FOLDER}/**/*${SNAP_SUFFIX}`,
+    `${process.cwd()}/**/${DEFAULT_SNAPSHOTS_FOLDER}/**/*${SNAP_SUFFIX}`,
     (e, matches) => {
       if (e) {
         throw e;
