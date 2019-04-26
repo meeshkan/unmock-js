@@ -1,4 +1,4 @@
-import { defaultOptions, ignoreAuth } from "unmock-core";
+import { ignoreAuth } from "unmock-core";
 import computeHash, { makeIgnorable } from "../../../hash/v0";
 
 describe("hash function", () => {
@@ -136,7 +136,7 @@ describe("hash function", () => {
       story: [],
       user_id: "github|525350",
     };
-    const hashy = ignoreAuth(defaultOptions)({
+    const hashy = ignoreAuth()({
       ignore: { headers: "w*User-Agentw*" },
     });
     expect(computeHash(incoming0, hashy.ignore)).toEqual(

@@ -4,26 +4,20 @@ import * as mkdirp from "mkdirp";
 import * as os from "os";
 import * as path from "path";
 import {
-  deserializer as _deserializer,
   ILogger,
   IMetaData,
   IPersistence,
   IRequestData,
   IResponseData,
-  serializer as _serializer,
 } from "unmock-core";
-
-const {
+import {
   CompositeDeserializer,
-  FormDeserializer,
-  JSONDeserializer,
-} = _deserializer;
-
-const {
   CompositeSerializer,
+  FormDeserializer,
   FormSerializer,
+  JSONDeserializer,
   JSONSerializer,
-} = _serializer;
+} from "../serialize";
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
@@ -41,21 +35,27 @@ export default class FSPersistence implements IPersistence {
 
   constructor(
     private logger: ILogger,
-    private serializer = new CompositeSerializer(new FormSerializer(), new JSONSerializer()),
-    private deserializer = new CompositeDeserializer(new FormDeserializer(), new JSONDeserializer()),
+    private serializer = new CompositeSerializer(
+      new FormSerializer(),
+      new JSONSerializer(),
+    ),
+    private deserializer = new CompositeDeserializer(
+      new FormDeserializer(),
+      new JSONDeserializer(),
+    ),
     private savePath = SAVE_PATH,
   ) {}
 
   public saveMeta(hash: string, data: IMetaData) {
-    this.genericSave<IMetaData>(hash, META_FILE, data);
+    this.genericSave(hash, META_FILE, data);
   }
 
   public saveRequest(hash: string, data: IRequestData) {
-    this.genericSave<IRequestData>(hash, REQUEST_FILE, data);
+    this.genericSave(hash, REQUEST_FILE, data);
   }
 
   public saveResponse(hash: string, data: IResponseData) {
-    this.genericSave<IResponseData>(hash, RESPONSE_FILE, data);
+    this.genericSave(hash, RESPONSE_FILE, data);
   }
 
   public saveAuth(auth: string) {
@@ -126,10 +126,18 @@ export default class FSPersistence implements IPersistence {
       // Now add the new data as needed
       const newData = { ...existingData, ...data };
       // And save...
-      fs.writeFileSync(target,
-        JSON.stringify(fn === "response.json" ? this.serializer.serialize(newData) : newData, null, 2));
+      fs.writeFileSync(
+        target,
+        JSON.stringify(
+          fn === "response.json" ? this.serializer.serialize(newData) : newData,
+          null,
+          2,
+        ),
+      );
     } catch (e) {
-      this.logger.log(`Error converting ${target} to JSON. ${e.message} ${e.stack}`);
+      this.logger.log(
+        `Error converting ${target} to JSON. ${e.message} ${e.stack}`,
+      );
       throw e;
     }
   }
@@ -138,7 +146,9 @@ export default class FSPersistence implements IPersistence {
     const target = this.outdir(hash, false, fn);
     const parsed = JSON.parse(fs.readFileSync(target, "utf-8"));
     return (fs.existsSync(target)
-      ? fn === "response.json" ? this.deserializer.deserialize(parsed) : parsed
+      ? fn === "response.json"
+        ? this.deserializer.deserialize(parsed)
+        : parsed
       : {}) as T;
   }
 }

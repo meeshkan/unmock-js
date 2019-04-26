@@ -1,104 +1,52 @@
-import FailingBackend from "./backend/failing-backend";
-import FailingLogger from "./logger/failing-logger";
-import { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
-import FailingPersistence from "./persistence/failing-persistence";
-import CompositeDeserializer from "./serialize/deserializer/composite";
-import FormDeserializer from "./serialize/deserializer/form";
-import JSONDeserializer from "./serialize/deserializer/json";
-import CompositeSerializer from "./serialize/serializer/composite";
-import FormSerializer from "./serialize/serializer/form";
-import JSONSerializer from "./serialize/serializer/json";
-import getToken from "./token";
-import getUserId from "./user";
-import {
-  buildPath,
-  endReporter,
-  hostIsWhitelisted,
-  UNMOCK_UA_HEADER_NAME,
-} from "./util";
-
-export const serializer = {
-  CompositeSerializer,
-  FormSerializer,
-  JSONSerializer,
-};
-
-export const deserializer = {
-  CompositeDeserializer,
-  FormDeserializer,
-  JSONDeserializer,
-};
+import * as importedConstants from "./constants";
+import { IBackend, IStories, IUnmockOptions } from "./interfaces";
+import { UnmockOptions } from "./options";
+import { buildPath, endReporter, getUserId, makeAuthHeader } from "./util";
 
 // top-level exports
-export { IUnmockInternalOptions, IUnmockOptions, Mode } from "./options";
-export { IBackend } from "./backend";
-export { ILogger } from "./logger";
-export { IPersistence } from "./persistence";
-export { IMetaData, IRequestData, IResponseData } from "./util";
+export { UnmockOptions, Mode } from "./options";
+export * from "./interfaces";
 export const util = {
-  UNMOCK_UA_HEADER_NAME,
   buildPath,
   endReporter,
-  hostIsWhitelisted,
+  makeAuthHeader,
 };
-export { snapshot } from "./snapshot";
-
-export const defaultOptions: IUnmockInternalOptions = {
-  backend: new FailingBackend(),
-  ignore: { headers: "\\w*User-Agent\\w*" },
-  logger: new FailingLogger(),
-  mode: Mode.CALL_UNMOCK_FOR_NEW_MOCKS,
-  persistence: new FailingPersistence(),
-  save: true,
-  unmockHost: "api.unmock.io",
-  unmockPort: "443",
-  useInProduction: false,
-  whitelist: ["127.0.0.1", "127.0.0.0", "localhost"],
+export const constants = {
+  MOSES: importedConstants.MOSES,
+  UNMOCK_UA_HEADER_NAME: importedConstants.UNMOCK_UA_HEADER_NAME,
 };
 
-const baseIgnore = (ignore: any) => (baseOptions: IUnmockInternalOptions) => (
+// First level indirection defines what to ignore
+// Second level indirection provides basic/default options
+// Third indirection provides the final call + optional parameters to modify
+const baseIgnore = (ignore: any) => (opts?: UnmockOptions) => (
   maybeOptions?: IUnmockOptions,
-): IUnmockOptions => {
-  const options = { ...baseOptions, ...(maybeOptions ? maybeOptions : {}) };
-  return {
-    ...options,
-    ignore: options.ignore
-      ? options.ignore instanceof Array
-        ? options.ignore.concat(ignore)
-        : [options.ignore, ignore]
-      : [baseOptions.ignore, ignore],
-  };
+) => {
+  if (opts === undefined) {
+    opts = new UnmockOptions();
+  }
+  opts.reset(maybeOptions);
+  opts.addIgnore(ignore);
+  return opts;
 };
 
 export const ignoreStory = baseIgnore("story");
 export const ignoreAuth = baseIgnore({ headers: "Authorization" });
 
-export const unmock = (baseOptions: IUnmockInternalOptions) => async (
+export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   maybeOptions?: IUnmockOptions,
 ) => {
-  const options = maybeOptions
-    ? { ...baseOptions, ...maybeOptions }
-    : baseOptions;
+  const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
-    const story = {
-      story: [],
-    };
-    if (options.token) {
-      options.persistence.saveToken(options.token);
-    }
-    const token = await getToken(options);
-    const userId = token
-      ? await getUserId(token, options.unmockHost, options.unmockPort)
-      : null;
-    options.backend.initialize(userId, story, token, options);
+    const story: IStories = { story: [] };
+    // TODO these might be called many times (if used with `beforeEach`).
+    // Some caching for userId should be put in place to prevent this.
+    const accessToken = await options.getAccessToken();
+    const userId = accessToken ? await getUserId(options, accessToken) : null;
+    backend.initialize(userId, story, accessToken, options);
   }
 };
 
-export const kcomnu = (baseOptions: IUnmockInternalOptions) => (
-  maybeOptions?: IUnmockOptions,
-) => {
-  const options = maybeOptions
-    ? { ...baseOptions, ...maybeOptions }
-    : baseOptions;
-  options.backend.reset();
+export const kcomnu = (backend: IBackend) => () => {
+  backend.reset();
 };
