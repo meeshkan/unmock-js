@@ -1,4 +1,4 @@
-# unmock-cli
+# unmock
 
 [![npm](https://img.shields.io/npm/v/unmock-cli.svg)][npmjs]
 [![CircleCI](https://circleci.com/gh/unmock/unmock-js.svg?style=svg)](https://circleci.com/gh/unmock/unmock-js)
@@ -7,6 +7,8 @@
 [npmjs]: https://www.npmjs.com/package/unmock
 [build]: https://circleci.com/gh/unmock/unmock-js
 [coverage]: https://coveralls.io/github/unmock/unmock-js
+
+A CLI for inspecting projects using unmock and calling the unmock server to generate reliable fake data.
 
 ```bash
 $ unmock --help
@@ -21,6 +23,8 @@ Commands:
   list
 ```
 
+## curl
+
 ```bash
 $ unmock curl --help
 Usage: curl [options] <url>
@@ -33,13 +37,19 @@ Options:
   -h, --help             output usage information
 ```
 
+## list
+
 ```bash
 $ unmock list --help
 Usage: list [options]
 
 Options:
   -h, --help  output usage information
+```
 
+## open
+
+```bash
 $ unmock open --help
 Usage: open [options] <hash>
 
