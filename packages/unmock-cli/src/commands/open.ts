@@ -1,19 +1,24 @@
 import child_process from "child_process";
-import fs from "fs";
+import glob from "glob";
 import { WinstonLogger } from "unmock-node";
 
 export const open = (hash: string, options: any) => {
   const logger = new WinstonLogger();
   const editor = options.editor || process.env.EDITOR || "vi";
-  const path = `${process.cwd()}/.unmock/save/${hash}/response.json`;
-  if (fs.existsSync(path)) {
+  glob(`${process.cwd()}/**/${hash}/response.json`, (e, matches) => {
+    if (e || matches.length !== 1) {
+      logger.log(
+        e || matches.length === 0
+          ? `Could not find ${hash}`
+          : `Too many matches: ${matches}`,
+      );
+    }
+    const path = matches[0];
     const child = child_process.spawn(editor, [path], {
       stdio: "inherit",
     });
     child.on("exit", () => {
       logger.log(`Done editing ${hash}.`);
     });
-  } else {
-    logger.log(`Could not find ${hash}`);
-  }
+  });
 };
