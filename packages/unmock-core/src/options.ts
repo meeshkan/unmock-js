@@ -3,6 +3,7 @@ import { DEFAULT_IGNORE_HEADER, UNMOCK_HOST, UNMOCK_PORT } from "./constants";
 import { ILogger, IPersistence, IUnmockOptions } from "./interfaces";
 import { FailingPersistence } from "./persistence";
 import getToken from "./token";
+import { getUserId } from "./util";
 
 export enum Mode {
   ALWAYS_CALL_UNMOCK,
@@ -91,6 +92,16 @@ export class UnmockOptions {
 
   public async getAccessToken() {
     return await getToken(this);
+  }
+
+  public async getUserId(accessToken?: string) {
+    if (accessToken === undefined) {
+      return null;
+    }
+    if (accessToken === this.persistence.loadAuth()) {
+      return this.persistence.loadUserId();
+    }
+    return await getUserId(this, accessToken);
   }
 
   public buildPath(...args: string[]) {

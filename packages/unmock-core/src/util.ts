@@ -13,6 +13,7 @@ export const getUserId = async (opts: UnmockOptions, accessToken: string) => {
   const {
     data: { userId },
   } = await axios.get(opts.buildPath("user"), makeAuthHeader(accessToken));
+  opts.persistence.saveUserId(userId);
   return userId;
 };
 
