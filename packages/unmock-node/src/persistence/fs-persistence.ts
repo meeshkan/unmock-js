@@ -21,14 +21,31 @@ import {
 
 const UNMOCK_DIR = ".unmock";
 const TOKEN_FILE = ".token";
+const USERID_FILE = ".userid";
 const CONFIG_FILE = "credentials";
 const TOKEN_PATH = path.join(UNMOCK_DIR, TOKEN_FILE);
 const CONFIG_PATH = path.join(UNMOCK_DIR, CONFIG_FILE);
+const USERID_PATH = path.join(UNMOCK_DIR, USERID_FILE);
 const SAVE_PATH = path.join(UNMOCK_DIR, "save");
 const SECONDARY_CONFIG_PATH = path.join(os.homedir(), UNMOCK_DIR, CONFIG_FILE);
 const META_FILE = "meta.json";
 const REQUEST_FILE = "request.json";
 const RESPONSE_FILE = "response.json";
+
+const saveMaybeCreate = (filepath: string, content: string) => {
+  const dir = path.dirname(filepath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir);
+  }
+  fs.writeFileSync(filepath, content);
+};
+
+const loadOrNone = (filepath: string) => {
+  if (!fs.existsSync(path.dirname(filepath))) {
+    return;
+  }
+  return fs.readFileSync(filepath).toString();
+};
 
 export default class FSPersistence implements IPersistence {
   private token: string | undefined;
@@ -59,21 +76,23 @@ export default class FSPersistence implements IPersistence {
   }
 
   public saveAuth(auth: string) {
-    if (!fs.existsSync(UNMOCK_DIR)) {
-      fs.mkdirSync(UNMOCK_DIR);
-    }
-    fs.writeFileSync(TOKEN_PATH, auth);
+    saveMaybeCreate(TOKEN_PATH, auth);
   }
 
   public saveToken(token: string) {
     this.token = token;
   }
 
+  public saveUserId(userId: string) {
+    saveMaybeCreate(TOKEN_PATH, userId);
+  }
+
+  public loadUserId() {
+    return loadOrNone(USERID_PATH);
+  }
+
   public loadAuth() {
-    if (!fs.existsSync(TOKEN_PATH)) {
-      return;
-    }
-    return fs.readFileSync(TOKEN_PATH).toString();
+    return loadOrNone(TOKEN_PATH);
   }
 
   public hasHash(hash: string) {
