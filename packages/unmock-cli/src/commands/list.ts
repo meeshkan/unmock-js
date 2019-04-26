@@ -21,7 +21,7 @@ export const list = () => {
       }
       matches.forEach((match) => {
         logger.log(path.basename(match, SNAP_SUFFIX));
-        const snapshots = require(`${process.cwd()}/${match}`);
+        const snapshots = require(match);
         const tests = Object.keys(snapshots)
           .map((name) => ({ [removeTrailingNumber(name)]: new Array<string>() }))
           .reduce((a, b) => ({ ...a, ...b }), {});
