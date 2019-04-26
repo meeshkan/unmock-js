@@ -1,8 +1,6 @@
 import program from "commander";
 
-import curl from "./curl";
-import list from "./list";
-import open from "./open";
+import { curl, list, open } from "./commands";
 
 export default () => {
   const collect = (val: string, memo: string[]) => {
@@ -10,8 +8,7 @@ export default () => {
     return memo;
   };
 
-  program
-    .usage("unmock <command>");
+  program.usage("unmock <command>");
 
   program
     .command("curl <url>")
@@ -32,12 +29,13 @@ export default () => {
 
   program
     .command("open <hash>")
-    .option("-e, --editor [editor]", "editor (defaults to the EDITOR env variable or, in the absence of this, vi)")
+    .option(
+      "-e, --editor [editor]",
+      "editor (defaults to the EDITOR env variable or, in the absence of this, vi)",
+    )
     .action(open);
 
-  program
-    .command("list")
-    .action(list);
+  program.command("list").action(list);
 
   program.parse(process.argv);
 };

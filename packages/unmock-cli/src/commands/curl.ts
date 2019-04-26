@@ -1,10 +1,10 @@
 import axios from "axios";
 import { unmock } from "unmock-node";
 
-export default async (url: string, options: any) => {
+export const curl = async (url: string, options: any) => {
   const makeHeaders = (headers: string[]) =>
     headers
-      .map(h => ({
+      .map((h) => ({
         [h.substring(0, h.indexOf(":")).trim()]: h
           .substring(h.indexOf(":") + 1)
           .trim(),
