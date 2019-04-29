@@ -40,4 +40,7 @@ export class FailingPersistence implements IPersistence {
   public loadToken() {
     throw new Error("not implemented");
   }
+  public getPath(): never {
+    throw new Error("not implemented");
+  }
 }

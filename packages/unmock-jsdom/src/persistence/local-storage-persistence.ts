@@ -78,6 +78,10 @@ export default class BrowserStoragePersistence implements IPersistence {
     return this.token;
   }
 
+  public getPath() {
+    return this.savePath;
+  }
+
   private outdir(hash: string, ...args: string[]) {
     const outdir = path.normalize(path.join(this.savePath, hash));
     return path.join(outdir, ...args);

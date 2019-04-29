@@ -3,8 +3,6 @@ import * as fs from "fs";
 import * as mkdirp from "mkdirp";
 import * as path from "path";
 
-const SNAPSHOTS_FOLDER = path.join(process.cwd(), "__snapshots__");
-
 const CLEARED_SNAPSHOT_FILES: string[] = [];
 
 // Add snapshot handler
@@ -18,16 +16,17 @@ declare global {
   namespace expect {
     // tslint:disable-next-line: interface-name
     interface Matchers<R> {
-      snapshot(obj: any): R;
+      snapshot(obj: any, savePath: string): R;
     }
   }
 }
 
 expect.extend({
-  snapshot(obj: any) {
+  snapshot(obj: any, savePath: string) {
+    const SNAPSHOTS_FOLDER = path.join(savePath, ".snapshots");
     const snapFile = path.join(
       SNAPSHOTS_FOLDER,
-      `${this.testPath.substr(process.cwd().length)}.snap`,
+      `${path.relative(process.cwd(), this.testPath)}.snap`,
     );
     if (!fs.existsSync(path.dirname(snapFile))) {
       mkdirp.sync(path.dirname(snapFile));
@@ -59,11 +58,14 @@ expect.extend({
   },
 });
 
-export const snapshot = (obj: any) => {
+export const snapshot = (obj: any, savePath?: string) => {
+  if (savePath === undefined) {
+    return;
+  }
   if (process.env.JEST_WORKER_ID !== undefined) {
     // @ts-ignore
     // We ignore the following as `snapshot` is clearly declared above in the namespace
-    expect(obj).snapshot(); // Creates the snapshot with the above serializer
+    expect(obj).snapshot(savePath); // Creates the snapshot with the above serializer
     // Reserved to add snapshots for other backends
   }
 };
