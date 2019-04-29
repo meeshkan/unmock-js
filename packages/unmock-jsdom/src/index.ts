@@ -7,7 +7,7 @@ import {
 } from "unmock-core";
 import JSDomBackend from "./backend";
 import BrowserLogger from "./logger/browser-logger";
-import BrowserStoragePersistence from "./persistence/local-storage-persistence";
+import BrowserStoragePersistence from "./persistence/browser-storage-persistence";
 
 export const defaultOptions = new UnmockOptions({
   logger: new BrowserLogger(),
