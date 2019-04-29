@@ -38,21 +38,12 @@ expect.extend({
         CLEARED_SNAPSHOT_FILES.push(snapFile);
         fs.unlinkSync(snapFile);
       } else {
-        contents = require(snapFile);
+        contents = JSON.parse(fs.readFileSync(snapFile, "utf-8"));
       }
     }
     const numOfCalls = Object.keys(contents).length + 1;
     contents[`${this.currentTestName} ${numOfCalls}`] = obj;
-    const stringContents = Object.keys(contents)
-      .map(
-        (key: string) =>
-          "exports['" +
-          key +
-          "'] = " +
-          JSON.stringify(contents[key], undefined, 2) +
-          ";\n",
-      )
-      .join("\n");
+    const stringContents = JSON.stringify(contents, undefined, 2);
     fs.writeFileSync(snapFile, stringContents);
     return { pass: true };
   },
