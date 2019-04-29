@@ -49,10 +49,7 @@ expect.extend({
   },
 });
 
-export const snapshot = (obj: any, savePath?: string) => {
-  if (savePath === undefined) {
-    return;
-  }
+export const snapshot = (obj: any, savePath: string) => {
   if (process.env.JEST_WORKER_ID !== undefined) {
     // @ts-ignore
     // We ignore the following as `snapshot` is clearly declared above in the namespace

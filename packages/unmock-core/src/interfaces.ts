@@ -17,7 +17,7 @@ export interface IPersistence {
   loadToken: () => string | void;
   loadUserId: () => string | void;
   hasHash: (hash: string) => boolean;
-  getPath: () => string | undefined;
+  getPath: () => string;
 }
 
 export interface IMetaData {
