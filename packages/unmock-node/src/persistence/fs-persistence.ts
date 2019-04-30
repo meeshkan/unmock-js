@@ -63,6 +63,10 @@ export default class FSPersistence implements IPersistence {
     private savePath = SAVE_PATH,
   ) {}
 
+  public getPath() {
+    return this.savePath;
+  }
+
   public saveMeta(hash: string, data: IMetaData) {
     this.genericSave(hash, META_FILE, data);
   }

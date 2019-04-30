@@ -96,12 +96,15 @@ const mHttp = (
         },
       );
 
-    snapshot({
-      hash,
-      host,
-      method,
-      path: url,
-    });
+    snapshot(
+      {
+        hash,
+        host,
+        method,
+        path: url,
+      },
+      persistence.getPath(),
+    );
 
     if (!makesNetworkCall) {
       // Restore information from cache and send via `res`
