@@ -18,4 +18,4 @@ jobs:
       - run: npm ci
       - run: npm run coverage
       - codecov/upload:
-        file: ./coverage/coverage-final.json
+          file: coverage/*.json
