@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import glob from "glob";
 import path from "path";
 import { WinstonLogger } from "unmock-node";
@@ -9,7 +10,7 @@ const removeTrailingNumber = (s: string) =>
     .join(" ");
 
 const SNAP_SUFFIX = ".snap";
-const DEFAULT_SNAPSHOTS_FOLDER = "__snapshots__";
+const DEFAULT_SNAPSHOTS_FOLDER = ".snapshots";
 interface IStringMap {
   [key: string]: string[];
 }
@@ -19,13 +20,14 @@ export const list = () => {
   logger.log("Fetching mocks and relevant tests...");
   glob(
     `${process.cwd()}/**/${DEFAULT_SNAPSHOTS_FOLDER}/**/*${SNAP_SUFFIX}`,
+    { dot: true },
     (e, matches) => {
       if (e) {
         throw e;
       }
       matches.forEach((match) => {
         logger.log(path.basename(match, SNAP_SUFFIX));
-        const snapshots = require(match);
+        const snapshots = JSON.parse(readFileSync(match, "utf8"));
         const tests: IStringMap = Object.keys(snapshots).reduce(
           (obj: IStringMap, name) => {
             const key = removeTrailingNumber(name);

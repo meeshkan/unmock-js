@@ -17,7 +17,7 @@
     "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
     "coverage": "npm test -- --coverage",
     "coverage:upload": "codecov",
-    "unmock": "node packages/unmock-cli/dist/cli.js"
+    "unmock": "node packages/unmock-cli/dist/index.js"
   },
   "lint-staged": {
     "*.ts": [
