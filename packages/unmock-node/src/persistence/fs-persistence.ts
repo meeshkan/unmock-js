@@ -167,11 +167,10 @@ export default class FSPersistence implements IPersistence {
 
   private genericLoad<T>(hash: string, fn: string): T {
     const target = this.outdir(hash, false, fn);
-    const parsed = JSON.parse(fs.readFileSync(target, "utf-8"));
     return (fs.existsSync(target)
       ? fn === "response.json"
-        ? this.deserializer.deserialize(parsed)
-        : parsed
+        ? this.deserializer.deserialize(JSON.parse(fs.readFileSync(target, "utf-8")))
+        : JSON.parse(fs.readFileSync(target, "utf-8"))
       : {}) as T;
   }
 }
