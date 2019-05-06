@@ -4,27 +4,14 @@ import {
   UnmockOptions,
 } from "..";
 
+import { FailingPersistence } from "../persistence";
+jest.mock("../persistence");
+
 const silentBackend = {
   initialize: jest.fn(),
   reset: jest.fn(),
 };
-const silentPersistence = {
-  getPath: jest.fn(),
-  hasHash: jest.fn(),
-  loadAuth: jest.fn(),
-  loadMeta: jest.fn(),
-  loadRequest: jest.fn(),
-  loadResponse: jest.fn(),
-  loadToken: jest.fn(),
-  loadUserId: jest.fn(),
-  saveAuth: jest.fn(),
-  saveMeta: jest.fn(),
-  saveRequest: jest.fn(),
-  saveResponse: jest.fn(),
-  saveToken: jest.fn(),
-  saveUserId: jest.fn(),
-};
-const opts = new UnmockOptions({ persistence: silentPersistence });
+const opts = new UnmockOptions({ persistence: new FailingPersistence() });
 const ignoreAuth = _ignoreAuth(opts);
 const unmock = _unmock(opts, silentBackend);
 
