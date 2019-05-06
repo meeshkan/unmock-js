@@ -1,2 +1,3 @@
-import run from "./dist/cli.js";
-run();
+#!/usr/bin/env node
+const run = require("./dist/index.js");
+run.default();

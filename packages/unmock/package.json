@@ -1,0 +1,20 @@
+{
+  "version": "0.0.44",
+  "name": "unmock",
+  "displayName": "unmock",
+  "license": "MIT",
+  "bin": {
+    "unmock": "./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "unmock-cli": "file:../unmock-cli"
+  }
+}

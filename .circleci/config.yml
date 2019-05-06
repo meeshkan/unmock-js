@@ -2,7 +2,9 @@
 #
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 #
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   build:
     docker:
@@ -14,4 +16,6 @@ jobs:
     steps:
       - checkout
       - run: npm ci
-      - run: npm test
+      - run: npm run coverage
+      - codecov/upload:
+          file: coverage/*.json
