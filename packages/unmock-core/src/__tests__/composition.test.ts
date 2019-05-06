@@ -1,50 +1,28 @@
 import {
   ignoreAuth as _ignoreAuth,
-  IMetaData,
-  IRequestData,
-  IResponseData,
   unmock as _unmock,
   UnmockOptions,
 } from "..";
 
-const emptyFunc = () => {
-  return;
-};
 const silentBackend = {
-  initialize: emptyFunc,
-  reset: emptyFunc,
+  initialize: jest.fn(),
+  reset: jest.fn(),
 };
 const silentPersistence = {
-  getPath: () => "",
-  hasHash: (hash: string) => false,
-  loadAuth: emptyFunc,
-  loadMeta: (hash: string) => {
-    return {};
-  },
-  loadRequest: (hash: string) => {
-    return {};
-  },
-  loadResponse: (hash: string) => {
-    return {};
-  },
-  loadToken: emptyFunc,
-  loadUserId: emptyFunc,
-  saveAuth: emptyFunc,
-  saveMeta: (hash: string, data: IMetaData) => {
-    return;
-  },
-  saveRequest: (hash: string, data: IRequestData) => {
-    return;
-  },
-  saveResponse: (hash: string, data: IResponseData) => {
-    return;
-  },
-  saveToken: (token: string) => {
-    return;
-  },
-  saveUserId: (userId: string) => {
-    return;
-  },
+  getPath: jest.fn(),
+  hasHash: jest.fn(),
+  loadAuth: jest.fn(),
+  loadMeta: jest.fn(),
+  loadRequest: jest.fn(),
+  loadResponse: jest.fn(),
+  loadToken: jest.fn(),
+  loadUserId: jest.fn(),
+  saveAuth: jest.fn(),
+  saveMeta: jest.fn(),
+  saveRequest: jest.fn(),
+  saveResponse: jest.fn(),
+  saveToken: jest.fn(),
+  saveUserId: jest.fn(),
 };
 const opts = new UnmockOptions({ persistence: silentPersistence });
 const ignoreAuth = _ignoreAuth(opts);
