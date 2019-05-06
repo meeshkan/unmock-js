@@ -36,7 +36,7 @@ export const ignoreAuth = baseIgnore({ headers: "Authorization" });
 
 export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   maybeOptions?: IUnmockOptions,
-) => {
+): Promise<UnmockOptions> => {
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
     const story: IStories = { story: [] };
@@ -44,6 +44,7 @@ export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
     const userId = await getUserId(options, accessToken);
     backend.initialize(userId, story, accessToken, options);
   }
+  return options;
 };
 
 export const kcomnu = (backend: IBackend) => () => {
