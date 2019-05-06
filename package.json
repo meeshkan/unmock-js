@@ -15,7 +15,9 @@
     "testonly": "npm test",
     "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
     "coverage": "npm test -- --coverage",
-    "coverage:upload": "codecov"
+    "coverage:upload": "codecov",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "lint-staged": {
     "*.ts": [
@@ -58,12 +60,14 @@
     "unmock-core": "file:packages/unmock-core",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-jsdom": "file:packages/unmock-jsdom",
-    "unmock-node": "file:packages/unmock-node"
+    "unmock-node": "file:packages/unmock-node",
+    "snyk": "^1.161.1"
   },
   "name": "unmock",
   "jest": {
     "projects": [
       "<rootDir>/packages/*"
     ]
-  }
+  },
+  "snyk": true
 }
