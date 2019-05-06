@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import glob from "glob";
 import path from "path";
 import { WinstonLogger } from "unmock-node";
@@ -26,7 +27,7 @@ export const list = () => {
       }
       matches.forEach((match) => {
         logger.log(path.basename(match, SNAP_SUFFIX));
-        const snapshots = require(match);
+        const snapshots = JSON.parse(readFileSync(match, "utf8"));
         const tests: IStringMap = Object.keys(snapshots).reduce(
           (obj: IStringMap, name) => {
             const key = removeTrailingNumber(name);
