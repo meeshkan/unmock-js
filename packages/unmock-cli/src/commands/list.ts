@@ -9,7 +9,7 @@ const removeTrailingNumber = (s: string) =>
     .join(" ");
 
 const SNAP_SUFFIX = ".snap";
-const DEFAULT_SNAPSHOTS_FOLDER = "__snapshots__";
+const DEFAULT_SNAPSHOTS_FOLDER = ".snapshots";
 interface IStringMap {
   [key: string]: string[];
 }
@@ -19,6 +19,7 @@ export const list = () => {
   logger.log("Fetching mocks and relevant tests...");
   glob(
     `${process.cwd()}/**/${DEFAULT_SNAPSHOTS_FOLDER}/**/*${SNAP_SUFFIX}`,
+    { dot: true },
     (e, matches) => {
       if (e) {
         throw e;
