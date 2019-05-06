@@ -109,9 +109,11 @@ const mHttp = (
     if (!makesNetworkCall) {
       // Restore information from cache and send via `res`
       const response = persistence.loadResponse(hash);
-      Object.keys(response.headers).forEach((k) => {
-        res.setHeader(k, response.headers[k]);
-      });
+      if (response.headers) {
+        Object.keys(response.headers).forEach((k) => {
+          res.setHeader(k, response.headers[k]);
+        });
+      }
       if (response.body) {
         res.write(response.body);
       }
