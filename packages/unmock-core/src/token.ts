@@ -1,22 +1,13 @@
 import axios from "axios";
-import { IUnmockInternalOptions } from "./options";
-
-const makeHeader = (token: string) => ({
-  headers: {
-    Authorization: `Bearer ${token}`,
-  },
-});
+import { UnmockOptions } from "./options";
+import { makeAuthHeader } from "./util";
 
 export const canPingWithAccessToken = async (
+  opts: UnmockOptions,
   accessToken: string,
-  unmockHost: string,
-  unmockPort: string,
 ) => {
   try {
-    await axios.get(
-      `https://${unmockHost}:${unmockPort}/ping`,
-      makeHeader(accessToken),
-    );
+    await axios.get(opts.buildPath("ping"), makeAuthHeader(accessToken));
     return true;
   } catch (e) {
     return false;
@@ -25,70 +16,49 @@ export const canPingWithAccessToken = async (
 
 // tslint:disable-next-line:max-line-length
 export const exchangeRefreshTokenForAccessToken = async (
+  opts: UnmockOptions,
   refreshToken: string,
-  unmockHost: string,
-  unmockPort: string,
 ) => {
   try {
     const {
       data: { accessToken },
-    } = await axios.post(`https://${unmockHost}:${unmockPort}/token/access`, {
+    } = await axios.post(opts.buildPath("token", "access"), {
       refreshToken,
     });
     return accessToken;
   } catch (e) {
-    throw Error(
+    throw new Error(
       "Invalid token, please check your credentials on https://www.unmock.io/app",
     );
   }
 };
 
-let pingable = false;
-export default async ({
-  persistence,
-  unmockHost,
-  unmockPort,
-}: IUnmockInternalOptions) => {
+export default async (opts: UnmockOptions) => {
+  const { persistence } = opts;
   let accessToken = persistence.loadAuth();
   if (accessToken) {
+    const pingable = await canPingWithAccessToken(opts, accessToken);
     if (!pingable) {
-      pingable = await canPingWithAccessToken(
-        accessToken,
-        unmockHost,
-        unmockPort,
-      );
-      if (!pingable) {
-        accessToken = undefined;
-      }
+      accessToken = undefined;
     }
   }
   if (!accessToken) {
+    // No access token or access token has expired - fetch new one
     const refreshToken = persistence.loadToken();
-    if (refreshToken) {
-      accessToken = await exchangeRefreshTokenForAccessToken(
-        refreshToken,
-        unmockHost,
-        unmockPort,
-      );
-      if (accessToken) {
-        persistence.saveAuth(accessToken);
-      } else {
-        throw Error("Incorrect server response: did not get accessToken");
-      }
-    } else {
+    if (refreshToken === undefined) {
       // if there is no refresh token, we default to the "y" version of the service
       return;
     }
-  }
-  if (!pingable && accessToken) {
-    pingable = await canPingWithAccessToken(
-      accessToken,
-      unmockHost,
-      unmockPort,
-    );
-    if (!pingable) {
-      throw Error("Internal authorization error");
+    accessToken = await exchangeRefreshTokenForAccessToken(opts, refreshToken);
+    if (accessToken === undefined) {
+      throw new Error("Incorrect server response: did not get accessToken");
     }
+    // Verify we can ping
+    const pingable = await canPingWithAccessToken(opts, accessToken);
+    if (!pingable) {
+      throw new Error("Internal authorization error");
+    }
+    persistence.saveAuth(accessToken);
   }
   return accessToken;
 };

@@ -36,7 +36,7 @@ test("unmock end to end node", async () => {
       projects[0].id
     }/comments?api_key=u_n_m_o_c_k_200`,
   );
-  expect(typeof comments[0].comment).toBe("string");
+  expect(typeof comments.length).toBe("number");
   const {
     data: { vid },
   } =

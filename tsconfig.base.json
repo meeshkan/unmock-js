@@ -17,7 +17,6 @@
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["es6", "dom"],
-    "types": ["node"],
     "baseUrl": ".",
     "paths": {
       "*" : ["types/*"]
