@@ -16,7 +16,7 @@ export const curlInternal = async (url: string, options: any) => {
   });
   const { data } = await axios({
     ...(options.data ? { data: JSON.parse(options.data) } : {}),
-    ...(options.headers ? { headers: makeHeaders(options.header) } : {}),
+    ...(options.headers ? { headers: makeHeaders(options.headers) } : {}),
     method: options.request || "GET",
     url,
   });
