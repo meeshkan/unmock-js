@@ -12,22 +12,35 @@ test("end reporter reports end", () => {
   opts.persistence.saveRequest = jest.fn();
   opts.persistence.saveResponse = jest.fn();
   opts.logger.log = jest.fn();
-  endReporter(opts, "foo", story, true, false, {
-    lang: "foobar",
-  }, {
-    headers: { mike: "solomon" },
-    host: "www.foo.com",
-    path: "/bar/baz",
-  }, {
-    body: "kimmo sääskilahti",
-    headers: { idan: "tene"},
-  });
+  endReporter(
+    opts,
+    "foo",
+    story,
+    true,
+    false,
+    {
+      lang: "foobar",
+    },
+    {
+      headers: { mike: "solomon" },
+      host: "www.foo.com",
+      path: "/bar/baz",
+    },
+    {
+      body: "kimmo sääskilahti",
+      headers: { idan: "tene" },
+    },
+  );
   expect((opts.logger.log as jest.Mock).mock.calls.length).toBe(3);
-  expect((opts.logger.log as jest.Mock).mock.calls[0][0]).toBe("*****url-called*****");
-  expect((opts.logger.log as jest.Mock).mock.calls[1][0])
-    .toBe("Hi! We see you've called undefined www.foo.com/bar/baz.");
-  expect((opts.logger.log as jest.Mock).mock.calls[2][0])
-    .toBe("We've sent you mock data back. You can edit your mock at https://unmock.io/x/foo. 🚀");
+  expect((opts.logger.log as jest.Mock).mock.calls[0][0]).toBe(
+    "*****url-called*****",
+  );
+  expect((opts.logger.log as jest.Mock).mock.calls[1][0]).toBe(
+    "Hi! We see you've called undefined www.foo.com/bar/baz.",
+  );
+  expect((opts.logger.log as jest.Mock).mock.calls[2][0]).toBe(
+    "We've sent you mock data back. You can edit your mock at https://unmock.io/x/foo. 🚀",
+  );
 });
 
 test("build correct path with ignore", () => {
@@ -56,7 +69,6 @@ test("build correct path with ignore", () => {
   expect(searchParams.get("signature")).toBe("my-signature");
 });
 test("build correct path without ignore", () => {
-
   const opts = new UnmockOptions({ signature: "my-signature", ignore: {} }); // Try again w/o ignore
   const builtPath = buildPath(
     opts,
@@ -87,7 +99,7 @@ test("ignoreStory produces correct json", () => {
   expect(ignoreStoryTest({}).ignore).toEqual([DEFAULT_IGNORE_HEADER, "story"]);
   const modifiedOpts = ignoreStoryTest({ whitelist: "a" });
   expect(modifiedOpts.ignore).toEqual([DEFAULT_IGNORE_HEADER, "story"]);
-  expect(modifiedOpts.whitelist).toEqual([/^a$/]);
+  expect(modifiedOpts.whitelist).toEqual("a");
   expect(ignoreStoryTest({ ignore: [] }).ignore).toEqual(["story"]);
 });
 
@@ -105,5 +117,5 @@ test("ignoreAuth produces correct json", () => {
     DEFAULT_IGNORE_HEADER,
     { headers: "Authorization" },
   ]);
-  expect(opts.whitelist).toEqual([/^a$/]);
+  expect(opts.whitelist).toEqual("a");
 });
