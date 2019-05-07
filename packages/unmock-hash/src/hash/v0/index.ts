@@ -181,7 +181,7 @@ type ActionsActionsV0 =
   | "make-header-keys-lowercase"
   | "deserialize-json-body"
   | "deserialize-x-www-form-urlencoded-body";
-type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
+export type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
 
 const TRUNCATE_HASH_AT = 8;
 

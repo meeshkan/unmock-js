@@ -1,4 +1,5 @@
 import { escapeRegExp, isEmpty } from "lodash";
+import { ActionsV0 } from "unmock-hash";
 import { DEFAULT_IGNORE_HEADER, UNMOCK_HOST, UNMOCK_PORT } from "./constants";
 import { ILogger, IPersistence, IUnmockOptions } from "./interfaces";
 import { FailingPersistence } from "./persistence";
@@ -11,6 +12,11 @@ export enum Mode {
 
 export class UnmockOptions implements IUnmockOptions {
   public save: boolean | string[] = true;
+  public actions: ActionsV0 = [
+    "deserialize-json-body",
+    "deserialize-x-www-form-urlencoded-body",
+    "make-header-keys-lowercase",
+  ];
   public unmockHost: string = UNMOCK_HOST;
   public unmockPort: string = UNMOCK_PORT;
   public useInProduction: boolean = false;
@@ -39,6 +45,7 @@ export class UnmockOptions implements IUnmockOptions {
       return this;
     }
     const {
+      actions,
       logger,
       persistence,
       save,
@@ -54,6 +61,7 @@ export class UnmockOptions implements IUnmockOptions {
     this.logger = logger || this.logger;
     this.persistence = persistence || this.persistence;
     this.save = save || this.save;
+    this.actions = actions || this.actions;
     this.unmockHost = unmockHost || this.unmockHost;
     this.unmockPort = unmockPort || this.unmockPort;
     this.internalIgnore = ignore || this.internalIgnore;

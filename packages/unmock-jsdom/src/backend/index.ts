@@ -52,7 +52,7 @@ export default class JSDomBackend implements IBackend {
       password?: string | null,
     ): void {
       let data: Document | BodyInit | null = null;
-      const { signature, ignore, persistence } = opts;
+      const { actions, signature, ignore, persistence } = opts;
       const ro = new URL(url);
       const finalHost = ro.host || ro.hostname;
       if (opts.isWhitelisted(finalHost)) {
@@ -155,6 +155,7 @@ export default class JSDomBackend implements IBackend {
             ...(signature ? { signature } : {}),
           },
           ignore,
+          actions,
         );
         const makesNetworkCall = opts.shouldMakeNetworkCall(hash);
         if (body) {
