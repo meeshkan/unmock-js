@@ -16,6 +16,6 @@ jobs:
     steps:
       - checkout
       - run: npm ci
-      - run: npm run coverage
+      - run: npm run test:ci
       - codecov/upload:
           file: coverage/*.json
