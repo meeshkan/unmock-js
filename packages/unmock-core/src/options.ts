@@ -9,7 +9,7 @@ export enum Mode {
   DO_NOT_CALL_UNMOCK,
 }
 
-export class UnmockOptions {
+export class UnmockOptions implements IUnmockOptions {
   public save: boolean | string[] = true;
   public unmockHost: string = UNMOCK_HOST;
   public unmockPort: string = UNMOCK_PORT;
@@ -18,20 +18,20 @@ export class UnmockOptions {
   public persistence: IPersistence = new FailingPersistence();
   public logger: ILogger = { log: () => undefined }; // Default logger does nothing
   public signature?: string;
-  public whitelist?: RegExp[]; // TODO - use getter/setter
+  public whitelist?: string[] | string;
+  private regexWhitelist?: RegExp[];
   private internalIgnore: any = DEFAULT_IGNORE_HEADER;
   private refreshToken?: string;
 
   constructor(options?: IUnmockOptions) {
     this.reset(options); // Save internally
-    this.whitelist =
-      this.whitelist ||
-      this.whitelistToRegex([
-        "127.0.0.1",
-        "127.0.0.0",
-        "localhost",
-        this.unmockHost,
-      ]);
+    this.whitelist = this.whitelist || [
+      "127.0.0.1",
+      "127.0.0.0",
+      "localhost",
+      this.unmockHost,
+    ];
+    this.regexWhitelist = this.whitelistToRegex(this.whitelist);
   }
 
   public reset(options?: IUnmockOptions): UnmockOptions {
@@ -59,9 +59,8 @@ export class UnmockOptions {
     this.internalIgnore = ignore || this.internalIgnore;
     this.signature = signature || this.signature;
     this.refreshToken = token || this.refreshToken;
-    this.whitelist = whitelist
-      ? this.whitelistToRegex(whitelist)
-      : this.whitelist;
+    this.whitelist = whitelist ? whitelist : this.whitelist;
+    this.regexWhitelist = this.whitelistToRegex(this.whitelist);
     this.useInProduction = useInProduction || this.useInProduction;
     this.mode = mode || this.mode;
 
@@ -98,10 +97,10 @@ export class UnmockOptions {
   }
 
   public isWhitelisted(host: string) {
-    if (this.whitelist === undefined) {
+    if (this.regexWhitelist === undefined) {
       return false;
     }
-    return this.whitelist.filter((wl) => wl.test(host)).length > 0;
+    return this.regexWhitelist.filter((wl) => wl.test(host)).length > 0;
   }
 
   public shouldMakeNetworkCall(hash: string) {
@@ -112,7 +111,10 @@ export class UnmockOptions {
     );
   }
 
-  private whitelistToRegex(whitelist: string[] | string): RegExp[] {
+  private whitelistToRegex(whitelist?: string[] | string): RegExp[] {
+    if (whitelist === undefined) {
+      return [];
+    }
     whitelist = whitelist instanceof Array ? whitelist : [whitelist];
     return whitelist.map((item: any) => {
       if (item instanceof RegExp) {
