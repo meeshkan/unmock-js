@@ -40,7 +40,7 @@ export const buildPath = (
   }
   const { actions, ignore, signature } = opts;
   const queryObject = {
-    ...(actions ? { ignore: JSON.stringify(actions) } : {}),
+    ...(actions ? { actions: JSON.stringify(actions) } : {}),
     headers: JSON.stringify(headers),
     hostname,
     ...(ignore ? { ignore: JSON.stringify(ignore) } : {}),
