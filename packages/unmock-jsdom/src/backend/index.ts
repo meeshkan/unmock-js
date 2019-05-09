@@ -100,7 +100,6 @@ export default class JSDomBackend implements IBackend {
           opts,
           hash,
           story.story,
-          token !== undefined,
           fromCache,
           { lang: "jsdom" },
           {

@@ -80,7 +80,6 @@ const mHttp = (
         opts,
         hash,
         story.story,
-        xy,
         fromCache,
         metaData,
         {

@@ -55,7 +55,6 @@ export const endReporter = (
   opts: UnmockOptions,
   hash: string,
   story: string[],
-  xy: boolean,
   fromCache: boolean,
   metaData: IMetaData,
   requestData: IRequestData,
@@ -77,9 +76,7 @@ export const endReporter = (
   );
   const cachemsg = fromCache ? "served you cached" : "sent you";
   logger.log(
-    `We've ${cachemsg} mock data back. You can edit your mock at https://unmock.io/${
-      xy ? "x" : "y"
-    }/${hash}. 🚀`,
+    `We've ${cachemsg} mock data back. You can edit your mock by typing the following command: unmock open ${hash}`,
   );
   if (
     (typeof save === "boolean" && save) ||

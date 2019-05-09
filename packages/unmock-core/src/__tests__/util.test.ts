@@ -16,7 +16,6 @@ test("end reporter reports end", () => {
     opts,
     "foo",
     story,
-    true,
     false,
     {
       lang: "foobar",
@@ -39,7 +38,7 @@ test("end reporter reports end", () => {
     "Hi! We see you've called undefined www.foo.com/bar/baz.",
   );
   expect((opts.logger.log as jest.Mock).mock.calls[2][0]).toBe(
-    "We've sent you mock data back. You can edit your mock at https://unmock.io/x/foo. 🚀",
+    "We've sent you mock data back. You can edit your mock by typing the following command: unmock open foo",
   );
 });
 
