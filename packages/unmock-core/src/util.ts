@@ -38,8 +38,9 @@ export const buildPath = (
   if (hostname === opts.unmockHost) {
     return path;
   }
-  const { ignore, signature } = opts;
+  const { actions, ignore, signature } = opts;
   const queryObject = {
+    ...(actions ? { actions: JSON.stringify(actions) } : {}),
     headers: JSON.stringify(headers),
     hostname,
     ...(ignore ? { ignore: JSON.stringify(ignore) } : {}),

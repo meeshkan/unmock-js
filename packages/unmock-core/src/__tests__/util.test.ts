@@ -88,6 +88,11 @@ test("build correct path without ignore", () => {
   expect(searchParams.get("headers")).toBe(
     '{"Authorization":"Foo","User-Agent":"Bar"}',
   );
+  expect(JSON.parse(searchParams.get("actions") || "")).toEqual([
+    "deserialize-json-body",
+    "deserialize-x-www-form-urlencoded-body",
+    "make-header-keys-lowercase",
+  ]);
   expect(searchParams.get("path")).toBe("/v1/x");
   expect(searchParams.get("ignore")).toBe(null);
   expect(searchParams.get("signature")).toBe("my-signature");
