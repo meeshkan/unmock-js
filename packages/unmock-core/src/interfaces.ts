@@ -1,3 +1,4 @@
+import { ActionsV0 } from "unmock-hash";
 import { Mode, UnmockOptions } from "./options";
 
 export interface ILogger {
@@ -58,6 +59,7 @@ export interface IUnmockOptions {
   unmockHost?: string;
   unmockPort?: string;
   ignore?: any;
+  actions?: ActionsV0 | ActionsV0[];
   signature?: string;
   token?: string;
   whitelist?: string[] | string;

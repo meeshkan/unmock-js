@@ -79,11 +79,11 @@ describe("hash function", () => {
   test("json deserialization", () => {
     const incoming0 = {
       ...base,
-      body: "hello=world&foo=bar",
+      body: "hello=world&foo=bar|bar",
     };
     const incoming1 = {
       ...base,
-      body: "foo=bar&hello=world",
+      body: "foo=bar%7Cbar&hello=world",
     };
     expect(
       computeHash(

@@ -37,7 +37,7 @@ const mHttp = (
 ) => {
   const { host, ...rawHeaders } = req.headers;
   const reqHost = (host || "").split(":")[0];
-  const { signature, ignore, persistence, unmockHost, unmockPort } = opts;
+  const { actions, signature, ignore, persistence, unmockHost, unmockPort } = opts;
   const { method, url } = req;
   const xy = token !== undefined;
   const pathForFake = buildPath(
@@ -69,7 +69,7 @@ const mHttp = (
       user_id: userId ? userId : MOSES,
       ...(signature ? { signature } : {}),
     };
-    const hash = computeHashV0(hashable, ignore);
+    const hash = computeHashV0(hashable, ignore, actions);
     const makesNetworkCall = opts.shouldMakeNetworkCall(hash);
     const doEndReporting = (
       fromCache: boolean,
@@ -80,7 +80,6 @@ const mHttp = (
         opts,
         hash,
         story.story,
-        xy,
         fromCache,
         metaData,
         {
