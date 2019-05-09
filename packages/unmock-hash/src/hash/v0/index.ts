@@ -150,7 +150,7 @@ export const makeIgnorable = (
 
 const applyActions = (
   initialInput: Partial<IHashableV0>,
-  actions: ActionsV0,
+  actions: ActionsV0 | ActionsV0[],
 ): ISerializedHashableWithIgnoreV0 => {
   const out: ISerializedHashableWithIgnoreV0 = {
     ...initialInput,
@@ -177,18 +177,17 @@ const applyActions = (
   return out;
 };
 
-type ActionsActionsV0 =
+export type ActionsV0 =
   | "make-header-keys-lowercase"
   | "deserialize-json-body"
   | "deserialize-x-www-form-urlencoded-body";
-export type ActionsV0 = ActionsActionsV0 | ActionsActionsV0[];
 
 const TRUNCATE_HASH_AT = 8;
 
 export default (
   initialInput: IHashableV0,
   ignore?: IgnoreV0,
-  action?: ActionsV0,
+  action?: ActionsV0 | ActionsV0[],
 ) =>
   objectHash(
     applyActions(makeIgnorable(initialInput, ignore || []), action || []),

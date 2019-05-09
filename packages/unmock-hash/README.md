@@ -91,7 +91,7 @@ This means that ignore can be a single string, ie `headers`, in which case the h
 A number of additional actions are available that, like ignore, conflate similar types of requsets to a single hash.  These are defined in typescript as:
 
 ```ts
-type ActionsActionsV0 =
+type ActionsV0 =
   | "make-header-keys-lowercase"
   | "deserialize-json-body"
   | "deserialize-x-www-form-urlencoded-body";

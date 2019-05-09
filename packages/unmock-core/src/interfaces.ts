@@ -59,7 +59,7 @@ export interface IUnmockOptions {
   unmockHost?: string;
   unmockPort?: string;
   ignore?: any;
-  actions?: ActionsV0;
+  actions?: ActionsV0 | ActionsV0[];
   signature?: string;
   token?: string;
   whitelist?: string[] | string;

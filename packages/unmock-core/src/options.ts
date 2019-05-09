@@ -12,7 +12,7 @@ export enum Mode {
 
 export class UnmockOptions implements IUnmockOptions {
   public save: boolean | string[] = true;
-  public actions: ActionsV0 = [
+  public actions: ActionsV0[] = [
     "deserialize-json-body",
     "deserialize-x-www-form-urlencoded-body",
     "make-header-keys-lowercase",
