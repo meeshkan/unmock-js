@@ -1,6 +1,6 @@
 import { ActionsV0 } from "unmock-hash";
 import { Mode, UnmockOptions } from "./options";
-xcfghyjiuopoawfbc awvbgnfhjkluas8o7f6yhmasgfksyzxfjcfhgasmdhfasjfhm
+
 export interface ILogger {
   log: (message: string) => void;
 }
