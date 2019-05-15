@@ -47,7 +47,7 @@ Unmock works by overriding Node's `http.request` and `https.request` functions i
 ## Install
 
 ```sh
-$ npm install --save unmock
+$ npm install --save unmock-jsdom
 ```
 
 ### Node version support
@@ -61,7 +61,7 @@ The latest version of unmock supports all currently maintained Node versions, se
 In your unit tests, you can invoke unmock like this:
 
 ```js
-import { unmock } from "unmock-core";
+import { unmock } from "unmock-jsdom";
 
 beforeEach(async () => await unmock());
 
