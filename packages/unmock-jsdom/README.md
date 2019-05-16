@@ -35,6 +35,7 @@ The ultimate goal of unmock is to provide a semantically and functionally adequa
     - [Adding a signature](#adding-a-signature)
     - [Whitelisting API](#whitelisting-api)
     - [unmock.io tokens](#unmockio-tokens)
+    - [Usage in Next.js](#usage-in-nextjs)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -42,17 +43,13 @@ The ultimate goal of unmock is to provide a semantically and functionally adequa
 
 ## How does it work?
 
-Unmock works by overriding Node's `http.request` and `https.request` functions in addition to their `follow-redirect` versions, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock-jsdom works by overriding `XMLHttpRequest`, injecting JIT or persisted mocks instead.
 
 ## Install
 
 ```sh
 $ npm install --save unmock-jsdom
 ```
-
-### Node version support
-
-The latest version of unmock supports all currently maintained Node versions, see [Node Release Schedule](https://github.com/nodejs/Release#release-schedule)
 
 ## Usage
 
@@ -183,6 +180,10 @@ await unmock({
 ```
 
 At a certain point this becomes a bit tedious, at which point you will want to create a credentials file.  See [unmock.io/docs](https://www.unmock.io/docs) for more information on credential files.
+
+### Usage in Next.js
+
+unmock-jsdom depends on `XMLHttpRequest` that is not available in Node.js. Therefore, the module should be excluded from server-side bundles by, for example, importing it in `componentDidMount` instead of top-level. See our [Next.js example](https://github.com/unmock/next-grommet-example/blob/master/pages/index.tsx).
 
 ## Contributing
 
