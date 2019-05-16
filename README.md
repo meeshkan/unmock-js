@@ -21,7 +21,7 @@ A new way to mock API dependencies.
 
 ## How does it work?
 
-Unmock works by overriding Node's `http.request` and `https.request` functions in addition to their `follow-redirect` versions, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock works by capturing HTTP calls in your code, injecting JIT or persisted mocks of hundreds of APIs.
 
 ## Install
 

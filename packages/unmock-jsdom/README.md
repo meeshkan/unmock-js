@@ -42,17 +42,13 @@ The ultimate goal of unmock is to provide a semantically and functionally adequa
 
 ## How does it work?
 
-Unmock works by overriding Node's `http.request` and `https.request` functions in addition to their `follow-redirect` versions, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock-jsdom works by overriding `XMLHttpRequest`, injecting JIT or persisted mocks instead.
 
 ## Install
 
 ```sh
 $ npm install --save unmock-jsdom
 ```
-
-### Node version support
-
-The latest version of unmock supports all currently maintained Node versions, see [Node Release Schedule](https://github.com/nodejs/Release#release-schedule)
 
 ## Usage
 
