@@ -180,6 +180,10 @@ await unmock({
 
 At a certain point this becomes a bit tedious, at which point you will want to create a credentials file.  See [unmock.io/docs](https://www.unmock.io/docs) for more information on credential files.
 
+### Usage in Next.js
+
+unmock-jsdom depends on `XMLHttpRequest` that is not available in Node.js. Therefore, the module should be excluded from server-side bundles by, for example, importing it in `componentDidMount` instead of top-level. See our [Next.js example](https://github.com/unmock/next-grommet-example/blob/master/pages/index.tsx).
+
 ## Contributing
 
 Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRIBUTING.md) for notes on our commit message conventions and how to run tests.
