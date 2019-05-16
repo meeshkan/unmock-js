@@ -42,7 +42,7 @@ The ultimate goal of unmock is to provide a semantically and functionally adequa
 
 ## How does it work?
 
-Unmock works by overriding Node's `http.request` and `https.request` functions in addition to their `follow-redirect` versions, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock-node uses [node-mitm](https://github.com/moll/node-mitm) library to capture outgoing HTTP calls, injecting JIT or persisted mocks of hundreds of APIs.
 
 ## Install
 
@@ -183,6 +183,18 @@ await unmock({
 ```
 
 At a certain point this becomes a bit tedious, at which point you will want to create a credentials file.  See [unmock.io/docs](https://www.unmock.io/docs) for more information on credential files.
+
+### Usage in Next.js
+
+unmock-node depends on core Node.js libraries and should therefore be excluded from client-side bundles. In Next.js, unmock-node can be defined as server-only module by including
+
+```js
+browser: {
+  unmock-node: false
+}
+```
+
+in `package.json`. For other ways to define the module as server-only, see [this article](https://arunoda.me/blog/ssr-and-server-only-modules).
 
 ## Contributing
 
