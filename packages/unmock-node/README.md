@@ -35,6 +35,7 @@ The ultimate goal of unmock is to provide a semantically and functionally adequa
     - [Adding a signature](#adding-a-signature)
     - [Whitelisting API](#whitelisting-api)
     - [unmock.io tokens](#unmockio-tokens)
+    - [Usage in Next.js](#usage-in-nextjs)
   - [Contributing](#contributing)
   - [License](#license)
 
