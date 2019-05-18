@@ -190,6 +190,8 @@ export default (
   action?: ActionsV0 | ActionsV0[],
   challenge?: string,
   onError?: (
+    hash: string,
+    challenge: string,
     initialInput: IHashableV0,
     afterIgnore: Partial<IHashableV0>,
     afterActions: ISerializedHashableWithIgnoreV0) => void,
@@ -198,7 +200,7 @@ export default (
   const afterActions = applyActions(afterIgnored, action || []);
   const hash = objectHash(afterActions).substring(0, TRUNCATE_HASH_AT);
   if (challenge && hash !== challenge && onError) {
-    onError(initialInput, afterIgnored, afterActions);
+    onError(hash, challenge, initialInput, afterIgnored, afterActions);
   }
   return hash;
 };
