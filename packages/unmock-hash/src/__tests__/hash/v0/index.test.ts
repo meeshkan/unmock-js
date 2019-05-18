@@ -28,7 +28,7 @@ describe("hash function", () => {
       ...base,
     };
     const cb = jest.fn();
-    computeHash(incoming, undefined, undefined, computeHash(incoming0), cb);
+    computeHash(incoming, undefined, undefined, computeHash(incoming), cb);
     expect(cb).toBeCalledTimes(0);
   });
   test("sanity test with challenge that fails", () => {
