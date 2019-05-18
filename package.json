@@ -17,7 +17,9 @@
     "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
     "coverage": "npm test -- --coverage",
     "coverage:upload": "codecov",
-    "unmock": "node packages/unmock-cli/dist/index.js"
+    "unmock": "node packages/unmock-cli/dist/index.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "lint-staged": {
     "*.ts": [
@@ -47,7 +49,6 @@
     "lerna": "^3.13.4",
     "prettier": "^1.17.0",
     "prettier-check": "^2.0.0",
-    "snyk": "^1.161.1",
     "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
@@ -69,12 +70,14 @@
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",
     "unmock-node": "file:packages/unmock-node",
-    "unmock-hash": "file:packages/unmock-hash"
+    "unmock-hash": "file:packages/unmock-hash",
+    "snyk": "^1.165.1"
   },
   "name": "unmock",
   "jest": {
     "projects": [
       "<rootDir>/packages/*"
     ]
-  }
+  },
+  "snyk": true
 }

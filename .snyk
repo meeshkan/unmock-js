@@ -1,0 +1,10 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.3
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  SNYK-JS-AXIOS-174505:
+    - unmock-cli > unmock-core > axios:
+        patched: '2019-05-18T13:29:10.332Z'
+    - unmock > unmock-cli > unmock-core > axios:
+        patched: '2019-05-18T13:29:10.332Z'
