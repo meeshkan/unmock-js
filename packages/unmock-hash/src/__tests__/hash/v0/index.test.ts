@@ -23,6 +23,22 @@ describe("hash function", () => {
     };
     expect(computeHash(incoming0) === computeHash(incoming1)).toEqual(false);
   });
+  test("sanity test with challenge", () => {
+    const incoming = {
+      ...base,
+    };
+    const cb = jest.fn();
+    computeHash(incoming, undefined, undefined, computeHash(incoming), cb);
+    expect(cb).toBeCalledTimes(0);
+  });
+  test("sanity test with challenge that fails", () => {
+    const incoming = {
+      ...base,
+    };
+    const cb = jest.fn();
+    computeHash(incoming, undefined, undefined, "foobar", cb);
+    expect(cb).toBeCalledTimes(1);
+  });
   test("simple ignore", () => {
     const incoming0 = {
       ...base,
