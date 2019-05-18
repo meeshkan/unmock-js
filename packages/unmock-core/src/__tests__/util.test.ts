@@ -51,6 +51,7 @@ test("build correct path with ignore", () => {
     "GET",
     "/v1/x",
     [],
+    "my-hash",
     true,
   );
   const url = new URL(`${opts.buildPath(builtPath)}`);
@@ -76,6 +77,7 @@ test("build correct path without ignore", () => {
     "GET",
     "/v1/x",
     [],
+    undefined,
     true,
   );
   const url = new URL(`${opts.buildPath(builtPath)}`);

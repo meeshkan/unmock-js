@@ -30,6 +30,7 @@ export const buildPath = (
   method: string | undefined,
   path: string | undefined,
   story: string[],
+  hash: string | undefined,
   xy: boolean,
 ) => {
   hostname = inputOrEmptyString(hostname);
@@ -41,6 +42,7 @@ export const buildPath = (
   const { actions, ignore, signature } = opts;
   const queryObject = {
     ...(actions ? { actions: JSON.stringify(actions) } : {}),
+    ...(hash ? { hash } : {}),
     headers: JSON.stringify(headers),
     hostname,
     ...(ignore ? { ignore: JSON.stringify(ignore) } : {}),
