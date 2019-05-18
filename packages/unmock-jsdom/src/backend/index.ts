@@ -215,6 +215,7 @@ export default class JSDomBackend implements IBackend {
         method,
         ro.pathname,
         story.story,
+        undefined, // for now, we do not pass a hash for validation. should change
         token !== undefined,
       );
       const res = XMLHttpRequestOpen.apply(this, [

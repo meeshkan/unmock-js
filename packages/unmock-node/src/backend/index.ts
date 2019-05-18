@@ -39,16 +39,6 @@ const mHttp = (
   const reqHost = (host || "").split(":")[0];
   const { actions, signature, ignore, persistence, unmockHost, unmockPort } = opts;
   const { method, url } = req;
-  const xy = token !== undefined;
-  const pathForFake = buildPath(
-    opts,
-    rawHeaders,
-    reqHost,
-    method,
-    url,
-    story.story,
-    xy,
-  );
 
   const unmockHeaders = {
     [UNMOCK_UA_HEADER_NAME]: "node",
@@ -126,6 +116,16 @@ const mHttp = (
       // Make a real call to unmock API
       // req.connection will be either TLSSocket or Socket; the former has encrypted attribute set to True.
       const isEncrypted = (req.connection as any).encrypted;
+      const pathForFake = buildPath(
+        opts,
+        rawHeaders,
+        reqHost,
+        method,
+        url,
+        story.story,
+        hash,
+        token !== undefined,
+      );
       const requestOptions: RequestOptions = {
         headers: { ...rawHeaders, ...unmockHeaders },
         host: unmockHost,
