@@ -188,7 +188,17 @@ export default (
   initialInput: IHashableV0,
   ignore?: IgnoreV0,
   action?: ActionsV0 | ActionsV0[],
-) =>
-  objectHash(
-    applyActions(makeIgnorable(initialInput, ignore || []), action || []),
-  ).substring(0, TRUNCATE_HASH_AT);
+  challenge?: string,
+  onError?: (
+    initialInput: IHashableV0,
+    afterIgnore: Partial<IHashableV0>,
+    afterActions: ISerializedHashableWithIgnoreV0) => void
+) => {
+  const afterIgnored = makeIgnorable(initialInput, ignore || []);
+  const afterActions = applyActions(afterIgnored, action || []);
+  const hash = objectHash(afterActions).substring(0, TRUNCATE_HASH_AT);
+  if (challenge && hash !== challenge && onError) {
+    onError(initialInput, afterIgnored, afterActions);
+  }
+  return hash;
+}
