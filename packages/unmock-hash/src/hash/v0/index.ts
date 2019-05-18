@@ -192,7 +192,7 @@ export default (
   onError?: (
     initialInput: IHashableV0,
     afterIgnore: Partial<IHashableV0>,
-    afterActions: ISerializedHashableWithIgnoreV0) => void
+    afterActions: ISerializedHashableWithIgnoreV0) => void,
 ) => {
   const afterIgnored = makeIgnorable(initialInput, ignore || []);
   const afterActions = applyActions(afterIgnored, action || []);
@@ -201,4 +201,4 @@ export default (
     onError(initialInput, afterIgnored, afterActions);
   }
   return hash;
-}
+};
