@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "scripts": {
-    "clean": "rm -rf node_modules ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
+    "clean": "del-cli node_modules ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
     "compile": "tsc --build tsconfig.build.json",
     "compile:clean": "tsc --build tsconfig.build.json --clean",
     "watch": "tsc --build tsconfig.build.json --watch",
@@ -39,6 +39,7 @@
     "@types/node": "^11.13.5",
     "@types/object-hash": "^1.2.0",
     "codecov": "^3.3.0",
+    "del-cli": "^1.1.0",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
     "jest": "^24.7.1",
