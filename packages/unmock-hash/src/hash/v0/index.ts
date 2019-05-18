@@ -19,7 +19,7 @@ export interface IHashableV0 {
   signature?: string;
 }
 
-interface ISerializedHashableWithIgnoreV0 {
+export interface ISerializedHashableWithIgnoreV0 {
   // Identical to above, represents content after certain actions has taken place
   body?: string | {} | IJSONValue | IStringMap;
   headers?: IStringMap;
