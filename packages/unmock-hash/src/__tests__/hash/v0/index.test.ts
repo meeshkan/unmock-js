@@ -71,10 +71,16 @@ describe("hash function", () => {
   test("json deserialization", () => {
     const incoming0 = {
       ...base,
+      headers: {
+        ["content-type"]: "application/json; charset=utf-8",
+      },
       body: '{"foo":1,    "bar":"baz" } ',
     };
     const incoming1 = {
       ...base,
+      headers: {
+        ["content-type"]: "application/json; charset=utf-8",
+      },
       body: '   { "bar":"baz", "foo":     1 }',
     };
     expect(computeHash(incoming0, undefined, "deserialize-json-body")).toEqual(
@@ -84,34 +90,46 @@ describe("hash function", () => {
   test("no json deserialization", () => {
     const incoming0 = {
       ...base,
+      headers: {
+        ["Content-Type"]: "application/json; charset=utf-8",
+      },
       body: '{"foo":1,    "bar":"baz" } ',
     };
     const incoming1 = {
       ...base,
+      headers: {
+        ["Content-Type"]: "application/json; charset=utf-8",
+      },
       body: '   { "bar":"baz", "foo":     1 }',
     };
     expect(computeHash(incoming0) === computeHash(incoming1)).toEqual(false);
   });
-  test("json deserialization", () => {
+  test("form deserialization", () => {
     const incoming0 = {
       ...base,
+      headers: {
+        ["Content-Type"]: "application/x-www-form-urlencoded; charset=utf-8",
+      },
       body: "hello=world&foo=bar|bar",
     };
     const incoming1 = {
       ...base,
+      headers: {
+        ["Content-Type"]: "application/x-www-form-urlencoded; charset=utf-8",
+      },
       body: "foo=bar%7Cbar&hello=world",
     };
     expect(
       computeHash(
         incoming0,
         undefined,
-        "deserialize-x-www-form-urlencoded-body",
+        ["deserialize-x-www-form-urlencoded-body", "deserialize-json-body"],
       ),
     ).toEqual(
       computeHash(
         incoming1,
         undefined,
-        "deserialize-x-www-form-urlencoded-body",
+        ["deserialize-json-body", "deserialize-x-www-form-urlencoded-body"],
       ),
     );
   });
