@@ -1,3 +1,4 @@
+import contentType from "content-type";
 import objectHash from "object-hash";
 import querystring from "querystring";
 import { IJSONValue } from "../../jsonType";
@@ -158,6 +159,9 @@ const applyActions = (
     ...(initialInput.story ? { story: [...initialInput.story] } : {}),
   };
   actions = makeArray(actions);
+  const ct = out.headers ?
+    contentType.parse(out.headers["Content-Type"] || out.headers["content-type"] || "text/plain") :
+    undefined;
   for (const action of actions) {
     if (action === "make-header-keys-lowercase" && out.headers) {
       out.headers = Object.entries(out.headers)
@@ -166,11 +170,17 @@ const applyActions = (
     }
     if (
       action === "deserialize-x-www-form-urlencoded-body" &&
+      ct &&
+      ct.type === "application/x-www-form-urlencoded" &&
       typeof out.body === "string"
     ) {
       out.body = querystring.parse(out.body);
     }
-    if (action === "deserialize-json-body" && typeof out.body === "string") {
+    if (action === "deserialize-json-body" &&
+      ct &&
+      ct.type === "application/json" &&
+      typeof out.body === "string"
+    ) {
       out.body = JSON.parse(out.body);
     }
   }
