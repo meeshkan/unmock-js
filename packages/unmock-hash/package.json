@@ -1,5 +1,5 @@
 {
-  "version": "0.0.48",
+  "version": "0.0.49",
   "name": "unmock-hash",
   "displayName": "unmock-hash",
   "main": "dist/index.js",
@@ -13,6 +13,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "content-type": "^1.0.4",
     "object-hash": "^1.3.1",
     "querystring": "^0.2.0"
   }
