@@ -1,5 +1,5 @@
 {
-  "version": "0.0.53",
+  "version": "0.0.54",
   "name": "unmock-hash",
   "displayName": "unmock-hash",
   "main": "dist/index.js",
