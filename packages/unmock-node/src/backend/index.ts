@@ -49,8 +49,9 @@ const mHttp = (
   req.on("data", (chunk) => outgoingData.push(chunk));
 
   req.on("end", () => {
+    const { body } = BufferToStringOrEmpty(outgoingData, "body");
     const hashable = {
-      body: BufferToStringOrEmpty(outgoingData, "body"),
+      body: body ? body : {},
       headers: rawHeaders as { [key: string]: string },
       hostname: host || "",
       method: method || "",
