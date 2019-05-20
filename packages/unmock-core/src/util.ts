@@ -13,8 +13,9 @@ export const getUserId = async (opts: UnmockOptions, accessToken?: string) => {
   if (accessToken === undefined) {
     return null;
   }
-  if (accessToken === opts.persistence.loadAuth()) {
-    return opts.persistence.loadUserId();
+  const maybeUserId = opts.persistence.loadUserId();
+  if (maybeUserId && accessToken === opts.persistence.loadAuth()) {
+    return maybeUserId;
   }
   const {
     data: { userId },
