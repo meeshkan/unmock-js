@@ -37,11 +37,18 @@ const mHttp = (
 ) => {
   const { host, ...rawHeaders } = req.headers;
   const reqHost = (host || "").split(":")[0];
-  const { actions, signature, ignore, persistence, unmockHost, unmockPort } = opts;
+  const {
+    actions,
+    signature,
+    ignore,
+    persistence,
+    unmockHost,
+    unmockPort,
+  } = opts;
   const { method, url } = req;
 
   const unmockHeaders = {
-    [UNMOCK_UA_HEADER_NAME]: "node",
+    [UNMOCK_UA_HEADER_NAME]: JSON.stringify({ lang: "node" }),
     ...(token ? makeAuthHeader(token).headers : {}),
   };
   const outgoingData: Buffer[] = [];
