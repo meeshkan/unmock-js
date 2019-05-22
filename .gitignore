@@ -5,3 +5,4 @@ dist
 tsconfig.tsbuildinfo
 .vscode
 coverage
+.DS_Store
