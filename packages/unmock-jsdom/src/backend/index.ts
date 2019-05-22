@@ -228,7 +228,10 @@ export default class JSDomBackend implements IBackend {
       if (token) {
         this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
       }
-      this.setRequestHeader(UNMOCK_UA_HEADER_NAME, JSON.stringify("jsdom"));
+      this.setRequestHeader(
+        UNMOCK_UA_HEADER_NAME,
+        JSON.stringify({ lang: "jsdom" }),
+      );
       return res;
     };
   }

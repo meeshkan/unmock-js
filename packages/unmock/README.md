@@ -11,6 +11,20 @@
 
 A CLI for inspecting projects using unmock and calling the unmock server to generate reliable fake data.
 
+## Installation
+
+```
+yarn add -D unmock
+```
+
+or
+
+```
+npm install --save-dev unmock
+```
+
+## Usage
+
 ```bash
 $ unmock --help
 Usage: unmock unmock <command>

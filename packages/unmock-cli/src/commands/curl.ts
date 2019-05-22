@@ -8,7 +8,7 @@ export const makeHeaders = (headers: string[]) =>
         .substring(h.indexOf(":") + 1)
         .trim(),
     }))
-  .reduce((a, b) => ({ ...a, ...b }), {});
+    .reduce((a, b) => ({ ...a, ...b }), {});
 
 export const curlInternal = async (url: string, options: any) => {
   await unmock({
@@ -24,6 +24,6 @@ export const curlInternal = async (url: string, options: any) => {
 };
 
 export const curl = async (url: string, options: any) => {
-  const data = curlInternal(url, options);
+  const data = await curlInternal(url, options);
   process.stdout.write(JSON.stringify(data, null, 2) + "\n");
 };
