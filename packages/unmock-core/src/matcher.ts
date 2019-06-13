@@ -10,11 +10,15 @@ type RequestComparator = (
   mock: IMockRequest,
 ) => boolean;
 
-function propertyMatches(
-  property: keyof (ISerializedRequest & IMockRequest),
-  interceptedRequest: ISerializedRequest,
-  mockRequest: IMockRequest,
-): boolean {
+function propertyMatches({
+  property,
+  interceptedRequest,
+  mockRequest,
+}: {
+  property: keyof (ISerializedRequest & IMockRequest);
+  interceptedRequest: ISerializedRequest;
+  mockRequest: IMockRequest;
+}): boolean {
   const mockRequestProperty = mockRequest[property];
   const interceptedRequestProperty = interceptedRequest[property];
 
@@ -34,10 +38,14 @@ const requestsMatch: RequestComparator = (
   mockRequest,
 ): boolean => {
   return (
-    propertyMatches("protocol", interceptedRequest, mockRequest) &&
-    propertyMatches("host", interceptedRequest, mockRequest) &&
-    propertyMatches("path", interceptedRequest, mockRequest) &&
-    propertyMatches("method", interceptedRequest, mockRequest)
+    propertyMatches({
+      interceptedRequest,
+      mockRequest,
+      property: "protocol",
+    }) &&
+    propertyMatches({ property: "host", interceptedRequest, mockRequest }) &&
+    propertyMatches({ property: "path", interceptedRequest, mockRequest }) &&
+    propertyMatches({ property: "method", interceptedRequest, mockRequest })
   );
 };
 
