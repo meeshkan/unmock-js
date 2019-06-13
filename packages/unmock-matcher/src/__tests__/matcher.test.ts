@@ -21,7 +21,7 @@ describe("http request matcher", () => {
   it("returns undefined if hostname does not match", () => {
     const requestWithDifferentHostname = {
       ...request,
-      hostname: "https://bar.foo.com",
+      host: "https://bar.foo.com",
     };
     const mocks = [
       { request: requestWithDifferentHostname, response: mockResponse },
