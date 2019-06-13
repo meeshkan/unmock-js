@@ -73,7 +73,12 @@ export interface ISerializedRequest {
   host: string;
   method: string;
   path: string;
+  protocol: "http" | "https";
 }
+
+export type IMockRequest = {
+  [P in keyof ISerializedRequest]?: ISerializedRequest[P] | RegExp;
+};
 
 export interface ISerializedResponse {
   body?: string;
@@ -82,7 +87,6 @@ export interface ISerializedResponse {
 }
 
 export interface IMock {
-  // TODO Mock could have regex definitions so create a separate interface for that
-  request: ISerializedRequest;
+  request: IMockRequest;
   response: ISerializedResponse;
 }

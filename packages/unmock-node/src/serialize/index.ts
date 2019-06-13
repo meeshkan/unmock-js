@@ -50,6 +50,8 @@ export const serializeRequest = async (
   }
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
+  const isEncrypted = (interceptedRequest.connection as any).encrypted;
+  const protocol = isEncrypted ? "https" : "http";
 
   const { pathname: path } = new URL(url as string);
 
@@ -58,6 +60,7 @@ export const serializeRequest = async (
     host,
     method: method as string,
     path,
+    protocol,
   };
   return serializedRequest;
 };

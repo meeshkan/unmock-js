@@ -1,36 +1,43 @@
-import { IMock, ISerializedRequest, ISerializedResponse } from "./interfaces";
-
-import debug from "debug";
-
-const log = debug("unmock-matcher:comparator");
+import {
+  IMock,
+  IMockRequest,
+  ISerializedRequest,
+  ISerializedResponse,
+} from "./interfaces";
 
 type RequestComparator = (
   intercepted: ISerializedRequest,
-  mock: ISerializedRequest,
+  mock: IMockRequest,
 ) => boolean;
+
+function propertyMatches(
+  property: keyof (ISerializedRequest & IMockRequest),
+  interceptedRequest: ISerializedRequest,
+  mockRequest: IMockRequest,
+): boolean {
+  const mockRequestProperty = mockRequest[property];
+  const interceptedRequestProperty = interceptedRequest[property];
+
+  if (mockRequestProperty === undefined) {
+    return true;
+  }
+
+  if (mockRequestProperty instanceof RegExp) {
+    return mockRequestProperty.test(interceptedRequestProperty);
+  }
+
+  return mockRequestProperty === interceptedRequestProperty;
+}
 
 const requestsMatch: RequestComparator = (
   interceptedRequest,
   mockRequest,
 ): boolean => {
-  function strictEqualMatch(property: keyof ISerializedRequest): boolean {
-    const isMatch = interceptedRequest[property] === mockRequest[property];
-
-    if (!isMatch) {
-      log(
-        `Mismatch in ${property.toString()}: request ${JSON.stringify(
-          interceptedRequest,
-        )}, mock: ${JSON.stringify(mockRequest)}`,
-      );
-      return false;
-    }
-    return true;
-  }
-
   return (
-    strictEqualMatch("host") &&
-    strictEqualMatch("path") &&
-    strictEqualMatch("method")
+    propertyMatches("protocol", interceptedRequest, mockRequest) &&
+    propertyMatches("host", interceptedRequest, mockRequest) &&
+    propertyMatches("path", interceptedRequest, mockRequest) &&
+    propertyMatches("method", interceptedRequest, mockRequest)
   );
 };
 
