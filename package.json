@@ -9,7 +9,7 @@
     "postinstall": "lerna run prepare && npm run lint-ts && npm run compile",
     "lint": "prettier-check '**/*.{js,ts}'",
     "lint-fix": "prettier '**/*.{js,ts}' --write",
-    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-hash/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json",
+    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json",
     "test": "jest --verbose",
     "test:clean": "jest --clearCache",
     "test:watch": "jest --verbose --watchAll",
@@ -38,7 +38,6 @@
     "@types/mitm": "^1.3.2",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^11.13.5",
-    "@types/object-hash": "^1.2.0",
     "codecov": "^3.3.0",
     "del-cli": "^1.1.0",
     "dotenv": "^7.0.0",
@@ -69,8 +68,7 @@
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",
-    "unmock-node": "file:packages/unmock-node",
-    "unmock-hash": "file:packages/unmock-hash"
+    "unmock-node": "file:packages/unmock-node"
   },
   "name": "unmock",
   "jest": {

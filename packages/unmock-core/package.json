@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "querystring": "^0.2.0",
-    "unmock-hash": "file:../unmock-hash"
+    "querystring": "^0.2.0"
   }
 }
