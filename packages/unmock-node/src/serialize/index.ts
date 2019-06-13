@@ -58,7 +58,7 @@ export const serializeRequest = async (
   const serializedRequest: ISerializedRequest = {
     body,
     host,
-    method: method as string,
+    method,
     path,
     protocol,
   };
