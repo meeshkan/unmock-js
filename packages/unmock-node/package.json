@@ -19,7 +19,6 @@
     "mitm": "^1.7.0",
     "mkdirp": "^0.5.1",
     "unmock-core": "file:../unmock-core",
-    "unmock-hash": "file:../unmock-hash",
     "winston": "^3.2.1"
   }
 }
