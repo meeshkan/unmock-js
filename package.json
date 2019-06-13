@@ -9,7 +9,7 @@
     "postinstall": "lerna run prepare && npm run lint-ts && npm run compile",
     "lint": "prettier-check '**/*.{js,ts}'",
     "lint-fix": "prettier '**/*.{js,ts}' --write",
-    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-hash/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json",
+    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-hash/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json && tslint --project packages/unmock-matcher/ --config tslint.json",
     "test": "jest --verbose",
     "test:clean": "jest --clearCache",
     "test:watch": "jest --verbose --watchAll",

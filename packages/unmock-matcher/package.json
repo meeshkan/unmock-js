@@ -14,14 +14,10 @@
   },
   "dependencies": {
     "@types/debug": "^4.1.4",
-    "@types/lodash": "^4.14.134",
     "@types/node": "^12.0.8",
     "@types/readable-stream": "^2.3.1",
-    "@types/uuid": "^3.4.4",
     "content-type": "^1.0.4",
     "debug": "^4.1.1",
-    "lodash": "^4.17.11",
-    "querystring": "^0.2.0",
     "readable-stream": "^3.4.0",
     "unmock-core": "file:../unmock-core"
   }
