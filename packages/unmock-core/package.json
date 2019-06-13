@@ -15,8 +15,6 @@
   "dependencies": {
     "@types/debug": "^4.1.4",
     "axios": "^0.18.0",
-    "debug": "^4.1.1",
-    "querystring": "^0.2.0",
-    "unmock-hash": "file:../unmock-hash"
+    "querystring": "^0.2.0"
   }
 }
