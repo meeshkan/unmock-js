@@ -1,4 +1,4 @@
-import { IMock, ISerializedRequest, ISerializedResponse } from "unmock-core";
+import { IMock, ISerializedRequest, ISerializedResponse } from "./interfaces";
 
 import debug from "debug";
 

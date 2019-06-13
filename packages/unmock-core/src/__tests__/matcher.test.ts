@@ -1,5 +1,5 @@
 import { ISerializedResponse } from "unmock-core";
-import { httpRequestMatcherFactory } from "..";
+import { httpRequestMatcherFactory } from "../matcher";
 
 const request = {
   host: "http://api.foo.com",

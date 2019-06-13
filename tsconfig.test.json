@@ -10,7 +10,5 @@
     { "path": "./packages/unmock-core/src/__tests__" },
     { "path": "./packages/unmock-hash/src/__tests__" },
     { "path": "./packages/unmock-jsdom/src/__tests__" },
-    { "path": "./packages/unmock-node/src/__tests__" },
-    { "path": "./packages/unmock-matcher/src/__tests__" }
-  ]
+    { "path": "./packages/unmock-node/src/__tests__" }  ]
 }

@@ -11,6 +11,5 @@
     { "path": "./packages/unmock-hash" },
     { "path": "./packages/unmock-jsdom" },
     { "path": "./packages/unmock-node" },
-    { "path": "./packages/unmock-matcher" }
   ]
 }
