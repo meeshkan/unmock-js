@@ -35,6 +35,12 @@ class BodySerializer extends readable.Transform {
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
+  const { host } = interceptedRequest.headers;
+
+  if (!host) {
+    throw new Error("No host");
+  }
+
   const { method, url } = interceptedRequest;
   if (!url) {
     throw new Error("Missing url.");
@@ -45,13 +51,13 @@ export const serializeRequest = async (
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
 
-  const { hostname, pathname } = new URL(url as string);
+  const { pathname: path } = new URL(url as string);
 
   const serializedRequest: ISerializedRequest = {
     body,
-    hostname,
+    host,
     method: method as string,
-    pathname,
+    path,
   };
   return serializedRequest;
 };

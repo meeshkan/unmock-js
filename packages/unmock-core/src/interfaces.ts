@@ -69,17 +69,20 @@ export interface IUnmockOptions {
 
 export interface ISerializedRequest {
   body?: string;
+  headers?: any;
+  host: string;
   method: string;
-  hostname: string;
-  pathname: string;
+  path: string;
 }
 
 export interface ISerializedResponse {
-  body: any;
+  body?: string;
+  headers?: any;
   statusCode: number;
 }
 
 export interface IMock {
+  // TODO Mock could have regex definitions so create a separate interface for that
   request: ISerializedRequest;
   response: ISerializedResponse;
 }

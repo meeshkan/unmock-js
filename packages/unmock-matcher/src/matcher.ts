@@ -28,8 +28,8 @@ const requestsMatch: RequestComparator = (
   }
 
   return (
-    strictEqualMatch("hostname") &&
-    strictEqualMatch("pathname") &&
+    strictEqualMatch("host") &&
+    strictEqualMatch("path") &&
     strictEqualMatch("method")
   );
 };

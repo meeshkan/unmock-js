@@ -2,9 +2,9 @@ import { ISerializedResponse } from "unmock-core";
 import { httpRequestMatcherFactory } from "..";
 
 const request = {
-  hostname: "http://api.foo.com",
+  host: "http://api.foo.com",
   method: "GET",
-  pathname: "/v1/users",
+  path: "/v1/users",
 };
 
 const mockResponse: ISerializedResponse = {
