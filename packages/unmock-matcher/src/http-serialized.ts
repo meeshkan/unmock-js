@@ -1,6 +1,6 @@
 import * as http from "http";
 import * as readable from "readable-stream";
-import { ISerializedRequest } from "./types";
+import { ISerializedRequest } from "unmock-core";
 
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {
@@ -12,7 +12,7 @@ class BodySerializer extends readable.Transform {
   private body: string = "";
 
   // TODO Encoding
-  public _transform(chunk: Buffer, encoding: string, done: () => void) {
+  public _transform(chunk: Buffer, _: string, done: () => void) {
     this.body += chunk.toString();
     this.push(chunk);
     done();

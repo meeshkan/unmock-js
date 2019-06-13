@@ -1,4 +1,4 @@
-import { IMock, ISerializedRequest, ISerializedResponse } from "./types";
+import { IMock, ISerializedRequest, ISerializedResponse } from "unmock-core";
 
 import debug from "debug";
 
@@ -18,7 +18,7 @@ const requestsMatch: RequestComparator = (
 
     if (!isMatch) {
       log(
-        `Mismatch in ${property}: request ${JSON.stringify(
+        `Mismatch in ${property.toString()}: request ${JSON.stringify(
           interceptedRequest,
         )}, mock: ${JSON.stringify(mockRequest)}`,
       );
