@@ -1,22 +1,6 @@
 import * as http from "http";
 import * as readable from "readable-stream";
-
-export interface ISerializedRequest {
-  body?: string;
-  method: string;
-  hostname: string;
-  pathname: string;
-}
-
-export interface ISerializedResponse {
-  body: any;
-  statusCode: number;
-}
-
-export interface IMock {
-  request: ISerializedRequest;
-  response: ISerializedResponse;
-}
+import { ISerializedRequest } from "./types";
 
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {

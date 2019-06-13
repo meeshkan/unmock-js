@@ -1,19 +1,15 @@
-import {
-  IMock,
-  ISerializedRequest,
-  ISerializedResponse,
-} from "./http-serialized";
+import { IMock, ISerializedRequest, ISerializedResponse } from "./types";
 
 import debug from "debug";
 
 const log = debug("unmock-matcher:comparator");
 
-export type RequestComparator = (
+type RequestComparator = (
   intercepted: ISerializedRequest,
   mock: ISerializedRequest,
 ) => boolean;
 
-export const requestsMatch: RequestComparator = (
+const requestsMatch: RequestComparator = (
   interceptedRequest,
   mockRequest,
 ): boolean => {
@@ -38,18 +34,26 @@ export const requestsMatch: RequestComparator = (
   );
 };
 
-export class HttpRequestMatcher {
-  private readonly mockIterable: () => Iterable<IMock>;
-  constructor(mockIterable: () => Iterable<IMock>) {
-    this.mockIterable = mockIterable;
-  }
+type HttpRequestMatcher = (
+  request: ISerializedRequest,
+) => ISerializedResponse | undefined;
 
-  public match(serializedRequest: ISerializedRequest): ISerializedResponse {
-    for (const mock of this.mockIterable()) {
-      if (requestsMatch(serializedRequest, mock.request)) {
-        return mock.response;
-      }
+type HttpRequestMatcherFactory = (
+  mockIterable: () => Iterable<IMock>,
+) => HttpRequestMatcher;
+
+/**
+ * Build request matcher from mock iterable factory
+ * @param mockIterable Factory of iterable producing mocks to match
+ * @returns HttpRequestMatcher
+ */
+export const httpRequestMatcherFactory: HttpRequestMatcherFactory = (
+  mockIterable: () => Iterable<IMock>,
+) => (request: ISerializedRequest) => {
+  for (const mock of mockIterable()) {
+    if (requestsMatch(request, mock.request)) {
+      return mock.response;
     }
-    throw new Error("No matching mock found");
   }
-}
+  return undefined;
+};
