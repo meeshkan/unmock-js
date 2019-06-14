@@ -13,7 +13,7 @@ export class Ref implements IRef {
 }
 
 type UnmockRule = null;
-type UnmockPrimitive = number | string | boolean | null | IRef | UnmockSchema;
+type UnmockPrimitive = number | string | boolean | null | Ref | UnmockSchema;
 type UnmockValue = UnmockPrimitive | UnmockObject | UnmockArray;
 // tslint:disable-next-line:interface-over-type-literal
 type UnmockObject = { [member: string]: UnmockValue };
@@ -55,6 +55,8 @@ export const resolve: UnmockResolver = (curschema: UnmockValue) =>
     curschema.map((i, j) => resolve(i)(urschema, traversal.concat(j), hints)) :
     curschema === null ?
     null :
+    curschema instanceof Ref ?
+    curschema :
     typeof curschema === "object" ?
     Object
         .keys(curschema)
