@@ -1,5 +1,19 @@
+export interface IRef {
+    ref(): string;
+}
+
+export class Ref implements IRef {
+    private $ref: string;
+    public constructor(ref: string) {
+        this.$ref = ref;
+    }
+    public ref() {
+        return this.$ref;
+    }
+}
+
 type UnmockRule = null;
-type UnmockPrimitive = number | string | boolean | null | UnmockSchema;
+type UnmockPrimitive = number | string | boolean | null | IRef | UnmockSchema;
 type UnmockValue = UnmockPrimitive | UnmockObject | UnmockArray;
 // tslint:disable-next-line:interface-over-type-literal
 type UnmockObject = { [member: string]: UnmockValue };
