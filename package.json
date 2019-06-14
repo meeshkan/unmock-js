@@ -38,10 +38,12 @@
     "@types/mitm": "^1.3.2",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^11.13.5",
+    "@types/valid-url": "^1.0.2",
     "codecov": "^3.3.0",
     "del-cli": "^1.1.0",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",
+    "isemail": "^3.2.0",
     "jest": "^24.7.1",
     "jest-junit": "^6.4.0",
     "lerna": "^3.13.4",
@@ -51,7 +53,8 @@
     "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
-    "typescript": "^3.4.4"
+    "typescript": "^3.4.4",
+    "valid-url": "^1.0.9"
   },
   "repository": {
     "type": "git",
@@ -62,9 +65,9 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock": "file:packages/unmock",
     "@types/lodash": "^4.14.123",
     "lodash": "^4.17.11",
+    "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",
