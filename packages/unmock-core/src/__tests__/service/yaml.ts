@@ -8,7 +8,7 @@ bar:
     b: !arr [1, 2]
     c:
         d: [1, 2, arr! [3, 4]]
-`
+`;
     const z = yaml.load(y, { schema });
     expect(z).toEqual({
         foo: 1,
