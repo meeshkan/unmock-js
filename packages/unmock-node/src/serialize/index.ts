@@ -1,6 +1,7 @@
 import * as http from "http";
 import * as readable from "readable-stream";
 import { ISerializedRequest } from "unmock-core";
+import url from "url";
 
 /**
  * Network serializers
@@ -32,21 +33,28 @@ class BodySerializer extends readable.Transform {
 function extractVars(
   interceptedRequest: http.IncomingMessage,
 ): { method: string; host: string; path: string } {
-  const { host } = interceptedRequest.headers;
+  const { host: hostWithPort } = interceptedRequest.headers;
 
-  if (!host) {
+  if (!hostWithPort) {
     throw new Error("No host");
   }
 
-  const { method, url } = interceptedRequest;
-  if (!url) {
-    throw new Error("Missing url.");
+  const host = hostWithPort.split(":")[0];
+
+  const { method, url: requestUrl } = interceptedRequest;
+  if (!requestUrl) {
+    throw new Error("Missing request url.");
   }
   if (!method) {
     throw new Error("Missing method");
   }
 
-  const { pathname: path } = new URL(url as string);
+  const { pathname: path } = url.parse(requestUrl, true);
+
+  if (!path) {
+    throw new Error("Could not parse path");
+  }
+
   return { host, method, path };
 }
 
