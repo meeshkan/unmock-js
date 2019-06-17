@@ -26,7 +26,10 @@ function propertyMatches({
     return true;
   }
 
-  if (mockRequestProperty instanceof RegExp) {
+  if (
+    mockRequestProperty instanceof RegExp &&
+    typeof interceptedRequestProperty === "string"
+  ) {
     return mockRequestProperty.test(interceptedRequestProperty);
   }
 
