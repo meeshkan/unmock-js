@@ -1,6 +1,7 @@
 import axios from "axios";
 import { UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
+import * as constants from "../../backend/constants";
 
 describe("Node.js interceptor", () => {
   let nodeInterceptor: NodeBackend;
@@ -17,7 +18,7 @@ describe("Node.js interceptor", () => {
       await axios("http://example.org");
     } catch (err) {
       expect(err.response.status).toBe(501);
-      expect(err.response.data).toBe("Could not find a matching mock");
+      expect(err.response.data).toBe(constants.MESSAGE_FOR_MISSING_MOCK);
       done();
     }
   });

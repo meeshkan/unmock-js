@@ -1,4 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
+import * as constants from "./constants";
 
 import {
   FindResponse,
@@ -27,7 +28,7 @@ export const handleRequestResponse = async (
     serializedRequest,
   );
   if (!serializedResponse) {
-    throw Error("Could not find a matching mock");
+    throw Error(constants.MESSAGE_FOR_MISSING_MOCK);
   }
   respondFromSerializedResponse(serializedResponse, res);
 };

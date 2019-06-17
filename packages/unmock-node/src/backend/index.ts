@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
-import { IBackend, IMock, UnmockOptions } from "unmock-core";
+import { IBackend, UnmockOptions } from "unmock-core";
+import * as constants from "./constants";
 import { handleRequestResponse } from "./handler";
 import { responseFinderFactory } from "./response-finder";
 
@@ -20,11 +21,10 @@ export default class NodeBackend implements IBackend {
     });
     const findResponse = responseFinderFactory();
     mitm.on("request", async (req: IncomingMessage, res: ServerResponse) => {
-      // TODO How to handle error?
       try {
         await handleRequestResponse(findResponse, req, res);
       } catch (err) {
-        res.statusCode = 501;
+        res.statusCode = constants.STATUS_CODE_FOR_ERROR;
         res.write(err.message);
         res.end();
       }
