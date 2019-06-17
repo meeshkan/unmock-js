@@ -1,4 +1,5 @@
 import http, { IncomingMessage } from "http";
+import https from "https";
 import Mitm from "mitm";
 import { serializeRequest } from "../serialize";
 
@@ -26,7 +27,7 @@ describe("Request serializer", () => {
     http.get(`http://${testHost}`);
   });
 
-  function sendPostRequest(host: string, body: any) {
+  function sendHttpsPostRequest(host: string, body: any) {
     const postHeaders = {
       "Content-Length": Buffer.byteLength(body, "utf8"),
       "Content-Type": "application/json",
@@ -41,7 +42,7 @@ describe("Request serializer", () => {
     };
 
     // do the POST call
-    const postRequest = http.request(postOptions);
+    const postRequest = https.request(postOptions);
 
     // write the json data
     postRequest.write(body);
@@ -62,9 +63,10 @@ describe("Request serializer", () => {
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("post");
       expect(serializedRequest.body).toBe(`{"message":"${message}"}`);
+      expect(serializedRequest.protocol).toBe("https");
       done();
     });
 
-    sendPostRequest(testHost, body);
+    sendHttpsPostRequest(testHost, body);
   });
 });
