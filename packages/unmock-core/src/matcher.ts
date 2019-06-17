@@ -10,6 +10,11 @@ type RequestComparator = (
   mock: IMockRequest,
 ) => boolean;
 
+/**
+ * Compare properties in intercepted request and the stored mock request.
+ * An empty property in mock request is considered a match.
+ * @param input
+ */
 function propertyMatches({
   property,
   interceptedRequest,
