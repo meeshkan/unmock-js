@@ -29,12 +29,9 @@ class BodySerializer extends readable.Transform {
   }
 }
 
-/**
- * @param interceptedRequest
- */
-export const serializeRequest = async (
+function extractVars(
   interceptedRequest: http.IncomingMessage,
-): Promise<ISerializedRequest> => {
+): { method: string; host: string; path: string } {
   const { host } = interceptedRequest.headers;
 
   if (!host) {
@@ -49,11 +46,23 @@ export const serializeRequest = async (
     throw new Error("Missing method");
   }
 
-  const body = await BodySerializer.fromIncoming(interceptedRequest);
+  const { pathname: path } = new URL(url as string);
+  return { host, method, path };
+}
+
+/**
+ * Serialize an incoming request, collecting the body.
+ * @param interceptedRequest Incoming request
+ */
+export const serializeRequest = async (
+  interceptedRequest: http.IncomingMessage,
+): Promise<ISerializedRequest> => {
+  const { method, path, host } = extractVars(interceptedRequest);
+
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
   const protocol = isEncrypted ? "https" : "http";
 
-  const { pathname: path } = new URL(url as string);
+  const body = await BodySerializer.fromIncoming(interceptedRequest);
 
   const serializedRequest: ISerializedRequest = {
     body,
