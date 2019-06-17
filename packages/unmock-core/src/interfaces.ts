@@ -22,9 +22,7 @@ export interface IResponseData {
 }
 
 export interface IBackend {
-  initialize: (
-    opts: UnmockOptions,
-  ) => void;
+  initialize: (opts: UnmockOptions) => void;
   reset: () => void;
 }
 
@@ -33,4 +31,32 @@ export interface IUnmockOptions {
   signature?: string;
   whitelist?: string[] | string;
   useInProduction?: boolean;
+}
+
+interface IHeaders {
+  [key: string]: string;
+}
+
+export interface ISerializedRequest {
+  body?: string;
+  headers?: IHeaders;
+  host: string;
+  method: string;
+  path: string;
+  protocol: "http" | "https";
+}
+
+export type IMockRequest = {
+  [P in keyof ISerializedRequest]?: ISerializedRequest[P] | RegExp;
+};
+
+export interface ISerializedResponse {
+  body?: string;
+  headers?: IHeaders;
+  statusCode: number;
+}
+
+export interface IMock {
+  request: IMockRequest;
+  response: ISerializedResponse;
 }
