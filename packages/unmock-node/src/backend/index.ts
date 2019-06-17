@@ -55,6 +55,7 @@ export default class NodeBackend implements IBackend {
       try {
         await handleRequestResponse(findResponse, req, res);
       } catch (err) {
+        // TODO Emit an error in the corresponding client request
         res.statusCode = constants.STATUS_CODE_FOR_ERROR;
         res.write(err.message);
         res.end();

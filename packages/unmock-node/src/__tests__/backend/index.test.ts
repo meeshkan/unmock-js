@@ -13,7 +13,7 @@ describe("Node.js interceptor", () => {
   afterEach(() => {
     nodeInterceptor.reset();
   });
-  test("throws with an empty mock", async done => {
+  test("returns an error if no mocks are available", async done => {
     try {
       await axios("http://example.org");
     } catch (err) {

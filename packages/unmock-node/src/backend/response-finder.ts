@@ -14,7 +14,7 @@ type ResponseFinderFactory = (opts?: IResponseFinderInput) => FindResponse;
 export const responseFinderFactory: ResponseFinderFactory = (
   opts?: IResponseFinderInput,
 ) => {
-  // TODO Actual implementation for finding mocks
+  // TODO Actual implementation for finding available mocks
   const mocks = (opts && opts.mocksOpt) || [];
 
   const httpRequestMatcher = httpRequestMatcherFactory(() => mocks);
