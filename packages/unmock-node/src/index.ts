@@ -13,7 +13,10 @@ const defaultOptions = new UnmockOptions({
   logger,
 });
 
-const backend = new NodeBackend();
+// TODO Find mocks
+const mockGenerator = () => [];
+
+const backend = new NodeBackend(mockGenerator);
 
 export const unmock = _unmock(defaultOptions, backend);
 export const kcomnu = _kcomnu;

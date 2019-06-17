@@ -9,7 +9,9 @@ interface IResponseFinderInput {
   mocksOpt?: IMock[];
 }
 
-type ResponseFinderFactory = (opts?: IResponseFinderInput) => FindResponse;
+export type ResponseFinderFactory = (
+  opts?: IResponseFinderInput,
+) => FindResponse;
 
 export const responseFinderFactory: ResponseFinderFactory = (
   opts?: IResponseFinderInput,
