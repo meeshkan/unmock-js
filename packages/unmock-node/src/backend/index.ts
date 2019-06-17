@@ -1,7 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
 import {
-  getResponseForRequest,
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
@@ -9,6 +8,11 @@ import {
 } from "unmock-core";
 import { serializeRequest } from "../serialize";
 
+const getResponseForRequest = (_: ISerializedRequest): ISerializedResponse => {
+  return {
+    statusCode: 200,
+  };
+};
 /*
 const BufferToStringOrEmpty = (buffer: Buffer[], key: string) => {
   const retObj: { [key: string]: string } = {};

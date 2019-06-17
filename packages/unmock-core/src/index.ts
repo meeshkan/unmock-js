@@ -1,10 +1,14 @@
 import { IBackend, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
+import { doUsefulStuffWithRequestAndResponse } from "./util";
 // top-level exports
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./matcher";
-export * from "./request-handler";
+
+export const util = {
+  doUsefulStuffWithRequestAndResponse,
+};
 
 export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   maybeOptions?: IUnmockOptions,
