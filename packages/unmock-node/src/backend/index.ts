@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
 import {
-  FindResponse,
+  CreateResponse,
   IBackend,
   IMock,
   ISerializedRequest,
@@ -23,13 +23,13 @@ const respondFromSerializedResponse = (
 };
 
 async function handleRequestAndResponse(
-  findResponse: FindResponse,
+  createResponse: CreateResponse,
   req: IncomingMessage,
   res: ServerResponse,
 ) {
   try {
     const serializedRequest: ISerializedRequest = await serializeRequest(req);
-    const serializedResponse: ISerializedResponse | undefined = findResponse(
+    const serializedResponse: ISerializedResponse | undefined = createResponse(
       serializedRequest,
     );
     if (!serializedResponse) {
@@ -63,11 +63,11 @@ export default class NodeBackend implements IBackend {
         socket.bypass();
       }
     });
-    const findResponse = responseCreatorFactory({
+    const createResponse = responseCreatorFactory({
       mockGenerator: this.mockGenerator,
     });
     mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
-      handleRequestAndResponse(findResponse, req, res);
+      handleRequestAndResponse(createResponse, req, res);
     });
   }
   public reset() {

@@ -1,5 +1,5 @@
 import {
-  FindResponse,
+  CreateResponse,
   httpRequestMatcherFactory,
   IMock,
   ISerializedRequest,
@@ -9,12 +9,11 @@ interface IResponseCreator {
   mockGenerator: () => IMock[];
 }
 
-export type ResponseCreatorFactory = (opts: IResponseCreator) => FindResponse;
+export type ResponseCreatorFactory = (opts: IResponseCreator) => CreateResponse;
 
 export const responseCreatorFactory: ResponseCreatorFactory = (
   opts: IResponseCreator,
 ) => {
-  // TODO Actual implementation for finding available mocks
   const httpRequestMatcher = httpRequestMatcherFactory(opts.mockGenerator);
   return (req: ISerializedRequest) => httpRequestMatcher(req);
 };
