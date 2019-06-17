@@ -10,7 +10,7 @@ import {
 } from "unmock-core";
 import { serializeRequest } from "../serialize";
 import * as constants from "./constants";
-import { responseFinderFactory } from "./response-finder";
+import { responseCreatorFactory } from "./response-creator";
 
 const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
@@ -50,10 +50,10 @@ interface INodeBackendOptions {
 
 let mitm: any;
 export default class NodeBackend implements IBackend {
-  private readonly mocks: IMock[];
+  private readonly mockGenerator: () => IMock[];
 
   public constructor(opts?: INodeBackendOptions) {
-    this.mocks = (opts && opts.mockGenerator && opts.mockGenerator()) || [];
+    this.mockGenerator = (opts && opts.mockGenerator) || (() => []);
   }
 
   public initialize(options: UnmockOptions) {
@@ -63,7 +63,9 @@ export default class NodeBackend implements IBackend {
         socket.bypass();
       }
     });
-    const findResponse = responseFinderFactory({ mocksOpt: this.mocks });
+    const findResponse = responseCreatorFactory({
+      mockGenerator: this.mockGenerator,
+    });
     mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
       handleRequestAndResponse(findResponse, req, res);
     });
