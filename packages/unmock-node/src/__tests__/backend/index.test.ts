@@ -7,7 +7,7 @@ describe("Node.js interceptor", () => {
   describe("with no mocks", () => {
     let nodeInterceptor: NodeBackend;
     beforeEach(() => {
-      nodeInterceptor = new NodeBackend(() => []);
+      nodeInterceptor = new NodeBackend({ mockGenerator: () => [] });
       const unmockOptions = new UnmockOptions();
       nodeInterceptor.initialize(unmockOptions);
     });
