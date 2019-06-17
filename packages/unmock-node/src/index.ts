@@ -13,10 +13,10 @@ const defaultOptions = new UnmockOptions({
   logger,
 });
 
-// TODO Find mocks
+// TODO Create a mock generator
 const mockGenerator = () => [];
 
-const backend = new NodeBackend(mockGenerator);
+const backend = new NodeBackend({ mockGenerator });
 
 export const unmock = _unmock(defaultOptions, backend);
 export const kcomnu = _kcomnu;

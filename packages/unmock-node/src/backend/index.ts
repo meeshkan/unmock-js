@@ -45,7 +45,7 @@ async function handleRequestAndResponse(
 }
 
 interface INodeBackendOptions {
-  mockGenerator: () => IMock[];
+  mockGenerator?: () => IMock[];
 }
 
 let mitm: any;
