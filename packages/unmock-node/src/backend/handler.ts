@@ -25,7 +25,7 @@ export const handleRequestResponse = async (
   const serializedRequest: ISerializedRequest = await serializeRequest(req);
   const serializedResponse: ISerializedResponse | undefined = findResponse(
     serializedRequest,
-  ) || { statusCode: 200 };
+  );
   if (!serializedResponse) {
     throw Error("Could not find a matching mock");
   }

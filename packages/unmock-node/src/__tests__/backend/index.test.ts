@@ -1,4 +1,4 @@
-import http from "http";
+import axios from "axios";
 import { UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
 
@@ -12,20 +12,13 @@ describe("Node.js interceptor", () => {
   afterEach(() => {
     nodeInterceptor.reset();
   });
-  /*
-  test("throws an error for a missing mock", done => {
-    expect(() =>
-      http.get(, res => {
-        done();
-      }),
-    ).toThrow();
-  });
-  */
-
-  test("returns 200", done => {
-    http.get("http://example.org", res => {
-      expect(res.statusCode).toBe(200);
+  test("throws with an empty mock", async done => {
+    try {
+      await axios("http://example.org");
+    } catch (err) {
+      expect(err.response.status).toBe(501);
+      expect(err.response.data).toBe("Could not find a matching mock");
       done();
-    });
+    }
   });
 });

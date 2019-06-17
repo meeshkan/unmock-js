@@ -21,7 +21,13 @@ export default class NodeBackend implements IBackend {
     const findResponse = responseFinderFactory();
     mitm.on("request", async (req: IncomingMessage, res: ServerResponse) => {
       // TODO How to handle error?
-      await handleRequestResponse(findResponse, req, res);
+      try {
+        await handleRequestResponse(findResponse, req, res);
+      } catch (err) {
+        res.statusCode = 501;
+        res.write(err.message);
+        res.end();
+      }
     });
   }
 }
