@@ -1,50 +1,51 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
 import {
+  FindResponse,
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
-  RequestHandler,
   UnmockOptions,
 } from "unmock-core";
 import { serializeRequest } from "../serialize";
 
 // TODO Actual implementation
-// 1. Match to existing mocks
-const getResponseFinder: () => RequestHandler = () => (
-  _: ISerializedRequest,
-) => {
+const getResponseFinder: () => FindResponse = () => (_: ISerializedRequest) => {
   return {
     statusCode: 200,
   };
 };
-/*
-const BufferToStringOrEmpty = (buffer: Buffer[], key: string) => {
-  const retObj: { [key: string]: string } = {};
-  if (buffer.length > 0) {
-    retObj[key] = buffer.map(b => b.toString()).join("");
-  }
-  return retObj;
-};
-*/
 
-let mitm: any;
+const respondFromSerializedResponse = (
+  serializedResponse: ISerializedResponse,
+  res: ServerResponse,
+) => {
+  res.statusCode = serializedResponse.statusCode;
+  res.write(serializedResponse.body || "");
+  res.end();
+};
 
 const mHttp = async (
-  findResponse: RequestHandler,
+  findResponse: FindResponse,
   req: IncomingMessage,
   res: ServerResponse,
 ) => {
   const serializedRequest: ISerializedRequest = await serializeRequest(req);
-  const response: ISerializedResponse = findResponse(serializedRequest);
-  res.statusCode = response.statusCode;
-  res.write(response.body || "");
-  res.end();
+  const serializedResponse: ISerializedResponse | undefined = findResponse(
+    serializedRequest,
+  );
+  if (!serializedResponse) {
+    throw Error("Could not find a matching mock");
+  }
+  respondFromSerializedResponse(serializedResponse, res);
 };
 
+let mitm: any;
 export default class NodeBackend implements IBackend {
   public reset() {
-    mitm.disable();
+    if (mitm) {
+      mitm.disable();
+    }
   }
   public initialize(options: UnmockOptions) {
     mitm = Mitm();

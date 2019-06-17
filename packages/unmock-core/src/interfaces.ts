@@ -61,6 +61,6 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
-export type RequestHandler = (
+export type FindResponse = (
   request: ISerializedRequest,
-) => ISerializedResponse;
+) => ISerializedResponse | undefined;
