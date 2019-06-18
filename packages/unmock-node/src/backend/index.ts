@@ -16,7 +16,7 @@ const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
   res: ServerResponse,
 ) => {
-  res.writeHead(serializedResponse.statusCode, serializedResponse.headers):
+  res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
   res.end(serializedResponse.body);
 };
 
