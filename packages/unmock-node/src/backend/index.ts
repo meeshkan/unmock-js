@@ -37,6 +37,7 @@ async function handleRequestAndResponse(
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
 <<<<<<< HEAD
+<<<<<<< HEAD
     // TODO Emit an error in the corresponding client request instead?
     const errorResponse: ISerializedResponse = {
       body: err.message,
@@ -45,6 +46,9 @@ async function handleRequestAndResponse(
     respondFromSerializedResponse(errorResponse, res);
 =======
     // TODO: Emit an error in the corresponding client request
+=======
+    // TODO Emit an error in the corresponding client request
+>>>>>>> 8ad9714... Fetches schema for path in YAML file
     res.statusCode = constants.STATUS_CODE_FOR_ERROR;
     res.write(err.message);
     res.end();
