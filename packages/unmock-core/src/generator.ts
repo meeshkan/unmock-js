@@ -27,6 +27,7 @@ const getPathSchemaFromSpec = (
   method: string,
   path: string,
 ): any => {
+  // TODO: Smarter path matching (to match path parameters, for example)
   if (spec.paths === undefined || spec.paths[path] === undefined) {
     // spec.info.title is mandatory in OAS, we assume `spec` is OAS compliant
     throw new Error(`Can't find path '${path}' for ${spec.info.title}`);
@@ -107,7 +108,7 @@ const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
   jsf.reset();
 
   // 5. Generate as needed
-  return jsf.generate(resolvedTemplate);
+  return jsf.generate(resolvedTemplate).schema;
 };
 
 export const mockGeneratorFactory = (
