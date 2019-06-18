@@ -33,13 +33,18 @@ export interface IUnmockOptions {
   useInProduction?: boolean;
 }
 
-// Similar to `IncomingHttpHeaders` in @types/node
+/**
+ * Analogous to `IncomingHttpHeaders` in @types/node.
+ * Header names are expected to be _lowercased_.
+ */
 export interface IIncomingHeaders {
   [header: string]: string | string[] | undefined;
 }
 
-// Similar to `OutgoingHttpHeaders` in @types/node
-// Allows numbers as they are converted to strings internally
+/**
+ * Analogous to `OutgoingHttpHeaders` in @types/node.
+ * Allows numbers as they are converted to strings internally.
+ */
 export interface IOutgoingHeaders {
   [header: string]: string | string[] | number | undefined;
 }
