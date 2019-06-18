@@ -46,10 +46,12 @@ async function handleRequestAndResponse(
     }
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
-    // TODO Emit an error in the corresponding client request
-    res.statusCode = constants.STATUS_CODE_FOR_ERROR;
-    res.write(err.message);
-    res.end();
+    // TODO Emit an error in the corresponding client request instead?
+    const errorResponse: ISerializedResponse = {
+      body: err.message,
+      statusCode: constants.STATUS_CODE_FOR_ERROR,
+    };
+    respondFromSerializedResponse(errorResponse, res);
   }
 }
 
