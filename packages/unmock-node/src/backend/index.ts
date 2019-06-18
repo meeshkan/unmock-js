@@ -16,19 +16,8 @@ const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
   res: ServerResponse,
 ) => {
-  res.statusCode = serializedResponse.statusCode;
-
-  const responseHeaders = serializedResponse.headers;
-  if (responseHeaders) {
-    Object.entries(responseHeaders).forEach(([k, v]) => {
-      if (v) {
-        res.setHeader(k, v);
-      }
-    });
-  }
-
-  res.write(serializedResponse.body || "");
-  res.end();
+  res.writeHead(serializedResponse.statusCode, serializedResponse.headers):
+  res.end(serializedResponse.body);
 };
 
 async function handleRequestAndResponse(
