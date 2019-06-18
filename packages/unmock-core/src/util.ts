@@ -7,7 +7,8 @@ export const doUsefulStuffWithRequestAndResponse = (
   requestData: IRequestData,
   responseData: IResponseData,
 ) => {
-
   const { logger } = opts;
-  logger.log(`We will do amazing things with ${metaData} ${requestData} and ${responseData}.`);
+  logger.log(
+    `We will do amazing things with ${metaData} ${requestData} and ${responseData}.`,
+  );
 };

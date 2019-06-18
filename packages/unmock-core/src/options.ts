@@ -10,11 +10,7 @@ export class UnmockOptions implements IUnmockOptions {
 
   constructor(options?: IUnmockOptions) {
     this.reset(options); // Save internally
-    this.whitelist = this.whitelist || [
-      "127.0.0.1",
-      "127.0.0.0",
-      "localhost",
-    ];
+    this.whitelist = this.whitelist || ["127.0.0.1", "127.0.0.0", "localhost"];
     this.regexWhitelist = this.whitelistToRegex(this.whitelist);
   }
 
@@ -22,12 +18,7 @@ export class UnmockOptions implements IUnmockOptions {
     if (options === undefined) {
       return this;
     }
-    const {
-      logger,
-      signature,
-      whitelist,
-      useInProduction,
-    } = options;
+    const { logger, signature, whitelist, useInProduction } = options;
     this.logger = logger || this.logger;
     this.signature = signature || this.signature;
     this.whitelist = whitelist ? whitelist : this.whitelist;
@@ -41,7 +32,7 @@ export class UnmockOptions implements IUnmockOptions {
     if (this.regexWhitelist === undefined) {
       return false;
     }
-    return this.regexWhitelist.filter((wl) => wl.test(host)).length > 0;
+    return this.regexWhitelist.filter(wl => wl.test(host)).length > 0;
   }
 
   private whitelistToRegex(whitelist?: string[] | string): RegExp[] {
