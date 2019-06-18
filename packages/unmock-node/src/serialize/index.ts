@@ -32,8 +32,13 @@ class BodySerializer extends readable.Transform {
 
 function extractVars(
   interceptedRequest: http.IncomingMessage,
-): { method: string; host: string; path: string } {
-  const { host: hostWithPort } = interceptedRequest.headers;
+): {
+  method: string;
+  host: string;
+  path: string;
+  headers: { [key: string]: string };
+} {
+  const { host: hostWithPort, ...headers } = interceptedRequest.headers;
 
   if (!hostWithPort) {
     throw new Error("No host");
@@ -55,7 +60,12 @@ function extractVars(
     throw new Error("Could not parse path");
   }
 
-  return { host, method, path };
+  return {
+    headers: headers as { [key: string]: string },
+    host,
+    method,
+    path,
+  };
 }
 
 /**
@@ -65,7 +75,7 @@ function extractVars(
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
-  const { method, path, host } = extractVars(interceptedRequest);
+  const { method, path, host, headers } = extractVars(interceptedRequest);
 
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
   const protocol = isEncrypted ? "https" : "http";
@@ -74,6 +84,7 @@ export const serializeRequest = async (
 
   const serializedRequest: ISerializedRequest = {
     body,
+    headers,
     host,
     method,
     path,

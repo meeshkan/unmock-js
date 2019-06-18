@@ -20,8 +20,10 @@ const respondFromSerializedResponse = (
 
   const responseHeaders = serializedResponse.headers;
   if (responseHeaders) {
-    Object.keys(responseHeaders).forEach((headerKey: string) => {
-      res.setHeader(headerKey, responseHeaders[headerKey]);
+    Object.entries(responseHeaders).forEach(([k, v]) => {
+      if (v) {
+        res.setHeader(k, v);
+      }
     });
   }
 
