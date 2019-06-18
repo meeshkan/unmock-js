@@ -70,7 +70,7 @@ describe("Request serializer", () => {
       }
       expect(requestHeaders["content-type"]).toBe("application/json");
       expect(requestHeaders["content-length"]).toBe("25");
-      expect(requestHeaders["host"]).toBeUndefined();
+      expect(requestHeaders.host).toBe("example.org");
       done();
     });
 

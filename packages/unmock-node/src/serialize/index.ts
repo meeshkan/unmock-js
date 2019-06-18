@@ -1,6 +1,6 @@
 import * as http from "http";
 import * as readable from "readable-stream";
-import { ISerializedRequest } from "unmock-core";
+import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
 import url from "url";
 
 /**
@@ -36,9 +36,11 @@ function extractVars(
   method: string;
   host: string;
   path: string;
-  headers: { [key: string]: string };
+  headers: IIncomingHeaders;
 } {
-  const { host: hostWithPort, ...headers } = interceptedRequest.headers;
+  const headers = interceptedRequest.headers;
+
+  const hostWithPort = headers.host;
 
   if (!hostWithPort) {
     throw new Error("No host");
@@ -61,7 +63,7 @@ function extractVars(
   }
 
   return {
-    headers: headers as { [key: string]: string },
+    headers,
     host,
     method,
     path,
@@ -75,7 +77,7 @@ function extractVars(
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
-  const { method, path, host, headers } = extractVars(interceptedRequest);
+  const { headers, host, method, path } = extractVars(interceptedRequest);
 
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
   const protocol = isEncrypted ? "https" : "http";

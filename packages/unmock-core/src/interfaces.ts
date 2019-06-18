@@ -33,13 +33,20 @@ export interface IUnmockOptions {
   useInProduction?: boolean;
 }
 
-interface IHeaders {
-  [key: string]: string;
+// Similar to `HttpIncomingHeaders` in Node.js
+export interface IIncomingHeaders {
+  [header: string]: string | string[] | undefined;
+}
+
+// Similar to `HttpOutgoingHeaders` in Node.js, allows numbers as they are
+// converted to strings internally
+export interface IOutgoingHeaders {
+  [header: string]: string | string[] | number | undefined;
 }
 
 export interface ISerializedRequest {
   body?: string;
-  headers?: IHeaders;
+  headers?: IIncomingHeaders;
   host: string;
   method: string;
   path: string;
@@ -52,7 +59,7 @@ export type IMockRequest = {
 
 export interface ISerializedResponse {
   body?: string;
-  headers?: IHeaders;
+  headers?: IOutgoingHeaders;
   statusCode: number;
 }
 
