@@ -10,11 +10,10 @@ import {
 import { httpRequestMatcherFactory } from "./matcher";
 
 import fs from "fs"; // TODO: remove
-// TODO: Change this for json schema faker?
-// TODO: json-schema-faker doesn't have @types definition, so instead
-// TODO: we parse manually for now -- MVP hurray!
-// import faker from "faker";
 import yaml from "js-yaml";
+// json-schema-faker doesn't have typed definitions?
+// @ts-ignore
+import jsf from "json-schema-faker";
 
 export const responseCreatorFactory = (
   opts: IResponseCreatorFactoryInput,
@@ -23,11 +22,13 @@ export const responseCreatorFactory = (
   return (req: ISerializedRequest) => httpRequestMatcher(req);
 };
 
-const getSpecFromRequest = (_: ISerializedRequest): string | undefined => {
+const getSpecFromRequest = (_: ISerializedRequest): any => {
   // TODO: Implement!
-  return fs.readFileSync(
-    "/home/meeshkan-cain/git/unmock-js/packages/unmock-core/src/__tests__/__unmock__/specs/petstore/spec.yaml",
-    "utf8",
+  return yaml.load(
+    fs.readFileSync(
+      "/home/meeshkan-cain/git/unmock-js/packages/unmock-core/src/__tests__/__unmock__/specs/petstore/spec_parsed.yaml",
+      "utf8",
+    ),
   );
 };
 
@@ -55,26 +56,42 @@ const getPathSchemaFromSpec = (
   return pathSchema;
 };
 
+const templateFromResponse = (response: any): any => {
+  const keys = Object.keys(response.content);
+  if (keys.length === 0) {
+    throw new Error( // response.description is the only mandatory field
+      `Can't find any content-type for '${response.description}'`,
+    );
+  }
+
+  return response.content[keys[0]];
+};
+
 export const genMockFromSerializedRequest = (sreq: ISerializedRequest) => {
   const { method, path, host } = sreq;
   // 1. Use sreq to find the proper specification and, as needed, convert
   //    from short-hand notation to verbose OAS (Mike)
-  const specString = getSpecFromRequest(sreq);
-  if (specString === undefined) {
+  const spec = getSpecFromRequest(sreq);
+  if (spec === undefined) {
     throw new Error(`Can't find matching service for '${host}'`);
   }
   // 2. Use sreq to fetch the relevant path in the OAS spec
-  const spec = yaml.load(specString);
+  //    At this point, we assume there are no references, and we only need to
+  //    generate content based on either `type` or `x-unmock-X` instructions
   const pathSchema = getPathSchemaFromSpec(spec, method, path);
   // 3. Fetch state from DSL?
   // TODO: Do we use the state method Idan made? 🤔
+  //
   // 4. Generate as needed.
-  // TODO: For now, we just choose the 'default', '200', or the first available response.
-  const responseTemplate =
-    pathSchema.responses.default ||
+  // TODO: For now, we just choose '200', default', or the first available response.
+  const responseTemplate = templateFromResponse(
     pathSchema.responses["200"] ||
-    pathSchema.responses[Object.keys(pathSchema.responses)[0]];
+      pathSchema.responses.default ||
+      pathSchema.responses[Object.keys(pathSchema.responses)[0]],
+  );
 
   // tslint:disable-next-line: no-console
   console.log(responseTemplate);
+  // tslint:disable-next-line: no-console
+  console.log(jsf.generate(responseTemplate));
 };
