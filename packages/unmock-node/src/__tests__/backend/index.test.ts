@@ -28,7 +28,11 @@ describe("Node.js interceptor", () => {
     const responseBody = "something here";
     const mock: IMock = {
       request: {},
-      response: { statusCode: 200, body: responseBody },
+      response: {
+        body: responseBody,
+        headers: { "x-awesome": 300 },
+        statusCode: 200,
+      },
     };
     let nodeInterceptor: NodeBackend;
     beforeEach(() => {
@@ -45,6 +49,7 @@ describe("Node.js interceptor", () => {
       const data = response.data;
       expect(data).toBeDefined();
       expect(data).toBe(responseBody);
+      expect(response.headers["x-awesome"]).toBe("300");
     });
   });
 });

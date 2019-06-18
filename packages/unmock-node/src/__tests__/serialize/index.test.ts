@@ -64,6 +64,13 @@ describe("Request serializer", () => {
       expect(serializedRequest.method.toLowerCase()).toBe("post");
       expect(serializedRequest.body).toBe(`{"message":"${message}"}`);
       expect(serializedRequest.protocol).toBe("https");
+      const requestHeaders = serializedRequest.headers;
+      if (requestHeaders === undefined) {
+        throw new Error("Request headers undefined");
+      }
+      expect(requestHeaders["content-type"]).toBe("application/json");
+      expect(requestHeaders["content-length"]).toBe("25");
+      expect(requestHeaders.host).toBe("example.org");
       done();
     });
 

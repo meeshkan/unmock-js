@@ -1,6 +1,6 @@
 import * as http from "http";
 import * as readable from "readable-stream";
-import { ISerializedRequest } from "unmock-core";
+import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
 import url from "url";
 
 /**
@@ -32,8 +32,15 @@ class BodySerializer extends readable.Transform {
 
 function extractVars(
   interceptedRequest: http.IncomingMessage,
-): { method: string; host: string; path: string } {
-  const { host: hostWithPort } = interceptedRequest.headers;
+): {
+  method: string;
+  host: string;
+  path: string;
+  headers: IIncomingHeaders;
+} {
+  const headers = interceptedRequest.headers;
+
+  const hostWithPort = headers.host;
 
   if (!hostWithPort) {
     throw new Error("No host");
@@ -55,7 +62,12 @@ function extractVars(
     throw new Error("Could not parse path");
   }
 
-  return { host, method, path };
+  return {
+    headers,
+    host,
+    method,
+    path,
+  };
 }
 
 /**
@@ -65,7 +77,7 @@ function extractVars(
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
-  const { method, path, host } = extractVars(interceptedRequest);
+  const { headers, host, method, path } = extractVars(interceptedRequest);
 
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
   const protocol = isEncrypted ? "https" : "http";
@@ -74,6 +86,7 @@ export const serializeRequest = async (
 
   const serializedRequest: ISerializedRequest = {
     body,
+    headers,
     host,
     method,
     path,

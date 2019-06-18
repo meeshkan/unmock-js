@@ -33,13 +33,25 @@ export interface IUnmockOptions {
   useInProduction?: boolean;
 }
 
-interface IHeaders {
-  [key: string]: string;
+/**
+ * Analogous to `IncomingHttpHeaders` in @types/node.
+ * Header names are expected to be _lowercased_.
+ */
+export interface IIncomingHeaders {
+  [header: string]: string | string[] | undefined;
+}
+
+/**
+ * Analogous to `OutgoingHttpHeaders` in @types/node.
+ * Allows numbers as they are converted to strings internally.
+ */
+export interface IOutgoingHeaders {
+  [header: string]: string | string[] | number | undefined;
 }
 
 export interface ISerializedRequest {
   body?: string;
-  headers?: IHeaders;
+  headers?: IIncomingHeaders;
   host: string;
   method: string;
   path: string;
@@ -52,7 +64,7 @@ export type IMockRequest = {
 
 export interface ISerializedResponse {
   body?: string;
-  headers?: IHeaders;
+  headers?: IOutgoingHeaders;
   statusCode: number;
 }
 

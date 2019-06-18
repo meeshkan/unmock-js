@@ -16,10 +16,8 @@ const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
   res: ServerResponse,
 ) => {
-  // TODO Headers
-  res.statusCode = serializedResponse.statusCode;
-  res.write(serializedResponse.body || "");
-  res.end();
+  res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
+  res.end(serializedResponse.body);
 };
 
 async function handleRequestAndResponse(
@@ -37,10 +35,12 @@ async function handleRequestAndResponse(
     }
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
-    // TODO Emit an error in the corresponding client request
-    res.statusCode = constants.STATUS_CODE_FOR_ERROR;
-    res.write(err.message);
-    res.end();
+    // TODO Emit an error in the corresponding client request instead?
+    const errorResponse: ISerializedResponse = {
+      body: err.message,
+      statusCode: constants.STATUS_CODE_FOR_ERROR,
+    };
+    respondFromSerializedResponse(errorResponse, res);
   }
 }
 
