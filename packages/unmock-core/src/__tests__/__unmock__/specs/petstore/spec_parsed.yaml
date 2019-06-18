@@ -45,6 +45,7 @@ paths:
                       type: string
                     tag:
                       type: string
+                x-unmock-size: 4
         default:
           description: unexpected error
           content:

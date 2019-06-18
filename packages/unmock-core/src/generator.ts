@@ -82,7 +82,8 @@ export const genMockFromSerializedRequest = (sreq: ISerializedRequest) => {
   // 3. Fetch state from DSL?
   // TODO: Do we use the state method Idan made? 🤔
   //
-  // 4. Generate as needed.
+  // 4. Use the state + x-unmock-X tags to modify the content, so we can work
+  //    with jsf out of the box
   // TODO: For now, we just choose '200', default', or the first available response.
   const responseTemplate = templateFromResponse(
     pathSchema.responses["200"] ||
@@ -90,8 +91,20 @@ export const genMockFromSerializedRequest = (sreq: ISerializedRequest) => {
       pathSchema.responses[Object.keys(pathSchema.responses)[0]],
   );
 
-  // tslint:disable-next-line: no-console
-  console.log(responseTemplate);
-  // tslint:disable-next-line: no-console
-  console.log(jsf.generate(responseTemplate));
+  jsf.define("unmock-size", (value: number, schema: any) => {
+    delete schema["x-unmock-size"];
+    if (schema.type !== "array") {
+      return schema; // validate type
+    }
+    schema.minItems = value;
+    schema.maxItems = value;
+    return schema;
+  });
+
+  const resolvedTemplate = jsf.generate(responseTemplate);
+
+  jsf.reset();
+
+  // 5. Generate as needed
+  console.log(jsf.generate(resolvedTemplate));
 };
