@@ -5,6 +5,7 @@ import { doUsefulStuffWithRequestAndResponse } from "./util";
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./matcher";
+export * from "./generator";
 
 export const util = {
   doUsefulStuffWithRequestAndResponse,

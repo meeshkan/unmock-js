@@ -76,3 +76,15 @@ export interface IMock {
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
+export interface IResponseCreatorFactoryInput {
+  mockGenerator: () => IMock[];
+}
+
+// export interface IUnmockRule {
+//   // Describes a rule within unmock response generation
+//   // A rule can either be:
+//   // 1. Setting a specific key to a specific value (in a hierarchical, object
+//   //     notation, i.e. "username: { friends: { login: { ... } } }")
+//   // 2. A DSL-specific notation (i.e. $size, $override, $jsf, etc)
+//   // 3. A composition (object/array) of other rules
+// }
