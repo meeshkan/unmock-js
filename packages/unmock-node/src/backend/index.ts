@@ -1,87 +1,79 @@
 import { IncomingMessage, ServerResponse } from "http";
 import Mitm from "mitm";
 import {
+  CreateResponse,
   IBackend,
-  IMetaData,
+  IMock,
+  ISerializedRequest,
+  ISerializedResponse,
   UnmockOptions,
-  util,
 } from "unmock-core";
+import { serializeRequest } from "../serialize";
+import * as constants from "./constants";
+import { responseCreatorFactory } from "./response-creator";
 
-const { doUsefulStuffWithRequestAndResponse } = util;
-const metaData: IMetaData = {
-  lang: "node",
-};
-const BufferToStringOrEmpty = (buffer: Buffer[], key: string) => {
-  const retObj: { [key: string]: string } = {};
-  if (buffer.length > 0) {
-    retObj[key] = buffer.map((b) => b.toString()).join("");
-  }
-  return retObj;
-};
-
-let mitm: any;
-
-const mHttp = (
-  opts: UnmockOptions,
-  req: IncomingMessage,
+const respondFromSerializedResponse = (
+  serializedResponse: ISerializedResponse,
   res: ServerResponse,
 ) => {
-  const { host, ...rawHeaders } = req.headers;
-  const reqHost = (host || "").split(":")[0];
-
-  const outgoingData: Buffer[] = [];
-
-  req.on("data", (chunk) => outgoingData.push(chunk));
-
-  req.on("end", () => {
-    const doEndReporting = (
-      responseHeaders: any,
-      responseBody: Buffer[],
-    ) =>
-    doUsefulStuffWithRequestAndResponse(
-        opts,
-        metaData,
-        {
-          ...BufferToStringOrEmpty(outgoingData, "body"),
-          headers: rawHeaders,
-          host: reqHost,
-          method: req.method,
-          path: req.url,
-        },
-        {
-          headers: responseHeaders,
-          ...BufferToStringOrEmpty(responseBody, "body"),
-        },
-      );
-
-    // Restore information from cache and send via `res`
-    const response = { body: "", headers: {}};
-    if (response.body) {
-      res.write(response.body);
-    }
-    res.end();
-    doEndReporting(
-      response.headers,
-      !response.body ? [] : [Buffer.from(response.body)],
-    );
-  });
+  // TODO Headers
+  res.statusCode = serializedResponse.statusCode;
+  res.write(serializedResponse.body || "");
+  res.end();
 };
 
-export default class NodeBackend implements IBackend {
-  public reset() {
-    mitm.disable();
+async function handleRequestAndResponse(
+  createResponse: CreateResponse,
+  req: IncomingMessage,
+  res: ServerResponse,
+) {
+  try {
+    const serializedRequest: ISerializedRequest = await serializeRequest(req);
+    const serializedResponse: ISerializedResponse | undefined = createResponse(
+      serializedRequest,
+    );
+    if (!serializedResponse) {
+      throw Error(constants.MESSAGE_FOR_MISSING_MOCK);
+    }
+    respondFromSerializedResponse(serializedResponse, res);
+  } catch (err) {
+    // TODO Emit an error in the corresponding client request
+    res.statusCode = constants.STATUS_CODE_FOR_ERROR;
+    res.write(err.message);
+    res.end();
   }
-  public initialize(
-    options: UnmockOptions,
-  ) {
+}
+
+interface INodeBackendOptions {
+  mockGenerator?: () => IMock[];
+}
+
+let mitm: any;
+export default class NodeBackend implements IBackend {
+  private readonly mockGenerator: () => IMock[];
+
+  public constructor(opts?: INodeBackendOptions) {
+    this.mockGenerator = (opts && opts.mockGenerator) || (() => []);
+  }
+
+  public initialize(options: UnmockOptions) {
     mitm = Mitm();
     mitm.on("connect", (socket: any, opts: any) => {
       if (options.isWhitelisted(opts.host)) {
         socket.bypass();
       }
     });
-    mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
-      mHttp(options, req, res);
+    // Prepare the request-response mapping by bootstrapping all dependencies here
+    const createResponse = responseCreatorFactory({
+      mockGenerator: this.mockGenerator,
     });
+    mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
+      handleRequestAndResponse(createResponse, req, res);
+    });
+  }
+  public reset() {
+    if (mitm) {
+      mitm.disable();
+    }
   }
 }

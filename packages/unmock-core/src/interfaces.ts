@@ -60,3 +60,7 @@ export interface IMock {
   request: IMockRequest;
   response: ISerializedResponse;
 }
+
+export type CreateResponse = (
+  request: ISerializedRequest,
+) => ISerializedResponse | undefined;

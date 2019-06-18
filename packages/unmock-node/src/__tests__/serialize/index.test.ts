@@ -1,7 +1,7 @@
 import http, { IncomingMessage } from "http";
 import https from "https";
 import Mitm from "mitm";
-import { serializeRequest } from "../serialize";
+import { serializeRequest } from "../../serialize";
 
 describe("Request serializer", () => {
   let mitm: any;
@@ -12,7 +12,7 @@ describe("Request serializer", () => {
     mitm.disable();
   });
 
-  test("serializes GET request", (done) => {
+  test("serializes GET request", done => {
     const testHost = "example.org";
 
     mitm.on("request", async (req: IncomingMessage) => {
@@ -49,7 +49,7 @@ describe("Request serializer", () => {
     postRequest.end();
   }
 
-  test("serializes the body in POST request", (done) => {
+  test("serializes the body in POST request", done => {
     const testHost = "example.org";
 
     const message = "Hello post!";
