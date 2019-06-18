@@ -1,8 +1,4 @@
-import {
-  IBackend,
-  UnmockOptions,
-  util,
-} from "unmock-core";
+import { IBackend, UnmockOptions, util } from "unmock-core";
 
 const { doUsefulStuffWithRequestAndResponse } = util;
 
@@ -33,9 +29,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
-  public initialize(
-    opts: UnmockOptions,
-  ) {
+  public initialize(opts: UnmockOptions) {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
@@ -64,11 +58,8 @@ export default class JSDomBackend implements IBackend {
         headerz[name] = value;
         return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
       };
-      const doEndReporting = (
-        responseBody: string,
-        responseHeaders: any,
-      ) =>
-      doUsefulStuffWithRequestAndResponse(
+      const doEndReporting = (responseBody: string, responseHeaders: any) =>
+        doUsefulStuffWithRequestAndResponse(
           opts,
           { lang: "jsdom" },
           {
@@ -111,7 +102,7 @@ export default class JSDomBackend implements IBackend {
         if (body) {
           data = body;
         }
-        const response = { body: "{}", headers: {}};
+        const response = { body: "{}", headers: {} };
         doEndReporting(response.body, response.headers);
         setOnReadyStateChange(this, false);
         // uggggh...
