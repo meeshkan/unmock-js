@@ -1,4 +1,4 @@
-import http, { IncomingMessage, request } from "http";
+import http, { IncomingMessage } from "http";
 import https from "https";
 import Mitm from "mitm";
 import { serializeRequest } from "../../serialize";
