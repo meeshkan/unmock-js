@@ -16,8 +16,15 @@ const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
   res: ServerResponse,
 ) => {
-  // TODO Headers
   res.statusCode = serializedResponse.statusCode;
+
+  const responseHeaders = serializedResponse.headers;
+  if (responseHeaders) {
+    Object.keys(responseHeaders).forEach((headerKey: string) => {
+      res.setHeader(headerKey, responseHeaders[headerKey]);
+    });
+  }
+
   res.write(serializedResponse.body || "");
   res.end();
 };
