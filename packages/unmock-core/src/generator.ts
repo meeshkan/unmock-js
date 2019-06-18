@@ -4,6 +4,7 @@
 
 import {
   CreateResponse,
+  IMock,
   IResponseCreatorFactoryInput,
   ISerializedRequest,
   IUnmockServiceState,
@@ -80,7 +81,7 @@ const fetchState = (_: ISerializedRequest): IUnmockServiceState => {
 
 const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
   sreq: ISerializedRequest,
-): any => {
+): IMock => {
   const { method, path, host } = sreq;
   // 1. Use sreq to find the proper specification and, as needed, convert
   //    from short-hand notation to verbose OAS (Mike)
@@ -108,7 +109,14 @@ const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
   jsf.reset();
 
   // 5. Generate as needed
-  return jsf.generate(resolvedTemplate).schema;
+  return {
+    request: sreq,
+    response: {
+      body: jsf.generate(resolvedTemplate).schema,
+      // TODO: headers
+      statusCode: state.$code, // TODO: what if `$code` response doesn't exist?
+    },
+  };
 };
 
 export const mockGeneratorFactory = (

@@ -22,7 +22,7 @@ describe("Response generator test suite", () => {
       protocol: "https",
     };
     const generator = mockGeneratorFactory(getSpecFromRequest);
-    expect(generator(req).length).toBe(4);
-    expect(generator(req).length).toBe(4);
+    expect(generator(req).response.body.length).toBe(4);
+    expect(generator(req).response.body.length).toBe(4);
   });
 });
