@@ -33,13 +33,13 @@ export interface IUnmockOptions {
   useInProduction?: boolean;
 }
 
-// Similar to `HttpIncomingHeaders` in Node.js
+// Similar to `IncomingHttpHeaders` in @types/node
 export interface IIncomingHeaders {
   [header: string]: string | string[] | undefined;
 }
 
-// Similar to `HttpOutgoingHeaders` in Node.js, allows numbers as they are
-// converted to strings internally
+// Similar to `OutgoingHttpHeaders` in @types/node
+// Allows numbers as they are converted to strings internally
 export interface IOutgoingHeaders {
   [header: string]: string | string[] | number | undefined;
 }
