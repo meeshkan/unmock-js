@@ -5,14 +5,16 @@ import {
   ISerializedRequest,
 } from "unmock-core";
 
-interface IResponseCreator {
+interface IResponseCreatorFactoryInput {
   mockGenerator: () => IMock[];
 }
 
-export type ResponseCreatorFactory = (opts: IResponseCreator) => CreateResponse;
+export type ResponseCreatorFactory = (
+  opts: IResponseCreatorFactoryInput,
+) => CreateResponse;
 
 export const responseCreatorFactory: ResponseCreatorFactory = (
-  opts: IResponseCreator,
+  opts: IResponseCreatorFactoryInput,
 ) => {
   const httpRequestMatcher = httpRequestMatcherFactory(opts.mockGenerator);
   return (req: ISerializedRequest) => httpRequestMatcher(req);
