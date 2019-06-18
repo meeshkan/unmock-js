@@ -1,5 +1,4 @@
 import { escapeRegExp } from "lodash";
-import { DEF_WHITELIST } from "./constants";
 import { ILogger, IUnmockOptions } from "./interfaces";
 
 export class UnmockOptions implements IUnmockOptions {

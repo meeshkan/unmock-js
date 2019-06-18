@@ -73,18 +73,19 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
-export type CreateResponse = (
-  request: ISerializedRequest,
-) => ISerializedResponse | undefined;
 export interface IResponseCreatorFactoryInput {
   mockGenerator: () => IMock[];
 }
 
-// export interface IUnmockRule {
-//   // Describes a rule within unmock response generation
-//   // A rule can either be:
-//   // 1. Setting a specific key to a specific value (in a hierarchical, object
-//   //     notation, i.e. "username: { friends: { login: { ... } } }")
-//   // 2. A DSL-specific notation (i.e. $size, $override, $jsf, etc)
-//   // 3. A composition (object/array) of other rules
-// }
+export type CreateResponse = (
+  request: ISerializedRequest,
+) => ISerializedResponse | undefined;
+
+// Used to load a service specification from a serialized request
+// Returns an object (parsed from specification)
+export type RequestToSpec = (sreq: ISerializedRequest) => any;
+
+export interface IUnmockServiceState {
+  $code: number;
+  [key: string]: any;
+}
