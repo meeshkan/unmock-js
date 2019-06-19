@@ -13,7 +13,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "@types/faker": "^4.1.5",
     "axios": "^0.18.0",
     "js-yaml": "^3.13.1",
     "json-schema-faker": "^0.5.0-rc17",
