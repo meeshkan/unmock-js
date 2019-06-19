@@ -94,6 +94,8 @@ export interface IOASMapping {
   [key: string]: OASSchema;
 }
 
+export type IOASMappingGenerator = () => IOASMapping;
+
 export interface IStateMapping {
   [key: string]: any;
 }

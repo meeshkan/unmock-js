@@ -1,4 +1,4 @@
-import { IOASMapping, IStateMapping } from "./interfaces";
+import { IOASMapping, IOASMappingGenerator, IStateMapping } from "./interfaces";
 
 /**
  * Implements the state management for a service
@@ -10,23 +10,15 @@ const DEFAULT_ENDPOINT = "**";
 const DEFAULT_REST_METHOD = "get";
 
 class ServiceState {
-  // Maintains a state for service
-  // private _state: IStateMapping = {};
-  // public updateState({
-  //   method,
-  //   endpoint,
-  //   newState,
-  // }: {
-  //   method?: string;
-  //   newState: IStateMapping;
-  //   endpoint?: string;
-  // }) {
-  //   // Four possible cases:
-  //   // 1. empty endpoint, empty method -> applies to ALL
-  //   // 2. empty endpoint, non-empty method -> applies to all methods
-  //   // 3. non-empty endpoint, empty method -> applies to all methods in the endpoint
-  //   // 4. non-empty endpoint, non-empty method -> applies to that specific combination
-  // }
+  // private state: IStateMapping = {}; // Maintains a state for service
+  public updateState(_: any) {
+    // Input: method, endpoint, newState
+    // Four possible cases:
+    // 1. empty endpoint, empty method -> applies to ALL
+    // 2. empty endpoint, non-empty method -> applies to all methods
+    // 3. non-empty endpoint, empty method -> applies to all methods in the endpoint
+    // 4. non-empty endpoint, non-empty method -> applies to that specific combination
+  }
 }
 
 // tslint:disable-next-line: max-classes-per-file
@@ -34,7 +26,7 @@ class State {
   private servicesMapping: IOASMapping = {};
   private statesMapping: { [key: string]: ServiceState } = {};
 
-  constructor(servicePopulator: () => IOASMapping) {
+  constructor(servicePopulator: IOASMappingGenerator) {
     this.servicesMapping = servicePopulator();
   }
 
@@ -50,8 +42,8 @@ class State {
     state: IStateMapping;
   }) {
     /**
-     * Saves a state for a service and relevant endpoint and method.
-     * Throws on error.
+     * Verifies logical flow of inputs before dispatching the update to
+     * the ServiceState object.
      */
     if (this.servicesMapping[service] === undefined) {
       // Service does not exist, no need to retain state.
@@ -61,17 +53,34 @@ class State {
     }
 
     const servicePaths = this.servicesMapping[service].paths;
+    if (servicePaths === undefined) {
+      throw new Error(`'${service}' has no defined paths!`);
+    }
+    if (endpoint !== DEFAULT_ENDPOINT) {
+      if (servicePaths[endpoint] === undefined) {
+        // This endpoint does not exist, no need to retain state
+        throw new Error(`Can't find endpoint '${endpoint}' for '${service}'!`);
+      }
+      if (
+        method !== undefined &&
+        servicePaths[endpoint][method] === undefined
+      ) {
+        // The endpoint exists but the specified method for that endpoint doesnt
+        throw new Error(
+          `Can't find response for '${method} ${endpoint}' in ${service}!`,
+        );
+      }
+    }
 
-    if (servicePaths[endpoint] === undefined) {
-      // This endpoint does not exist, no need to retain state
-      throw new Error(`Can't find endpoint '${endpoint}' for '${service}'!`);
+    if (this.statesMapping[service] === undefined) {
+      this.statesMapping[service] = new ServiceState();
     }
-    if (method !== undefined && servicePaths[endpoint][method] === undefined) {
-      // The endpoint exists but the specified method for that endpoint doesnt
-      throw new Error(
-        `Can't find response for '${method} ${endpoint}' in ${service}!`,
-      );
-    }
+
+    this.statesMapping[service].updateState({
+      endpoint,
+      method,
+      newState: state,
+    });
   }
 }
 
@@ -96,7 +105,7 @@ const MethodHandler = {
     // we get here if a user used e.g `state.github.get(...)`
     // obj is actually the underlying function in save_state_proxy
     return (endpoint = DEFAULT_ENDPOINT, state: IStateMapping) => {
-      obj(endpoint, state, prop);
+      return obj(endpoint, state, prop);
     };
   },
 };
@@ -107,3 +116,6 @@ const StateHandler = {
     return new Proxy(saveStateProxy(obj as State, prop), MethodHandler);
   },
 };
+
+export const stateFactory = (servicePopulator: IOASMappingGenerator) =>
+  new Proxy(new State(servicePopulator), StateHandler);
