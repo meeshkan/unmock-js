@@ -73,6 +73,24 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
+export interface IResponseCreatorFactoryInput {
+  mockGenerator: () => IMock[];
+}
+
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
+
+// Used to load a service specification from a serialized request
+// Returns an object (parsed from specification)
+export type RequestToSpec = (sreq: ISerializedRequest) => any;
+
+export interface IUnmockServiceState {
+  $code: number;
+  [key: string]: any;
+}
+
+// Type aliases for brevity
+export type OASSchema = any;
+export type GeneratedMock = any;
+export type UnmockServiceState = any;

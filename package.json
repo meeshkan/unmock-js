@@ -64,9 +64,9 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock": "file:packages/unmock",
     "@types/lodash": "^4.14.123",
     "lodash": "^4.17.11",
+    "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-jsdom": "file:packages/unmock-jsdom",

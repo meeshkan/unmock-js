@@ -4,13 +4,14 @@ import {
   CreateResponse,
   IBackend,
   IMock,
+  IResponseCreatorFactoryInput,
   ISerializedRequest,
   ISerializedResponse,
+  responseCreatorFactory,
   UnmockOptions,
 } from "unmock-core";
 import { serializeRequest } from "../serialize";
 import * as constants from "./constants";
-import { responseCreatorFactory } from "./response-creator";
 
 const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
@@ -44,15 +45,11 @@ async function handleRequestAndResponse(
   }
 }
 
-interface INodeBackendOptions {
-  mockGenerator?: () => IMock[];
-}
-
 let mitm: any;
 export default class NodeBackend implements IBackend {
   private readonly mockGenerator: () => IMock[];
 
-  public constructor(opts?: INodeBackendOptions) {
+  public constructor(opts?: IResponseCreatorFactoryInput) {
     this.mockGenerator = (opts && opts.mockGenerator) || (() => []);
   }
 
