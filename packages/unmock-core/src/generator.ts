@@ -4,11 +4,14 @@
 
 import {
   CreateResponse,
+  GeneratedMock,
   IMock,
   IResponseCreatorFactoryInput,
   ISerializedRequest,
   IUnmockServiceState,
+  OASSchema,
   RequestToSpec,
+  UnmockServiceState,
 } from "./interfaces";
 import { httpRequestMatcherFactory } from "./matcher";
 
@@ -24,10 +27,10 @@ export const responseCreatorFactory = (
 };
 
 const getPathSchemaFromSpec = (
-  spec: any,
+  spec: OASSchema,
   method: string,
   path: string,
-): any => {
+): OASSchema => {
   // TODO: Smarter path matching (to match path parameters, for example)
   if (spec.paths === undefined || spec.paths[path] === undefined) {
     // spec.info.title is mandatory in OAS, we assume `spec` is OAS compliant
@@ -48,7 +51,9 @@ const getPathSchemaFromSpec = (
   return pathSchema;
 };
 
-const templateFromResponse = (response: any): any => {
+const templateFromResponse = (response: OASSchema): OASSchema => {
+  // Returns the schema nested under content/X, where X is a type
+  // (e.g. application/json)
   const keys = Object.keys(response.content);
   if (keys.length === 0) {
     throw new Error( // response.description is the only mandatory field
@@ -59,10 +64,10 @@ const templateFromResponse = (response: any): any => {
   return response.content[keys[0]];
 };
 
-const setupJSFUnmockProperties = (_: any) => {
+const setupJSFUnmockProperties = (_: UnmockServiceState) => {
   // TODO: use the state parameter to update values as needed
 
-  jsf.define("unmock-size", (value: number, schema: any) => {
+  jsf.define("unmock-size", (value: number, schema: OASSchema) => {
     delete schema["x-unmock-size"];
     if (schema.type !== "array") {
       return schema; // validate type
@@ -121,6 +126,6 @@ const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
 
 export const mockGeneratorFactory = (
   getSpecFromRequest: RequestToSpec,
-): ((sreq: ISerializedRequest) => any) => {
+): ((sreq: ISerializedRequest) => GeneratedMock) => {
   return genMockFromSerializedRequest(getSpecFromRequest);
 };

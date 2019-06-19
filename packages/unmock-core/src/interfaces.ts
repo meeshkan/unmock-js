@@ -89,3 +89,8 @@ export interface IUnmockServiceState {
   $code: number;
   [key: string]: any;
 }
+
+// Type aliases for brevity
+export type OASSchema = any;
+export type GeneratedMock = any;
+export type UnmockServiceState = any;
