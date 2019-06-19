@@ -90,6 +90,14 @@ export interface IUnmockServiceState {
   [key: string]: any;
 }
 
+export interface IOASMapping {
+  [key: string]: OASSchema;
+}
+
+export interface IStateMapping {
+  [key: string]: any;
+}
+
 // Type aliases for brevity
 export type OASSchema = any;
 export type GeneratedMock = any;
