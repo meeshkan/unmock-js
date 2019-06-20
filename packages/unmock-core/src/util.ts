@@ -37,10 +37,10 @@ export const getAtLevel = (
     if (typeof o === "object") {
       Object.keys(o).forEach(k => {
         if (filterCb === undefined || filterCb(k, o[k])) {
-          subObjects.push({ k: o[k] });
+          subObjects.push({ [k]: o[k] });
         }
       });
     }
   });
-  return prevObjects;
+  return subObjects;
 };
