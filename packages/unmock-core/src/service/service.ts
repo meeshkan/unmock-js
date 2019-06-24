@@ -1,4 +1,5 @@
-import { filter as _filter } from "lodash";
+import { getAtLevel } from "../util";
+import { OAS_PARAMS_KW, OAS_PATH_PARAM_REGEXP } from "./constants";
 import { HTTPMethod, IUnmockServiceState, OASSchema } from "./interfaces";
 
 /**
@@ -15,7 +16,32 @@ export class Service {
   // Fourth and beyond: template-specific.
   // @ts-ignore
   private state: IUnmockServiceState = {};
-  constructor(private oasSchema: OASSchema) {}
+  constructor(private oasSchema: OASSchema) {
+    // Update the paths in the first level to regex if needed
+    if (oasSchema === undefined || oasSchema.paths === undefined) {
+      return; // empty schema or does not contain paths
+    }
+    Object.keys(oasSchema.paths).forEach((path: string) => {
+      if (!OAS_PATH_PARAM_REGEXP.test(path)) {
+        return;
+      }
+
+      const parametersObjectsArray = getAtLevel(
+        oasSchema.paths[path],
+        1,
+        (k: string, _: any) => k.toLowerCase() === OAS_PARAMS_KW,
+      );
+      if (parametersObjectsArray.length === 0) {
+        throw new Error(
+          `Found a dynamic path '${path}' but no description for path parameters!`,
+        );
+      }
+      // Assumption: All methods describe the parameter the same way.
+      const parametersInPath = parametersObjectsArray[0].parameters.filter(
+        (p: any) => p.in === "path",
+      );
+    });
+  }
 
   get schema(): OASSchema {
     return this.oasSchema;

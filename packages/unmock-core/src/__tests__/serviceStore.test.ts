@@ -63,3 +63,53 @@ describe("State behaviour test suite", () => {
     expect(() => state.petstore.get("/pet")).toThrow("Can't find endpoint");
   });
 });
+
+describe("Test paths matching on serviceStore", () => {
+  // tslint:disable: object-literal-sort-keys
+  const DynamicPathsServicePopulator = () => ({
+    petstore: {
+      paths: {
+        "/pets/{petId}": {
+          get: {
+            summary: "Info for a specific pet",
+            operationId: "showPetById",
+            tags: ["pets"],
+            parameters: [
+              {
+                name: "petId",
+                in: "path",
+                required: true,
+                description: "The id of the pet to retrieve",
+                schema: { type: "string" },
+              },
+            ],
+            responses: {
+              200: {
+                description: "Expected response to a valid request",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "array",
+                      items: {
+                        required: ["id", "name"],
+                        properties: {
+                          id: { type: "integer", format: "int64" },
+                          name: { type: "string" },
+                          tag: { type: "string" },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  test("Paths are converted to regexp", () => {
+    const store = serviceStoreFactory(DynamicPathsServicePopulator);
+  });
+});
