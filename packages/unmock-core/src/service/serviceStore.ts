@@ -1,9 +1,15 @@
 import { DEFAULT_ENDPOINT, DEFAULT_REST_METHOD } from "./constants";
-import { HTTPMethod, IOASMappingGenerator, IStateMapping } from "./interfaces";
+import {
+  HTTPMethod,
+  IOASMappingGenerator,
+  isRESTMethod,
+  IStateMapping,
+} from "./interfaces";
 import { Service } from "./service";
 
 class ServiceStore {
   private statesMapping: { [key: string]: Service } = {};
+  private lastServiceUpdated: string | undefined;
 
   constructor(servicePopulator: IOASMappingGenerator) {
     const services = servicePopulator();
@@ -12,13 +18,21 @@ class ServiceStore {
     });
   }
 
+  public newFluent() {
+    this.lastServiceUpdated = undefined;
+  }
+
+  get lastService() {
+    return this.lastServiceUpdated;
+  }
+
   public __saveState({
-    service,
+    serviceName: service,
     method,
     endpoint,
     state,
   }: {
-    service: string;
+    serviceName: string;
     endpoint: string;
     method: HTTPMethod;
     state: IStateMapping;
@@ -27,10 +41,18 @@ class ServiceStore {
      * Verifies logical flow of inputs before dispatching the update to
      * the ServiceState object.
      */
-    if (this.statesMapping[service] === undefined) {
+    if (this.statesMapping[service] === undefined || !isRESTMethod(method)) {
       // Service does not exist, no need to retain state.
+      // This method might be called twice in an attempt to recover from the fluent
+      // API, where `method` will be passed the service and `service` will be passed
+      // the fluent method used, so we verify both exist at this point.
+      //
+      // i.e. `state.github(....)` // make sure `github` specification exists
+      // i.e. `state.github.get(...).post(...)` // make sure both `get` and `post` are correct methods
       throw new Error(
-        `Can't find specification for service named '${service}'!`,
+        `Can't find specification for service named '${
+          isRESTMethod(method) ? service : method
+        }'!`,
       );
     }
 
@@ -55,6 +77,7 @@ class ServiceStore {
       }
     }
 
+    this.lastServiceUpdated = service;
     this.statesMapping[service].updateState({
       endpoint,
       method,
@@ -63,7 +86,7 @@ class ServiceStore {
   }
 }
 
-const saveStateProxy = (obj: ServiceStore, serviceName: string) => (
+const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_ENDPOINT,
   state: IStateMapping,
   method: HTTPMethod = DEFAULT_REST_METHOD,
@@ -74,27 +97,48 @@ const saveStateProxy = (obj: ServiceStore, serviceName: string) => (
     state = endpoint;
     endpoint = DEFAULT_ENDPOINT;
   }
-  obj.__saveState({ endpoint, method, service: serviceName, state });
-  return new Proxy(obj, StateHandler);
+  try {
+    // First try to update state for METHOD SERVICE ENDPOINT
+    store.__saveState({ endpoint, method, serviceName, state });
+  } catch (e) {
+    // If it doesn't succeed and we had done a previous state update
+    // Try and update that via METHOD (serviceName) SERVICE (previous) ENDPOINT
+    if (store.lastService !== undefined) {
+      store.__saveState({
+        endpoint,
+        method: serviceName as HTTPMethod,
+        serviceName: store.lastService,
+        state,
+      });
+    } else {
+      throw e;
+    }
+  }
+  return new Proxy(store, StateHandler(false));
 };
 
 const MethodHandler = {
-  get: (obj: any, prop: any) => {
-    // prop is method name being called
+  get: (obj: any, method: any) => {
     // we get here if a user used e.g `state.github.get(...)`
-    // obj is actually the underlying function in save_state_proxy
-    return (endpoint = DEFAULT_ENDPOINT, state: IStateMapping) => {
-      return obj(endpoint, state, prop as HTTPMethod);
-    };
+    // obj is actually saveStateProxy
+    return (endpoint = DEFAULT_ENDPOINT, state: IStateMapping) =>
+      obj(endpoint, state, method as HTTPMethod);
   },
 };
 
-const StateHandler = {
-  get: (obj: any, prop: any) => {
-    // prop is the function name being called
-    return new Proxy(saveStateProxy(obj as ServiceStore, prop), MethodHandler);
-  },
+const StateHandler = (initialCall: boolean) => {
+  return {
+    get: (store: any, serviceName: any) => {
+      if (initialCall) {
+        (store as ServiceStore).newFluent();
+      }
+      return new Proxy(
+        saveStateProxy(store as ServiceStore, serviceName),
+        MethodHandler,
+      );
+    },
+  };
 };
 
 export const serviceStoreFactory = (servicePopulator: IOASMappingGenerator) =>
-  new Proxy(new ServiceStore(servicePopulator), StateHandler);
+  new Proxy(new ServiceStore(servicePopulator), StateHandler(true));

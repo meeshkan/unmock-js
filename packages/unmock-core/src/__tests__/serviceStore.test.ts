@@ -40,6 +40,16 @@ describe("State behaviour test suite", () => {
       .petstore();
   });
 
+  test("Chaining multiple methods for a service", () => {
+    const state = serviceStoreFactory(EmptyPathsServicePopulator);
+    state.petstore
+      .get()
+      .post()
+      .petstore();
+    expect(state.get).toThrow("Can't find specification");
+    expect(state.petstore.get().boom).toThrow("Can't find specification");
+  });
+
   test("Specifying endpoint without rest method", () => {
     const state = serviceStoreFactory(PetsPathsServicePopulator);
     state.petstore("/pets"); // should pass

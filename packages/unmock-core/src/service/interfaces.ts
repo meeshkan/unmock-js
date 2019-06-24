@@ -6,14 +6,17 @@ export interface IStateMapping {
 
 // Type aliases for brevity
 export type OASSchema = any;
-export type HTTPMethod =
-  | "get"
-  | "head"
-  | "post"
-  | "post"
-  | "put"
-  | "delete"
-  | "connect"
-  | "options"
-  | "trace"
-  | "all"; // Last one is internally used to mark all the above methods.
+const RESTMethodTypes = [
+  "get",
+  "head",
+  "post",
+  "put",
+  "delete",
+  "connect",
+  "options",
+  "trace",
+  "all", // internally used to mark all the above methods.
+] as const;
+export type HTTPMethod = typeof RESTMethodTypes[number];
+export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
+  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
