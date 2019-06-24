@@ -8,23 +8,14 @@ import {
 } from "./interfaces";
 import { Service } from "./service";
 
-class ServiceStore {
-  private statesMapping: ServiceMapping = {};
-  private lastServiceUpdated: string | undefined;
+export class ServiceStore {
+  private serviceMapping: ServiceMapping = {};
 
   constructor(servicePopulator: IOASMappingGenerator) {
     const services = servicePopulator();
     Object.keys(services).forEach(k => {
-      this.statesMapping[k] = new Service(services[k]);
+      this.serviceMapping[k] = new Service(services[k]);
     });
-  }
-
-  public newFluent() {
-    this.lastServiceUpdated = undefined;
-  }
-
-  get lastService() {
-    return this.lastServiceUpdated;
   }
 
   public __saveState({
@@ -42,7 +33,7 @@ class ServiceStore {
      * Verifies logical flow of inputs before dispatching the update to
      * the ServiceState object.
      */
-    if (this.statesMapping[service] === undefined || !isRESTMethod(method)) {
+    if (this.serviceMapping[service] === undefined || !isRESTMethod(method)) {
       // Service does not exist, no need to retain state.
       // This method might be called twice in an attempt to recover from the fluent
       // API, where `method` will be passed the service and `service` will be passed
@@ -57,7 +48,7 @@ class ServiceStore {
       );
     }
 
-    const servicePaths = this.statesMapping[service].schema.paths;
+    const servicePaths = this.serviceMapping[service].schema.paths;
     if (servicePaths === undefined) {
       throw new Error(`'${service}' has no defined paths!`);
     }
@@ -78,68 +69,10 @@ class ServiceStore {
       }
     }
 
-    this.lastServiceUpdated = service;
-    this.statesMapping[service].updateState({
+    this.serviceMapping[service].updateState({
       endpoint,
       method,
       newState: state,
     });
   }
 }
-
-const saveStateProxy = (store: ServiceStore, serviceName: string) => (
-  endpoint = DEFAULT_ENDPOINT,
-  state: IUnmockServiceState,
-  method: HTTPMethod = DEFAULT_REST_METHOD,
-) => {
-  // Returns a function for the end user to update the state in,
-  // while maintaining endpoints and methods.
-  if (typeof endpoint !== "string") {
-    state = endpoint;
-    endpoint = DEFAULT_ENDPOINT;
-  }
-  try {
-    // First try to update state for METHOD SERVICE ENDPOINT
-    store.__saveState({ endpoint, method, serviceName, state });
-  } catch (e) {
-    // If it doesn't succeed and we had done a previous state update
-    // Try and update that via METHOD (serviceName) SERVICE (previous) ENDPOINT
-    if (store.lastService !== undefined) {
-      store.__saveState({
-        endpoint,
-        method: serviceName as HTTPMethod,
-        serviceName: store.lastService,
-        state,
-      });
-    } else {
-      throw e;
-    }
-  }
-  return new Proxy(store, StateHandler(false));
-};
-
-const MethodHandler = {
-  get: (obj: any, method: any) => {
-    // we get here if a user used e.g `state.github.get(...)`
-    // obj is actually saveStateProxy
-    return (endpoint = DEFAULT_ENDPOINT, state: IUnmockServiceState) =>
-      obj(endpoint, state, method as HTTPMethod);
-  },
-};
-
-const StateHandler = (initialCall: boolean) => {
-  return {
-    get: (store: any, serviceName: any) => {
-      if (initialCall) {
-        (store as ServiceStore).newFluent();
-      }
-      return new Proxy(
-        saveStateProxy(store as ServiceStore, serviceName),
-        MethodHandler,
-      );
-    },
-  };
-};
-
-export const serviceStoreFactory = (servicePopulator: IOASMappingGenerator) =>
-  new Proxy(new ServiceStore(servicePopulator), StateHandler(true));

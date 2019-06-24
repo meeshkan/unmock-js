@@ -16,7 +16,7 @@ export const doUsefulStuffWithRequestAndResponse = (
 export const getAtLevel = (
   nestedObj: any,
   level: number,
-  filterCb?: (key: string, value: any) => boolean,
+  filterFn?: (key: string, value: any) => boolean,
 ) => {
   /** Returns all nested objects at a certain level from nestedObj with additional
    * filtering based on key and value from callback. Filtering only applies at the requested level.
@@ -46,7 +46,7 @@ export const getAtLevel = (
   prevObjects.forEach(o => {
     if (typeof o === "object") {
       Object.keys(o).forEach(k => {
-        if (filterCb === undefined || filterCb(k, o[k])) {
+        if (filterFn === undefined || filterFn(k, o[k])) {
           subObjects.push({ [k]: o[k] });
         }
       });
