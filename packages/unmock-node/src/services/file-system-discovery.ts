@@ -13,21 +13,34 @@ export interface IService {
 }
 
 export interface IServiceDiscoverer {
-  services(): IService[];
+  services(): Promise<IService[]>;
 }
+
+export type ServiceSpecification = any;
+
+export type ServiceFileStructure = { index: string; openapi?: string };
+
+export type ServiceParser = (spec: string) => ServiceSpecification;
 
 const debugLog = debug("unmock:file-system-store");
 
 export class FileSystemServiceDiscoverer implements IServiceDiscoverer {
-  private servicesDirOpt?: string;
-  private createDirectories: boolean;
+  private readonly servicesDirOpt?: string;
+  private readonly createDirectories: boolean;
+  // private serviceParser: ServiceParser;
   public constructor(options: IFileSystemServiceDiscovererOptions) {
     this.servicesDirOpt = (options && options.servicesDir) || undefined;
+    // this.serviceParser = serviceParser;
     this.createDirectories = false;
   }
 
-  public services(): IService[] {
-    // const servicesDirectory: string = this.servicesDirectory;
+  public async services(): Promise<IService[]> {
+    const servicesDirectory: string = this.servicesDirectory;
+    // TODO
+    // 1. List all directories
+    // 2. Read all index.yaml files
+    // 3. Parse using service parser
+
     return [];
   }
 
@@ -50,7 +63,7 @@ export class FileSystemServiceDiscoverer implements IServiceDiscoverer {
     }
 
     if (!this.createDirectories) {
-      throw new Error(`Directory ${this.servicesDirOpt} does not exist`);
+      throw new Error(`Directory ${servicesDirectory} does not exist`);
     }
 
     // TODO Create
