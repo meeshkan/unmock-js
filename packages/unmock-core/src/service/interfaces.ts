@@ -1,4 +1,4 @@
-export type IOASMappingGenerator = () => ServiceMapping;
+export type IOASMappingGenerator = () => IServiceMapping;
 
 const RESTMethodTypes = [
   "get",
@@ -15,7 +15,9 @@ export type HTTPMethod = typeof RESTMethodTypes[number];
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 
-export type ServiceMapping = { [serviceName: string]: OASSchema };
+export interface IServiceMapping {
+  [serviceName: string]: OASSchema;
+}
 
 export interface IUnmockServiceState {
   // Defines basic DSL properties

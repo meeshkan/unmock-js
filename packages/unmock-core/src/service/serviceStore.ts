@@ -2,14 +2,14 @@ import { DEFAULT_ENDPOINT, DEFAULT_REST_METHOD } from "./constants";
 import {
   HTTPMethod,
   IOASMappingGenerator,
+  IServiceMapping,
   isRESTMethod,
   IUnmockServiceState,
-  ServiceMapping,
 } from "./interfaces";
 import { Service } from "./service";
 
 export class ServiceStore {
-  private serviceMapping: ServiceMapping = {};
+  private serviceMapping: IServiceMapping = {};
 
   constructor(servicePopulator: IOASMappingGenerator) {
     const services = servicePopulator();
