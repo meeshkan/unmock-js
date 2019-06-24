@@ -18,7 +18,7 @@ export interface IServiceDiscoverer {
 
 export type ServiceSpecification = any;
 
-export type ServiceFileStructure = { index: string; openapi?: string };
+// export type ServiceFileStructure = { index: string; openapi?: string };
 
 export type ServiceParser = (spec: string) => ServiceSpecification;
 

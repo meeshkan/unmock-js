@@ -15,7 +15,7 @@ describe("File system service discoverer", () => {
     expect(services).toHaveLength(0);
   });
 
-  it("throws for a non-existing directory", async done => {
+  it("throws for a non-existing directory", async () => {
     const discoverer = new FileSystemServiceDiscoverer({
       servicesDir: "DEFINITELY_DOES_NOT_EXIST_I_HOPE",
     });
@@ -23,8 +23,8 @@ describe("File system service discoverer", () => {
       await discoverer.services();
     } catch (e) {
       expect(/does not exist/.test(e.message)).toBe(true);
-      return done();
+      return;
     }
-    done(new Error("Should not get here"));
+    throw new Error("Should not get here");
   });
 });
