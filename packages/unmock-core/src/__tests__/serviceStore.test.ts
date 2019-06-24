@@ -1,4 +1,4 @@
-import { stateFactory } from "../state";
+import { serviceStoreFactory } from "../service";
 
 describe("State behaviour test suite", () => {
   // define some service populators that match IOASMappingGenerator type
@@ -9,23 +9,23 @@ describe("State behaviour test suite", () => {
   });
 
   test("creating a state class", () => {
-    const state = stateFactory(NoPathsServicePopulator);
+    const state = serviceStoreFactory(NoPathsServicePopulator);
     expect(state.noservice).toThrow("Can't find specification");
     expect(state.petstore).toThrow("has no defined paths");
   });
 
   test("state class with basic call to services", () => {
-    const state = stateFactory(EmptyPathsServicePopulator);
+    const state = serviceStoreFactory(EmptyPathsServicePopulator);
     state.petstore(); // Should pass
   });
 
   test("state class with REST method calls to services", () => {
-    const state = stateFactory(EmptyPathsServicePopulator);
+    const state = serviceStoreFactory(EmptyPathsServicePopulator);
     state.petstore.post(); // Should pass
   });
 
   test("Chaining multiple states without REST methods", () => {
-    const state = stateFactory(EmptyPathsServicePopulator);
+    const state = serviceStoreFactory(EmptyPathsServicePopulator);
     state
       .petstore()
       .petstore()
@@ -33,7 +33,7 @@ describe("State behaviour test suite", () => {
   });
 
   test("Chaining multiple states with REST methods", () => {
-    const state = stateFactory(EmptyPathsServicePopulator);
+    const state = serviceStoreFactory(EmptyPathsServicePopulator);
     state.petstore
       .get()
       .petstore.post()
@@ -41,13 +41,13 @@ describe("State behaviour test suite", () => {
   });
 
   test("Specifying endpoint without rest method", () => {
-    const state = stateFactory(PetsPathsServicePopulator);
+    const state = serviceStoreFactory(PetsPathsServicePopulator);
     state.petstore("/pets"); // should pass
     expect(() => state.petstore("/pet")).toThrow("Can't find endpoint");
   });
 
   test("Specifying endpoint with rest method", () => {
-    const state = stateFactory(PetsPathsServicePopulator);
+    const state = serviceStoreFactory(PetsPathsServicePopulator);
     state.petstore.get("/pets"); // should pass
     expect(() => state.petstore.post("/pets")).toThrow("Can't find response");
     expect(() => state.petstore.get("/pet")).toThrow("Can't find endpoint");

@@ -86,21 +86,11 @@ export type CreateResponse = (
 export type RequestToSpec = (sreq: ISerializedRequest) => any;
 
 export interface IUnmockServiceState {
+  // Defines basic DSL properties
   $code: number;
   [key: string]: any;
 }
 
-export interface IOASMapping {
-  [key: string]: OASSchema;
-}
-
-export type IOASMappingGenerator = () => IOASMapping;
-
-export interface IStateMapping {
-  [key: string]: any;
-}
-
 // Type aliases for brevity
-export type OASSchema = any;
 export type GeneratedMock = any;
 export type UnmockServiceState = any;
