@@ -3,12 +3,13 @@ import {
   HTTPMethod,
   IOASMappingGenerator,
   isRESTMethod,
-  IStateMapping,
+  IUnmockServiceState,
+  ServiceMapping,
 } from "./interfaces";
 import { Service } from "./service";
 
 class ServiceStore {
-  private statesMapping: { [key: string]: Service } = {};
+  private statesMapping: ServiceMapping = {};
   private lastServiceUpdated: string | undefined;
 
   constructor(servicePopulator: IOASMappingGenerator) {
@@ -35,7 +36,7 @@ class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: HTTPMethod;
-    state: IStateMapping;
+    state: IUnmockServiceState;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
@@ -88,7 +89,7 @@ class ServiceStore {
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_ENDPOINT,
-  state: IStateMapping,
+  state: IUnmockServiceState,
   method: HTTPMethod = DEFAULT_REST_METHOD,
 ) => {
   // Returns a function for the end user to update the state in,
@@ -121,7 +122,7 @@ const MethodHandler = {
   get: (obj: any, method: any) => {
     // we get here if a user used e.g `state.github.get(...)`
     // obj is actually saveStateProxy
-    return (endpoint = DEFAULT_ENDPOINT, state: IStateMapping) =>
+    return (endpoint = DEFAULT_ENDPOINT, state: IUnmockServiceState) =>
       obj(endpoint, state, method as HTTPMethod);
   },
 };

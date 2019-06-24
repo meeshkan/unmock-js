@@ -84,13 +84,4 @@ export type CreateResponse = (
 // Used to load a service specification from a serialized request
 // Returns an object (parsed from specification)
 export type RequestToSpec = (sreq: ISerializedRequest) => any;
-
-export interface IUnmockServiceState {
-  // Defines basic DSL properties
-  $code: number;
-  [key: string]: any;
-}
-
-// Type aliases for brevity
 export type GeneratedMock = any;
-export type UnmockServiceState = any;
