@@ -22,7 +22,7 @@ const getSpecFromRequest = (removeUnmock: boolean): RequestToSpec => (
   // uses `x-unmock-size: 4` for `Pets`
   const obj = yaml.load(
     fs.readFileSync(
-      __dirname + "/__unmock__/specs/petstore/spec_parsed.yaml",
+      __dirname + "/__unmock__/petstore/spec_parsed.yaml",
       "utf8",
     ),
   );
