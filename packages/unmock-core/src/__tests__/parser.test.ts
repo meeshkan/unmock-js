@@ -3,9 +3,10 @@ import path from "path";
 import { IServiceDef } from "../interfaces";
 import { ServiceParser } from "../service/parser";
 
-const petStoreYamlString = fs
-  .readFileSync(path.join(__dirname, "__unmock__", "petstore", "spec.yaml"))
-  .toString("utf-8");
+const petStoreYamlString: string = fs.readFileSync(
+  path.join(__dirname, "__unmock__", "petstore", "spec.yaml"),
+  "utf-8",
+);
 
 describe("Service parser", () => {
   it("creates a service from petstore yaml", () => {
@@ -38,6 +39,6 @@ describe("Service parser", () => {
         },
       ],
     };
-    expect(() => serviceParser.parse(serviceDef)).toThrow(/No idea what to do/);
+    expect(() => serviceParser.parse(serviceDef)).toThrow(/Cannot find known/);
   });
 });
