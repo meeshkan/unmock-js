@@ -81,7 +81,10 @@ export class FsServiceDefLoader implements IServiceDefLoader {
     );
 
     debugLog(`Resolved services directory: ${servicesDirectory}`);
-    if (fs.existsSync(servicesDirectory)) {
+    if (
+      fs.existsSync(servicesDirectory) &&
+      fs.statSync(servicesDirectory).isDirectory()
+    ) {
       return servicesDirectory;
     }
 
