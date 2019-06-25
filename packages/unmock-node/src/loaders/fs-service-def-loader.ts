@@ -38,10 +38,37 @@ export class FsServiceDefLoader implements IServiceDefLoader {
       serviceFiles,
     };
   }
-  private readonly servicesDirOpt?: string;
+
+  /**
+   * Resolve the absolute path to the directory where services live, with the flow:
+   * 1. Injected directory
+   * 2. Environment variable
+   * 3. ${process.cwd()}/__unmock__
+   */
+  private static resolveServicesDirectory(servicesDirOpt?: string) {
+    const servicesDirectory = path.resolve(
+      servicesDirOpt ||
+        process.env.UNMOCK_SERVICES_DIRECTORY ||
+        path.join(process.cwd(), DEFAULT_SERVICE_SUBDIRECTORY),
+    );
+
+    debugLog(`Resolved services directory: ${servicesDirectory}`);
+    if (
+      fs.existsSync(servicesDirectory) &&
+      fs.statSync(servicesDirectory).isDirectory()
+    ) {
+      return servicesDirectory;
+    }
+
+    throw new Error(`Directory ${servicesDirectory} does not exist`);
+  }
+
+  private readonly servicesDirectory: string;
 
   public constructor(options: IFsServiceDefLoaderOptions) {
-    this.servicesDirOpt = (options && options.servicesDir) || undefined;
+    this.servicesDirectory = FsServiceDefLoader.resolveServicesDirectory(
+      options.servicesDir,
+    );
   }
 
   public async load(): Promise<IServiceDef[]> {
@@ -61,29 +88,5 @@ export class FsServiceDefLoader implements IServiceDefLoader {
       FsServiceDefLoader.readServiceDirectory(dir),
     );
     return serviceDefs;
-  }
-
-  /**
-   * Resolve the absolute path to the directory where services live, with the flow:
-   * 1. Injected directory
-   * 2. Environment variable
-   * 3. ${process.cwd()}/__unmock__
-   */
-  private get servicesDirectory() {
-    const servicesDirectory = path.resolve(
-      this.servicesDirOpt ||
-        process.env.UNMOCK_SERVICES_DIRECTORY ||
-        path.join(process.cwd(), DEFAULT_SERVICE_SUBDIRECTORY),
-    );
-
-    debugLog(`Resolved services directory: ${servicesDirectory}`);
-    if (
-      fs.existsSync(servicesDirectory) &&
-      fs.statSync(servicesDirectory).isDirectory()
-    ) {
-      return servicesDirectory;
-    }
-
-    throw new Error(`Directory ${servicesDirectory} does not exist`);
   }
 }

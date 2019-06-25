@@ -25,16 +25,12 @@ describe("File system service def loader", () => {
   });
 
   it("throws for a non-existing directory", () => {
-    const serviceDefLoader = new FsServiceDefLoader({
-      servicesDir: "DEFINITELY_DOES_NOT_EXIST_I_HOPE",
-    });
-    try {
-      serviceDefLoader.loadSync();
-    } catch (e) {
-      expect(/does not exist/.test(e.message)).toBe(true);
-      return;
-    }
-    throw new Error("Should not get here");
+    expect(
+      () =>
+        new FsServiceDefLoader({
+          servicesDir: "DEFINITELY_DOES_NOT_EXIST_I_HOPE",
+        }),
+    ).toThrow(/does not exist/);
   });
 
   it("load serviceDefs from a single directory", () => {
