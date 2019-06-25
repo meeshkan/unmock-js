@@ -77,15 +77,17 @@ describe("Fluent API and Service instantiation tests", () => {
 
 describe("Test paths matching on serviceStore", () => {
   // tslint:disable: object-literal-sort-keys
-  const petStoreParameters = [
-    {
-      name: "petId",
-      in: "path",
-      required: true,
-      description: "The id of the pet to retrieve",
-      schema: { type: "string" },
-    },
-  ];
+  const petStoreParameters = {
+    parameters: [
+      {
+        name: "petId",
+        in: "path",
+        required: true,
+        description: "The id of the pet to retrieve",
+        schema: { type: "string" },
+      },
+    ],
+  };
   const DynamicPathsServicePopulator = (
     params: any,
     ...additionalPathElement: string[]
@@ -99,7 +101,7 @@ describe("Test paths matching on serviceStore", () => {
               summary: "Info for a specific pet",
               operationId: "showPetById",
               tags: ["pets"],
-              parameters: params,
+              ...params,
               responses: {
                 200: {},
               },
@@ -123,6 +125,9 @@ describe("Test paths matching on serviceStore", () => {
     expect(() => serviceStoreFactory(DynamicPathsServicePopulator({}))).toThrow(
       "no description for path parameters!",
     );
+    expect(() =>
+      serviceStoreFactory(DynamicPathsServicePopulator({ parameters: {} })),
+    ).toThrow("no description for path parameters!");
   });
 
   test("Creation fails with partial missing parameters", () => {

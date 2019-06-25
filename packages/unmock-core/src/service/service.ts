@@ -3,8 +3,8 @@ import { getAtLevel } from "../util";
 import {
   DEFAULT_ENDPOINT,
   DEFAULT_REST_METHOD,
-  OAS_PARAMS_KW,
   OAS_PATH_PARAM_REGEXP,
+  OAS_PATH_PARAMS_KW,
   UNMOCK_PATH_REGEX_KW,
 } from "./constants";
 import {
@@ -169,7 +169,7 @@ const getPathParametersFromSchema = (
   const schemaPathParameters = getAtLevel(
     schema[path],
     2,
-    (_: string, v: any) => v.in === "path",
+    (_: string, v: any) => v.in === OAS_PATH_PARAMS_KW,
   );
   if (
     schemaPathParameters.length === 0 ||
