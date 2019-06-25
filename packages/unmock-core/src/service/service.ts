@@ -152,9 +152,8 @@ export class Service implements IService {
 
       const parametersArray = getAtLevel(
         this.schema.paths[path],
-        1,
-        (k: string, _: any) => k === OAS_PARAMS_KW,
-        true, // Get `parameters` object and return its values
+        2,
+        (_: string, v: any) => v.in === "path",
       );
       if (
         parametersArray.length === 0 ||
@@ -166,9 +165,9 @@ export class Service implements IService {
       }
       let newPath = `${path}`;
       // Assumption: All methods describe the parameter the same way.
-      parametersArray[0].forEach((p: any) => {
+      Object.values(parametersArray[0]).forEach((p: any) => {
         const paramLoc = pathParameters.indexOf(p.name);
-        if (p.in === "path" && paramLoc !== -1) {
+        if (paramLoc !== -1) {
           // replace the original path with regex as needed
           // for now, we ignore the schema.type and use a generic pattern
           // the pattern is named for later retrieval
