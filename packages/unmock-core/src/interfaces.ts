@@ -1,5 +1,5 @@
 import { UnmockOptions } from "./options";
-import { Service } from "./service/service";
+import { IService } from "./service/interfaces";
 
 export interface ILogger {
   log: (message: string) => void;
@@ -124,5 +124,5 @@ export interface IServiceDef {
 }
 
 export interface IServiceParser {
-  parse(serviceDef: IServiceDef): Service;
+  parse(serviceDef: IServiceDef): IService;
 }

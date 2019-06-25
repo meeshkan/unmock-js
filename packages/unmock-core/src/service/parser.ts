@@ -6,6 +6,7 @@ const PATTERN_FOR_KNOWN_FILENAMES = /^(?:index|spec|openapi)\.ya?ml$/;
 
 export class ServiceParser implements IServiceParser {
   public parse(serviceDef: IServiceDef): Service {
+    const name = serviceDef.directoryName;
     const serviceFiles = serviceDef.serviceFiles;
 
     const matchingFiles = serviceFiles.filter(
@@ -28,6 +29,6 @@ export class ServiceParser implements IServiceParser {
 
     const schema = jsYaml.safeLoad(contents);
 
-    return new Service(schema);
+    return new Service(schema, name);
   }
 }
