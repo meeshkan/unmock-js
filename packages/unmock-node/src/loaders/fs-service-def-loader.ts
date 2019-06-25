@@ -61,10 +61,10 @@ export class FsServiceDefLoader implements IServiceDefLoader {
 
     debugLog(`Found ${serviceDirectories.length} service directories`);
 
-    const serviceParserInputs = serviceDirectories.map((dir: string) =>
+    const serviceDefs = serviceDirectories.map((dir: string) =>
       FsServiceDefLoader.readServiceDirectory(dir),
     );
-    return serviceParserInputs;
+    return serviceDefs;
   }
 
   /**
