@@ -1,7 +1,7 @@
 import { DEFAULT_ENDPOINT, DEFAULT_REST_METHOD } from "./constants";
 import {
   HTTPMethod,
-  IOASMappingGenerator,
+  IServiceMapping,
   isRESTMethod,
   IUnmockServiceState,
 } from "./interfaces";
@@ -18,7 +18,7 @@ const saveStateProxy = (store: ServiceStore, serviceName: string) => (
     state = endpoint;
     endpoint = DEFAULT_ENDPOINT;
   }
-  store.__saveState({ endpoint, method, serviceName, state });
+  store.saveState({ endpoint, method, serviceName, state });
   return new Proxy(store, StateHandler(serviceName));
 };
 
@@ -67,5 +67,6 @@ const StateHandler = (prevServiceName?: string) => {
   };
 };
 
-export const serviceStoreFactory = (servicePopulator: IOASMappingGenerator) =>
-  new Proxy(new ServiceStore(servicePopulator), StateHandler());
+// Returns as any to allow for type-free DSL-like access to services and states
+export const stateStoreFactory = (services: IServiceMapping): any =>
+  new Proxy(new ServiceStore(services), StateHandler());

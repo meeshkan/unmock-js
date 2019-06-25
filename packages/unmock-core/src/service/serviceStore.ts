@@ -1,23 +1,14 @@
 import {
   HTTPMethod,
-  IOASMappingGenerator,
   IServiceMapping,
   isRESTMethod,
   IUnmockServiceState,
 } from "./interfaces";
-import { Service } from "./service";
 
 export class ServiceStore {
-  private serviceMapping: IServiceMapping = {};
+  constructor(private serviceMapping: IServiceMapping) {}
 
-  constructor(servicePopulator: IOASMappingGenerator) {
-    const services = servicePopulator();
-    Object.keys(services).forEach(k => {
-      this.serviceMapping[k] = new Service(services[k], k);
-    });
-  }
-
-  public __saveState({
+  public saveState({
     serviceName: service,
     method,
     endpoint,
