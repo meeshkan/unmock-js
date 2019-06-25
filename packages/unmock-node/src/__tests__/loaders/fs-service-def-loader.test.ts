@@ -1,28 +1,28 @@
 import path from "path";
 import {
-  FileSystemServiceLoader,
-  IService,
-} from "../../loaders/file-system-service-loader";
+  FsServiceDefLoader,
+  IServiceDef,
+} from "../../loaders/fs-service-def-loader";
 
 const RESOURCES_DIR = path.join(__dirname, "resources");
 
 describe("File system service loader", () => {
   it("discovers from existing directory", async () => {
-    const discoverer = new FileSystemServiceLoader({
+    const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: RESOURCES_DIR,
     });
-    const services: IService = await discoverer.load();
-    expect(services).toHaveLength(1);
-    const service = services[0];
-    expect(service.name).toBe("petstore");
+    const serviceDefs: IServiceDef[] = await serviceDefLoader.load();
+    expect(serviceDefs).toHaveLength(1);
+    const serviceDef = serviceDefs[0];
+    expect(serviceDef.directoryName).toBe("petstore");
   });
 
   it("throws for a non-existing directory", async () => {
-    const discoverer = new FileSystemServiceLoader({
+    const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: "DEFINITELY_DOES_NOT_EXIST_I_HOPE",
     });
     try {
-      await discoverer.load();
+      await serviceDefLoader.load();
     } catch (e) {
       expect(/does not exist/.test(e.message)).toBe(true);
       return;
@@ -32,7 +32,7 @@ describe("File system service loader", () => {
 
   it("load serviceLoadables from existing directory", () => {
     const absolutePath = path.join(RESOURCES_DIR, "petstore");
-    const serviceLoadable = FileSystemServiceLoader.readServiceDirectory(
+    const serviceLoadable = FsServiceDefLoader.readServiceDirectory(
       absolutePath,
     );
     expect(serviceLoadable.directoryName).toBe("petstore");

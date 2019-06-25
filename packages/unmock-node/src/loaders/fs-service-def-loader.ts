@@ -4,20 +4,16 @@ import path from "path";
 
 const DEFAULT_SERVICE_SUBDIRECTORY = "__unmock__";
 
-export interface IFileSystemServiceLoaderOptions {
+export interface IFsServiceDefLoaderOptions {
   servicesDir?: string;
 }
 
-export interface IService {
-  name: string;
+export interface IServiceDefLoader {
+  load(): Promise<IServiceDef[]>;
+  loadSync(): IServiceDef[];
 }
 
-export interface IServiceLoader {
-  load(): Promise<IService[]>;
-  loadSync(): IService[];
-}
-
-export type ServiceParser = (input: IServiceParserInput) => IService;
+export type ServiceDefParser = (input: IServiceDef) => IService;
 
 export interface IServiceFile {
   /**
@@ -30,10 +26,14 @@ export interface IServiceFile {
   contents: string | Buffer;
 }
 
+export interface IService {
+  name: string;
+}
+
 /**
  * Input to the service parser. Contains the directory name and all files in the directory.
  */
-export interface IServiceParserInput {
+export interface IServiceDef {
   directoryName: string;
   serviceFiles: IServiceFile[];
 }
@@ -46,14 +46,13 @@ const debugLog = debug("unmock:file-system-store");
  * 2. Environment variable
  * 3. ${process.cwd()}/__unmock__
  */
-export class FileSystemServiceLoader implements IServiceLoader {
+export class FsServiceDefLoader implements IServiceDefLoader {
   /**
    * Read service parser input from directory containing all the files for a given service.
-   * @param absoluteDirectory Absolute path to service directory. For example, /.../__unmock__/petstore/
+   * @param absoluteDirectory Absolute path to service directory. For example, /path/to/__unmock__/petstore/
+   * @returns Input for service parser to parse a service
    */
-  public static readServiceDirectory(
-    absoluteDirectory: string,
-  ): IServiceParserInput {
+  public static readServiceDirectory(absoluteDirectory: string): IServiceDef {
     const serviceFiles = fs
       .readdirSync(absoluteDirectory)
       .map((fileName: string) => path.join(absoluteDirectory, fileName))
@@ -71,23 +70,20 @@ export class FileSystemServiceLoader implements IServiceLoader {
   private readonly servicesDirOpt?: string;
   private readonly createDirectories: boolean;
 
-  public constructor(options: IFileSystemServiceLoaderOptions) {
+  public constructor(options: IFsServiceDefLoaderOptions) {
     this.servicesDirOpt = (options && options.servicesDir) || undefined;
     this.createDirectories = false;
   }
 
-  public async load(): Promise<IService[]> {
+  public async load(): Promise<IServiceDef[]> {
     return this.loadSync(); // Simple wrap in promise for now
   }
 
-  public loadSync(): IService[] {
-    const serviceParserInputs = this.loadServiceParserInputs();
-    return serviceParserInputs.map((serviceParserInput: IServiceParserInput) =>
-      this.serviceParser(serviceParserInput),
-    );
+  public loadSync(): IServiceDef[] {
+    return this.loadServiceDefs();
   }
 
-  public loadServiceParserInputs(): IServiceParserInput[] {
+  public loadServiceDefs(): IServiceDef[] {
     const servicesDirectory: string = this.servicesDirectory;
     const serviceDirectories = fs
       .readdirSync(servicesDirectory)
@@ -97,7 +93,7 @@ export class FileSystemServiceLoader implements IServiceLoader {
     debugLog(`Found ${serviceDirectories.length} service directories`);
 
     const serviceParserInputs = serviceDirectories.map((dir: string) =>
-      FileSystemServiceLoader.readServiceDirectory(dir),
+      FsServiceDefLoader.readServiceDirectory(dir),
     );
     return serviceParserInputs;
   }
@@ -124,13 +120,7 @@ export class FileSystemServiceLoader implements IServiceLoader {
       throw new Error(`Directory ${servicesDirectory} does not exist`);
     }
 
-    // TODO Create
+    // TODO Create directories?
     throw new Error("Directory creation not implemented");
-  }
-  // TODO Remove this
-  private serviceParser(serviceParserInput: IServiceParserInput) {
-    return {
-      name: serviceParserInput.directoryName,
-    };
   }
 }
