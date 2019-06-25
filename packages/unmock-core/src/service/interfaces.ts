@@ -55,7 +55,6 @@ export interface IService {
    * @param input Describes the new state that matches a method and endpoint.
    */
   updateState(input: IStateInput): boolean;
-  [serviceName: string]: any;
 }
 
 // Type aliases for brevity
@@ -65,4 +64,8 @@ export interface IStateInput {
   method: HTTPMethod;
   endpoint: string;
   newState: IUnmockServiceState;
+}
+export interface IServiceInput {
+  schema: OASSchema;
+  name: string;
 }
