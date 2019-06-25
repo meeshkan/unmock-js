@@ -21,26 +21,7 @@ export class Service {
     if (oasSchema === undefined || oasSchema.paths === undefined) {
       return; // empty schema or does not contain paths
     }
-    Object.keys(oasSchema.paths).forEach((path: string) => {
-      if (!OAS_PATH_PARAM_REGEXP.test(path)) {
-        return;
-      }
-
-      const parametersObjectsArray = getAtLevel(
-        oasSchema.paths[path],
-        1,
-        (k: string, _: any) => k.toLowerCase() === OAS_PARAMS_KW,
-      );
-      if (parametersObjectsArray.length === 0) {
-        throw new Error(
-          `Found a dynamic path '${path}' but no description for path parameters!`,
-        );
-      }
-      // Assumption: All methods describe the parameter the same way.
-      const parametersInPath = parametersObjectsArray[0].parameters.filter(
-        (p: any) => p.in === "path",
-      );
-    });
+    this.__updateSchemaPaths();
   }
 
   get schema(): OASSchema {
@@ -72,6 +53,52 @@ export class Service {
 
     this.state = newState; // For PR purposes, we just save the state as is.
     return true;
+  }
+
+  private __updateSchemaPaths() {
+    Object.keys(this.oasSchema.paths).forEach((path: string) => {
+      const regexResults = OAS_PATH_PARAM_REGEXP.exec(path);
+      if (regexResults === null) {
+        return;
+      }
+      const pathParameters = regexResults.slice(1); // Get all matches
+
+      const parametersArray = getAtLevel(
+        this.oasSchema.paths[path],
+        1,
+        (k: string, _: any) => k === OAS_PARAMS_KW,
+        true, // Get `parameters` object and return its values
+      );
+      if (parametersArray.length === 0) {
+        throw new Error(
+          `Found a dynamic path '${path}' but no description for path parameters!`,
+        );
+      }
+      let newPath = `${path}`;
+      // Assumption: All methods describe the parameter the same way.
+      parametersArray[0].forEach((p: any) => {
+        const paramLoc = pathParameters.indexOf(p.name);
+        if (p.in === "path" && paramLoc !== -1) {
+          // replace the original path with regex as needed
+          // for now, we ignore the schema.type and use a generic pattern
+          // the pattern is named for later retrieval
+          newPath = newPath.replace(`{${p.name}}`, `(?<${p.name}>[^/]+)`);
+          pathParameters.splice(paramLoc, 1); // remove from pathParameters after matching
+        }
+      });
+      if (pathParameters.length > 0) {
+        // not all elements have been replaced!
+        throw new Error(
+          `Found a dynamic path '${path}' but the following path parameters have not been described: ${JSON.stringify(
+            pathParameters,
+          )}!`,
+        );
+      }
+      // Update the content for the new path and remove old path
+      delete Object.assign(this.oasSchema.paths, {
+        [newPath]: this.oasSchema.paths[path],
+      })[path];
+    });
   }
 
   // TODO
