@@ -166,20 +166,20 @@ const getPathParametersFromSchema = (
   schema: OASSchema,
   path: string,
 ): any[] => {
-  const parametersArray = getAtLevel(
+  const schemaPathParameters = getAtLevel(
     schema[path],
     2,
     (_: string, v: any) => v.in === "path",
   );
   if (
-    parametersArray.length === 0 ||
-    Object.keys(parametersArray[0]).length === 0
+    schemaPathParameters.length === 0 ||
+    Object.keys(schemaPathParameters[0]).length === 0
   ) {
     throw new Error(
       `Found a dynamic path '${path}' but no description for path parameters!`,
     );
   }
-  return parametersArray;
+  return schemaPathParameters;
 };
 
 const buildPathRegexStringFromParameters = (
