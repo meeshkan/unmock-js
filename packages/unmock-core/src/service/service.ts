@@ -1,37 +1,121 @@
-import { filter as _filter } from "lodash";
-import { HTTPMethod, IUnmockServiceState, OASSchema } from "./interfaces";
+import XRegExp from "xregexp";
+import {
+  DEFAULT_ENDPOINT,
+  DEFAULT_REST_METHOD,
+  UNMOCK_PATH_REGEX_KW,
+} from "./constants";
+import {
+  HTTPMethod,
+  IService,
+  IStateInput,
+  IUnmockServiceState,
+  OASSchema,
+} from "./interfaces";
+import {
+  buildPathRegexStringFromParameters,
+  getAtLevel,
+  getPathParametersFromPath,
+  getPathParametersFromSchema,
+} from "./util";
 
 /**
  * Implements the state management for a service
  */
 
 // TODO: Is there room here for xstate, in the future?
-// TODO: Add IService
-export class Service {
+
+export class Service implements IService {
   // Maintains a state for service
   // First level kv pairs: paths -> methods
   // Second level kv pairs: methods -> status codes
   // Third level kv pairs: status codes -> response template overrides
   // Fourth and beyond: template-specific.
-  // @ts-ignore
+  // @ts-ignore // ignored because it's currently only being read and not written
   private state: IUnmockServiceState = {};
-  constructor(private oasSchema: OASSchema) {}
+  private hasPaths: boolean = false;
+
+  constructor(private oasSchema: OASSchema, private name: string) {
+    // Update the paths in the first level to regex if needed
+    if (oasSchema === undefined || oasSchema.paths === undefined) {
+      return; // empty schema or does not contain paths
+    }
+    this.updateSchemaPaths();
+    this.hasPaths = // Find this once, as schema is immutable
+      this.schema !== undefined &&
+      this.schema.paths !== undefined &&
+      Object.keys(this.schema.paths).length > 0;
+  }
 
   get schema(): OASSchema {
     return this.oasSchema;
   }
 
-  public updateState({
-    // @ts-ignore
-    method,
-    // @ts-ignore
-    endpoint,
-    newState,
-  }: {
-    method: HTTPMethod;
-    endpoint: string;
-    newState: IUnmockServiceState;
-  }) {
+  get hasDefinedPaths(): boolean {
+    return this.hasPaths;
+  }
+
+  public findEndpoint(endpoint: string): string | undefined {
+    // Finds the endpoint key that matches given endpoint string
+    // First attempts a direct match by dictionary look-up
+    // If it fails, iterates over all endpoint until a match is found.
+    // Matching path key is returned so that future matching, reference, etc can be done as needed.
+    if (!this.hasDefinedPaths) {
+      return;
+    }
+    if (this.schema.paths[endpoint] !== undefined) {
+      return endpoint;
+    }
+    for (const schemaEndpoint of Object.keys(this.schema.paths)) {
+      const endpointRegex = this.schema.paths[schemaEndpoint][
+        UNMOCK_PATH_REGEX_KW
+      ] as RegExp;
+
+      if (endpointRegex.test(endpoint)) {
+        return schemaEndpoint;
+      }
+    }
+    return;
+  }
+
+  public verifyRequest(method: HTTPMethod, endpoint: string) {
+    // Throws if method + endpoint are invalid for this service
+    if (!this.hasDefinedPaths) {
+      throw new Error(`'${this.name}' has no defined paths!`);
+    }
+
+    if (endpoint !== DEFAULT_ENDPOINT) {
+      const servicePaths = this.schema.paths;
+      const schemaEndpoint = this.findEndpoint(endpoint);
+      if (schemaEndpoint === undefined) {
+        // This endpoint does not exist, no need to retain state
+        throw new Error(
+          `Can't find endpoint '${endpoint}' for '${this.name}'!`,
+        );
+      }
+      if (
+        // If the method is 'all', we assume there exists some content under the specified endpoint...
+        method !== DEFAULT_REST_METHOD &&
+        servicePaths[schemaEndpoint][method] === undefined
+      ) {
+        // The endpoint exists but the specified method for that endpoint doesnt
+        throw new Error(
+          `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
+        );
+      }
+    } else if (method !== DEFAULT_REST_METHOD) {
+      // If endpoint is default (all), we make sure that at least one path exists with the given method
+      if (
+        getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
+          .length === 0
+      ) {
+        throw new Error(
+          `Can't find any endpoints with method '${method}' in ${this.name}!`,
+        );
+      }
+    }
+  }
+
+  public updateState({ newState }: IStateInput): boolean {
     // Input: method, endpoint, newState
     // Four possible cases:
     // 1. Default endpoint ("**"), default method ("all") =>
@@ -48,17 +132,27 @@ export class Service {
     return true;
   }
 
-  // TODO
-  // private verifyPathAndMethod(method: HTTPMethod, path: string) {
-  //   if (path === DEFAULT_ENDPOINT) {
-  //     if (method === DEFAULT_REST_METHOD) {
-  //       return this.oasSchema.paths !== undefined;
-  //     } else {
-  //       // just make sure we have some entry that matches the method in that level
-  //       return getAtLevel(this.schema, 1, (k, _) => k === method).length > 0;
-  //     }
-  //   } else {
-  //     // make sure the combination exists
-  //   }
-  // }
+  private updateSchemaPaths() {
+    Object.keys(this.schema.paths).forEach((path: string) => {
+      const pathParameters = getPathParametersFromPath(path);
+      let newPath: string = "";
+      if (pathParameters.length === 0) {
+        newPath = path; // Simply convert to direct regexp pattern
+      } else {
+        const schemaParameters = getPathParametersFromSchema(
+          this.schema.paths,
+          path,
+        );
+        newPath = buildPathRegexStringFromParameters(
+          path,
+          schemaParameters,
+          pathParameters,
+        );
+      }
+
+      // Update the content for the new path and remove old path
+      const newPathRegex = XRegExp(`^${newPath}$`, "g");
+      this.oasSchema.paths[path][UNMOCK_PATH_REGEX_KW] = newPathRegex;
+    });
+  }
 }
