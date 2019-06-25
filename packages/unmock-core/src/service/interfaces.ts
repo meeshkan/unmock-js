@@ -1,5 +1,3 @@
-export type IOASMappingGenerator = () => IServiceMapping;
-
 const RESTMethodTypes = [
   "get",
   "head",
@@ -16,7 +14,7 @@ export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 
 export interface IServiceMapping {
-  [serviceName: string]: OASSchema;
+  [serviceName: string]: IService;
 }
 
 export interface IUnmockServiceState {
@@ -70,4 +68,8 @@ export interface IStateInput {
   method: HTTPMethod;
   endpoint: string;
   newState: IUnmockServiceState;
+}
+export interface IServiceInput {
+  schema: OASSchema;
+  name: string;
 }

@@ -29,6 +29,6 @@ export class ServiceParser implements IServiceParser {
 
     const schema = jsYaml.safeLoad(contents);
 
-    return new Service(schema, name);
+    return new Service({ schema, name });
   }
 }

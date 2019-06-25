@@ -7,6 +7,7 @@ import {
 import {
   HTTPMethod,
   IService,
+  IServiceInput,
   IStateInput,
   IUnmockServiceState,
   OASSchema,
@@ -30,13 +31,17 @@ export class Service implements IService {
   // Second level kv pairs: methods -> status codes
   // Third level kv pairs: status codes -> response template overrides
   // Fourth and beyond: template-specific.
+  public readonly name: string;
   // @ts-ignore // ignored because it's currently only being read and not written
   private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
+  private oasSchema: OASSchema;
 
-  constructor(private oasSchema: OASSchema, public readonly name: string) {
+  constructor(opts: IServiceInput) {
+    this.oasSchema = opts.schema;
+    this.name = opts.name;
     // Update the paths in the first level to regex if needed
-    if (oasSchema === undefined || oasSchema.paths === undefined) {
+    if (this.schema === undefined || this.schema.paths === undefined) {
       return; // empty schema or does not contain paths
     }
     this.updateSchemaPaths();
