@@ -2,7 +2,7 @@ import jsYaml from "js-yaml";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
 
-const patternForKnownFiles = /^(?:index|spec|openapi).ya?ml$/;
+const PATTERN_FOR_KNOWN_FILENAMES = /^(?:index|spec|openapi)\.ya?ml$/;
 
 export class ServiceParser implements IServiceParser {
   public parse(serviceDef: IServiceDef): Service {
@@ -10,7 +10,7 @@ export class ServiceParser implements IServiceParser {
 
     const matchingFiles = serviceFiles.filter(
       (serviceDefFile: IServiceDefFile) =>
-        patternForKnownFiles.test(serviceDefFile.basename),
+        PATTERN_FOR_KNOWN_FILENAMES.test(serviceDefFile.basename),
     );
 
     if (matchingFiles.length === 0) {
@@ -21,9 +21,9 @@ export class ServiceParser implements IServiceParser {
 
     const serviceFile = matchingFiles[0];
 
-    const contents =
+    const contents: string =
       serviceFile.contents instanceof Buffer
-        ? serviceFile.contents.toString()
+        ? serviceFile.contents.toString("utf-8")
         : serviceFile.contents;
 
     const schema = jsYaml.safeLoad(contents);
