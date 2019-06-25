@@ -5,6 +5,7 @@ import {
   DEFAULT_REST_METHOD,
   OAS_PARAMS_KW,
   OAS_PATH_PARAM_REGEXP,
+  UNMOCK_PATH_REGEX_KW,
 } from "./constants";
 import { HTTPMethod, IUnmockServiceState, OASSchema } from "./interfaces";
 
@@ -46,14 +47,22 @@ export class Service {
 
   public findEndpoint(endpoint: string): string | undefined {
     // Finds the endpoint key that matches given endpoint string
-    // Iterates over all endpoint until a match is found.
-    // String is returned so that matching, reference, etc can be done as needed.
+    // First attempts a direct match by dictionary look-up
+    // If it fails, iterates over all endpoint until a match is found.
+    // Matching path key is returned so that future matching, reference, etc can be done as needed.
     if (!this.hasDefinedPaths) {
       return;
     }
-    for (const endpointRegex in this.schema.paths) {
-      if (XRegExp(endpointRegex).test(endpoint)) {
-        return endpointRegex;
+    if (this.schema.paths[endpoint] !== undefined) {
+      return endpoint;
+    }
+    for (const schemaEndpoint of Object.keys(this.schema.paths)) {
+      const endpointRegex = this.schema.paths[schemaEndpoint][
+        UNMOCK_PATH_REGEX_KW
+      ] as RegExp;
+
+      if (endpointRegex.test(endpoint)) {
+        return schemaEndpoint;
       }
     }
     return;
@@ -123,18 +132,14 @@ export class Service {
     return true;
   }
 
-  private __replacePathWithRegexp(newPath: string, oldPath: string) {
-    // Replaces oldPath with newPath in this.oasSchema.paths.
-    // newPath is treated as Regex pattern.
-    const newPathRegex = `^${newPath}$`;
-    delete Object.assign(this.oasSchema.paths, {
-      [newPathRegex as any]: this.oasSchema.paths[oldPath], // as any is a hack!
-    })[oldPath];
+  private __complementPathWithRegexp(newPath: string, oldPath: string) {
+    // Complements oldPath by adding an unmock extension for regex matching the path.
+    const newPathRegex = XRegExp(`^${newPath}$`, "g");
+    this.oasSchema.paths[oldPath][UNMOCK_PATH_REGEX_KW] = newPathRegex;
   }
 
   private __updateSchemaPaths() {
     Object.keys(this.schema.paths).forEach((path: string) => {
-      // let result = OAS_PATH_PARAM_REGEXP.exec(path);
       const pathParameters: string[] = [];
       XRegExp.forEach(
         path,
@@ -144,7 +149,7 @@ export class Service {
         },
       );
       if (pathParameters.length === 0) {
-        this.__replacePathWithRegexp(path, path); // Simply convert to direct regexp pattern
+        this.__complementPathWithRegexp(path, path); // Simply convert to direct regexp pattern
         return;
       }
 
@@ -182,7 +187,7 @@ export class Service {
         );
       }
       // Update the content for the new path and remove old path
-      this.__replacePathWithRegexp(newPath, path);
+      this.__complementPathWithRegexp(newPath, path);
     });
   }
 }
