@@ -1,32 +1,25 @@
 import jsYaml from "js-yaml";
-import { find } from "lodash";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
+
+const patternForKnownFiles = /^(?:index|spec|openapi).ya?ml$/;
 
 export class ServiceParser implements IServiceParser {
   public parse(serviceDef: IServiceDef): Service {
     const serviceFiles = serviceDef.serviceFiles;
 
-    const yamlServiceFiles = serviceFiles.filter(
+    const matchingFiles = serviceFiles.filter(
       (serviceDefFile: IServiceDefFile) =>
-        serviceDefFile.basename.endsWith(".yaml") ||
-        serviceDefFile.basename.endsWith(".yml"),
+        patternForKnownFiles.test(serviceDefFile.basename),
     );
 
-    const serviceFileOrUndef = find(
-      yamlServiceFiles,
-      (fileForService: IServiceDefFile) =>
-        fileForService.basename.startsWith("index") ||
-        fileForService.basename.startsWith("openapi"),
-    );
-
-    if (serviceFileOrUndef === undefined) {
+    if (matchingFiles.length === 0) {
       throw new Error(
         `No idea what to do with: ${JSON.stringify(serviceFiles)}`,
       );
     }
 
-    const serviceFile = serviceFileOrUndef;
+    const serviceFile = matchingFiles[0];
 
     const contents =
       serviceFile.contents instanceof Buffer
