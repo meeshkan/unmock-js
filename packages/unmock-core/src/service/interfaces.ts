@@ -25,6 +25,18 @@ export interface IUnmockServiceState {
   [key: string]: UnmockServiceState;
 }
 
+export interface IService {
+  schema: OASSchema;
+  hasDefinedPaths: boolean;
+  findEndpoint(endpoint: string): string | undefined;
+  verifyRequest(method: HTTPMethod, endpoint: string): void;
+  updateState(input: {
+    method: HTTPMethod;
+    endpoint: string;
+    newState: IUnmockServiceState;
+  }): boolean;
+}
+
 // Type aliases for brevity
 export type UnmockServiceState = any;
 export type OASSchema = any;

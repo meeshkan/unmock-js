@@ -7,21 +7,26 @@ import {
   OAS_PATH_PARAM_REGEXP,
   UNMOCK_PATH_REGEX_KW,
 } from "./constants";
-import { HTTPMethod, IUnmockServiceState, OASSchema } from "./interfaces";
+import {
+  HTTPMethod,
+  IService,
+  IUnmockServiceState,
+  OASSchema,
+} from "./interfaces";
 
 /**
  * Implements the state management for a service
  */
 
 // TODO: Is there room here for xstate, in the future?
-// TODO: Add IService
-export class Service {
+
+export class Service implements IService {
   // Maintains a state for service
   // First level kv pairs: paths -> methods
   // Second level kv pairs: methods -> status codes
   // Third level kv pairs: status codes -> response template overrides
   // Fourth and beyond: template-specific.
-  // @ts-ignore
+  // @ts-ignore // ignored because it's currently only being read and not written
   private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
 
@@ -69,6 +74,7 @@ export class Service {
   }
 
   public verifyRequest(method: HTTPMethod, endpoint: string) {
+    // Throws if method + endpoint are invalid for this service
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
@@ -106,16 +112,12 @@ export class Service {
   }
 
   public updateState({
-    // @ts-ignore
-    method,
-    // @ts-ignore
-    endpoint,
     newState,
   }: {
     method: HTTPMethod;
     endpoint: string;
     newState: IUnmockServiceState;
-  }) {
+  }): boolean {
     // Input: method, endpoint, newState
     // Four possible cases:
     // 1. Default endpoint ("**"), default method ("all") =>
