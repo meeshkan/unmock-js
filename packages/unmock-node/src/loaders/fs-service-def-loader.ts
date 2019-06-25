@@ -49,10 +49,6 @@ export class FsServiceDefLoader implements IServiceDefLoader {
   }
 
   public loadSync(): IServiceDef[] {
-    return this.loadServiceDefs();
-  }
-
-  public loadServiceDefs(): IServiceDef[] {
     const servicesDirectory: string = this.servicesDirectory;
     const serviceDirectories = fs
       .readdirSync(servicesDirectory)
