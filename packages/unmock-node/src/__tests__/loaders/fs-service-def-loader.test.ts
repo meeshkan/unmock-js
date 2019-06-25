@@ -6,8 +6,17 @@ import {
 
 const RESOURCES_DIR = path.join(__dirname, "resources");
 
-describe("File system service loader", () => {
-  it("discovers from existing directory", async () => {
+describe("File system service def loader", () => {
+  it("loads serviceDefs from existing directory", () => {
+    const serviceDefLoader = new FsServiceDefLoader({
+      servicesDir: RESOURCES_DIR,
+    });
+    const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
+    expect(serviceDefs).toHaveLength(1);
+    const serviceDef = serviceDefs[0];
+    expect(serviceDef.directoryName).toBe("petstore");
+  });
+  it("loads serviceDefs from existing directory asynchronously", async () => {
     const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: RESOURCES_DIR,
     });
@@ -17,12 +26,12 @@ describe("File system service loader", () => {
     expect(serviceDef.directoryName).toBe("petstore");
   });
 
-  it("throws for a non-existing directory", async () => {
+  it("throws for a non-existing directory", () => {
     const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: "DEFINITELY_DOES_NOT_EXIST_I_HOPE",
     });
     try {
-      await serviceDefLoader.load();
+      serviceDefLoader.loadSync();
     } catch (e) {
       expect(/does not exist/.test(e.message)).toBe(true);
       return;
@@ -30,15 +39,13 @@ describe("File system service loader", () => {
     throw new Error("Should not get here");
   });
 
-  it("load serviceLoadables from existing directory", () => {
+  it("load serviceDefs from a single directory", () => {
     const absolutePath = path.join(RESOURCES_DIR, "petstore");
-    const serviceLoadable = FsServiceDefLoader.readServiceDirectory(
-      absolutePath,
-    );
-    expect(serviceLoadable.directoryName).toBe("petstore");
-    expect(serviceLoadable.serviceFiles).toHaveLength(1);
+    const serviceDef = FsServiceDefLoader.readServiceDirectory(absolutePath);
+    expect(serviceDef.directoryName).toBe("petstore");
+    expect(serviceDef.serviceFiles).toHaveLength(1);
 
-    const serviceFile = serviceLoadable.serviceFiles[0];
+    const serviceFile = serviceDef.serviceFiles[0];
     expect(serviceFile.basename).toBe("index.yaml");
     expect(serviceFile.contents).toEqual(
       expect.stringContaining('openapi: "3.0.0"'),

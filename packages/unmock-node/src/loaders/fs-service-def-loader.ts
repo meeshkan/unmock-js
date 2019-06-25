@@ -38,7 +38,7 @@ export interface IServiceDef {
   serviceFiles: IServiceDefFile[];
 }
 
-const debugLog = debug("unmock:file-system-store");
+const debugLog = debug("unmock:fs-service-def-loader");
 
 /**
  * Read services from file system. Base directory is either
