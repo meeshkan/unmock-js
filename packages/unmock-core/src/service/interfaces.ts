@@ -27,11 +27,11 @@ export interface IService {
   /**
    * Name for the service.
    */
-  name: string;
+  readonly name: string;
   /**
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
-  schema: OASSchema;
+  readonly schema: OASSchema;
   /**
    * Whether the OAS has a defined "paths" object or not.
    */

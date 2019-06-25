@@ -1,12 +1,19 @@
 import {
   HTTPMethod,
+  IService,
   IServiceMapping,
   isRESTMethod,
   IUnmockServiceState,
 } from "./interfaces";
 
 export class ServiceStore {
-  constructor(private serviceMapping: IServiceMapping) {}
+  private serviceMapping: IServiceMapping = {};
+
+  constructor(services: IService[]) {
+    services.forEach(service => {
+      this.serviceMapping[service.name] = service;
+    });
+  }
 
   public saveState({
     serviceName: service,
