@@ -13,9 +13,7 @@ export interface IServiceDefLoader {
   loadSync(): IServiceDef[];
 }
 
-export type ServiceDefParser = (input: IServiceDef) => IService;
-
-export interface IServiceFile {
+export interface IServiceDefFile {
   /**
    * Basename for the file: for example, `index.yaml`
    */
@@ -26,16 +24,12 @@ export interface IServiceFile {
   contents: string | Buffer;
 }
 
-export interface IService {
-  name: string;
-}
-
 /**
  * Input to the service parser. Contains the directory name and all files in the directory.
  */
 export interface IServiceDef {
   directoryName: string;
-  serviceFiles: IServiceFile[];
+  serviceFiles: IServiceDefFile[];
 }
 
 const debugLog = debug("unmock:file-system-store");
