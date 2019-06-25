@@ -9,23 +9,29 @@ export interface IFsServiceDefLoaderOptions {
 }
 
 export interface IServiceDefLoader {
+  /**
+   * Synchronously read service definitions.
+   */
   load(): Promise<IServiceDef[]>;
+  /**
+   * Asynchronously read service definitions.
+   */
   loadSync(): IServiceDef[];
 }
 
 export interface IServiceDefFile {
   /**
-   * Basename for the file: for example, `index.yaml`
+   * Basename for the service definition file: for example, `index.yaml`
    */
   basename: string;
   /**
-   * Contents of the file
+   * Contents of the service definition file
    */
   contents: string | Buffer;
 }
 
 /**
- * Input to the service parser. Contains the directory name and all files in the directory.
+ * Input to the service parser. Contains, e.g., the directory name and all available files.
  */
 export interface IServiceDef {
   directoryName: string;
@@ -36,9 +42,9 @@ const debugLog = debug("unmock:file-system-store");
 
 /**
  * Read services from file system. Base directory is either
- * 1. Injected directory
- * 2. Environment variable
- * 3. ${process.cwd()}/__unmock__
+ * 1. Directory injected in configuration
+ * 2. Environment variable `UNMOCK_SERVICES_DIRECTORY`
+ * 3. `${process.cwd()}/__unmock__`
  */
 export class FsServiceDefLoader implements IServiceDefLoader {
   /**
@@ -62,11 +68,9 @@ export class FsServiceDefLoader implements IServiceDefLoader {
     };
   }
   private readonly servicesDirOpt?: string;
-  private readonly createDirectories: boolean;
 
   public constructor(options: IFsServiceDefLoaderOptions) {
     this.servicesDirOpt = (options && options.servicesDir) || undefined;
-    this.createDirectories = false;
   }
 
   public async load(): Promise<IServiceDef[]> {
@@ -110,11 +114,6 @@ export class FsServiceDefLoader implements IServiceDefLoader {
       return servicesDirectory;
     }
 
-    if (!this.createDirectories) {
-      throw new Error(`Directory ${servicesDirectory} does not exist`);
-    }
-
-    // TODO Create directories?
-    throw new Error("Directory creation not implemented");
+    throw new Error(`Directory ${servicesDirectory} does not exist`);
   }
 }
