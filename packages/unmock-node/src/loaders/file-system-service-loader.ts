@@ -17,8 +17,6 @@ export interface IServiceLoader {
   loadSync(): IService[];
 }
 
-// export type ServiceFileStructure = { index: string; openapi?: string };
-
 export type ServiceParser = (input: IServiceParserInput) => IService;
 
 export interface IServiceFile {
@@ -32,6 +30,9 @@ export interface IServiceFile {
   contents: string | Buffer;
 }
 
+/**
+ * Input to the service parser. Contains the directory name and all files in the directory.
+ */
 export interface IServiceParserInput {
   directoryName: string;
   serviceFiles: IServiceFile[];
@@ -47,7 +48,7 @@ const debugLog = debug("unmock:file-system-store");
  */
 export class FileSystemServiceLoader implements IServiceLoader {
   /**
-   * Read a loadable service from directory containing all the files for a given service.
+   * Read service parser input from directory containing all the files for a given service.
    * @param absoluteDirectory Absolute path to service directory. For example, /.../__unmock__/petstore/
    */
   public static readServiceDirectory(
@@ -55,8 +56,8 @@ export class FileSystemServiceLoader implements IServiceLoader {
   ): IServiceParserInput {
     const serviceFiles = fs
       .readdirSync(absoluteDirectory)
-      .map((f: string) => path.join(absoluteDirectory, f))
-      .filter((f: string) => fs.statSync(f).isFile())
+      .map((fileName: string) => path.join(absoluteDirectory, fileName))
+      .filter((fileName: string) => fs.statSync(fileName).isFile())
       .map((f: string) => ({
         basename: path.basename(f),
         contents: fs.readFileSync(f).toString("utf-8"),
@@ -69,11 +70,9 @@ export class FileSystemServiceLoader implements IServiceLoader {
   }
   private readonly servicesDirOpt?: string;
   private readonly createDirectories: boolean;
-  // private serviceParser: ServiceParser;
 
   public constructor(options: IFileSystemServiceLoaderOptions) {
     this.servicesDirOpt = (options && options.servicesDir) || undefined;
-    // this.serviceParser = serviceParser;
     this.createDirectories = false;
   }
 
@@ -81,7 +80,20 @@ export class FileSystemServiceLoader implements IServiceLoader {
     return this.loadSync(); // Simple wrap in promise for now
   }
 
+  public serviceParser(serviceParserInput: IServiceParserInput) {
+    return {
+      name: serviceParserInput.directoryName,
+    };
+  }
+
   public loadSync(): IService[] {
+    const serviceParserInputs = this.loadServiceParserInputs();
+    return serviceParserInputs.map((serviceParserInput: IServiceParserInput) =>
+      this.serviceParser(serviceParserInput),
+    );
+  }
+
+  public loadServiceParserInputs(): IServiceParserInput[] {
     const servicesDirectory: string = this.servicesDirectory;
     const serviceDirectories = fs
       .readdirSync(servicesDirectory)
@@ -90,14 +102,10 @@ export class FileSystemServiceLoader implements IServiceLoader {
 
     debugLog(`Found ${serviceDirectories.length} service directories`);
 
-    // const fileContentsForEachService =
-
-    // TODO
-    // 1. List all directories
-    // 2. Read all index.yaml files
-    // 3. Parse using service parser
-
-    return [];
+    const serviceParserInputs = serviceDirectories.map((dir: string) =>
+      FileSystemServiceLoader.readServiceDirectory(dir),
+    );
+    return serviceParserInputs;
   }
 
   /**

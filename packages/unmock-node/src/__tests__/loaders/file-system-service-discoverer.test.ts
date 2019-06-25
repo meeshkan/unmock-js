@@ -12,7 +12,9 @@ describe("File system service loader", () => {
       servicesDir: RESOURCES_DIR,
     });
     const services: IService = await discoverer.load();
-    expect(services).toHaveLength(0);
+    expect(services).toHaveLength(1);
+    const service = services[0];
+    expect(service.name).toBe("petstore");
   });
 
   it("throws for a non-existing directory", async () => {
