@@ -8,11 +8,11 @@ import {
 
 describe("Tests getAtLevel", () => {
   const schema = {
+    "/pet/{petId}": { get: { 200: {}, default: {} } },
     "/pets": {
-      get: { "200": {}, default: {} },
-      post: { "201": {}, default: {} },
+      get: { 200: {}, default: {} },
+      post: { 201: {}, default: {} },
     },
-    "/pet/{petId}": { get: { "200": {}, default: {} } },
   };
   it("tests different levels without filter", () => {
     expect(getAtLevel(schema, 0).length).toBe(2); // Only 2 items at first level
@@ -64,7 +64,10 @@ describe("Tests getPathParametersFromPath", () => {
 
   it("Tests with empty path", () => {
     expect(getPathParametersFromPath("").length).toBe(0);
+    // Check with undefined and null even though the type is meant to be concretely string
+    // @ts-ignore
     expect(getPathParametersFromPath(undefined).length).toBe(0);
+    // @ts-ignore
     expect(getPathParametersFromPath(null).length).toBe(0);
   });
 });

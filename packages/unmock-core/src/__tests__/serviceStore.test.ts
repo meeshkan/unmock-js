@@ -3,18 +3,16 @@ import { Service } from "../service/service";
 
 describe("Fluent API and Service instantiation tests", () => {
   // define some service populators that match IOASMappingGenerator type
-  const PetStoreWithoutPaths = {
-    petstore: new Service({ schema: {}, name: "petstore" }),
-  };
-  const PetStoreWithEmptyPaths = {
-    petstore: new Service({ schema: { paths: {} }, name: "petstore" }),
-  };
-  const PetStoreWithPseudoPaths = {
-    petstore: new Service({
-      schema: { paths: { "/pets": { get: {} } } },
+  const PetStoreWithoutPaths = [new Service({ schema: {}, name: "petstore" })];
+  const PetStoreWithEmptyPaths = [
+    new Service({ schema: { paths: {} }, name: "petstore" }),
+  ];
+  const PetStoreWithPseudoPaths = [
+    new Service({
       name: "petstore",
+      schema: { paths: { "/pets": { get: {} } } },
     }),
-  };
+  ];
 
   test("Store without paths", () => {
     const store = stateStoreFactory(PetStoreWithoutPaths);
@@ -101,8 +99,8 @@ describe("Test paths matching on serviceStore", () => {
     ...additionalPathElement: string[]
   ) => {
     const path = `/pets/{petId}${additionalPathElement.join("/")}`;
-    return {
-      petstore: new Service({
+    return [
+      new Service({
         schema: {
           paths: {
             [path]: {
@@ -120,7 +118,7 @@ describe("Test paths matching on serviceStore", () => {
         },
         name: "petstore",
       }),
-    };
+    ];
   };
 
   test("Paths are converted to regexp", () => {

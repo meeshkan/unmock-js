@@ -26,16 +26,18 @@ import {
 // TODO: Is there room here for xstate, in the future?
 
 export class Service implements IService {
-  // Maintains a state for service
-  // First level kv pairs: paths -> methods
-  // Second level kv pairs: methods -> status codes
-  // Third level kv pairs: status codes -> response template overrides
-  // Fourth and beyond: template-specific.
   public readonly name: string;
-  // @ts-ignore // ignored because it's currently only being read and not written
-  private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
   private readonly oasSchema: OASSchema;
+  /**
+   * Maintains a state for service
+   * First level kv pairs: paths -> methods
+   * Second level kv pairs: methods -> status codes
+   * Third level kv pairs: status codes -> response template overrides
+   * Fourth and beyond: template-specific.
+   */
+  // @ts-ignore // ignored because it's currently only being read and not written
+  private state: IUnmockServiceState = {};
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
