@@ -1,7 +1,8 @@
 import fs from "fs";
 import yaml from "js-yaml";
 import { mockGeneratorFactory } from "../generator";
-import { ISerializedRequest, OASSchema, RequestToSpec } from "../interfaces";
+import { ISerializedRequest, RequestToSpec } from "../interfaces";
+import { OASSchema } from "../service/interfaces";
 
 const filterUnmock = (schemaObj: OASSchema): OASSchema => {
   if (typeof schemaObj === "object") {
