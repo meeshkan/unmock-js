@@ -8,12 +8,14 @@ import {
   IMock,
   IResponseCreatorFactoryInput,
   ISerializedRequest,
-  IUnmockServiceState,
-  OASSchema,
   RequestToSpec,
-  UnmockServiceState,
 } from "./interfaces";
 import { httpRequestMatcherFactory } from "./matcher";
+import {
+  IUnmockServiceState,
+  OASSchema,
+  UnmockServiceState,
+} from "./service/interfaces";
 
 // json-schema-faker doesn't have typed definitions?
 // @ts-ignore
