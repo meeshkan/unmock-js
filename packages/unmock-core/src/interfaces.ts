@@ -85,7 +85,6 @@ export type CreateResponse = (
 // Returns an object (parsed from specification)
 export type RequestToSpec = (sreq: ISerializedRequest) => any;
 export type GeneratedMock = any;
-export type UnmockServiceState = any;
 
 export interface IServiceDefLoader {
   /**
