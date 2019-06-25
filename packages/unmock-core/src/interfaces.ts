@@ -85,3 +85,39 @@ export type CreateResponse = (
 // Returns an object (parsed from specification)
 export type RequestToSpec = (sreq: ISerializedRequest) => any;
 export type GeneratedMock = any;
+
+export interface IServiceDefLoader {
+  /**
+   * Asynchronously read service definitions.
+   */
+  load(): Promise<IServiceDef[]>;
+  /**
+   * Synchronously read service definitions.
+   */
+  loadSync(): IServiceDef[];
+}
+
+export interface IServiceDefFile {
+  /**
+   * Basename for the service definition file: for example, `index.yaml`.
+   */
+  basename: string;
+  /**
+   * Contents of the service definition file
+   */
+  contents: string | Buffer;
+}
+
+/**
+ * Input to the service parser. Contains, e.g., the directory name and all available files.
+ */
+export interface IServiceDef {
+  /**
+   * Name of the service directory: for example, `petstore`.
+   */
+  directoryName: string;
+  /**
+   * All the files defining the service.
+   */
+  serviceFiles: IServiceDefFile[];
+}
