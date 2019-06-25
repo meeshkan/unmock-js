@@ -3,15 +3,14 @@ import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
 
 export class ServiceParser implements IServiceParser {
-  private static PATTERN_FOR_KNOWN_FILENAMES = /^(?:index|spec|openapi)\.ya?ml$/i;
+  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
 
   public parse(serviceDef: IServiceDef): Service {
-    const name = serviceDef.directoryName;
     const serviceFiles = serviceDef.serviceFiles;
 
     const matchingFiles = serviceFiles.filter(
       (serviceDefFile: IServiceDefFile) =>
-        ServiceParser.PATTERN_FOR_KNOWN_FILENAMES.test(serviceDefFile.basename),
+        ServiceParser.KNOWN_FILENAMES.test(serviceDefFile.basename),
     );
 
     if (matchingFiles.length === 0) {
@@ -31,6 +30,12 @@ export class ServiceParser implements IServiceParser {
 
     const schema = jsYaml.safeLoad(contents);
 
-    return new Service({ schema, name });
+    // TODO Maybe read from the schema first
+    const name = serviceDef.directoryName;
+
+    return new Service({
+      name,
+      schema,
+    });
   }
 }
