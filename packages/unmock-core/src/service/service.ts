@@ -1,3 +1,4 @@
+import XRegExp from "xregexp";
 import { getAtLevel } from "../util";
 import { OAS_PARAMS_KW, OAS_PATH_PARAM_REGEXP } from "./constants";
 import { HTTPMethod, IUnmockServiceState, OASSchema } from "./interfaces";
@@ -55,10 +56,20 @@ export class Service {
     return true;
   }
 
+  private __replacePathWithRegexp(newPath: string, oldPath: string) {
+    // Replaces oldPath with newPath in this.oasSchema.paths.
+    // newPath is treated as Regex pattern.
+    const newPathRegex = XRegExp(`^${newPath}$`);
+    delete Object.assign(this.oasSchema.paths, {
+      [newPathRegex as any]: this.oasSchema.paths[oldPath], // as any is a hack!
+    })[oldPath];
+  }
+
   private __updateSchemaPaths() {
     Object.keys(this.oasSchema.paths).forEach((path: string) => {
       const regexResults = OAS_PATH_PARAM_REGEXP.exec(path);
       if (regexResults === null) {
+        this.__replacePathWithRegexp(path, path); // Simply convert to direct regexp pattern
         return;
       }
       const pathParameters = regexResults.slice(1); // Get all matches
@@ -95,10 +106,9 @@ export class Service {
         );
       }
       // Update the content for the new path and remove old path
-      delete Object.assign(this.oasSchema.paths, {
-        [newPath]: this.oasSchema.paths[path],
-      })[path];
+      this.__replacePathWithRegexp(newPath, path);
     });
+    console.log(this.schema);
   }
 
   // TODO
