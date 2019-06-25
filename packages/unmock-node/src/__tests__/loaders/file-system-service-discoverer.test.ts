@@ -27,4 +27,12 @@ describe("File system service loader", () => {
     }
     throw new Error("Should not get here");
   });
+
+  it("load serviceLoadables from existing directory", () => {
+    const absolutePath = path.join(RESOURCES_DIR, "petstore");
+    const serviceLoadable = FileSystemServiceLoader.readServiceDirectory(
+      absolutePath,
+    );
+    expect(serviceLoadable.directoryName).toBe("petstore");
+  });
 });

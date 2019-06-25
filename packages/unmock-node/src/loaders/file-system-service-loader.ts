@@ -17,18 +17,33 @@ export interface IServiceLoader {
   loadSync(): IService[];
 }
 
-export type ServiceSpecification = any;
-
 // export type ServiceFileStructure = { index: string; openapi?: string };
 
-export type ServiceParser = (spec: string) => ServiceSpecification;
+export type ServiceParser = (spec: string) => IService;
+
+export type ServiceFile = { basename: string; contents: string };
+
+export type ServiceLoadable = {
+  directoryName: string;
+  serviceFiles: ServiceFile[];
+};
 
 const debugLog = debug("unmock:file-system-store");
 
+/**
+ * Read services from file system. Base directory is either
+ * 1. Injected directory
+ * 2. Environment variable
+ * 3. ${process.cwd()}/__unmock__
+ */
 export class FileSystemServiceLoader implements IServiceLoader {
+  public static readServiceDirectory(directory: string): ServiceLoadable {
+    return { directoryName: path.basename(directory), serviceFiles: [] };
+  }
   private readonly servicesDirOpt?: string;
   private readonly createDirectories: boolean;
   // private serviceParser: ServiceParser;
+
   public constructor(options: IFileSystemServiceLoaderOptions) {
     this.servicesDirOpt = (options && options.servicesDir) || undefined;
     // this.serviceParser = serviceParser;
@@ -41,6 +56,15 @@ export class FileSystemServiceLoader implements IServiceLoader {
 
   public loadSync(): IService[] {
     const servicesDirectory: string = this.servicesDirectory;
+    const serviceDirectories = fs
+      .readdirSync(servicesDirectory)
+      .map((f: string) => path.join(servicesDirectory, f))
+      .filter((f: string) => fs.statSync(f).isDirectory());
+
+    debugLog(`Found ${serviceDirectories.length} service directories`);
+
+    // const fileContentsForEachService =
+
     // TODO
     // 1. List all directories
     // 2. Read all index.yaml files
