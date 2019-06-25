@@ -31,11 +31,11 @@ export class Service implements IService {
   // Second level kv pairs: methods -> status codes
   // Third level kv pairs: status codes -> response template overrides
   // Fourth and beyond: template-specific.
+  public readonly name: string;
   // @ts-ignore // ignored because it's currently only being read and not written
   private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
-  private oasSchema: OASSchema;
-  private name: string;
+  private readonly oasSchema: OASSchema;
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
