@@ -1,4 +1,3 @@
-import { DEFAULT_ENDPOINT, DEFAULT_REST_METHOD } from "./constants";
 import {
   HTTPMethod,
   IOASMappingGenerator,
@@ -14,7 +13,7 @@ export class ServiceStore {
   constructor(servicePopulator: IOASMappingGenerator) {
     const services = servicePopulator();
     Object.keys(services).forEach(k => {
-      this.serviceMapping[k] = new Service(services[k]);
+      this.serviceMapping[k] = new Service(services[k], k);
     });
   }
 
@@ -48,26 +47,7 @@ export class ServiceStore {
       );
     }
 
-    const servicePaths = this.serviceMapping[service].schema.paths;
-    if (servicePaths === undefined) {
-      throw new Error(`'${service}' has no defined paths!`);
-    }
-    if (endpoint !== DEFAULT_ENDPOINT) {
-      // TODO: Verify with regex by iteration
-      if (servicePaths[endpoint] === undefined) {
-        // This endpoint does not exist, no need to retain state
-        throw new Error(`Can't find endpoint '${endpoint}' for '${service}'!`);
-      }
-      if (
-        method !== DEFAULT_REST_METHOD &&
-        servicePaths[endpoint][method] === undefined
-      ) {
-        // The endpoint exists but the specified method for that endpoint doesnt
-        throw new Error(
-          `Can't find response for '${method} ${endpoint}' in ${service}!`,
-        );
-      }
-    }
+    this.serviceMapping[service].verifyRequest(method, endpoint);
 
     this.serviceMapping[service].updateState({
       endpoint,
