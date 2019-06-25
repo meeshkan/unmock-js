@@ -7,6 +7,7 @@ import {
 import {
   HTTPMethod,
   IService,
+  IServiceInput,
   IStateInput,
   IUnmockServiceState,
   OASSchema,
@@ -33,10 +34,14 @@ export class Service implements IService {
   // @ts-ignore // ignored because it's currently only being read and not written
   private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
+  private oasSchema: OASSchema;
+  private name: string;
 
-  constructor(private oasSchema: OASSchema, private name: string) {
+  constructor(opts: IServiceInput) {
+    this.oasSchema = opts.schema;
+    this.name = opts.name;
     // Update the paths in the first level to regex if needed
-    if (oasSchema === undefined || oasSchema.paths === undefined) {
+    if (this.schema === undefined || this.schema.paths === undefined) {
       return; // empty schema or does not contain paths
     }
     this.updateSchemaPaths();
