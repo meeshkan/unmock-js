@@ -10,6 +10,7 @@ import {
 import {
   HTTPMethod,
   IService,
+  IStateInput,
   IUnmockServiceState,
   OASSchema,
 } from "./interfaces";
@@ -111,13 +112,7 @@ export class Service implements IService {
     }
   }
 
-  public updateState({
-    newState,
-  }: {
-    method: HTTPMethod;
-    endpoint: string;
-    newState: IUnmockServiceState;
-  }): boolean {
+  public updateState({ newState }: IStateInput): boolean {
     // Input: method, endpoint, newState
     // Four possible cases:
     // 1. Default endpoint ("**"), default method ("all") =>
