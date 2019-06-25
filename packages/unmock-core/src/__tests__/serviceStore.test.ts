@@ -9,8 +9,8 @@ describe("Fluent API and Service instantiation tests", () => {
   ];
   const PetStoreWithPseudoPaths = [
     new Service({
-      schema: { paths: { "/pets": { get: {} } } },
       name: "petstore",
+      schema: { paths: { "/pets": { get: {} } } },
     }),
   ];
 
