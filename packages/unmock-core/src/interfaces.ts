@@ -108,7 +108,7 @@ export interface IServiceDefLoader {
 
 export interface IServiceDefFile {
   /**
-   * Basename for the service definition file: for example, `index.yaml`
+   * Basename for the service definition file: for example, `index.yaml`.
    */
   basename: string;
   /**
@@ -121,6 +121,12 @@ export interface IServiceDefFile {
  * Input to the service parser. Contains, e.g., the directory name and all available files.
  */
 export interface IServiceDef {
+  /**
+   * Name of the service directory: for example, `petstore`.
+   */
   directoryName: string;
+  /**
+   * All the files defining the service.
+   */
   serviceFiles: IServiceDefFile[];
 }
