@@ -1,10 +1,7 @@
 import XRegExp from "xregexp";
-import { getAtLevel } from "../util";
 import {
   DEFAULT_ENDPOINT,
   DEFAULT_REST_METHOD,
-  OAS_PATH_PARAM_REGEXP,
-  OAS_PATH_PARAMS_KW,
   UNMOCK_PATH_REGEX_KW,
 } from "./constants";
 import {
@@ -14,6 +11,12 @@ import {
   IUnmockServiceState,
   OASSchema,
 } from "./interfaces";
+import {
+  buildPathRegexStringFromParameters,
+  getAtLevel,
+  getPathParametersFromPath,
+  getPathParametersFromSchema,
+} from "./util";
 
 /**
  * Implements the state management for a service
@@ -153,58 +156,3 @@ export class Service implements IService {
     });
   }
 }
-
-const getPathParametersFromPath = (path: string): string[] => {
-  const pathParameters: string[] = [];
-  XRegExp.forEach(path, OAS_PATH_PARAM_REGEXP, (matchArr: RegExpExecArray) => {
-    pathParameters.push(matchArr[1]);
-  });
-  return pathParameters;
-};
-
-const getPathParametersFromSchema = (
-  schema: OASSchema,
-  path: string,
-): any[] => {
-  const schemaPathParameters = getAtLevel(
-    schema[path],
-    2,
-    (_: string, v: any) => v.in === OAS_PATH_PARAMS_KW,
-  );
-  if (
-    schemaPathParameters.length === 0 ||
-    Object.keys(schemaPathParameters[0]).length === 0
-  ) {
-    throw new Error(
-      `Found a dynamic path '${path}' but no description for path parameters!`,
-    );
-  }
-  return schemaPathParameters;
-};
-
-const buildPathRegexStringFromParameters = (
-  path: string,
-  schemaParameters: any[],
-  pathParameters: string[],
-): string => {
-  let newPath = `${path}`;
-  // Assumption: All methods describe the parameter the same way.
-  Object.values(schemaParameters[0]).forEach((p: any) => {
-    const paramLoc = pathParameters.indexOf(p.name);
-    if (paramLoc !== -1) {
-      // replace the original path with regex as needed
-      // for now, we ignore the schema.type and use a generic pattern
-      // the pattern is named for later retrieval
-      newPath = newPath.replace(`{${p.name}}`, `(?<${p.name}>[^/]+)`);
-      pathParameters.splice(paramLoc, 1); // remove from pathParameters after matching
-    }
-  });
-  if (pathParameters.length > 0) {
-    // not all elements have been replaced!
-    throw new Error(
-      `Found a dynamic path '${path}' but the following path ` +
-        `parameters have not been described: ${pathParameters}!`,
-    );
-  }
-  return newPath;
-};
