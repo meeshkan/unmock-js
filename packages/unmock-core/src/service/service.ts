@@ -36,7 +36,7 @@ export class Service implements IService {
     if (oasSchema === undefined || oasSchema.paths === undefined) {
       return; // empty schema or does not contain paths
     }
-    this.__updateSchemaPaths();
+    this.updateSchemaPaths();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
@@ -129,13 +129,13 @@ export class Service implements IService {
     return true;
   }
 
-  private __complementPathWithRegexp(newPath: string, oldPath: string) {
+  private complementPathWithRegexp(newPath: string, oldPath: string) {
     // Complements oldPath by adding an unmock extension for regex matching the path.
     const newPathRegex = XRegExp(`^${newPath}$`, "g");
     this.oasSchema.paths[oldPath][UNMOCK_PATH_REGEX_KW] = newPathRegex;
   }
 
-  private __updateSchemaPaths() {
+  private updateSchemaPaths() {
     Object.keys(this.schema.paths).forEach((path: string) => {
       const pathParameters: string[] = [];
       XRegExp.forEach(
@@ -146,7 +146,7 @@ export class Service implements IService {
         },
       );
       if (pathParameters.length === 0) {
-        this.__complementPathWithRegexp(path, path); // Simply convert to direct regexp pattern
+        this.complementPathWithRegexp(path, path); // Simply convert to direct regexp pattern
         return;
       }
 
@@ -184,7 +184,7 @@ export class Service implements IService {
         );
       }
       // Update the content for the new path and remove old path
-      this.__complementPathWithRegexp(newPath, path);
+      this.complementPathWithRegexp(newPath, path);
     });
   }
 }
