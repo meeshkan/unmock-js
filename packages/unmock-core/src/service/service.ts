@@ -129,61 +129,82 @@ export class Service implements IService {
     return true;
   }
 
-  private complementPathWithRegexp(newPath: string, oldPath: string) {
-    // Complements oldPath by adding an unmock extension for regex matching the path.
-    const newPathRegex = XRegExp(`^${newPath}$`, "g");
-    this.oasSchema.paths[oldPath][UNMOCK_PATH_REGEX_KW] = newPathRegex;
-  }
-
   private updateSchemaPaths() {
     Object.keys(this.schema.paths).forEach((path: string) => {
-      const pathParameters: string[] = [];
-      XRegExp.forEach(
-        path,
-        OAS_PATH_PARAM_REGEXP,
-        (matchArr: RegExpExecArray) => {
-          pathParameters.push(matchArr[1]);
-        },
-      );
+      const pathParameters = getPathParametersFromPath(path);
+      let newPath: string = "";
       if (pathParameters.length === 0) {
-        this.complementPathWithRegexp(path, path); // Simply convert to direct regexp pattern
-        return;
+        newPath = path; // Simply convert to direct regexp pattern
+      } else {
+        const schemaParameters = getPathParametersFromSchema(
+          this.schema.paths,
+          path,
+        );
+        newPath = buildPathRegexStringFromParameters(
+          path,
+          schemaParameters,
+          pathParameters,
+        );
       }
 
-      const parametersArray = getAtLevel(
-        this.schema.paths[path],
-        2,
-        (_: string, v: any) => v.in === "path",
-      );
-      if (
-        parametersArray.length === 0 ||
-        Object.keys(parametersArray[0]).length === 0
-      ) {
-        throw new Error(
-          `Found a dynamic path '${path}' but no description for path parameters!`,
-        );
-      }
-      let newPath = `${path}`;
-      // Assumption: All methods describe the parameter the same way.
-      Object.values(parametersArray[0]).forEach((p: any) => {
-        const paramLoc = pathParameters.indexOf(p.name);
-        if (paramLoc !== -1) {
-          // replace the original path with regex as needed
-          // for now, we ignore the schema.type and use a generic pattern
-          // the pattern is named for later retrieval
-          newPath = newPath.replace(`{${p.name}}`, `(?<${p.name}>[^/]+)`);
-          pathParameters.splice(paramLoc, 1); // remove from pathParameters after matching
-        }
-      });
-      if (pathParameters.length > 0) {
-        // not all elements have been replaced!
-        throw new Error(
-          `Found a dynamic path '${path}' but the following path ` +
-            `parameters have not been described: ${pathParameters}!`,
-        );
-      }
       // Update the content for the new path and remove old path
-      this.complementPathWithRegexp(newPath, path);
+      const newPathRegex = XRegExp(`^${newPath}$`, "g");
+      this.oasSchema.paths[path][UNMOCK_PATH_REGEX_KW] = newPathRegex;
     });
   }
 }
+
+const getPathParametersFromPath = (path: string): string[] => {
+  const pathParameters: string[] = [];
+  XRegExp.forEach(path, OAS_PATH_PARAM_REGEXP, (matchArr: RegExpExecArray) => {
+    pathParameters.push(matchArr[1]);
+  });
+  return pathParameters;
+};
+
+const getPathParametersFromSchema = (
+  schema: OASSchema,
+  path: string,
+): any[] => {
+  const parametersArray = getAtLevel(
+    schema[path],
+    2,
+    (_: string, v: any) => v.in === "path",
+  );
+  if (
+    parametersArray.length === 0 ||
+    Object.keys(parametersArray[0]).length === 0
+  ) {
+    throw new Error(
+      `Found a dynamic path '${path}' but no description for path parameters!`,
+    );
+  }
+  return parametersArray;
+};
+
+const buildPathRegexStringFromParameters = (
+  path: string,
+  schemaParameters: any[],
+  pathParameters: string[],
+): string => {
+  let newPath = `${path}`;
+  // Assumption: All methods describe the parameter the same way.
+  Object.values(schemaParameters[0]).forEach((p: any) => {
+    const paramLoc = pathParameters.indexOf(p.name);
+    if (paramLoc !== -1) {
+      // replace the original path with regex as needed
+      // for now, we ignore the schema.type and use a generic pattern
+      // the pattern is named for later retrieval
+      newPath = newPath.replace(`{${p.name}}`, `(?<${p.name}>[^/]+)`);
+      pathParameters.splice(paramLoc, 1); // remove from pathParameters after matching
+    }
+  });
+  if (pathParameters.length > 0) {
+    // not all elements have been replaced!
+    throw new Error(
+      `Found a dynamic path '${path}' but the following path ` +
+        `parameters have not been described: ${pathParameters}!`,
+    );
+  }
+  return newPath;
+};
