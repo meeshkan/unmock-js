@@ -134,12 +134,19 @@ export class Service {
 
   private __updateSchemaPaths() {
     Object.keys(this.schema.paths).forEach((path: string) => {
-      const regexResults = OAS_PATH_PARAM_REGEXP.exec(path);
-      if (regexResults === null) {
+      // let result = OAS_PATH_PARAM_REGEXP.exec(path);
+      const pathParameters: string[] = [];
+      XRegExp.forEach(
+        path,
+        OAS_PATH_PARAM_REGEXP,
+        (matchArr: RegExpExecArray) => {
+          pathParameters.push(matchArr[1]);
+        },
+      );
+      if (pathParameters.length === 0) {
         this.__replacePathWithRegexp(path, path); // Simply convert to direct regexp pattern
         return;
       }
-      const pathParameters = regexResults.slice(1); // Get all matches
 
       const parametersArray = getAtLevel(
         this.schema.paths[path],
@@ -147,7 +154,10 @@ export class Service {
         (k: string, _: any) => k === OAS_PARAMS_KW,
         true, // Get `parameters` object and return its values
       );
-      if (parametersArray.length === 0) {
+      if (
+        parametersArray.length === 0 ||
+        Object.keys(parametersArray[0]).length === 0
+      ) {
         throw new Error(
           `Found a dynamic path '${path}' but no description for path parameters!`,
         );
@@ -167,9 +177,8 @@ export class Service {
       if (pathParameters.length > 0) {
         // not all elements have been replaced!
         throw new Error(
-          `Found a dynamic path '${path}' but the following path parameters have not been described: ${JSON.stringify(
-            pathParameters,
-          )}!`,
+          `Found a dynamic path '${path}' but the following path ` +
+            `parameters have not been described: ${pathParameters}!`,
         );
       }
       // Update the content for the new path and remove old path

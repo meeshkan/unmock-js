@@ -77,51 +77,59 @@ describe("Fluent API and Service instantiation tests", () => {
 
 describe("Test paths matching on serviceStore", () => {
   // tslint:disable: object-literal-sort-keys
-  const DynamicPathsServicePopulator = () => ({
-    petstore: {
-      paths: {
-        "/pets/{petId}": {
-          get: {
-            summary: "Info for a specific pet",
-            operationId: "showPetById",
-            tags: ["pets"],
-            parameters: [
-              {
-                name: "petId",
-                in: "path",
-                required: true,
-                description: "The id of the pet to retrieve",
-                schema: { type: "string" },
-              },
-            ],
-            responses: {
-              200: {
-                description: "Expected response to a valid request",
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "array",
-                      items: {
-                        required: ["id", "name"],
-                        properties: {
-                          id: { type: "integer", format: "int64" },
-                          name: { type: "string" },
-                          tag: { type: "string" },
-                        },
-                      },
-                    },
-                  },
-                },
+  const petStoreParameters = [
+    {
+      name: "petId",
+      in: "path",
+      required: true,
+      description: "The id of the pet to retrieve",
+      schema: { type: "string" },
+    },
+  ];
+  const DynamicPathsServicePopulator = (
+    params: any,
+    ...additionalPathElement: string[]
+  ) => () => {
+    const path = `/pets/{petId}${additionalPathElement.join("/")}`;
+    return {
+      petstore: {
+        paths: {
+          [path]: {
+            get: {
+              summary: "Info for a specific pet",
+              operationId: "showPetById",
+              tags: ["pets"],
+              parameters: params,
+              responses: {
+                200: {},
               },
             },
           },
         },
       },
-    },
-  });
+    };
+  };
 
   test("Paths are converted to regexp", () => {
-    const store = serviceStoreFactory(DynamicPathsServicePopulator);
-    store.petstore("/pets/2"); // should pass
+    const store = serviceStoreFactory(
+      DynamicPathsServicePopulator(petStoreParameters),
+    );
+    store.petstore("/pets/2"); // Should pass
+    expect(() => store.petstore("/pet/2")).toThrow("Can't find endpoint");
+    expect(() => store.petstore("/pets/")).toThrow("Can't find endpoint");
+  });
+
+  test("Creation fails with missing parameters", () => {
+    expect(() => serviceStoreFactory(DynamicPathsServicePopulator({}))).toThrow(
+      "no description for path parameters!",
+    );
+  });
+
+  test("Creation fails with partial missing parameters", () => {
+    expect(() =>
+      serviceStoreFactory(
+        DynamicPathsServicePopulator(petStoreParameters, "/{boom}", "{foo}"),
+      ),
+    ).toThrow("following path parameters have not been described");
   });
 });
