@@ -27,6 +27,10 @@ export interface IUnmockServiceState {
 
 export interface IService {
   /**
+   * Name for the service.
+   */
+  name: string;
+  /**
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
   schema: OASSchema;

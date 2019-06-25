@@ -8,7 +8,7 @@ const petStoreYamlString = fs
   .toString("utf-8");
 
 describe("Service parser", () => {
-  it("reads a petstore yaml", () => {
+  it("creates a service from petstore yaml", () => {
     const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
       directoryName: "petstore",
@@ -21,6 +21,7 @@ describe("Service parser", () => {
     };
     const service = serviceParser.parse(serviceDef);
     expect(service).toBeDefined();
+    expect(service.name).toBe("petstore");
     expect(service.schema).toHaveProperty("openapi");
     expect(service.schema).toHaveProperty("info");
     expect(service.schema.openapi).toEqual("3.0.0");

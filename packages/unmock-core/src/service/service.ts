@@ -34,7 +34,7 @@ export class Service implements IService {
   private state: IUnmockServiceState = {};
   private hasPaths: boolean = false;
 
-  constructor(private oasSchema: OASSchema, private name: string) {
+  constructor(private oasSchema: OASSchema, public readonly name: string) {
     // Update the paths in the first level to regex if needed
     if (oasSchema === undefined || oasSchema.paths === undefined) {
       return; // empty schema or does not contain paths
