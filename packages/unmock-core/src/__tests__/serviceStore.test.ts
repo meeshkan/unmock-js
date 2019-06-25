@@ -122,5 +122,6 @@ describe("Test paths matching on serviceStore", () => {
 
   test("Paths are converted to regexp", () => {
     const store = serviceStoreFactory(DynamicPathsServicePopulator);
+    store.petstore("/pets/2"); // should pass
   });
 });

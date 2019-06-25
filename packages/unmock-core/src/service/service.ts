@@ -67,7 +67,6 @@ export class Service {
     if (endpoint !== DEFAULT_ENDPOINT) {
       const servicePaths = this.schema.paths;
       const schemaEndpoint = this.findEndpoint(endpoint);
-      console.log(schemaEndpoint);
       if (schemaEndpoint === undefined) {
         // This endpoint does not exist, no need to retain state
         throw new Error(
