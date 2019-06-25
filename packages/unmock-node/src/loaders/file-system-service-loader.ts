@@ -80,12 +80,6 @@ export class FileSystemServiceLoader implements IServiceLoader {
     return this.loadSync(); // Simple wrap in promise for now
   }
 
-  public serviceParser(serviceParserInput: IServiceParserInput) {
-    return {
-      name: serviceParserInput.directoryName,
-    };
-  }
-
   public loadSync(): IService[] {
     const serviceParserInputs = this.loadServiceParserInputs();
     return serviceParserInputs.map((serviceParserInput: IServiceParserInput) =>
@@ -114,7 +108,7 @@ export class FileSystemServiceLoader implements IServiceLoader {
    * 2. Environment variable
    * 3. ${process.cwd()}/__unmock__
    */
-  public get servicesDirectory() {
+  private get servicesDirectory() {
     const servicesDirectory = path.resolve(
       this.servicesDirOpt ||
         process.env.UNMOCK_SERVICES_DIRECTORY ||
@@ -132,5 +126,11 @@ export class FileSystemServiceLoader implements IServiceLoader {
 
     // TODO Create
     throw new Error("Directory creation not implemented");
+  }
+  // TODO Remove this
+  private serviceParser(serviceParserInput: IServiceParserInput) {
+    return {
+      name: serviceParserInput.directoryName,
+    };
   }
 }
