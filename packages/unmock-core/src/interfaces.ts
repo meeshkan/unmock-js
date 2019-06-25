@@ -1,5 +1,5 @@
 import { UnmockOptions } from "./options";
-import { Service } from "./service/interfaces";
+import { Service } from "./service/service";
 
 export interface ILogger {
   log: (message: string) => void;
