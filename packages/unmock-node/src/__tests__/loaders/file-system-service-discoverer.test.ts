@@ -34,5 +34,12 @@ describe("File system service loader", () => {
       absolutePath,
     );
     expect(serviceLoadable.directoryName).toBe("petstore");
+    expect(serviceLoadable.serviceFiles).toHaveLength(1);
+
+    const serviceFile = serviceLoadable.serviceFiles[0];
+    expect(serviceFile.basename).toBe("index.yaml");
+    expect(serviceFile.contents).toEqual(
+      expect.stringContaining('openapi: "3.0.0"'),
+    );
   });
 });

@@ -19,14 +19,23 @@ export interface IServiceLoader {
 
 // export type ServiceFileStructure = { index: string; openapi?: string };
 
-export type ServiceParser = (spec: string) => IService;
+export type ServiceParser = (input: IServiceParserInput) => IService;
 
-export type ServiceFile = { basename: string; contents: string };
+export interface IServiceFile {
+  /**
+   * Basename for the file: for example, `index.yaml`
+   */
+  basename: string;
+  /**
+   * Contents of the file
+   */
+  contents: string | Buffer;
+}
 
-export type ServiceLoadable = {
+export interface IServiceParserInput {
   directoryName: string;
-  serviceFiles: ServiceFile[];
-};
+  serviceFiles: IServiceFile[];
+}
 
 const debugLog = debug("unmock:file-system-store");
 
@@ -37,8 +46,26 @@ const debugLog = debug("unmock:file-system-store");
  * 3. ${process.cwd()}/__unmock__
  */
 export class FileSystemServiceLoader implements IServiceLoader {
-  public static readServiceDirectory(directory: string): ServiceLoadable {
-    return { directoryName: path.basename(directory), serviceFiles: [] };
+  /**
+   * Read a loadable service from directory containing all the files for a given service.
+   * @param absoluteDirectory Absolute path to service directory. For example, /.../__unmock__/petstore/
+   */
+  public static readServiceDirectory(
+    absoluteDirectory: string,
+  ): IServiceParserInput {
+    const serviceFiles = fs
+      .readdirSync(absoluteDirectory)
+      .map((f: string) => path.join(absoluteDirectory, f))
+      .filter((f: string) => fs.statSync(f).isFile())
+      .map((f: string) => ({
+        basename: path.basename(f),
+        contents: fs.readFileSync(f).toString("utf-8"),
+      }));
+
+    return {
+      directoryName: path.basename(absoluteDirectory),
+      serviceFiles,
+    };
   }
   private readonly servicesDirOpt?: string;
   private readonly createDirectories: boolean;
