@@ -94,3 +94,33 @@ export interface IUnmockServiceState {
 export type OASSchema = any;
 export type GeneratedMock = any;
 export type UnmockServiceState = any;
+
+export interface IServiceDefLoader {
+  /**
+   * Synchronously read service definitions.
+   */
+  load(): Promise<IServiceDef[]>;
+  /**
+   * Asynchronously read service definitions.
+   */
+  loadSync(): IServiceDef[];
+}
+
+export interface IServiceDefFile {
+  /**
+   * Basename for the service definition file: for example, `index.yaml`
+   */
+  basename: string;
+  /**
+   * Contents of the service definition file
+   */
+  contents: string | Buffer;
+}
+
+/**
+ * Input to the service parser. Contains, e.g., the directory name and all available files.
+ */
+export interface IServiceDef {
+  directoryName: string;
+  serviceFiles: IServiceDefFile[];
+}

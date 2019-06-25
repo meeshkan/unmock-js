@@ -1,41 +1,12 @@
 import debug from "debug";
 import fs from "fs";
 import path from "path";
+import { IServiceDef, IServiceDefLoader } from "unmock-core";
 
 const DEFAULT_SERVICE_SUBDIRECTORY = "__unmock__";
 
 export interface IFsServiceDefLoaderOptions {
   servicesDir?: string;
-}
-
-export interface IServiceDefLoader {
-  /**
-   * Synchronously read service definitions.
-   */
-  load(): Promise<IServiceDef[]>;
-  /**
-   * Asynchronously read service definitions.
-   */
-  loadSync(): IServiceDef[];
-}
-
-export interface IServiceDefFile {
-  /**
-   * Basename for the service definition file: for example, `index.yaml`
-   */
-  basename: string;
-  /**
-   * Contents of the service definition file
-   */
-  contents: string | Buffer;
-}
-
-/**
- * Input to the service parser. Contains, e.g., the directory name and all available files.
- */
-export interface IServiceDef {
-  directoryName: string;
-  serviceFiles: IServiceDefFile[];
 }
 
 const debugLog = debug("unmock:fs-service-def-loader");
