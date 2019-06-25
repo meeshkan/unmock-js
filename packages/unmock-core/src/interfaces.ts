@@ -88,11 +88,11 @@ export type GeneratedMock = any;
 
 export interface IServiceDefLoader {
   /**
-   * Synchronously read service definitions.
+   * Asynchronously read service definitions.
    */
   load(): Promise<IServiceDef[]>;
   /**
-   * Asynchronously read service definitions.
+   * Synchronously read service definitions.
    */
   loadSync(): IServiceDef[];
 }
