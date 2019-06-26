@@ -6,7 +6,7 @@ import {
   ISerializedRequest,
   ISerializedResponse,
 } from "../interfaces";
-import { httpRequestMatcherFactory, OASMatcher } from "../matcher";
+import { httpRequestMatcherFactory, OASMatcher } from "../service/matcher";
 
 const request: ISerializedRequest = {
   host: "api.foo.com",

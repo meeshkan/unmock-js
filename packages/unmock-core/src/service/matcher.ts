@@ -4,15 +4,13 @@ import {
   IMockRequest,
   ISerializedRequest,
   ISerializedResponse,
-} from "./interfaces";
+} from "../interfaces";
 
-import { MatcherResponse } from "./service/interfaces";
+import { MatcherResponse, OASSchema } from "./interfaces";
 
 const debugLog = debug("unmock:matcher");
 
-import { UNMOCK_PATH_REGEX_KW } from "./service/constants";
-
-import { OASSchema } from "./service/interfaces";
+import { UNMOCK_PATH_REGEX_KW } from "./constants";
 
 type RequestComparator = (
   intercepted: ISerializedRequest,

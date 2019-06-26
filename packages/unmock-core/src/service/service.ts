@@ -20,7 +20,7 @@ import {
   getPathParametersFromSchema,
 } from "./util";
 
-import { OASMatcher } from "../matcher";
+import { OASMatcher } from "./matcher";
 
 import { ISerializedRequest } from "../interfaces";
 

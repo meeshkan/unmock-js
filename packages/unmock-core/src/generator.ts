@@ -10,7 +10,6 @@ import {
   ISerializedRequest,
   RequestToSpec,
 } from "./interfaces";
-import { httpRequestMatcherFactory } from "./matcher";
 import {
   IUnmockServiceState,
   OASSchema,
