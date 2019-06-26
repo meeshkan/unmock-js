@@ -4,7 +4,6 @@ import { doUsefulStuffWithRequestAndResponse } from "./util";
 // top-level exports
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
-export * from "./service/matcher";
 export * from "./generator";
 
 export const util = {
