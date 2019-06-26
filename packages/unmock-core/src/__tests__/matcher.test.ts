@@ -1,9 +1,12 @@
+import fs from "fs";
+import jsYaml from "js-yaml";
+import path from "path";
 import {
   IMockRequest,
   ISerializedRequest,
   ISerializedResponse,
 } from "../interfaces";
-import { httpRequestMatcherFactory } from "../matcher";
+import { httpRequestMatcherFactory, OASMatcher } from "../matcher";
 
 const request: ISerializedRequest = {
   host: "api.foo.com",
@@ -83,5 +86,26 @@ describe("http request matcher", () => {
       const matchedResponse = httpRequestMatcher(request);
       expect(matchedResponse).toEqual(mockResponse);
     });
+  });
+});
+
+const petStoreYamlString: string = fs.readFileSync(
+  path.join(__dirname, "__unmock__", "petstore", "spec.yaml"),
+  "utf-8",
+);
+
+const schema = jsYaml.safeLoad(petStoreYamlString);
+
+describe("OASMatcher", () => {
+  it("matches a request to petstore", () => {
+    const matcher = new OASMatcher({ schema });
+    const sreq: ISerializedRequest = {
+      host: "petstore.swagger.io",
+      method: "GET",
+      path: "/v1/pets",
+      protocol: "http",
+    };
+    const responseTemplate = matcher.matchToResponseTemplate(sreq);
+    expect(responseTemplate).toBeDefined();
   });
 });

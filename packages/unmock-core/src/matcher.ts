@@ -1,9 +1,12 @@
+import debug from "debug";
 import {
   IMock,
   IMockRequest,
   ISerializedRequest,
   ISerializedResponse,
 } from "./interfaces";
+
+const debugLog = debug("unmock:matcher");
 
 import { UNMOCK_PATH_REGEX_KW } from "./service/constants";
 
@@ -91,19 +94,32 @@ export class OASMatcher {
     this.schema = schema;
   }
   public matchToResponseTemplate(sreq: ISerializedRequest): any | undefined {
-    if (!this.matchesServer(sreq)) {
+    const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
+    if (!matches) {
+      debugLog(`Did not match server!`); // tslint:disable-line
       return undefined;
     }
 
-    const matchingPathOrNone = this.matchingPath(sreq.path);
+    if (reqPathWithoutServerPrefix === undefined) {
+      throw new Error("Expected to get a path without the server path prefix");
+    }
+
+    debugLog(
+      `Matched server, looking for match for ${reqPathWithoutServerPrefix}`,
+    );
+
+    const matchingPathOrNone = this.matchingPath(reqPathWithoutServerPrefix);
 
     if (matchingPathOrNone === undefined) {
       return undefined;
     }
 
-    const matchingPath = matchingPathOrNone;
+    const requestMethod = sreq.method.toLowerCase();
 
-    return matchingPath[sreq.method] || undefined;
+    debugLog(`Matched path object, looking for match for ${requestMethod}`);
+
+    const matchingPath = matchingPathOrNone;
+    return matchingPath[requestMethod] || matchingPath.default;
   }
 
   private matchingPath(reqPath: string): any | undefined {
@@ -115,8 +131,13 @@ export class OASMatcher {
 
     const directMatch = paths[reqPath];
     if (directMatch !== undefined) {
+      debugLog(`Found direct path match for ${reqPath}`);
       return directMatch;
     }
+
+    const definedPaths = Object.keys(paths);
+    debugLog(`Searching for match for ${reqPath} for ${definedPaths}`);
+
     for (const pathObject of Object.keys(paths)) {
       const pathRegex = paths[pathObject][UNMOCK_PATH_REGEX_KW] as RegExp;
       if (pathRegex === undefined) {
@@ -129,22 +150,39 @@ export class OASMatcher {
     return undefined;
   }
 
-  private matchesServer(sreq: ISerializedRequest): boolean {
-    const servers: string[] | undefined = this.schema.servers;
+  private matchesServer(
+    sreq: ISerializedRequest,
+  ): { matches: boolean; reqPathWithoutServerPrefix?: string } {
+    const servers: any[] | undefined = this.schema.servers;
     if (servers === undefined || servers.length === 0) {
-      return false;
+      debugLog("No servers to match");
+      return { matches: false };
     }
     for (const server of servers) {
-      const serverUrl = new URL(server);
-      const protocol = serverUrl.protocol;
+      const serverUrl = new URL(server.url);
+      const protocol = serverUrl.protocol.replace(":", "");
+
+      debugLog(
+        // tslint:disable-next-line
+        `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
+      );
       if (
         protocol === sreq.protocol &&
         serverUrl.hostname === sreq.host &&
         sreq.path.startsWith(serverUrl.pathname)
       ) {
-        return true;
+        const regexToRemoveFromPath = new RegExp(`^${serverUrl.pathname}`);
+        const reqPathWithoutServerPrefix = sreq.path.replace(
+          regexToRemoveFromPath,
+          "",
+        );
+        debugLog(`New path: ${reqPathWithoutServerPrefix}`);
+        return {
+          matches: true,
+          reqPathWithoutServerPrefix,
+        };
       }
     }
-    return false;
+    return { matches: false };
   }
 }
