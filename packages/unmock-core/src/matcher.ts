@@ -88,15 +88,41 @@ export const httpRequestMatcherFactory: HttpRequestMatcherFactory = (
   return undefined;
 };
 
+// Just for readability until we have types
+type OperationObject = any;
+type PathItemObject = any;
+
 export class OASMatcher {
+  /**
+   * Strip server path prefix from request path, keeping the leading slash.
+   * Examples:
+   * 1) request URL "/v1/pets" and server URL "/v1" -> return "/pets"
+   * 2) request URL "/v1/pets" and server URL "/" -> return "/v1/pets"
+   * @param reqPath Request path, for example, "/v1/pets"
+   * @param serverPathPrefix Server path prefix, for example, "/v1" or "/""
+   * @returns Path without the server path prefix
+   */
+  public static normalizeRequestPathToServerPath(
+    reqPath: string,
+    serverPathPrefix: string,
+  ) {
+    const serverUrlWithoutTrailingSlash = serverPathPrefix.replace(/\/$/, "");
+    const regexToRemoveFromReqPath = new RegExp(
+      `^${serverUrlWithoutTrailingSlash}`,
+    );
+    return reqPath.replace(regexToRemoveFromReqPath, "");
+  }
   private readonly schema: OASSchema;
   constructor({ schema }: { schema: OASSchema }) {
     this.schema = schema;
   }
-  public matchToResponseTemplate(sreq: ISerializedRequest): any | undefined {
+  public matchToResponseTemplate(
+    sreq: ISerializedRequest,
+  ): OperationObject | undefined {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
+    // TODO: If the Servers object is not at the top level
     if (!matches) {
-      debugLog(`Did not match server!`); // tslint:disable-line
+      debugLog(`Could not find a matching server.`);
       return undefined;
     }
 
@@ -108,9 +134,11 @@ export class OASMatcher {
       `Matched server, looking for match for ${reqPathWithoutServerPrefix}`,
     );
 
-    const matchingPathOrNone = this.matchingPath(reqPathWithoutServerPrefix);
+    const matchingPathItemOrUndef = this.findMatchingPathItem(
+      reqPathWithoutServerPrefix,
+    );
 
-    if (matchingPathOrNone === undefined) {
+    if (matchingPathItemOrUndef === undefined) {
       return undefined;
     }
 
@@ -118,11 +146,11 @@ export class OASMatcher {
 
     debugLog(`Matched path object, looking for match for ${requestMethod}`);
 
-    const matchingPath = matchingPathOrNone;
+    const matchingPath = matchingPathItemOrUndef;
     return matchingPath[requestMethod] || matchingPath.default;
   }
 
-  private matchingPath(reqPath: string): any | undefined {
+  private findMatchingPathItem(reqPath: string): PathItemObject | undefined {
     const paths: { [path: string]: any } | undefined = this.schema.paths;
 
     if (paths === undefined || paths.length === 0) {
@@ -138,13 +166,14 @@ export class OASMatcher {
     const definedPaths = Object.keys(paths);
     debugLog(`Searching for match for ${reqPath} for ${definedPaths}`);
 
-    for (const pathObject of Object.keys(paths)) {
-      const pathRegex = paths[pathObject][UNMOCK_PATH_REGEX_KW] as RegExp;
+    for (const pathItemKey of Object.keys(paths)) {
+      const pathItemObject = paths[pathItemKey];
+      const pathRegex = pathItemObject[UNMOCK_PATH_REGEX_KW] as RegExp;
       if (pathRegex === undefined) {
         throw new Error("No pathRegex available for path!");
       }
       if (pathRegex.test(reqPath)) {
-        return pathObject;
+        return pathItemObject;
       }
     }
     return undefined;
@@ -171,12 +200,11 @@ export class OASMatcher {
         serverUrl.hostname === sreq.host &&
         sreq.path.startsWith(serverUrl.pathname)
       ) {
-        const regexToRemoveFromPath = new RegExp(`^${serverUrl.pathname}`);
-        const reqPathWithoutServerPrefix = sreq.path.replace(
-          regexToRemoveFromPath,
-          "",
+        const reqPathWithoutServerPrefix = OASMatcher.normalizeRequestPathToServerPath(
+          sreq.path,
+          serverUrl.pathname,
         );
-        debugLog(`New path: ${reqPathWithoutServerPrefix}`);
+
         return {
           matches: true,
           reqPathWithoutServerPrefix,
