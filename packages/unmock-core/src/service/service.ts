@@ -19,7 +19,7 @@ import {
   getPathParametersFromSchema,
 } from "./util";
 
-import { OASMatcher } from "../matcher";
+import { MatcherResponse, OASMatcher } from "../matcher";
 
 import { ISerializedRequest } from "../interfaces";
 
@@ -68,7 +68,7 @@ export class Service implements IService {
     return this.hasPaths;
   }
 
-  public match(sreq: ISerializedRequest): any | undefined {
+  public match(sreq: ISerializedRequest): MatcherResponse {
     return this.matcher.matchToOperationObject(sreq);
   }
 

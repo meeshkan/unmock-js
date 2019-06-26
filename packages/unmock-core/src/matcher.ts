@@ -91,6 +91,7 @@ export const httpRequestMatcherFactory: HttpRequestMatcherFactory = (
 // Just for readability until we have types
 type OperationObject = any;
 type PathItemObject = any;
+export type MatcherResponse = OperationObject | undefined;
 
 export class OASMatcher {
   /**
@@ -116,9 +117,7 @@ export class OASMatcher {
   constructor({ schema }: { schema: OASSchema }) {
     this.schema = schema;
   }
-  public matchToOperationObject(
-    sreq: ISerializedRequest,
-  ): OperationObject | undefined {
+  public matchToOperationObject(sreq: ISerializedRequest): MatcherResponse {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
     // TODO: If the Servers object is not at the top level
     if (!matches) {
