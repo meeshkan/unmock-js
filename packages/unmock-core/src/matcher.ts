@@ -170,7 +170,7 @@ export class OASMatcher {
       const pathItemObject = paths[pathItemKey];
       const pathRegex = pathItemObject[UNMOCK_PATH_REGEX_KW] as RegExp;
       if (pathRegex === undefined) {
-        throw new Error("No pathRegex available for path!");
+        continue;
       }
       if (pathRegex.test(reqPath)) {
         return pathItemObject;

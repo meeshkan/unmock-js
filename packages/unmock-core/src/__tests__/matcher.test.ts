@@ -97,15 +97,43 @@ const petStoreYamlString: string = fs.readFileSync(
 const schema = jsYaml.safeLoad(petStoreYamlString);
 
 describe("OASMatcher", () => {
-  it("matches a request to petstore", () => {
+  describe("with petstore schema", () => {
     const matcher = new OASMatcher({ schema });
-    const sreq: ISerializedRequest = {
+    const validRequest: ISerializedRequest = {
       host: "petstore.swagger.io",
       method: "GET",
       path: "/v1/pets",
       protocol: "http",
     };
-    const responseTemplate = matcher.matchToOperationObject(sreq);
-    expect(responseTemplate).toBeDefined();
+    it("matches a correct request", () => {
+      const sreq: ISerializedRequest = validRequest;
+      const responseTemplate = matcher.matchToOperationObject(sreq);
+      expect(responseTemplate).toBeDefined();
+      expect(responseTemplate).toHaveProperty("operationId");
+    });
+    it("does not match the wrong host", () => {
+      const sreq: ISerializedRequest = {
+        ...validRequest,
+        host: "pets.swagger.io",
+      };
+      const responseTemplate = matcher.matchToOperationObject(sreq);
+      expect(responseTemplate).toBeUndefined();
+    });
+    it("does not match the wrong path", () => {
+      const sreq: ISerializedRequest = {
+        ...validRequest,
+        path: "/v1",
+      };
+      const responseTemplate = matcher.matchToOperationObject(sreq);
+      expect(responseTemplate).toBeUndefined();
+    });
+    it("does not match the wrong protocol", () => {
+      const sreq: ISerializedRequest = {
+        ...validRequest,
+        protocol: "https",
+      };
+      const responseTemplate = matcher.matchToOperationObject(sreq);
+      expect(responseTemplate).toBeUndefined();
+    });
   });
 });
