@@ -116,7 +116,7 @@ export class OASMatcher {
   constructor({ schema }: { schema: OASSchema }) {
     this.schema = schema;
   }
-  public matchToResponseTemplate(
+  public matchToOperationObject(
     sreq: ISerializedRequest,
   ): OperationObject | undefined {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);

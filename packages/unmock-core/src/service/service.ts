@@ -69,7 +69,7 @@ export class Service implements IService {
   }
 
   public match(sreq: ISerializedRequest): any | undefined {
-    return this.matcher.match(sreq);
+    return this.matcher.matchToOperationObject(sreq);
   }
 
   public findEndpoint(endpoint: string): string | undefined {

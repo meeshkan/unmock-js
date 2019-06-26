@@ -105,7 +105,7 @@ describe("OASMatcher", () => {
       path: "/v1/pets",
       protocol: "http",
     };
-    const responseTemplate = matcher.matchToResponseTemplate(sreq);
+    const responseTemplate = matcher.matchToOperationObject(sreq);
     expect(responseTemplate).toBeDefined();
   });
 });
