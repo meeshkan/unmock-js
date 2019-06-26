@@ -10,6 +10,7 @@ import {
   IServiceInput,
   IStateInput,
   IUnmockServiceState,
+  MatcherResponse,
   OASSchema,
 } from "./interfaces";
 import {
@@ -19,7 +20,7 @@ import {
   getPathParametersFromSchema,
 } from "./util";
 
-import { MatcherResponse, OASMatcher } from "../matcher";
+import { OASMatcher } from "../matcher";
 
 import { ISerializedRequest } from "../interfaces";
 

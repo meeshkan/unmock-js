@@ -6,6 +6,8 @@ import {
   ISerializedResponse,
 } from "./interfaces";
 
+import { MatcherResponse } from "./service/interfaces";
+
 const debugLog = debug("unmock:matcher");
 
 import { UNMOCK_PATH_REGEX_KW } from "./service/constants";
@@ -89,9 +91,7 @@ export const httpRequestMatcherFactory: HttpRequestMatcherFactory = (
 };
 
 // Just for readability until we have types
-type OperationObject = any;
 type PathItemObject = any;
-export type MatcherResponse = OperationObject | undefined;
 
 export class OASMatcher {
   /**
