@@ -5,6 +5,10 @@ import {
   ISerializedResponse,
 } from "./interfaces";
 
+import { UNMOCK_PATH_REGEX_KW } from "./service/constants";
+
+import { OASSchema } from "./service/interfaces";
+
 type RequestComparator = (
   intercepted: ISerializedRequest,
   mock: IMockRequest,
@@ -80,3 +84,67 @@ export const httpRequestMatcherFactory: HttpRequestMatcherFactory = (
   }
   return undefined;
 };
+
+export class OASMatcher {
+  private readonly schema: OASSchema;
+  constructor({ schema }: { schema: OASSchema }) {
+    this.schema = schema;
+  }
+  public matchToResponseTemplate(sreq: ISerializedRequest): any | undefined {
+    if (!this.matchesServer(sreq)) {
+      return undefined;
+    }
+
+    const matchingPathOrNone = this.matchingPath(sreq.path);
+
+    if (matchingPathOrNone === undefined) {
+      return undefined;
+    }
+
+    const matchingPath = matchingPathOrNone;
+
+    return matchingPath[sreq.method] || undefined;
+  }
+
+  private matchingPath(reqPath: string): any | undefined {
+    const paths: { [path: string]: any } | undefined = this.schema.paths;
+
+    if (paths === undefined || paths.length === 0) {
+      return undefined;
+    }
+
+    const directMatch = paths[reqPath];
+    if (directMatch !== undefined) {
+      return directMatch;
+    }
+    for (const pathObject of Object.keys(paths)) {
+      const pathRegex = paths[pathObject][UNMOCK_PATH_REGEX_KW] as RegExp;
+      if (pathRegex === undefined) {
+        throw new Error("No pathRegex available for path!");
+      }
+      if (pathRegex.test(reqPath)) {
+        return pathObject;
+      }
+    }
+    return undefined;
+  }
+
+  private matchesServer(sreq: ISerializedRequest): boolean {
+    const servers: string[] | undefined = this.schema.servers;
+    if (servers === undefined || servers.length === 0) {
+      return false;
+    }
+    for (const server of servers) {
+      const serverUrl = new URL(server);
+      const protocol = serverUrl.protocol;
+      if (
+        protocol === sreq.protocol &&
+        serverUrl.hostname === sreq.host &&
+        sreq.path.startsWith(serverUrl.pathname)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
