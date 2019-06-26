@@ -53,7 +53,7 @@ export default class NodeBackend implements IBackend {
       }
     });
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const createResponse = responseCreatorFactory({});
+    const createResponse = responseCreatorFactory();
     mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
       handleRequestAndResponse(createResponse, req, res);
     });

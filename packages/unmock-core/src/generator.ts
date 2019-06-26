@@ -20,9 +20,7 @@ import {
 // @ts-ignore
 import jsf from "json-schema-faker";
 
-export const responseCreatorFactory = (
-  _: IResponseCreatorFactoryInput,
-): CreateResponse => {
+export const responseCreatorFactory = (): CreateResponse => {
   return (__: ISerializedRequest) => ({
     body: "Nothing here yet",
     statusCode: 200,

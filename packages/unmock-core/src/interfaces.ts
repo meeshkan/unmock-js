@@ -74,9 +74,6 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
-// tslint:disable-next-line:no-empty-interface
-export interface IResponseCreatorFactoryInput {}
-
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
