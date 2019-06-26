@@ -3,8 +3,6 @@ import Mitm from "mitm";
 import {
   CreateResponse,
   IBackend,
-  IMock,
-  IResponseCreatorFactoryInput,
   ISerializedRequest,
   ISerializedResponse,
   responseCreatorFactory,
@@ -31,7 +29,7 @@ async function handleRequestAndResponse(
     const serializedResponse: ISerializedResponse | undefined = createResponse(
       serializedRequest,
     );
-    if (!serializedResponse) {
+    if (serializedResponse === undefined) {
       throw Error(constants.MESSAGE_FOR_MISSING_MOCK);
     }
     respondFromSerializedResponse(serializedResponse, res);
@@ -47,12 +45,6 @@ async function handleRequestAndResponse(
 
 let mitm: any;
 export default class NodeBackend implements IBackend {
-  private readonly mockGenerator: () => IMock[];
-
-  public constructor(opts?: IResponseCreatorFactoryInput) {
-    this.mockGenerator = (opts && opts.mockGenerator) || (() => []);
-  }
-
   public initialize(options: UnmockOptions) {
     mitm = Mitm();
     mitm.on("connect", (socket: any, opts: any) => {
@@ -61,9 +53,7 @@ export default class NodeBackend implements IBackend {
       }
     });
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const createResponse = responseCreatorFactory({
-      mockGenerator: this.mockGenerator,
-    });
+    const createResponse = responseCreatorFactory({});
     mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
       handleRequestAndResponse(createResponse, req, res);
     });

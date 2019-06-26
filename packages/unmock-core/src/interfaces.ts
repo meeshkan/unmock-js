@@ -74,9 +74,8 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
-export interface IResponseCreatorFactoryInput {
-  mockGenerator: () => IMock[];
-}
+// tslint:disable-next-line:no-empty-interface
+export interface IResponseCreatorFactoryInput {}
 
 export type CreateResponse = (
   request: ISerializedRequest,
