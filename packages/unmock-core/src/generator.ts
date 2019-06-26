@@ -6,7 +6,6 @@ import {
   CreateResponse,
   GeneratedMock,
   IMock,
-  IResponseCreatorFactoryInput,
   ISerializedRequest,
   RequestToSpec,
 } from "./interfaces";
