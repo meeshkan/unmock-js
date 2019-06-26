@@ -21,10 +21,12 @@ import {
 import jsf from "json-schema-faker";
 
 export const responseCreatorFactory = (
-  opts: IResponseCreatorFactoryInput,
+  _: IResponseCreatorFactoryInput,
 ): CreateResponse => {
-  const httpRequestMatcher = httpRequestMatcherFactory(opts.mockGenerator);
-  return (req: ISerializedRequest) => httpRequestMatcher(req);
+  return (__: ISerializedRequest) => ({
+    body: "Nothing here yet",
+    statusCode: 200,
+  });
 };
 
 const getPathSchemaFromSpec = (
