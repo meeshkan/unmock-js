@@ -16,7 +16,7 @@ describe("Node.js interceptor", () => {
     afterAll(() => {
       nodeInterceptor.reset();
     });
-    test("gets successful response or petstore", async () => {
+    test("gets successful response for valid request", async () => {
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBeDefined();
