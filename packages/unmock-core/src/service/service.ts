@@ -46,20 +46,21 @@ export class Service implements IService {
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
-    // Update the paths in the first level to regex if needed
-    if (this.schema === undefined || this.schema.paths === undefined) {
-      this.matcher = new OASMatcher({ schema: this.schema });
-      return; // empty schema or does not contain paths
-    }
-    this.buildSchemaRegExps();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
       Object.keys(this.schema.paths).length > 0;
-    this.matcher = new OASMatcher({
-      endpointToRegexMapping: this.endpointToRegexp,
-      schema: this.schema,
-    });
+
+    if (this.hasDefinedPaths) {
+      this.buildSchemaRegExps();
+      this.matcher = new OASMatcher({
+        endpointToRegexMapping: this.endpointToRegexp,
+        schema: this.schema,
+      });
+    } else {
+      // empty schema or does not contain paths
+      this.matcher = new OASMatcher({ schema: this.schema });
+    }
   }
 
   get schema(): OpenAPIObject {
@@ -170,7 +171,6 @@ export class Service implements IService {
         );
       }
 
-      // Update the content for the new path and remove old path
       const newPathRegex = XRegExp(`^${newPath}$`, "g");
       this.endpointToRegexp[path] = newPathRegex;
     });
