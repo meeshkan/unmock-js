@@ -1,7 +1,13 @@
 import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 
-export { OpenAPIObject, Paths, Schema } from "loas3/dist/src/generated/full";
+export {
+  OpenAPIObject,
+  Paths,
+  Schema,
+  Parameter,
+  PathItem,
+} from "loas3/dist/src/generated/full";
 
 const RESTMethodTypes = [
   "get",
@@ -47,15 +53,6 @@ export interface IService {
    * Whether the OAS has a defined "paths" object or not.
    */
   hasDefinedPaths: boolean;
-  /**
-   * Given an endpoint, checks if it is well defined in the service.
-   * This is used to check and verify dynamic paths (i.e. use path parameters)
-   * @param endpoint The endpoint to find in the OAS
-   * @returns Either the correct path (with parameters if needed),
-   *          or undefined if the path is not found.
-   * @example findEndpoint("/pets/2") will return "/pets/{petId}"
-   */
-  findEndpoint(endpoint: string): string | undefined;
   /**
    * Verifies the given request for method and endpoint are valid.
    * Should throw if anything goes wrong.

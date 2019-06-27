@@ -1,5 +1,5 @@
-import XRegExp from "xregexp";
-import { DEFAULT_ENDPOINT, UNMOCK_PATH_REGEX_KW } from "./constants";
+import { ISerializedRequest } from "../interfaces";
+import { DEFAULT_ENDPOINT } from "./constants";
 import {
   HTTPMethod,
   IService,
@@ -9,16 +9,8 @@ import {
   OpenAPIObject,
   UnmockServiceState,
 } from "./interfaces";
-import {
-  buildPathRegexStringFromParameters,
-  getAtLevel,
-  getPathParametersFromPath,
-  getPathParametersFromSchema,
-} from "./util";
-
 import { OASMatcher } from "./matcher";
-
-import { ISerializedRequest } from "../interfaces";
+import { getAtLevel } from "./util";
 
 /**
  * Implements the state management for a service
@@ -44,12 +36,6 @@ export class Service implements IService {
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
-    // Update the paths in the first level to regex if needed
-    if (this.schema === undefined || this.schema.paths === undefined) {
-      this.matcher = new OASMatcher({ schema: this.schema });
-      return; // empty schema or does not contain paths
-    }
-    this.updateSchemaPaths();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
@@ -69,30 +55,6 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public findEndpoint(endpoint: string): string | undefined {
-    // Finds the endpoint key that matches given endpoint string
-    // First attempts a direct match by dictionary look-up
-    // If it fails, iterates over all endpoint until a match is found.
-    // Matching path key is returned so that future matching, reference, etc can be done as needed.
-    if (!this.hasDefinedPaths) {
-      return;
-    }
-    if (this.schema.paths[endpoint] !== undefined) {
-      return endpoint;
-    }
-    for (const schemaEndpoint of Object.keys(this.schema.paths)) {
-      // Ugly hack until loas3 types include a signature
-      const endpointRegex = (this.schema.paths[schemaEndpoint] as any)[
-        UNMOCK_PATH_REGEX_KW
-      ] as RegExp;
-
-      if (endpointRegex.test(endpoint)) {
-        return schemaEndpoint;
-      }
-    }
-    return;
-  }
-
   public verifyRequest(method: HTTPMethod, endpoint: string) {
     // Throws if method + endpoint are invalid for this service
     if (!this.hasDefinedPaths) {
@@ -101,7 +63,7 @@ export class Service implements IService {
 
     if (endpoint !== DEFAULT_ENDPOINT) {
       const servicePaths = this.schema.paths;
-      const schemaEndpoint = this.findEndpoint(endpoint);
+      const schemaEndpoint = this.matcher.findEndpoint(endpoint);
       if (schemaEndpoint === undefined) {
         // This endpoint does not exist, no need to retain state
         throw new Error(
@@ -146,30 +108,5 @@ export class Service implements IService {
 
     this.state = newState; // For PR purposes, we just save the state as is.
     return true;
-  }
-
-  private updateSchemaPaths() {
-    Object.keys(this.schema.paths).forEach((path: string) => {
-      const pathParameters = getPathParametersFromPath(path);
-      let newPath: string = "";
-      if (pathParameters.length === 0) {
-        newPath = path; // Simply convert to direct regexp pattern
-      } else {
-        const schemaParameters = getPathParametersFromSchema(
-          this.schema.paths,
-          path,
-        );
-        newPath = buildPathRegexStringFromParameters(
-          path,
-          schemaParameters,
-          pathParameters,
-        );
-      }
-
-      // Update the content for the new path and remove old path
-      const newPathRegex = XRegExp(`^${newPath}$`, "g");
-      // Ugly hack until loas3 types include a signature
-      (this.oasSchema.paths[path] as any)[UNMOCK_PATH_REGEX_KW] = newPathRegex;
-    });
   }
 }

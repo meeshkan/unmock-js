@@ -1,14 +1,18 @@
 import debug from "debug";
+import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
-
-import { MatcherResponse, OpenAPIObject } from "./interfaces";
+import { MatcherResponse, OpenAPIObject, PathItem } from "./interfaces";
+import {
+  buildPathRegexStringFromParameters,
+  getPathParametersFromPath,
+  getPathParametersFromSchema,
+} from "./util";
 
 const debugLog = debug("unmock:matcher");
 
-import { UNMOCK_PATH_REGEX_KW } from "./constants";
-
-// Just for readability until we have types
-type PathItemObject = any;
+interface IEndpointToRegexMapping {
+  [endpoint: string]: RegExp;
+}
 
 export class OASMatcher {
   /**
@@ -30,10 +34,43 @@ export class OASMatcher {
     );
     return reqPath.replace(regexToRemoveFromReqPath, "");
   }
+
+  private static buildRegexpForPaths(
+    schema: OpenAPIObject,
+  ): IEndpointToRegexMapping {
+    const mapping: IEndpointToRegexMapping = {};
+    const paths = schema.paths;
+    if (paths === undefined || paths.length === 0) {
+      return mapping;
+    }
+    Object.keys(paths).forEach((path: string) => {
+      const pathParameters = getPathParametersFromPath(path);
+      let newPath: string = "";
+      if (pathParameters.length === 0) {
+        newPath = path; // Simply convert to direct regexp pattern
+      } else {
+        const schemaParameters = getPathParametersFromSchema(paths, path);
+        newPath = buildPathRegexStringFromParameters(
+          path,
+          schemaParameters,
+          pathParameters,
+        );
+      }
+
+      const newPathRegex = XRegExp(`^${newPath}$`, "g");
+      mapping[path] = newPathRegex;
+    });
+    return mapping;
+  }
+
   private readonly schema: OpenAPIObject;
+  private readonly endpointToRegexMapping: IEndpointToRegexMapping;
+
   constructor({ schema }: { schema: OpenAPIObject }) {
     this.schema = schema;
+    this.endpointToRegexMapping = OASMatcher.buildRegexpForPaths(this.schema);
   }
+
   public matchToOperationObject(sreq: ISerializedRequest): MatcherResponse {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
     // TODO: If the Servers object is not at the top level
@@ -63,11 +100,17 @@ export class OASMatcher {
     debugLog(`Matched path object, looking for match for ${requestMethod}`);
 
     const matchingPath = matchingPathItemOrUndef;
-    return matchingPath[requestMethod] || matchingPath.default;
+    return (matchingPath as any)[requestMethod];
   }
 
-  private findMatchingPathItem(reqPath: string): PathItemObject | undefined {
-    const paths: { [path: string]: any } | undefined = this.schema.paths;
+  public findEndpoint(reqPath: string): string | undefined {
+    /**
+     * Finds the endpoint key that matches given endpoint string
+     * First attempts a direct match by dictionary look-up
+     * If it fails, iterates over all endpoint until a match is found.
+     * Matching path key is returned so that future matching, reference, etc can be done as needed.
+     */
+    const paths = this.schema.paths;
 
     if (paths === undefined || paths.length === 0) {
       return undefined;
@@ -76,23 +119,29 @@ export class OASMatcher {
     const directMatch = paths[reqPath];
     if (directMatch !== undefined) {
       debugLog(`Found direct path match for ${reqPath}`);
-      return directMatch;
+      return reqPath;
     }
 
     const definedPaths = Object.keys(paths);
     debugLog(`Searching for match for ${reqPath} for ${definedPaths}`);
 
     for (const pathItemKey of Object.keys(paths)) {
-      const pathItemObject = paths[pathItemKey];
-      const pathRegex = pathItemObject[UNMOCK_PATH_REGEX_KW] as RegExp;
+      const pathRegex = this.endpointToRegexMapping[pathItemKey];
       if (pathRegex === undefined) {
         continue;
       }
       if (pathRegex.test(reqPath)) {
-        return pathItemObject;
+        return pathItemKey;
       }
     }
     return undefined;
+  }
+
+  private findMatchingPathItem(reqPath: string): PathItem | undefined {
+    const pathItemKey = this.findEndpoint(reqPath);
+    return pathItemKey !== undefined
+      ? this.schema.paths[pathItemKey]
+      : undefined;
   }
 
   private matchesServer(
@@ -108,8 +157,8 @@ export class OASMatcher {
       const protocol = serverUrl.protocol.replace(":", "");
 
       debugLog(
-        // tslint:disable-next-line
-        `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
+        `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
+          `vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
       );
       if (
         protocol === sreq.protocol &&

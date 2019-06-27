@@ -1,6 +1,6 @@
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { Paths } from "./interfaces";
+import { Parameter, Paths } from "./interfaces";
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];
@@ -13,7 +13,7 @@ export const getPathParametersFromPath = (path: string): string[] => {
 export const getPathParametersFromSchema = (
   schema: Paths,
   path: string,
-): any[] => {
+): Parameter[] => {
   if (!path.includes("{") || schema[path] === undefined) {
     // No parameters in this path... Why bother looking?
     return [];
@@ -22,7 +22,7 @@ export const getPathParametersFromSchema = (
     schema[path],
     2,
     (_: string, v: any) => v.in === OAS_PATH_PARAMS_KW,
-  );
+  ) as Parameter[];
   if (
     schemaPathParameters.length === 0 ||
     Object.keys(schemaPathParameters[0]).length === 0
@@ -36,7 +36,7 @@ export const getPathParametersFromSchema = (
 
 export const buildPathRegexStringFromParameters = (
   path: string,
-  schemaParameters: any[],
+  schemaParameters: Parameter[],
   pathParameters: string[],
 ): string => {
   if (
