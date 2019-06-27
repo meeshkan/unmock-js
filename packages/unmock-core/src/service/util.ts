@@ -1,6 +1,6 @@
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { OASSchema } from "./interfaces";
+import { Paths } from "./interfaces";
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];
@@ -11,7 +11,7 @@ export const getPathParametersFromPath = (path: string): string[] => {
 };
 
 export const getPathParametersFromSchema = (
-  schema: OASSchema,
+  schema: Paths,
   path: string,
 ): any[] => {
   if (!path.includes("{") || schema[path] === undefined) {

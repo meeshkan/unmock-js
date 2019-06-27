@@ -1,17 +1,13 @@
 import XRegExp from "xregexp";
-import {
-  DEFAULT_ENDPOINT,
-  DEFAULT_REST_METHOD,
-  UNMOCK_PATH_REGEX_KW,
-} from "./constants";
+import { DEFAULT_ENDPOINT, UNMOCK_PATH_REGEX_KW } from "./constants";
 import {
   HTTPMethod,
   IService,
   IServiceInput,
   IStateInput,
-  IUnmockServiceState,
   MatcherResponse,
-  OASSchema,
+  OpenAPIObject,
+  UnmockServiceState,
 } from "./interfaces";
 import {
   buildPathRegexStringFromParameters,
@@ -33,7 +29,7 @@ import { ISerializedRequest } from "../interfaces";
 export class Service implements IService {
   public readonly name: string;
   private hasPaths: boolean = false;
-  private readonly oasSchema: OASSchema;
+  private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
   /**
    * Maintains a state for service
@@ -43,7 +39,7 @@ export class Service implements IService {
    * Fourth and beyond: template-specific.
    */
   // @ts-ignore // ignored because it's currently only being read and not written
-  private state: IUnmockServiceState = {};
+  private state: UnmockServiceState = {};
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
@@ -61,7 +57,7 @@ export class Service implements IService {
     this.matcher = new OASMatcher({ schema: this.schema });
   }
 
-  get schema(): OASSchema {
+  get schema(): OpenAPIObject {
     return this.oasSchema;
   }
 
@@ -85,7 +81,8 @@ export class Service implements IService {
       return endpoint;
     }
     for (const schemaEndpoint of Object.keys(this.schema.paths)) {
-      const endpointRegex = this.schema.paths[schemaEndpoint][
+      // Ugly hack until loas3 types include a signature
+      const endpointRegex = (this.schema.paths[schemaEndpoint] as any)[
         UNMOCK_PATH_REGEX_KW
       ] as RegExp;
 
@@ -113,7 +110,7 @@ export class Service implements IService {
       }
       if (
         // If the method is 'all', we assume there exists some content under the specified endpoint...
-        method !== DEFAULT_REST_METHOD &&
+        method !== "all" &&
         servicePaths[schemaEndpoint][method] === undefined
       ) {
         // The endpoint exists but the specified method for that endpoint doesnt
@@ -121,7 +118,7 @@ export class Service implements IService {
           `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
         );
       }
-    } else if (method !== DEFAULT_REST_METHOD) {
+    } else if (method !== "all") {
       // If endpoint is default (all), we make sure that at least one path exists with the given method
       if (
         getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
@@ -171,7 +168,8 @@ export class Service implements IService {
 
       // Update the content for the new path and remove old path
       const newPathRegex = XRegExp(`^${newPath}$`, "g");
-      this.oasSchema.paths[path][UNMOCK_PATH_REGEX_KW] = newPathRegex;
+      // Ugly hack until loas3 types include a signature
+      (this.oasSchema.paths[path] as any)[UNMOCK_PATH_REGEX_KW] = newPathRegex;
     });
   }
 }

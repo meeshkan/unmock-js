@@ -4,8 +4,8 @@ import {
   IService,
   IServiceMapping,
   isRESTMethod,
-  IUnmockServiceState,
   MatcherResponse,
+  UnmockServiceState,
 } from "./interfaces";
 
 export class ServiceStore {
@@ -36,7 +36,7 @@ export class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: HTTPMethod;
-    state: IUnmockServiceState;
+    state: UnmockServiceState;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
