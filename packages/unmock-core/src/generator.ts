@@ -31,18 +31,8 @@ export function responseCreatorFactory({
     parser.parse(serviceDef),
   );
   const serviceStore = new ServiceStore(services);
-  return (sreq: ISerializedRequest) => {
-    const responseTemplateOrUndefined = serviceStore.match(sreq);
-
-    if (responseTemplateOrUndefined === undefined) {
-      return undefined;
-    }
-
-    const responseTemplate = responseTemplateOrUndefined;
-
-    const sres = generateMockFromTemplate(responseTemplate);
-    return sres;
-  };
+  return (sreq: ISerializedRequest) =>
+    generateMockFromTemplate(serviceStore.match(sreq));
 }
 
 const setupJSFUnmockProperties = (_: UnmockServiceState) => {
@@ -59,8 +49,11 @@ const setupJSFUnmockProperties = (_: UnmockServiceState) => {
 };
 
 const generateMockFromTemplate = (
-  responseTemplate: Operation,
-): ISerializedResponse => {
+  responseTemplate: Operation | undefined,
+): ISerializedResponse | undefined => {
+  if (responseTemplate === undefined) {
+    return undefined;
+  }
   // 1. Take in state from DSL
   // TODO: Link with Matcher/Service
   const state = { $code: 200 };
