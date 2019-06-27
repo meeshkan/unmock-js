@@ -6,11 +6,9 @@ import {
   CreateResponse,
   GeneratedMock,
   IMock,
-  IResponseCreatorFactoryInput,
   ISerializedRequest,
   RequestToSpec,
 } from "./interfaces";
-import { httpRequestMatcherFactory } from "./matcher";
 import {
   IUnmockServiceState,
   OASSchema,
@@ -21,11 +19,11 @@ import {
 // @ts-ignore
 import jsf from "json-schema-faker";
 
-export const responseCreatorFactory = (
-  opts: IResponseCreatorFactoryInput,
-): CreateResponse => {
-  const httpRequestMatcher = httpRequestMatcherFactory(opts.mockGenerator);
-  return (req: ISerializedRequest) => httpRequestMatcher(req);
+export const responseCreatorFactory = (): CreateResponse => {
+  return (__: ISerializedRequest) => ({
+    body: "Nothing here yet",
+    statusCode: 200,
+  });
 };
 
 const getPathSchemaFromSpec = (

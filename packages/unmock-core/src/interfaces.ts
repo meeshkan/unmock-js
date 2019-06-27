@@ -74,10 +74,6 @@ export interface IMock {
   response: ISerializedResponse;
 }
 
-export interface IResponseCreatorFactoryInput {
-  mockGenerator: () => IMock[];
-}
-
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
