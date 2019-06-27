@@ -1,4 +1,3 @@
-import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import XRegExp from "xregexp";
 import { DEFAULT_ENDPOINT, UNMOCK_PATH_REGEX_KW } from "./constants";
 import {
@@ -7,6 +6,7 @@ import {
   IServiceInput,
   IStateInput,
   MatcherResponse,
+  OpenAPIObject,
   UnmockServiceState,
 } from "./interfaces";
 import {

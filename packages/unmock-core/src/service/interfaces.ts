@@ -1,6 +1,8 @@
 import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 
+export { OpenAPIObject, Paths, Schema } from "loas3/dist/src/generated/full";
+
 const RESTMethodTypes = [
   "get",
   "head",

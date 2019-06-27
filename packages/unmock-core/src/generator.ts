@@ -1,8 +1,6 @@
 /**
  * Implements the logic for generating a response from a service file
  */
-
-import { Schema } from "loas3/dist/src/generated/full";
 import {
   CreateResponse,
   GeneratedMock,
@@ -10,7 +8,7 @@ import {
   ISerializedRequest,
   RequestToSpec,
 } from "./interfaces";
-import { UnmockServiceState } from "./service/interfaces";
+import { Schema, UnmockServiceState } from "./service/interfaces";
 
 // json-schema-faker doesn't have typed definitions?
 // @ts-ignore

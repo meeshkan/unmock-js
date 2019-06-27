@@ -1,7 +1,7 @@
 import debug from "debug";
 import { ISerializedRequest } from "../interfaces";
 
-import { MatcherResponse, OASSchema } from "./interfaces";
+import { MatcherResponse, OpenAPIObject } from "./interfaces";
 
 const debugLog = debug("unmock:matcher");
 
@@ -30,8 +30,8 @@ export class OASMatcher {
     );
     return reqPath.replace(regexToRemoveFromReqPath, "");
   }
-  private readonly schema: OASSchema;
-  constructor({ schema }: { schema: OASSchema }) {
+  private readonly schema: OpenAPIObject;
+  constructor({ schema }: { schema: OpenAPIObject }) {
     this.schema = schema;
   }
   public matchToOperationObject(sreq: ISerializedRequest): MatcherResponse {

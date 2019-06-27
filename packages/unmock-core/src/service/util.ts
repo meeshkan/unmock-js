@@ -1,6 +1,6 @@
-import { Paths } from "loas3/dist/src/generated/full";
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
+import { Paths } from "./interfaces";
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];
