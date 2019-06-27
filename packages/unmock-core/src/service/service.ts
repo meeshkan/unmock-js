@@ -1,22 +1,31 @@
 import { ISerializedRequest } from "../interfaces";
-import { DEFAULT_ENDPOINT } from "./constants";
+import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
 import {
+  ExtendedHTTPMethod,
   HTTPMethod,
   IService,
   IServiceInput,
+  isOperation,
+  isRESTMethod,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
+  Operation,
+  PathItem,
   UnmockServiceState,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import { getAtLevel } from "./util";
 
+type OperationsForStateUpdate = Array<{
+  endpoint: string;
+  method: HTTPMethod;
+  operation: Operation;
+}>;
+
 /**
  * Implements the state management for a service
  */
-
-// TODO: Is there room here for xstate, in the future?
 
 export class Service implements IService {
   public readonly name: string;
@@ -69,46 +78,120 @@ export class Service implements IService {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
-    if (endpoint !== DEFAULT_ENDPOINT) {
-      const servicePaths = this.schema.paths;
-      const schemaEndpoint = this.matcher.findEndpoint(endpoint);
-      if (schemaEndpoint === undefined) {
-        // This endpoint does not exist, no need to retain state
-        throw new Error(
-          `Can't find endpoint '${endpoint}' for '${this.name}'!`,
-        );
-      }
-
-      const endpointSchema = servicePaths[schemaEndpoint];
-      if (method !== "all") {
-        const operation = endpointSchema[method];
-        // Applies to specific endpoint and method
-        if (operation === undefined) {
-          // The endpoint exists but the specified method for that endpoint doesnt
-          throw new Error(
-            `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
-          );
-        }
-
-        // Update for specific method
-      } else {
-        // Update for all methods in this endpoint
-      }
-    } else {
-      if (method !== "all") {
-        if (
-          getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
-            .length === 0
-        ) {
-          throw new Error(
-            `Can't find any endpoints with method '${method}' in ${this.name}!`,
-          );
-        }
-      }
-      // Applies to all endpoints for all methods
-    }
-
+    const operations = this.getOperationsOrThrow(method, endpoint);
+    // Verify and save state for each operation...
     this.state = newState; // For PR purposes, we just save the state as is.
     return true;
+  }
+
+  private getOperationsOrThrow(
+    method: ExtendedHTTPMethod,
+    endpoint: string,
+  ): OperationsForStateUpdate {
+    if (endpoint !== DEFAULT_ENDPOINT) {
+      const pathItem = this.getPathItemOrThrow(endpoint);
+      if (method !== DEFAULT_HTTP_METHOD) {
+        return [
+          {
+            endpoint,
+            method,
+            operation: this.getOperationOrThrow({
+              endpoint,
+              method,
+              pathItem,
+            }),
+          },
+        ];
+      } else {
+        return this.getOperationsFromPathItemOrThrow(pathItem, endpoint);
+      }
+    } else {
+      return this.getOperationsWithMethodOrThrow(method);
+    }
+  }
+
+  private getPathItemOrThrow(endpoint: string): PathItem {
+    const keyOfEndpointInSchema = this.matcher.findEndpoint(endpoint);
+    if (keyOfEndpointInSchema === undefined) {
+      // This endpoint does not exist, no need to retain state
+      throw new Error(`Can't find endpoint '${endpoint}' for '${this.name}'!`);
+    }
+    return this.schema.paths[keyOfEndpointInSchema];
+  }
+
+  private getOperationOrThrow({
+    method,
+    endpoint,
+    pathItem,
+  }: {
+    method: HTTPMethod;
+    endpoint: string;
+    pathItem: PathItem;
+  }): Operation {
+    const operation = pathItem[method];
+    // Applies to specific endpoint and method
+    if (operation === undefined) {
+      // The endpoint exists but the specified method for that endpoint doesnt
+      throw new Error(
+        `Can't find response for '${method} ${endpoint}' in '${this.name}'!`,
+      );
+    }
+    return operation;
+  }
+
+  private getOperationsWithMethodOrThrow(
+    method: ExtendedHTTPMethod,
+  ): OperationsForStateUpdate {
+    const anyMethod = method === DEFAULT_HTTP_METHOD;
+    const filterFn = anyMethod
+      ? (
+          pathItem: PathItem, // If the method doesn't matter, just make sure the PathItem has any Operation types
+        ) =>
+          Object.keys(pathItem).reduce(
+            (acc: boolean, maybeOperation: Operation | any) =>
+              acc || isOperation(maybeOperation),
+            false,
+          )
+      : (pathItem: PathItem) => Object.keys(pathItem).includes(method);
+
+    const pathsWithMatchingMethod = Object.keys(this.schema.paths).filter(
+      (path: string) => filterFn(this.schema.paths[path]),
+    );
+    // For each path, save only the operations that match
+    const operations: OperationsForStateUpdate = pathsWithMatchingMethod.map(
+      (path: string) => {
+        const pathItem = this.schema.paths[path];
+      },
+    );
+    if (operations.length === 0) {
+      throw new Error(
+        `Can't find any endpoints ` +
+          `${anyMethod ? `with method '${method}'` : "with operations"}` +
+          ` in '${this.name}'!`,
+      );
+    }
+    return operations;
+  }
+
+  private getOperationsFromPathItemOrThrow(
+    pathItem: PathItem,
+    endpoint: string,
+  ): OperationsForStateUpdate {
+    const operations: OperationsForStateUpdate = [];
+    Object.keys(pathItem).forEach((key: string) => {
+      if (isRESTMethod(key)) {
+        const method = key as HTTPMethod;
+        const operation = (pathItem as any)[key] as Operation;
+        if (operation !== undefined) {
+          operations.push({ endpoint, method, operation });
+        }
+      }
+    });
+    if (operations.length === 0) {
+      throw new Error(
+        `There are no operations under '${endpoint}' in '${this.name}'!`,
+      );
+    }
+    return operations;
   }
 }

@@ -1,10 +1,13 @@
 import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
+import { DEFAULT_HTTP_METHOD } from "./constants";
 
 export {
+  isOperation,
   OpenAPIObject,
   Paths,
   Schema,
+  Operation,
   Parameter,
   PathItem,
 } from "loas3/dist/src/generated/full";
@@ -17,11 +20,17 @@ const RESTMethodTypes = [
   "delete",
   "options",
   "trace",
-  "all", // internally used to mark all the above methods.
 ] as const;
-export type HTTPMethod = typeof RESTMethodTypes[number];
 
-export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
+const DEF_REST_METHOD = [DEFAULT_HTTP_METHOD] as const;
+
+type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
+export type HTTPMethod = typeof RESTMethodTypes[number];
+export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
+
+export const isRESTMethod = (
+  maybeMethod: string,
+): maybeMethod is ExtendedHTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 
 export interface IServiceMapping {
@@ -29,7 +38,7 @@ export interface IServiceMapping {
 }
 
 export interface IStateInput {
-  method: HTTPMethod;
+  method: ExtendedHTTPMethod;
   endpoint: string;
   newState: IUnmockServiceState;
 }
