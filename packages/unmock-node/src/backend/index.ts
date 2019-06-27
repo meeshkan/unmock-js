@@ -76,8 +76,7 @@ export default class NodeBackend implements IBackend {
   private readonly config: INodeBackendOptions;
   private clientRequests: {
     [id: string]: {
-      clientOptions: RequestOptions;
-      clientRequest?: ClientRequest;
+      clientRequest: ClientRequest;
     };
   } = {};
   private origOnSocket?: (socket: net.Socket) => void;
@@ -102,11 +101,13 @@ export default class NodeBackend implements IBackend {
         this: ClientRequest,
         socket: IRegisteredSocket,
       ): IRegisteredSocket {
-        if (socket.__unmock_req_id !== undefined) {
-          debugLog("New socket on client request", socket.__unmock_req_id);
-          self.clientRequests[socket.__unmock_req_id].clientRequest = this;
-          this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, socket.__unmock_req_id);
+        if (socket.__unmock_req_id === undefined) {
+          socket.__unmock_req_id = uuidv4();
         }
+
+        debugLog("New socket on client request", socket.__unmock_req_id);
+        self.clientRequests[socket.__unmock_req_id] = { clientRequest: this };
+        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, socket.__unmock_req_id);
 
         return socket;
       },
@@ -171,10 +172,6 @@ export default class NodeBackend implements IBackend {
     socket: IRegisteredSocket,
     opts: RequestOptions,
   ) {
-    socket.__unmock_req_id = uuidv4();
-    this.clientRequests[socket.__unmock_req_id] = {
-      clientOptions: opts,
-    };
     if (options.isWhitelisted(opts.host || "")) {
       socket.bypass();
     }
