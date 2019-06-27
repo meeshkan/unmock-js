@@ -1,6 +1,7 @@
 /**
  * Implements the logic for generating a response from a service file
  */
+import { Operation } from "loas3/dist/src/generated/full";
 import {
   CreateResponse,
   ISerializedRequest,
@@ -58,7 +59,7 @@ const setupJSFUnmockProperties = (_: UnmockServiceState) => {
 };
 
 const generateMockFromTemplate = (
-  responseTemplate: any,
+  responseTemplate: Operation,
 ): ISerializedResponse => {
   // 1. Take in state from DSL
   // TODO: Link with Matcher/Service
