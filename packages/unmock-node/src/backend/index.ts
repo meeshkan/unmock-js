@@ -92,8 +92,10 @@ export default class NodeBackend implements IBackend {
       this.reset();
     }
     this.mitm = Mitm();
-    this.origOnSocket = ClientRequest.prototype.onSocket;
+
     const self = this;
+    this.origOnSocket = ClientRequest.prototype.onSocket;
+
     ClientRequest.prototype.onSocket = _.flowRight(
       this.origOnSocket,
       function(
@@ -110,18 +112,9 @@ export default class NodeBackend implements IBackend {
       },
     );
 
-    // Client-side socket connect
-    this.mitm.on(
-      "connect",
-      (socket: IRegisteredSocket, opts: RequestOptions) => {
-        socket.__unmock_req_id = uuidv4();
-        this.clientRequests[socket.__unmock_req_id] = {
-          clientOptions: opts,
-        };
-        if (options.isWhitelisted(opts.host || "")) {
-          socket.bypass();
-        }
-      },
+    // Client-side socket connect, track each request via the socket
+    this.mitm.on("connect", (socket: IRegisteredSocket, opts: RequestOptions) =>
+      this.mitmOnConnect.call(this, options, socket, opts),
     );
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
@@ -132,20 +125,9 @@ export default class NodeBackend implements IBackend {
       serviceDefLoader,
     });
 
-    this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
-      debugLog(`Existing client request IDs`, Object.keys(this.clientRequests));
-      const headers = req.headers;
-      const reqId = headers[UNMOCK_INTERNAL_HTTP_HEADER];
-      debugLog(`Intercepted incoming request with ID ${reqId}`);
-      if (typeof reqId !== "string") {
-        throw Error("No idea what to do here");
-      }
-      const clientRequest = this.clientRequests[reqId].clientRequest;
-      if (clientRequest === undefined) {
-        throw Error("Something very broken here too");
-      }
-      handleRequestAndResponse(createResponse, req, res, clientRequest);
-    });
+    this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
+      this.mitmOnRequest.call(this, createResponse, req, res),
+    );
   }
 
   public reset() {
@@ -158,5 +140,43 @@ export default class NodeBackend implements IBackend {
       this.origOnSocket = undefined;
     }
     this.clientRequests = {};
+  }
+
+  private extractClientRequest(req: IncomingMessage): ClientRequest {
+    debugLog(`Existing client request IDs`, Object.keys(this.clientRequests));
+    const headers = req.headers;
+    const reqId = headers[UNMOCK_INTERNAL_HTTP_HEADER];
+    debugLog(`Intercepted incoming request with ID ${reqId}`);
+    if (typeof reqId !== "string") {
+      throw Error("No idea what to do here");
+    }
+    const clientRequest = this.clientRequests[reqId].clientRequest;
+    if (clientRequest === undefined) {
+      throw Error("Something very broken here too");
+    }
+    return clientRequest;
+  }
+
+  private mitmOnRequest(
+    createResponse: CreateResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
+  ) {
+    const clientRequest = this.extractClientRequest(req);
+    handleRequestAndResponse(createResponse, req, res, clientRequest);
+  }
+
+  private mitmOnConnect(
+    options: UnmockOptions,
+    socket: IRegisteredSocket,
+    opts: RequestOptions,
+  ) {
+    socket.__unmock_req_id = uuidv4();
+    this.clientRequests[socket.__unmock_req_id] = {
+      clientOptions: opts,
+    };
+    if (options.isWhitelisted(opts.host || "")) {
+      socket.bypass();
+    }
   }
 }
