@@ -19,7 +19,6 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import { serializeRequest } from "../serialize";
-import * as constants from "./constants";
 
 const debugLog = debug("unmock:node");
 
@@ -35,7 +34,7 @@ async function handleRequestAndResponse(
   createResponse: CreateResponse,
   req: IncomingMessage,
   res: ServerResponse,
-  clientRequest: ClientRequest,
+  clientRequest: ClientRequest, // For emitting errors
 ) {
   try {
     const serializedRequest: ISerializedRequest = await serializeRequest(req);
@@ -45,18 +44,14 @@ async function handleRequestAndResponse(
     );
 
     if (serializedResponse === undefined) {
+      // TODO Handle this properly
       debugLog("No match found, emitting error");
       clientRequest.emit("error", Error("No matching template found"));
       return;
     }
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
-    // TODO Emit an error in the corresponding client request instead?
-    const errorResponse: ISerializedResponse = {
-      body: err.message,
-      statusCode: constants.STATUS_CODE_FOR_ERROR,
-    };
-    respondFromSerializedResponse(errorResponse, res);
+    clientRequest.emit("error", Error(`unmock error: ${err.message}`));
   }
 }
 
@@ -94,6 +89,13 @@ export default class NodeBackend implements IBackend {
     const self = this;
     this.origOnSocket = ClientRequest.prototype.onSocket;
 
+    /**
+     * When a socket is assigned to a client request, create an internal ID
+     * and add the ID in the request header. Thereby we can map
+     * the server-side incoming request to the corresponding
+     * client request and emit errors properly.
+     * Borrowed from https://github.com/FormidableLabs/yesno.
+     */
     ClientRequest.prototype.onSocket = _.flowRight(
       this.origOnSocket,
       function(
@@ -143,10 +145,11 @@ export default class NodeBackend implements IBackend {
   private extractTrackedClientRequest(
     incomingMessage: IncomingMessage,
   ): ClientRequest {
-    debugLog(`Existing client request IDs`, Object.keys(this.clientRequests));
-    const headers = incomingMessage.headers;
-    const reqId = headers[UNMOCK_INTERNAL_HTTP_HEADER];
-    debugLog(`Intercepted incoming request with ID ${reqId}`);
+    const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
+    debugLog(
+      `Intercepted incoming request with ID ${reqId}, matching to existing IDs:`,
+      Object.keys(this.clientRequests),
+    );
     if (typeof reqId !== "string") {
       throw Error("No idea what to do here");
     }
