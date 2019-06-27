@@ -151,11 +151,11 @@ export default class NodeBackend implements IBackend {
       Object.keys(this.clientRequests),
     );
     if (typeof reqId !== "string") {
-      throw Error("No idea what to do here");
+      throw Error("Expected to get a non empty request ID");
     }
     const clientRequest = this.clientRequests[reqId].clientRequest;
     if (clientRequest === undefined) {
-      throw Error("Something very broken here too");
+      throw Error(`Expected to find a client request for request ID ${reqId}`);
     }
     return clientRequest;
   }
