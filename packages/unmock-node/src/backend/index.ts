@@ -8,6 +8,7 @@ import {
   responseCreatorFactory,
   UnmockOptions,
 } from "unmock-core";
+import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import { serializeRequest } from "../serialize";
 import * as constants from "./constants";
 
@@ -43,8 +44,19 @@ async function handleRequestAndResponse(
   }
 }
 
+export interface INodeBackendOptions {
+  servicesDirectory?: string;
+}
+
+const nodeBackendDefaultOptions: INodeBackendOptions = {};
+
 let mitm: any;
 export default class NodeBackend implements IBackend {
+  private readonly config: INodeBackendOptions;
+  public constructor(config?: INodeBackendOptions) {
+    this.config = { ...nodeBackendDefaultOptions, ...config };
+  }
+
   public initialize(options: UnmockOptions) {
     mitm = Mitm();
     mitm.on("connect", (socket: any, opts: any) => {
@@ -53,7 +65,10 @@ export default class NodeBackend implements IBackend {
       }
     });
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const createResponse = responseCreatorFactory();
+    const serviceDefLoader = new FsServiceDefLoader({
+      servicesDir: this.config.servicesDirectory,
+    });
+    const createResponse = responseCreatorFactory({ serviceDefLoader });
     mitm.on("request", (req: IncomingMessage, res: ServerResponse) => {
       handleRequestAndResponse(createResponse, req, res);
     });
