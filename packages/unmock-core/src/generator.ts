@@ -1,25 +1,39 @@
 /**
  * Implements the logic for generating a response from a service file
  */
+import { Operation } from "loas3/dist/src/generated/full";
 import {
   CreateResponse,
-  GeneratedMock,
-  IMock,
   ISerializedRequest,
-  RequestToSpec,
+  ISerializedResponse,
+  IServiceDef,
+  IServiceDefLoader,
 } from "./interfaces";
+
+import { IService } from "./service/interfaces";
+
 import { Schema, UnmockServiceState } from "./service/interfaces";
 
 // json-schema-faker doesn't have typed definitions?
 // @ts-ignore
 import jsf from "json-schema-faker";
+import { ServiceParser } from "./service/parser";
+import { ServiceStore } from "./service/serviceStore";
 
-export const responseCreatorFactory = (): CreateResponse => {
-  return (__: ISerializedRequest) => ({
-    body: "Nothing here yet",
-    statusCode: 200,
-  });
-};
+export function responseCreatorFactory({
+  serviceDefLoader,
+}: {
+  serviceDefLoader: IServiceDefLoader;
+}): CreateResponse {
+  const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
+  const parser = new ServiceParser();
+  const services: IService[] = serviceDefs.map(serviceDef =>
+    parser.parse(serviceDef),
+  );
+  const serviceStore = new ServiceStore(services);
+  return (sreq: ISerializedRequest) =>
+    generateMockFromTemplate(serviceStore.match(sreq));
+}
 
 const setupJSFUnmockProperties = (_: UnmockServiceState) => {
   // TODO: use the state parameter to update values as needed
@@ -34,28 +48,19 @@ const setupJSFUnmockProperties = (_: UnmockServiceState) => {
   });
 };
 
-const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
-  sreq: ISerializedRequest,
-): IMock => {
-  const { host } = sreq;
-  // 1. Use sreq to find the proper specification and, as needed, convert
-  //    from short-hand notation to verbose OAS (Mike)
-  // TODO: Link with matcher
-  const spec = getSpecFromRequest(sreq);
-  if (spec === undefined) {
-    throw new Error(`Can't find matching service for '${host}'`);
+const generateMockFromTemplate = (
+  responseTemplate: Operation | undefined,
+): ISerializedResponse | undefined => {
+  if (responseTemplate === undefined) {
+    return undefined;
   }
-  // 2. Use sreq to fetch the relevant path in the OAS spec
-  // const operation = getPathSchemaFromSpec(spec, method, path);
-  // 3. Fetch state from DSL
+  // 1. Take in state from DSL
   // TODO: Link with Matcher/Service
   const state = { $code: 200 };
   // const responseCode = String(state.$code || "default");
-  // 4. At this point, we assume there are no references, and we only need to
+  // 2. At this point, we assume there are no references, and we only need to
   //    handle x-unmock-* within the schemas, modify it according to these
   //    properties + the state -> we can work with jsf out of the box
-  // TODO: link with Matcher
-  const responseTemplate = {};
 
   // Setup the unmock properties for jsf parsing
   setupJSFUnmockProperties(state);
@@ -65,17 +70,8 @@ const genMockFromSerializedRequest = (getSpecFromRequest: RequestToSpec) => (
 
   // 5. Generate as needed
   return {
-    request: sreq,
-    response: {
-      body: jsf.generate(resolvedTemplate).schema,
-      // TODO: headers
-      statusCode: state.$code, // TODO: what if `$code` response doesn't exist?
-    },
+    body: jsf.generate(resolvedTemplate).schema,
+    // TODO: headers
+    statusCode: state.$code, // TODO: what if `$code` response doesn't exist?
   };
-};
-
-export const mockGeneratorFactory = (
-  getSpecFromRequest: RequestToSpec,
-): ((sreq: ISerializedRequest) => GeneratedMock) => {
-  return genMockFromSerializedRequest(getSpecFromRequest);
 };

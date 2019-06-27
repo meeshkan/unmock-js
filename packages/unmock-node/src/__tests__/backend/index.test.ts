@@ -1,13 +1,15 @@
 import axios from "axios";
-import { IMock, UnmockOptions } from "unmock-core";
+import path from "path";
+import { UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
-import * as constants from "../../backend/constants";
+
+const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
 
 describe("Node.js interceptor", () => {
-  describe("with nothing in place yet", () => {
+  describe("with petstore in place", () => {
     let nodeInterceptor: NodeBackend;
     beforeEach(() => {
-      nodeInterceptor = new NodeBackend();
+      nodeInterceptor = new NodeBackend({ servicesDirectory });
       const unmockOptions = new UnmockOptions();
       nodeInterceptor.initialize(unmockOptions);
     });
@@ -15,8 +17,9 @@ describe("Node.js interceptor", () => {
       nodeInterceptor.reset();
     });
     test("gets successful response", async () => {
-      const response = await axios("http://example.org");
+      const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
     });
   });
 });
