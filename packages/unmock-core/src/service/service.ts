@@ -33,7 +33,7 @@ export class Service implements IService {
    * Fourth and beyond: template-specific.
    */
   // @ts-ignore // ignored because it's currently only being read and not written
-  private state: IUnmockServiceState = {};
+  private state: UnmockServiceState = {};
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
