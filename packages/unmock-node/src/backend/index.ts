@@ -64,8 +64,7 @@ export interface INodeBackendOptions {
   servicesDirectory?: string;
 }
 
-interface IRegisteredSocket extends net.Socket {
-  __unmock_req_id?: string;
+interface IBypassableSocket extends net.Socket {
   bypass: () => void;
 }
 
@@ -75,7 +74,7 @@ const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
 export default class NodeBackend implements IBackend {
   private readonly config: INodeBackendOptions;
   private clientRequests: {
-    [id: string]: {
+    [requestId: string]: {
       clientRequest: ClientRequest;
     };
   } = {};
@@ -99,8 +98,8 @@ export default class NodeBackend implements IBackend {
       this.origOnSocket,
       function(
         this: ClientRequest,
-        socket: IRegisteredSocket,
-      ): IRegisteredSocket {
+        socket: IBypassableSocket,
+      ): IBypassableSocket {
         const requestId = uuidv4();
         debugLog(
           `New socket assigned to client request, assigned ID: ${requestId}`,
@@ -111,8 +110,8 @@ export default class NodeBackend implements IBackend {
       },
     );
 
-    // Client-side socket connect, track each request via the socket
-    this.mitm.on("connect", (socket: IRegisteredSocket, opts: RequestOptions) =>
+    // Client-side socket connect, use to bypass connections
+    this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
       this.mitmOnConnect.call(this, options, socket, opts),
     );
 
@@ -141,9 +140,11 @@ export default class NodeBackend implements IBackend {
     this.clientRequests = {};
   }
 
-  private extractClientRequest(req: IncomingMessage): ClientRequest {
+  private extractTrackedClientRequest(
+    incomingMessage: IncomingMessage,
+  ): ClientRequest {
     debugLog(`Existing client request IDs`, Object.keys(this.clientRequests));
-    const headers = req.headers;
+    const headers = incomingMessage.headers;
     const reqId = headers[UNMOCK_INTERNAL_HTTP_HEADER];
     debugLog(`Intercepted incoming request with ID ${reqId}`);
     if (typeof reqId !== "string") {
@@ -161,16 +162,16 @@ export default class NodeBackend implements IBackend {
     req: IncomingMessage,
     res: ServerResponse,
   ) {
-    const clientRequest = this.extractClientRequest(req);
+    const clientRequest = this.extractTrackedClientRequest(req);
     handleRequestAndResponse(createResponse, req, res, clientRequest);
   }
 
   private mitmOnConnect(
-    options: UnmockOptions,
-    socket: IRegisteredSocket,
+    unmockOptions: UnmockOptions,
+    socket: IBypassableSocket,
     opts: RequestOptions,
   ) {
-    if (options.isWhitelisted(opts.host || "")) {
+    if (unmockOptions.isWhitelisted(opts.host || "")) {
       socket.bypass();
     }
   }
