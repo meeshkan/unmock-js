@@ -14,7 +14,7 @@ import { httpRequestMatcherFactory } from "./matcher";
 import {
   IUnmockServiceState,
   OASSchema,
-  UnmockServiceState,
+  IUnmockServiceState,
 } from "./service/interfaces";
 
 // json-schema-faker doesn't have typed definitions?
@@ -66,7 +66,7 @@ const templateFromResponse = (response: OASSchema): OASSchema => {
   return response.content[keys[0]];
 };
 
-const setupJSFUnmockProperties = (_: UnmockServiceState) => {
+const setupJSFUnmockProperties = (_: IUnmockServiceState) => {
   // TODO: use the state parameter to update values as needed
 
   jsf.define("unmock-size", (value: number, schema: OASSchema) => {

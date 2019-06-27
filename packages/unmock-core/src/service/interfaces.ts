@@ -1,3 +1,5 @@
+import { OpenAPIObject } from "loas3/dist/src/generated/full";
+
 const RESTMethodTypes = [
   "get",
   "head",
@@ -10,6 +12,7 @@ const RESTMethodTypes = [
   "all", // internally used to mark all the above methods.
 ] as const;
 export type HTTPMethod = typeof RESTMethodTypes[number];
+
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 
@@ -17,10 +20,14 @@ export interface IServiceMapping {
   [serviceName: string]: IService;
 }
 
-export interface IUnmockServiceState {
-  // Defines basic DSL properties
-  $code: number;
-  [key: string]: UnmockServiceState;
+export interface IStateInput {
+  method: HTTPMethod;
+  endpoint: string;
+  newState: IUnmockServiceState;
+}
+export interface IServiceInput {
+  schema: OpenAPIObject;
+  name: string;
 }
 
 export interface IService {
@@ -31,7 +38,7 @@ export interface IService {
   /**
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
-  readonly schema: OASSchema;
+  readonly schema: OpenAPIObject;
   /**
    * Whether the OAS has a defined "paths" object or not.
    */
@@ -61,15 +68,29 @@ export interface IService {
   updateState(input: IStateInput): boolean;
 }
 
-// Type aliases for brevity
-export type UnmockServiceState = any;
-export type OASSchema = any;
-export interface IStateInput {
-  method: HTTPMethod;
-  endpoint: string;
-  newState: IUnmockServiceState;
+/**
+ * DSL related parameters that can only be found at the top level
+ */
+interface ITopLevelDSL {
+  $code?: number;
 }
-export interface IServiceInput {
-  schema: OASSchema;
-  name: string;
+
+/**
+ * DSL related parameters that can be found at any level in the schema
+ */
+interface IDSL {
+  $size?: number;
 }
+
+interface INestedState<T> {
+  [key: string]: INestedState<T> | T;
+}
+
+interface IUnmockServiceState
+  extends INestedState<IDSL | string | number | (() => string | number)> {}
+/**
+ * Defines how a state can look like without validation against
+ * the actual service specification.
+ * Validation can be done either in runtime or via IDE extensions.
+ */
+export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL;
