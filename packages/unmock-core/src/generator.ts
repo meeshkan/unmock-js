@@ -7,22 +7,20 @@ import {
   CreateResponse,
   GeneratedMock,
   IMock,
-  IResponseCreatorFactoryInput,
   ISerializedRequest,
   RequestToSpec,
 } from "./interfaces";
-import { httpRequestMatcherFactory } from "./matcher";
 import { UnmockServiceState } from "./service/interfaces";
 
 // json-schema-faker doesn't have typed definitions?
 // @ts-ignore
 import jsf from "json-schema-faker";
 
-export const responseCreatorFactory = (
-  opts: IResponseCreatorFactoryInput,
-): CreateResponse => {
-  const httpRequestMatcher = httpRequestMatcherFactory(opts.mockGenerator);
-  return (req: ISerializedRequest) => httpRequestMatcher(req);
+export const responseCreatorFactory = (): CreateResponse => {
+  return (__: ISerializedRequest) => ({
+    body: "Nothing here yet",
+    statusCode: 200,
+  });
 };
 
 const setupJSFUnmockProperties = (_: UnmockServiceState) => {

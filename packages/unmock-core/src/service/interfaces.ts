@@ -1,4 +1,5 @@
 import { OpenAPIObject } from "loas3/dist/src/generated/full";
+import { ISerializedRequest } from "../interfaces";
 
 const RESTMethodTypes = [
   "get",
@@ -28,6 +29,8 @@ export interface IServiceInput {
   schema: OpenAPIObject;
   name: string;
 }
+
+export type MatcherResponse = any | undefined;
 
 export interface IService {
   /**
@@ -65,6 +68,14 @@ export interface IService {
    * @param input Describes the new state that matches a method and endpoint.
    */
   updateState(input: IStateInput): boolean;
+
+  /**
+   * Match a given request to the service. Return an operation object for successful match,
+   * undefined otherwise.
+   * @param sreq Serialized request
+   * @returns Operation object for generating a response
+   */
+  match(sreq: ISerializedRequest): MatcherResponse;
 }
 
 /**

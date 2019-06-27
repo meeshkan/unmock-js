@@ -6,6 +6,7 @@ import {
   IService,
   IServiceInput,
   IStateInput,
+  MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
 import {
@@ -14,6 +15,10 @@ import {
   getPathParametersFromPath,
   getPathParametersFromSchema,
 } from "./util";
+
+import { OASMatcher } from "./matcher";
+
+import { ISerializedRequest } from "../interfaces";
 
 /**
  * Implements the state management for a service
@@ -25,6 +30,7 @@ export class Service implements IService {
   public readonly name: string;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
+  private readonly matcher: OASMatcher;
   /**
    * Maintains a state for service
    * First level kv pairs: paths -> methods
@@ -40,6 +46,7 @@ export class Service implements IService {
     this.name = opts.name;
     // Update the paths in the first level to regex if needed
     if (this.schema === undefined || this.schema.paths === undefined) {
+      this.matcher = new OASMatcher({ schema: this.schema });
       return; // empty schema or does not contain paths
     }
     this.updateSchemaPaths();
@@ -47,6 +54,7 @@ export class Service implements IService {
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
       Object.keys(this.schema.paths).length > 0;
+    this.matcher = new OASMatcher({ schema: this.schema });
   }
 
   get schema(): OpenAPIObject {
@@ -55,6 +63,10 @@ export class Service implements IService {
 
   get hasDefinedPaths(): boolean {
     return this.hasPaths;
+  }
+
+  public match(sreq: ISerializedRequest): MatcherResponse {
+    return this.matcher.matchToOperationObject(sreq);
   }
 
   public findEndpoint(endpoint: string): string | undefined {

@@ -1,18 +1,30 @@
+import { ISerializedRequest } from "../interfaces";
 import {
   HTTPMethod,
   IService,
   IServiceMapping,
   isRESTMethod,
+  MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
 
 export class ServiceStore {
-  private serviceMapping: IServiceMapping = {};
+  private readonly serviceMapping: IServiceMapping = {};
 
   constructor(services: IService[]) {
     services.forEach(service => {
       this.serviceMapping[service.name] = service;
     });
+  }
+
+  public match(sreq: ISerializedRequest): MatcherResponse {
+    for (const service of Object.values(this.serviceMapping)) {
+      const matchResponse = service.match(sreq);
+      if (matchResponse !== undefined) {
+        return matchResponse;
+      }
+    }
+    return undefined;
   }
 
   public saveState({
