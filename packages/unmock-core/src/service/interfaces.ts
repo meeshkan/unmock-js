@@ -45,23 +45,17 @@ export interface IService {
    * Name for the service.
    */
   readonly name: string;
+
   /**
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
   readonly schema: OpenAPIObject;
+
   /**
    * Whether the OAS has a defined "paths" object or not.
    */
   hasDefinedPaths: boolean;
-  /**
-   * Verifies the given request for method and endpoint are valid.
-   * Should throw if anything goes wrong.
-   * @param method A string that matches HTTPMethod type.
-   *               Note HTTPMethod includes an "all" method, intended as "whatever method fits".
-   * @param endpoint An endpoint for fetching.
-   *                 Note the default endpoint ("**") should match all endpoints.
-   */
-  verifyRequest(method: HTTPMethod, endpoint: string): void;
+
   /**
    * Updates the state for given method and endpoint.
    * @param input Describes the new state that matches a method and endpoint.

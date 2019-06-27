@@ -55,46 +55,7 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public verifyRequest(method: HTTPMethod, endpoint: string) {
-    // Throws if method + endpoint are invalid for this service
-    if (!this.hasDefinedPaths) {
-      throw new Error(`'${this.name}' has no defined paths!`);
-    }
-
-    if (endpoint !== DEFAULT_ENDPOINT) {
-      const servicePaths = this.schema.paths;
-      const schemaEndpoint = this.matcher.findEndpoint(endpoint);
-      if (schemaEndpoint === undefined) {
-        // This endpoint does not exist, no need to retain state
-        throw new Error(
-          `Can't find endpoint '${endpoint}' for '${this.name}'!`,
-        );
-      }
-      if (
-        // If the method is 'all', we assume there exists some content under the specified endpoint...
-        method !== "all" &&
-        servicePaths[schemaEndpoint][method] === undefined
-      ) {
-        // The endpoint exists but the specified method for that endpoint doesnt
-        throw new Error(
-          `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
-        );
-      }
-    } else if (method !== "all") {
-      // If endpoint is default (all), we make sure that at least one path exists with the given method
-      if (
-        getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
-          .length === 0
-      ) {
-        throw new Error(
-          `Can't find any endpoints with method '${method}' in ${this.name}!`,
-        );
-      }
-    }
-  }
-
-  public updateState({ newState }: IStateInput): boolean {
-    // Input: method, endpoint, newState
+  public updateState({ method, endpoint, newState }: IStateInput): boolean {
     // Four possible cases:
     // 1. Default endpoint ("**"), default method ("all") =>
     //    applies to all paths with any method where it fits. If none fit -> return false.
@@ -105,6 +66,47 @@ export class Service implements IService {
     // 4. Specific endpoint, specific method =>
     //    applies to that combination only. If anything is the state doesn't fit -> return false.
     //
+    if (!this.hasDefinedPaths) {
+      throw new Error(`'${this.name}' has no defined paths!`);
+    }
+    if (endpoint !== DEFAULT_ENDPOINT) {
+      const servicePaths = this.schema.paths;
+      const schemaEndpoint = this.matcher.findEndpoint(endpoint);
+      if (schemaEndpoint === undefined) {
+        // This endpoint does not exist, no need to retain state
+        throw new Error(
+          `Can't find endpoint '${endpoint}' for '${this.name}'!`,
+        );
+      }
+
+      const endpointSchema = servicePaths[schemaEndpoint];
+      if (method !== "all") {
+        const operation = endpointSchema[method];
+        // Applies to specific endpoint and method
+        if (operation === undefined) {
+          // The endpoint exists but the specified method for that endpoint doesnt
+          throw new Error(
+            `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
+          );
+        }
+
+        // Update for specific method
+      } else {
+        // Update for all methods in this endpoint
+      }
+    } else {
+      if (method !== "all") {
+        if (
+          getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
+            .length === 0
+        ) {
+          throw new Error(
+            `Can't find any endpoints with method '${method}' in ${this.name}!`,
+          );
+        }
+      }
+      // Applies to all endpoints for all methods
+    }
 
     this.state = newState; // For PR purposes, we just save the state as is.
     return true;
