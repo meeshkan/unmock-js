@@ -16,12 +16,12 @@ describe("Node.js interceptor", () => {
     afterAll(() => {
       nodeInterceptor.reset();
     });
-    test("gets successful response for petstore", async () => {
+    test("gets successful response or petstore", async () => {
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBeDefined();
     });
-    test("gets emitted error for unknown url", async () => {
+    test("emits an error for unknown url", async () => {
       try {
         await axios("http://example.org");
       } catch (err) {

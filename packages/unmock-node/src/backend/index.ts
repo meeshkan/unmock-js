@@ -101,14 +101,12 @@ export default class NodeBackend implements IBackend {
         this: ClientRequest,
         socket: IRegisteredSocket,
       ): IRegisteredSocket {
-        if (socket.__unmock_req_id === undefined) {
-          socket.__unmock_req_id = uuidv4();
-        }
-
-        debugLog("New socket on client request", socket.__unmock_req_id);
-        self.clientRequests[socket.__unmock_req_id] = { clientRequest: this };
-        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, socket.__unmock_req_id);
-
+        const requestId = uuidv4();
+        debugLog(
+          `New socket assigned to client request, assigned ID: ${requestId}`,
+        );
+        self.clientRequests[requestId] = { clientRequest: this };
+        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
         return socket;
       },
     );
