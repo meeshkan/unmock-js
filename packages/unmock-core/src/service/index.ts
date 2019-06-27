@@ -1,16 +1,16 @@
-import { DEFAULT_ENDPOINT, DEFAULT_REST_METHOD } from "./constants";
+import { DEFAULT_ENDPOINT } from "./constants";
 import {
   HTTPMethod,
   IService,
   isRESTMethod,
-  IUnmockServiceState,
+  UnmockServiceState,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_ENDPOINT,
-  method: HTTPMethod = DEFAULT_REST_METHOD,
-  state: IUnmockServiceState,
+  method: HTTPMethod = "all",
+  state: UnmockServiceState,
 ) => {
   // Returns a function for the end user to update the state in,
   // while maintaining endpoints and methods.
@@ -25,7 +25,7 @@ const saveStateProxy = (store: ServiceStore, serviceName: string) => (
 const saveStateHelper = (fn: any, method: HTTPMethod) => (
   // Redirects method, endpoint and state via currying to fn()
   endpoint = DEFAULT_ENDPOINT,
-  state: IUnmockServiceState,
+  state: UnmockServiceState,
 ) => fn(endpoint, method, state);
 
 const MethodHandler = {

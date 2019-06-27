@@ -6,7 +6,7 @@ const RESTMethodTypes = [
   "post",
   "put",
   "delete",
-  "connect",
+  // "connect",
   "options",
   "trace",
   "all", // internally used to mark all the above methods.
