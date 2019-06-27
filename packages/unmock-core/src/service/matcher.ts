@@ -1,13 +1,7 @@
 import debug from "debug";
 import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
-import {
-  IEndpointToRegexMapping,
-  IOASMatcher,
-  MatcherResponse,
-  OpenAPIObject,
-  PathItem,
-} from "./interfaces";
+import { MatcherResponse, OpenAPIObject, PathItem } from "./interfaces";
 import {
   buildPathRegexStringFromParameters,
   getPathParametersFromPath,
@@ -16,9 +10,11 @@ import {
 
 const debugLog = debug("unmock:matcher");
 
-// Just for readability until we have types
+interface IEndpointToRegexMapping {
+  [endpoint: string]: RegExp;
+}
 
-export class OASMatcher implements IOASMatcher {
+export class OASMatcher {
   /**
    * Strip server path prefix from request path, keeping the leading slash.
    * Examples:
@@ -68,7 +64,7 @@ export class OASMatcher implements IOASMatcher {
   }
 
   private readonly schema: OpenAPIObject;
-  private readonly endpointToRegexMapping: IEndpointToRegexMapping = {};
+  private readonly endpointToRegexMapping: IEndpointToRegexMapping;
 
   constructor({ schema }: { schema: OpenAPIObject }) {
     this.schema = schema;

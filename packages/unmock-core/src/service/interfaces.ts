@@ -28,10 +28,6 @@ export interface IServiceMapping {
   [serviceName: string]: IService;
 }
 
-export interface IEndpointToRegexMapping {
-  [endpoint: string]: RegExp;
-}
-
 export interface IStateInput {
   method: HTTPMethod;
   endpoint: string;
@@ -40,11 +36,6 @@ export interface IStateInput {
 export interface IServiceInput {
   schema: OpenAPIObject;
   name: string;
-}
-
-export interface IOASMatcher {
-  matchToOperationObject(sreq: ISerializedRequest): MatcherResponse;
-  findEndpoint(reqPath: string): string | undefined;
 }
 
 export type MatcherResponse = any | undefined;
