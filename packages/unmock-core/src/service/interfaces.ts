@@ -6,7 +6,6 @@ const RESTMethodTypes = [
   "post",
   "put",
   "delete",
-  // "connect",
   "options",
   "trace",
   "all", // internally used to mark all the above methods.
@@ -72,6 +71,10 @@ export interface IService {
  * DSL related parameters that can only be found at the top level
  */
 interface ITopLevelDSL {
+  /**
+   * Defines the response based on the requested response code.
+   * If the requested response code is not found, returns 'default'
+   */
   $code?: number;
 }
 
@@ -79,6 +82,9 @@ interface ITopLevelDSL {
  * DSL related parameters that can be found at any level in the schema
  */
 interface IDSL {
+  /**
+   * Used to control and generate arrays of specific sizes.
+   */
   $size?: number;
 }
 
