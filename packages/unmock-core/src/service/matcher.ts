@@ -43,7 +43,7 @@ export class OASMatcher implements IOASMatcher {
     schema: OpenAPIObject,
   ): IEndpointToRegexMapping {
     const mapping: IEndpointToRegexMapping = {};
-    const paths: { [path: string]: any } | undefined = schema.paths;
+    const paths = schema.paths;
     if (paths === undefined || paths.length === 0) {
       return mapping;
     }
@@ -114,7 +114,7 @@ export class OASMatcher implements IOASMatcher {
      * If it fails, iterates over all endpoint until a match is found.
      * Matching path key is returned so that future matching, reference, etc can be done as needed.
      */
-    const paths: { [path: string]: any } | undefined = this.schema.paths;
+    const paths = this.schema.paths;
 
     if (paths === undefined || paths.length === 0) {
       return undefined;
@@ -123,7 +123,7 @@ export class OASMatcher implements IOASMatcher {
     const directMatch = paths[reqPath];
     if (directMatch !== undefined) {
       debugLog(`Found direct path match for ${reqPath}`);
-      return directMatch;
+      return reqPath;
     }
 
     const definedPaths = Object.keys(paths);
