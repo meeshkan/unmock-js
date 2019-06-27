@@ -56,7 +56,10 @@ export class Service implements IService {
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
       Object.keys(this.schema.paths).length > 0;
-    this.matcher = new OASMatcher({ schema: this.schema });
+    this.matcher = new OASMatcher({
+      endpointToRegexMapping: this.endpointToRegexp,
+      schema: this.schema,
+    });
   }
 
   get schema(): OpenAPIObject {
