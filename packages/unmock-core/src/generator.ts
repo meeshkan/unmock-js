@@ -57,18 +57,16 @@ const setupJSFUnmockProperties = (_: UnmockServiceState) => {
   });
 };
 
-const generateMockFromTemplate = (spec: any): ISerializedResponse => {
-  // 2. Use sreq to fetch the relevant path in the OAS spec
-  // const operation = getPathSchemaFromSpec(spec, method, path);
-  // 3. Fetch state from DSL
+const generateMockFromTemplate = (
+  responseTemplate: any,
+): ISerializedResponse => {
+  // 1. Take in state from DSL
   // TODO: Link with Matcher/Service
   const state = { $code: 200 };
   // const responseCode = String(state.$code || "default");
-  // 4. At this point, we assume there are no references, and we only need to
+  // 2. At this point, we assume there are no references, and we only need to
   //    handle x-unmock-* within the schemas, modify it according to these
   //    properties + the state -> we can work with jsf out of the box
-  // TODO: link with Matcher
-  const responseTemplate = spec;
 
   // Setup the unmock properties for jsf parsing
   setupJSFUnmockProperties(state);
