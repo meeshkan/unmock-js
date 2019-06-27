@@ -19,6 +19,7 @@ describe("Node.js interceptor", () => {
     test("gets successful response", async () => {
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
     });
   });
 });
