@@ -1,3 +1,4 @@
+import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_ENDPOINT } from "./constants";
 import {
   HTTPMethod,
@@ -8,11 +9,8 @@ import {
   OpenAPIObject,
   UnmockServiceState,
 } from "./interfaces";
-import { getAtLevel } from "./util";
-
 import { OASMatcher } from "./matcher";
-
-import { ISerializedRequest } from "../interfaces";
+import { getAtLevel } from "./util";
 
 /**
  * Implements the state management for a service
