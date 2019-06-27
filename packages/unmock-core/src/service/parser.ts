@@ -1,4 +1,5 @@
 import jsYaml from "js-yaml";
+import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
 
@@ -28,7 +29,12 @@ export class ServiceParser implements IServiceParser {
         ? serviceFile.contents.toString("utf-8")
         : serviceFile.contents;
 
-    const schema = jsYaml.safeLoad(contents);
+    const { val: schema, errors } = loas3(jsYaml.safeLoad(contents));
+    if (errors) {
+      throw new Error([
+        "The following errors occured while parsing your loas3 schema",
+        ...errors.map(i => `  ${i.message}`)].join("\n"));
+    }
 
     // TODO Maybe read from the schema first
     const name = serviceDef.directoryName;
