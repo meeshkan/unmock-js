@@ -22,6 +22,10 @@ export interface IServiceMapping {
   [serviceName: string]: IService;
 }
 
+export interface IEndpointToRegexMapping {
+  [endpoint: string]: RegExp;
+}
+
 export interface IStateInput {
   method: HTTPMethod;
   endpoint: string;

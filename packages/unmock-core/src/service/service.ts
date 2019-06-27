@@ -1,7 +1,8 @@
 import XRegExp from "xregexp";
-import { DEFAULT_ENDPOINT, UNMOCK_PATH_REGEX_KW } from "./constants";
+import { DEFAULT_ENDPOINT } from "./constants";
 import {
   HTTPMethod,
+  IEndpointToRegexMapping,
   IService,
   IServiceInput,
   IStateInput,
@@ -31,6 +32,7 @@ export class Service implements IService {
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
+  private endpointToRegexp: IEndpointToRegexMapping = {};
   /**
    * Maintains a state for service
    * First level kv pairs: paths -> methods
@@ -49,7 +51,7 @@ export class Service implements IService {
       this.matcher = new OASMatcher({ schema: this.schema });
       return; // empty schema or does not contain paths
     }
-    this.updateSchemaPaths();
+    this.buildSchemaRegExps();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
@@ -81,11 +83,10 @@ export class Service implements IService {
       return endpoint;
     }
     for (const schemaEndpoint of Object.keys(this.schema.paths)) {
-      // Ugly hack until loas3 types include a signature
-      const endpointRegex = (this.schema.paths[schemaEndpoint] as any)[
-        UNMOCK_PATH_REGEX_KW
-      ] as RegExp;
-
+      const endpointRegex = this.endpointToRegexp[schemaEndpoint];
+      if (endpointRegex === undefined) {
+        continue;
+      }
       if (endpointRegex.test(endpoint)) {
         return schemaEndpoint;
       }
@@ -148,7 +149,7 @@ export class Service implements IService {
     return true;
   }
 
-  private updateSchemaPaths() {
+  private buildSchemaRegExps() {
     Object.keys(this.schema.paths).forEach((path: string) => {
       const pathParameters = getPathParametersFromPath(path);
       let newPath: string = "";
@@ -168,8 +169,7 @@ export class Service implements IService {
 
       // Update the content for the new path and remove old path
       const newPathRegex = XRegExp(`^${newPath}$`, "g");
-      // Ugly hack until loas3 types include a signature
-      (this.oasSchema.paths[path] as any)[UNMOCK_PATH_REGEX_KW] = newPathRegex;
+      this.endpointToRegexp[path] = newPathRegex;
     });
   }
 }

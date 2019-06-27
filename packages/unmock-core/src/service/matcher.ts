@@ -1,11 +1,13 @@
 import debug from "debug";
 import { ISerializedRequest } from "../interfaces";
 
-import { MatcherResponse, OpenAPIObject } from "./interfaces";
+import {
+  IEndpointToRegexMapping,
+  MatcherResponse,
+  OpenAPIObject,
+} from "./interfaces";
 
 const debugLog = debug("unmock:matcher");
-
-import { UNMOCK_PATH_REGEX_KW } from "./constants";
 
 // Just for readability until we have types
 type PathItemObject = any;
@@ -30,10 +32,23 @@ export class OASMatcher {
     );
     return reqPath.replace(regexToRemoveFromReqPath, "");
   }
+
   private readonly schema: OpenAPIObject;
-  constructor({ schema }: { schema: OpenAPIObject }) {
+  private readonly endpointToRegexMapping: IEndpointToRegexMapping = {};
+
+  constructor({
+    schema,
+    endpointToRegexMapping,
+  }: {
+    schema: OpenAPIObject;
+    endpointToRegexMapping?: IEndpointToRegexMapping;
+  }) {
     this.schema = schema;
+    if (endpointToRegexMapping !== undefined) {
+      this.endpointToRegexMapping = endpointToRegexMapping;
+    }
   }
+
   public matchToOperationObject(sreq: ISerializedRequest): MatcherResponse {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
     // TODO: If the Servers object is not at the top level
@@ -84,7 +99,7 @@ export class OASMatcher {
 
     for (const pathItemKey of Object.keys(paths)) {
       const pathItemObject = paths[pathItemKey];
-      const pathRegex = pathItemObject[UNMOCK_PATH_REGEX_KW] as RegExp;
+      const pathRegex = this.endpointToRegexMapping[pathItemKey];
       if (pathRegex === undefined) {
         continue;
       }
