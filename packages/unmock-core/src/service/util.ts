@@ -1,6 +1,12 @@
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { Parameter, Paths } from "./interfaces";
+import {
+  Operation,
+  Parameter,
+  Paths,
+  Response,
+  UnmockServiceState,
+} from "./interfaces";
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];
@@ -39,16 +45,13 @@ export const buildPathRegexStringFromParameters = (
   schemaParameters: Parameter[],
   pathParameters: string[],
 ): string => {
-  if (
-    schemaParameters.length === 0 ||
-    Object.values(schemaParameters[0]).length === 0
-  ) {
+  if (schemaParameters.length === 0) {
     return path;
   }
 
   let newPath = `${path}`;
   // Assumption: All methods describe the parameter the same way.
-  Object.values(schemaParameters[0]).forEach((p: any) => {
+  Object.values(schemaParameters).forEach((p: any) => {
     const paramLoc = pathParameters.indexOf(p.name);
     if (paramLoc !== -1) {
       // replace the original path with regex as needed
@@ -68,6 +71,30 @@ export const buildPathRegexStringFromParameters = (
   return newPath;
 };
 
+const verifyResponseWithState = (
+  response: Response,
+  state: UnmockServiceState,
+) => {
+  //
+};
+
+export const getValidResponsesForOperationWithState = (
+  operation: Operation,
+  state: UnmockServiceState,
+): string[] | undefined => {
+  // Check if any non-DSL specific elements are found in the Operation under responses.
+  // We do not resolve anything at this point.
+  const responses = operation.responses;
+  const statusCode = state.$code;
+  if (statusCode !== undefined) {
+    // Applies only to specific response
+    const response = (responses as any)[statusCode];
+    if (response === undefined) {
+      return undefined;
+    }
+  }
+};
+
 export const getAtLevel = (
   nestedObj: any,
   level: number,
@@ -76,6 +103,7 @@ export const getAtLevel = (
   /** Returns all nested objects at a certain level from nestedObj with additional
    * filtering based on key and value from callback. Filtering only applies at the requested level.
    * `level` is 0-based.
+   * Works in BFS manner.
    */
   if (level < 0) {
     throw new Error(`Not sure what should I find at nested level ${level}...`);
