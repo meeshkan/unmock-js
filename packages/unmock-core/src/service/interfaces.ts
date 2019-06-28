@@ -28,10 +28,12 @@ type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
 export type HTTPMethod = typeof RESTMethodTypes[number];
 export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
 
-export const isRESTMethod = (
+export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
+  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
+export const isExtendedRESTMethod = (
   maybeMethod: string,
 ): maybeMethod is ExtendedHTTPMethod =>
-  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
+  maybeMethod === DEFAULT_HTTP_METHOD || isRESTMethod(maybeMethod);
 
 export interface IServiceMapping {
   [serviceName: string]: IService;

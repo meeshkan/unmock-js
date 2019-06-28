@@ -5,7 +5,6 @@ import {
   HTTPMethod,
   IService,
   IServiceInput,
-  isOperation,
   isRESTMethod,
   IStateInput,
   MatcherResponse,
@@ -15,7 +14,6 @@ import {
   UnmockServiceState,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
-import { getAtLevel } from "./util";
 
 type OperationsForStateUpdate = Array<{
   endpoint: string;
@@ -66,11 +64,11 @@ export class Service implements IService {
 
   public updateState({ method, endpoint, newState }: IStateInput): boolean {
     // Four possible cases:
-    // 1. Default endpoint ("**"), default method ("all") =>
+    // 1. Default endpoint ("**"), default method ("any") =>
     //    applies to all paths with any method where it fits. If none fit -> return false.
     // 2. Default endpoint ("**"), with specific method =>
     //    applies to all paths with that method where it fits. If none fit -> return false.
-    // 3. Specific endpoint, default method ("all") =>
+    // 3. Specific endpoint, default method ("any") =>
     //    applies to all methods in that endpoint, if it fits. If none fit -> return false.
     // 4. Specific endpoint, specific method =>
     //    applies to that combination only. If anything is the state doesn't fit -> return false.
@@ -144,29 +142,33 @@ export class Service implements IService {
   ): OperationsForStateUpdate {
     const anyMethod = method === DEFAULT_HTTP_METHOD;
     const filterFn = anyMethod
-      ? (
-          pathItem: PathItem, // If the method doesn't matter, just make sure the PathItem has any Operation types
-        ) =>
-          Object.keys(pathItem).reduce(
-            (acc: boolean, maybeOperation: Operation | any) =>
-              acc || isOperation(maybeOperation),
-            false,
-          )
-      : (pathItem: PathItem) => Object.keys(pathItem).includes(method);
+      ? (pathItemKey: string) => isRESTMethod(pathItemKey)
+      : (pathItemKey: string) => pathItemKey === method;
 
-    const pathsWithMatchingMethod = Object.keys(this.schema.paths).filter(
-      (path: string) => filterFn(this.schema.paths[path]),
-    );
-    // For each path, save only the operations that match
-    const operations: OperationsForStateUpdate = pathsWithMatchingMethod.map(
-      (path: string) => {
-        const pathItem = this.schema.paths[path];
-      },
-    );
+    const operations: OperationsForStateUpdate = Object.keys(
+      this.schema.paths,
+    ).reduce((ops: OperationsForStateUpdate, path: string) => {
+      // For each path, we reduce the relevant methods (= operations)
+      const pathItem = this.schema.paths[path];
+      const pathOperations = Object.keys(pathItem).reduce(
+        (pathOps: OperationsForStateUpdate, maybeOperationKey: string) =>
+          filterFn(maybeOperationKey)
+            ? pathOps.concat([
+                {
+                  endpoint: path,
+                  method: maybeOperationKey as HTTPMethod,
+                  operation: (pathItem as any)[maybeOperationKey],
+                },
+              ])
+            : pathOps,
+        [],
+      );
+      return ops.concat(pathOperations);
+    }, []);
     if (operations.length === 0) {
       throw new Error(
         `Can't find any endpoints ` +
-          `${anyMethod ? `with method '${method}'` : "with operations"}` +
+          `${anyMethod ? "with operations" : `with method '${method}'`}` +
           ` in '${this.name}'!`,
       );
     }

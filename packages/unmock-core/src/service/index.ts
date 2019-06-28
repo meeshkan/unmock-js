@@ -1,5 +1,6 @@
-import { DEFAULT_ENDPOINT } from "./constants";
+import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
 import {
+  ExtendedHTTPMethod,
   HTTPMethod,
   IService,
   isRESTMethod,
@@ -9,7 +10,7 @@ import { ServiceStore } from "./serviceStore";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_ENDPOINT,
-  method: HTTPMethod = "all",
+  method: ExtendedHTTPMethod = DEFAULT_HTTP_METHOD,
   state: UnmockServiceState,
 ) => {
   // Returns a function for the end user to update the state in,
