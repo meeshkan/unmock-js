@@ -1,3 +1,4 @@
+import debug from "debug";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
 import {
@@ -15,11 +16,14 @@ import {
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 
-type OperationsForStateUpdate = Array<{
+const debugLog = debug("unmock:service");
+
+interface IOperationForStateUpdate {
   endpoint: string;
   method: HTTPMethod;
   operation: Operation;
-}>;
+}
+type OperationsForStateUpdate = IOperationForStateUpdate[];
 
 /**
  * Implements the state management for a service
@@ -76,70 +80,97 @@ export class Service implements IService {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
-    const operations = this.getOperationsOrThrow(method, endpoint);
-    // Verify and save state for each operation...
+    debugLog(`Fetching operations for '${method} ${endpoint}'...`);
+    const { operations, error } = this.getOperations(method, endpoint);
+    if (error !== undefined) {
+      debugLog(`Couldn't find any matching operations: ${error}`);
+      throw new Error(error);
+    }
+    debugLog(`Found follow operations: ${operations}`);
+
+    operations.forEach((op: IOperationForStateUpdate) => {
+      // For each operation, verify the new state applies and save in `this.state`
+    });
+
     this.state = newState; // For PR purposes, we just save the state as is.
     return true;
   }
 
-  private getOperationsOrThrow(
+  private getOperations(
     method: ExtendedHTTPMethod,
     endpoint: string,
-  ): OperationsForStateUpdate {
+  ): { operations: OperationsForStateUpdate; error?: string } {
+    /**
+     * Gets relevant operations for given method and endpoint, filtering out
+     * any endpoints/method combinations that do not match.
+     * @returns An object with operations and possibly an error message. If
+     *          error is defined, operations is guaranteed to be an empty array.
+     *          An error is always an indication that something couldn't be found
+     *          with the given (method, endpoint) combination in this service.
+     */
+    const isDefMethod = method === DEFAULT_HTTP_METHOD;
+    // Short handle for returning a failed result
+    const errPref = "Can't find ";
+    const errSuff = ` in '${this.name}'!`;
+    const err = (msg: string) => ({
+      operations: [],
+      error: errPref + msg + errSuff,
+    });
+
     if (endpoint !== DEFAULT_ENDPOINT) {
-      const pathItem = this.getPathItemOrThrow(endpoint);
-      if (method !== DEFAULT_HTTP_METHOD) {
-        return [
-          {
-            endpoint,
-            method,
-            operation: this.getOperationOrThrow({
-              endpoint,
-              method,
-              pathItem,
-            }),
-          },
-        ];
-      } else {
-        return this.getOperationsFromPathItemOrThrow(pathItem, endpoint);
+      debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
+      const pathItem = this.getPathItem(endpoint);
+      if (pathItem === undefined) {
+        return err(`endpoint '${endpoint}'`);
       }
-    } else {
-      return this.getOperationsWithMethodOrThrow(method);
+
+      if (isDefMethod) {
+        // Specific endpoint, all methods
+        debugLog(`Fetching operations for any REST method...`);
+        const ops = this.getOperationsFromPathItem(pathItem, endpoint);
+        return ops === undefined
+          ? err(`any operations under '${endpoint}'`)
+          : { operations: ops };
+      }
+
+      // Specific endpoint, specific method
+      debugLog(`Fetching operations for REST method '${method}'...`);
+      method = method as HTTPMethod;
+      const op = pathItem[method];
+      return op === undefined
+        ? err(`response for '${method} ${endpoint}'`)
+        : {
+            operations: [
+              {
+                endpoint,
+                method,
+                operation: op,
+              },
+            ],
+          };
     }
+    // any endpoint
+    debugLog(`Fetching operations for any endpoint...`);
+    const operations = this.getOperationsByMethod(method);
+    return operations === undefined
+      ? err(
+          `any endpoints with ` +
+            `${isDefMethod ? "operations" : `method '${method}'`}`,
+        )
+      : { operations };
   }
 
-  private getPathItemOrThrow(endpoint: string): PathItem {
+  private getPathItem(endpoint: string): PathItem | undefined {
     const keyOfEndpointInSchema = this.matcher.findEndpoint(endpoint);
     if (keyOfEndpointInSchema === undefined) {
-      // This endpoint does not exist, no need to retain state
-      throw new Error(`Can't find endpoint '${endpoint}' for '${this.name}'!`);
+      return undefined;
     }
     return this.schema.paths[keyOfEndpointInSchema];
   }
 
-  private getOperationOrThrow({
-    method,
-    endpoint,
-    pathItem,
-  }: {
-    method: HTTPMethod;
-    endpoint: string;
-    pathItem: PathItem;
-  }): Operation {
-    const operation = pathItem[method];
-    // Applies to specific endpoint and method
-    if (operation === undefined) {
-      // The endpoint exists but the specified method for that endpoint doesnt
-      throw new Error(
-        `Can't find response for '${method} ${endpoint}' in '${this.name}'!`,
-      );
-    }
-    return operation;
-  }
-
-  private getOperationsWithMethodOrThrow(
+  private getOperationsByMethod(
     method: ExtendedHTTPMethod,
-  ): OperationsForStateUpdate {
+  ): OperationsForStateUpdate | undefined {
     const anyMethod = method === DEFAULT_HTTP_METHOD;
     const filterFn = anyMethod
       ? (pathItemKey: string) => isRESTMethod(pathItemKey)
@@ -166,19 +197,15 @@ export class Service implements IService {
       return ops.concat(pathOperations);
     }, []);
     if (operations.length === 0) {
-      throw new Error(
-        `Can't find any endpoints ` +
-          `${anyMethod ? "with operations" : `with method '${method}'`}` +
-          ` in '${this.name}'!`,
-      );
+      return undefined;
     }
     return operations;
   }
 
-  private getOperationsFromPathItemOrThrow(
+  private getOperationsFromPathItem(
     pathItem: PathItem,
     endpoint: string,
-  ): OperationsForStateUpdate {
+  ): OperationsForStateUpdate | undefined {
     const operations: OperationsForStateUpdate = [];
     Object.keys(pathItem).forEach((key: string) => {
       if (isRESTMethod(key)) {
@@ -190,9 +217,7 @@ export class Service implements IService {
       }
     });
     if (operations.length === 0) {
-      throw new Error(
-        `There are no operations under '${endpoint}' in '${this.name}'!`,
-      );
+      return undefined;
     }
     return operations;
   }
