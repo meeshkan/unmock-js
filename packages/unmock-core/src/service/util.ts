@@ -1,10 +1,12 @@
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
 import {
+  MediaType,
   Operation,
   Parameter,
   Paths,
   Response,
+  Schema,
   UnmockServiceState,
 } from "./interfaces";
 
@@ -71,28 +73,78 @@ export const buildPathRegexStringFromParameters = (
   return newPath;
 };
 
-const verifyResponseWithState = (
-  response: Response,
+const DFSVerifyNoneAreUndefined = (obj: any, prevPath: string[] = []) => {
+  return Object.keys(obj).forEach((key: string) => {
+    const paramPath = prevPath.concat([key]);
+    if (obj[key] === undefined) {
+      throw new Error(`Can't find definition for ${paramPath.join(".")}`);
+    }
+    if (typeof obj === "object") {
+      DFSVerifyNoneAreUndefined(obj[key], paramPath);
+    }
+  });
+};
+
+export const verifyResponseWithState = (
+  content: MediaType,
   state: UnmockServiceState,
 ) => {
-  //
+  // Employ DFS to iterate over state and see if it matches in response...
+  // (For now, ignore $DSL notation and types)
+  const responseModsForState = findPathInObject(state, content) as Record<
+    string,
+    Schema
+  >;
+  // TODO: Ignore DSL/convert elements
+  // verify none of the elements are `undefined`, throws if some are missing
+  DFSVerifyNoneAreUndefined(responseModsForState);
+  return responseModsForState;
 };
 
 export const getValidResponsesForOperationWithState = (
   operation: Operation,
   state: UnmockServiceState,
-): string[] | undefined => {
+): { [statusCode: number]: Record<string, Schema> } | undefined => {
   // Check if any non-DSL specific elements are found in the Operation under responses.
   // We do not resolve anything at this point.
   const responses = operation.responses;
   const statusCode = state.$code;
   if (statusCode !== undefined) {
     // Applies only to specific response
-    const response = (responses as any)[statusCode];
-    if (response === undefined) {
+    const response = (responses as any)[statusCode] as Response;
+    if (response === undefined || response.content === undefined) {
       return undefined;
     }
+    delete state.$code; // TODO: Remove other top-level DSL elements...
+    const content = response.content[Object.keys(response.content)[0]];
+    return { [statusCode]: verifyResponseWithState(content, state) };
   }
+  throw new Error(`Not implemented yet for all paths`);
+};
+
+export const findPathInObject = (
+  path: any,
+  obj: any,
+): { [key: string]: any | undefined } => {
+  const matches: { [key: string]: any } = {};
+  for (const key of Object.keys(path)) {
+    if (["string", "number", "boolean"].includes(typeof path[key])) {
+      matches[key] = obj[key]; // undefined if it doesn't exist, otherwise we type check elsewhere.
+      continue;
+    }
+    if (typeof path[key] === "object" && Object.keys(path[key]).length > 0) {
+      if (typeof obj[key] !== "object" || Object.keys(obj[key]).length === 0) {
+        matches[key] = undefined;
+        continue;
+      }
+      matches[key] = findPathInObject(path[key], obj[key]);
+      continue;
+    }
+    throw new Error(
+      `Path[key] (${path} with ${key}) is not an object, string, number or boolean!`,
+    );
+  }
+  return matches;
 };
 
 export const getAtLevel = (

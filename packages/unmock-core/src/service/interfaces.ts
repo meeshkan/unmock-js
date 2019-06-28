@@ -4,12 +4,14 @@ import { DEFAULT_HTTP_METHOD } from "./constants";
 
 export {
   isOperation,
+  MediaType,
   OpenAPIObject,
   Paths,
   Schema,
   Operation,
   Parameter,
   PathItem,
+  Response,
 } from "loas3/dist/src/generated/full";
 
 const RESTMethodTypes = [
@@ -42,7 +44,7 @@ export interface IServiceMapping {
 export interface IStateInput {
   method: ExtendedHTTPMethod;
   endpoint: string;
-  newState: IUnmockServiceState;
+  newState: UnmockServiceState;
 }
 export interface IServiceInput {
   schema: OpenAPIObject;
@@ -71,7 +73,7 @@ export interface IService {
    * Updates the state for given method and endpoint.
    * @param input Describes the new state that matches a method and endpoint.
    */
-  updateState(input: IStateInput): boolean;
+  updateState(input: IStateInput): { success: boolean; error?: string };
 
   /**
    * Match a given request to the service. Return an operation object for successful match,

@@ -37,7 +37,7 @@ export class ServiceStore {
     endpoint: string;
     method: ExtendedHTTPMethod;
     state: UnmockServiceState;
-  }) {
+  }): boolean {
     /**
      * Verifies logical flow of inputs before dispatching the update to
      * the ServiceState object.
@@ -60,10 +60,14 @@ export class ServiceStore {
       );
     }
 
-    this.serviceMapping[service].updateState({
+    const { success, error } = this.serviceMapping[service].updateState({
       endpoint,
       method,
       newState: state,
     });
+    if (error !== undefined) {
+      throw new Error(error);
+    }
+    return success;
   }
 }

@@ -15,6 +15,7 @@ import {
   UnmockServiceState,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
+import { getValidResponsesForOperationWithState } from "./util";
 
 const debugLog = debug("unmock:service");
 
@@ -66,7 +67,11 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public updateState({ method, endpoint, newState }: IStateInput): boolean {
+  public updateState({
+    method,
+    endpoint,
+    newState,
+  }: IStateInput): { success: boolean; error?: string } {
     // Four possible cases:
     // 1. Default endpoint ("**"), default method ("any") =>
     //    applies to all paths with any method where it fits. If none fit -> return false.
@@ -84,16 +89,16 @@ export class Service implements IService {
     const { operations, error } = this.getOperations(method, endpoint);
     if (error !== undefined) {
       debugLog(`Couldn't find any matching operations: ${error}`);
-      throw new Error(error);
+      return { success: false, error };
     }
     debugLog(`Found follow operations: ${operations}`);
 
     operations.forEach((op: IOperationForStateUpdate) => {
+      //applyStateToOperation(op, newState);
       // For each operation, verify the new state applies and save in `this.state`
     });
 
-    this.state = newState; // For PR purposes, we just save the state as is.
-    return true;
+    return { success: true };
   }
 
   private getOperations(
