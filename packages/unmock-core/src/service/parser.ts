@@ -36,6 +36,10 @@ export class ServiceParser implements IServiceParser {
         ...errors.map(i => `  ${i.message}`)].join("\n"));
     }
 
+    if (!schema) {
+      throw new Error("loas3 error - please contact the maintainer.")
+    }
+
     // TODO Maybe read from the schema first
     const name = serviceDef.directoryName;
 
