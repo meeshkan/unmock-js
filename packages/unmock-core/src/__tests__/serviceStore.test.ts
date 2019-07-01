@@ -110,6 +110,10 @@ describe("Test paths matching on serviceStore", () => {
         description: "The id of the pet to retrieve",
         schema: { type: "string" },
       },
+      {
+        name: "test",
+        in: "path",
+      },
     ],
   };
   const DynamicPathsService = (
