@@ -4,6 +4,7 @@ import { DEFAULT_HTTP_METHOD } from "./constants";
 
 export {
   isOperation,
+  isSchema,
   MediaType,
   OpenAPIObject,
   Paths,

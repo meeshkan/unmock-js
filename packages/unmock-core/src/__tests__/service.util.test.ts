@@ -1,13 +1,10 @@
 import XRegExp from "xregexp";
-import { Operation, Parameter, Response } from "../service/interfaces";
+import { Parameter } from "../service/interfaces";
 import {
   buildPathRegexStringFromParameters,
-  findPathInObject,
   getAtLevel,
   getPathParametersFromPath,
   getPathParametersFromSchema,
-  getValidResponsesForOperationWithState,
-  verifyResponseWithState,
 } from "../service/util";
 
 describe("Tests getAtLevel", () => {
@@ -174,37 +171,5 @@ describe("Tests buildPathRegexStringFromParameters", () => {
         ["petId"],
       ),
     ).toThrow("following path parameters have not been described");
-  });
-});
-
-describe("Tests findPathInObject", () => {
-  const response: Response = {
-    content: {
-      "application/json": {
-        Pet: {
-          id: {
-            type: "integer",
-            format: "int64",
-          },
-          name: {
-            type: "string",
-          },
-          tag: { type: "string" },
-        },
-      },
-    },
-  };
-  it("with empty path", () => {
-    console.log(
-      verifyResponseWithState(response.content["application/json"], {
-        Pet: { id: "5", name: "bar" },
-      }),
-    );
-    console.log(
-      getValidResponsesForOperationWithState(
-        { responses: { 200: { ...response } } },
-        { Pet: { id: "5", name: "bar" }, $code: 200 },
-      ),
-    );
   });
 });
