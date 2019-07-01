@@ -26,32 +26,38 @@ export class StateRequestValidator {
    *          with value being either the Schema defined for that variable, or undefined.
    */
   public static findStatePathInService(
-    statePath: any,
     serviceSchema: any,
+    statePath: any,
   ): { [pathKey: string]: any | undefined } {
     const matches: { [key: string]: any } = {};
-
     for (const key of Object.keys(statePath)) {
       // Traverse along the different paths in the state
+      const scm = serviceSchema[key];
       if (["string", "number", "boolean"].includes(typeof statePath[key])) {
-        // The value of the current state key is concrete
+        // The value of the current state key is singular (non-object)
         // If the service schema contains a matching value (schema), store that one
         // Otherwise recursively look for matching key in nested schema.
-        matches[key] = isSchema(serviceSchema[key])
-          ? serviceSchema[key]
-          : this.matchNested(serviceSchema, key);
+        matches[key] =
+          scm === undefined || scm.properties !== undefined
+            ? this.matchNested(serviceSchema, key)
+            : scm;
       } else if (
         typeof statePath[key] === "object" &&
         Object.keys(statePath[key]).length > 0
       ) {
-        // The value of the current state key is a valid object (read: path to definition)
-        // If the service schema ends with that key, or does not define more paths - set as undefined
-        // Otherwise continue traversing both the state and the service schema
-        matches[key] =
-          typeof serviceSchema[key] !== "object" ||
-          Object.keys(serviceSchema[key]).length === 0
-            ? undefined
-            : this.findStatePathInService(statePath[key], serviceSchema[key]);
+        // Keep digging through the state and service schema
+        if (typeof scm !== "object" || Object.keys(scm).length === 0) {
+          // Nowhere left to traverse, undefined result
+          matches[key] = undefined;
+        } else {
+          const hasProps = scm !== undefined && scm.properties !== undefined;
+          // Recursively look into `properties` if they exist, maintaining the path
+          const properties = this.findStatePathInService(
+            hasProps ? scm.properties : scm,
+            statePath[key],
+          );
+          matches[key] = hasProps ? { properties } : properties;
+        }
       } else {
         // None of the above - this hints at malformed state (i.e. `{ someKey: undefined }`)
         throw new Error(
@@ -104,14 +110,16 @@ export class StateRequestValidator {
     content: MediaType,
     state: UnmockServiceState,
   ) {
-    // Employ DFS to iterate over state and see if it matches in response...
-    // (For now, ignore $DSL notation and types)
+    if (content.schema === undefined) {
+      throw new Error(`No schema defined in ${JSON.stringify(content)}!`);
+    }
+    const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
+    // For now, ignore $DSL notation and types
     const responseModsForState = this.findStatePathInService(
+      schema.properties,
       state,
-      content,
-    ) as Record<string, Schema>;
+    ) as Record<string, Schema>; // TODO is this the right type?
     // TODO: Ignore DSL/convert elements
-    // verify none of the elements are `undefined`, throws if some are missing
     const { missingParam } = this.DFSVerifyNoneAreUndefined(
       responseModsForState,
     );
@@ -161,7 +169,10 @@ export class StateRequestValidator {
       foundPath[pathKey] = obj[pathKey];
     }
     if (typeof obj === "object") {
-      Object.keys(obj).forEach((objKey: string) => {
+      for (const objKey of Object.keys(obj)) {
+        if (typeof obj[objKey] !== "object") {
+          continue;
+        }
         const subMatches = StateRequestValidator.matchNested(
           obj[objKey],
           pathKey,
@@ -169,7 +180,7 @@ export class StateRequestValidator {
         if (subMatches !== undefined) {
           foundPath[objKey] = subMatches;
         }
-      });
+      }
     }
     return Object.keys(foundPath).length > 0 ? foundPath : undefined;
   }

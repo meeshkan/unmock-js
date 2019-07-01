@@ -15,7 +15,6 @@ import {
   UnmockServiceState,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
-import { getValidResponsesForOperationWithState } from "./util";
 
 const debugLog = debug("unmock:service");
 
@@ -70,6 +69,7 @@ export class Service implements IService {
   public updateState({
     method,
     endpoint,
+    // @ts-ignore
     newState,
   }: IStateInput): { success: boolean; error?: string } {
     // Four possible cases:
@@ -93,8 +93,9 @@ export class Service implements IService {
     }
     debugLog(`Found follow operations: ${operations}`);
 
+    // @ts-ignore
     operations.forEach((op: IOperationForStateUpdate) => {
-      //applyStateToOperation(op, newState);
+      // applyStateToOperation(op, newState);
       // For each operation, verify the new state applies and save in `this.state`
     });
 
