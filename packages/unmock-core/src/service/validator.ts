@@ -25,7 +25,7 @@ export class StateRequestValidator {
    * @returns An object with string-keys leading to the location of matching state for each variable,
    *          with value being either the Schema defined for that variable, or undefined.
    */
-  public static findStatePathInService(
+  public static spreadStateFromService(
     serviceSchema: any,
     statePath: any,
   ): { [pathKey: string]: any | undefined } {
@@ -52,7 +52,7 @@ export class StateRequestValidator {
         } else {
           const hasProps = scm !== undefined && scm.properties !== undefined;
           // Recursively look into `properties` if they exist, maintaining the path
-          const properties = this.findStatePathInService(
+          const properties = this.spreadStateFromService(
             hasProps ? scm.properties : scm,
             statePath[key],
           );
@@ -68,6 +68,34 @@ export class StateRequestValidator {
       }
     }
     return matches;
+  }
+
+  /**
+   * Given a media type, return mapping between state, service and response.
+   * @param content
+   * @param state
+   */
+  public static getUpdatedStateFromContent(
+    content: MediaType,
+    state: UnmockServiceState,
+  ) {
+    if (content === undefined || content.schema === undefined) {
+      throw new Error(`No schema defined in ${JSON.stringify(content)}!`);
+    }
+    const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
+    // For now, ignore $DSL notation and types
+    const responseModsForState = this.spreadStateFromService(
+      schema.properties,
+      state,
+    ) as Record<string, Schema>; // TODO is this the right type?
+    // TODO: Ignore DSL/convert elements
+    const { missingParam } = this.DFSVerifyNoneAreUndefined(
+      responseModsForState,
+    );
+    if (missingParam !== undefined) {
+      throw new Error(`Can't find definition for ${missingParam}`);
+    }
+    return responseModsForState;
   }
 
   /**
@@ -102,59 +130,6 @@ export class StateRequestValidator {
   }
 
   /**
-   * Given a media type, return mapping between state, service and response.
-   * @param content
-   * @param state
-   */
-  public static getUpdatedStateFromContent(
-    content: MediaType,
-    state: UnmockServiceState,
-  ) {
-    if (content.schema === undefined) {
-      throw new Error(`No schema defined in ${JSON.stringify(content)}!`);
-    }
-    const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
-    // For now, ignore $DSL notation and types
-    const responseModsForState = this.findStatePathInService(
-      schema.properties,
-      state,
-    ) as Record<string, Schema>; // TODO is this the right type?
-    // TODO: Ignore DSL/convert elements
-    const { missingParam } = this.DFSVerifyNoneAreUndefined(
-      responseModsForState,
-    );
-    if (missingParam !== undefined) {
-      throw new Error(`Can't find definition for ${missingParam}`);
-    }
-    return responseModsForState;
-  }
-
-  /**
-   * Recursively iterates over given `obj` and verifies all values are
-   * properly defined.
-   * @param obj Object to iterate over
-   * @param prevPath (Used internaly) tracked the path to the key that might
-   *                 be undefined.
-   * @return A dictionary, potentially with `missingParam` holding the path
-   *         to a key that holds `undefined` as value.
-   */
-  private static DFSVerifyNoneAreUndefined(
-    obj: any,
-    prevPath: string[] = [],
-  ): { missingParam?: string } {
-    for (const key of Object.keys(obj)) {
-      const paramPath = prevPath.concat([key]);
-      if (obj[key] === undefined) {
-        return { missingParam: paramPath.join("\\") };
-      }
-      if (typeof obj === "object") {
-        return this.DFSVerifyNoneAreUndefined(obj[key], paramPath);
-      }
-    }
-    return {};
-  }
-
-  /**
    * Helper method to `findStatePathInService`;
    * Helps find given `pathKey` in `obj` in a recursive manner.
    * @param obj
@@ -183,5 +158,30 @@ export class StateRequestValidator {
       }
     }
     return Object.keys(foundPath).length > 0 ? foundPath : undefined;
+  }
+
+  /**
+   * Recursively iterates over given `obj` and verifies all values are
+   * properly defined.
+   * @param obj Object to iterate over
+   * @param prevPath (Used internaly) tracked the path to the key that might
+   *                 be undefined.
+   * @return A dictionary, potentially with `missingParam` holding the path
+   *         to a key that holds `undefined` as value.
+   */
+  private static DFSVerifyNoneAreUndefined(
+    obj: any,
+    prevPath: string[] = [],
+  ): { missingParam?: string } {
+    for (const key of Object.keys(obj)) {
+      const paramPath = prevPath.concat([key]);
+      if (obj[key] === undefined) {
+        return { missingParam: paramPath.join("\\") };
+      }
+      if (typeof obj === "object") {
+        return this.DFSVerifyNoneAreUndefined(obj[key], paramPath);
+      }
+    }
+    return {};
   }
 }
