@@ -1,4 +1,4 @@
-import { OpenAPIObject } from "loas3/dist/src/generated/full";
+import { OpenAPIObject, Schema } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_HTTP_METHOD } from "./constants";
 
@@ -52,6 +52,11 @@ export interface IServiceInput {
   name: string;
 }
 
+export interface IResponsesFromOperation {
+  // Maps between a status code, to a response type (e.g. "application/json") to a spread state
+  [statusCode: string]: Record<string, Record<string, Schema>>;
+}
+
 export type MatcherResponse = any | undefined;
 
 export interface IService {
@@ -73,8 +78,9 @@ export interface IService {
   /**
    * Updates the state for given method and endpoint.
    * @param input Describes the new state that matches a method and endpoint.
+   * @throws on logical errors where the state is invalid.
    */
-  updateState(input: IStateInput): { success: boolean; error?: string };
+  updateState(input: IStateInput): void;
 
   /**
    * Match a given request to the service. Return an operation object for successful match,

@@ -4,6 +4,7 @@ import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
+  IResponsesFromOperation,
   IService,
   IServiceInput,
   isRESTMethod,
@@ -12,9 +13,10 @@ import {
   OpenAPIObject,
   Operation,
   PathItem,
-  UnmockServiceState,
+  Schema,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
+import { getValidResponsesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:service");
 
@@ -24,6 +26,10 @@ interface IOperationForStateUpdate {
   operation: Operation;
 }
 type OperationsForStateUpdate = IOperationForStateUpdate[];
+type mediaTypeToSchema = Record<string, Schema>;
+type statusToMediaType = Record<string, mediaTypeToSchema>;
+//                              path           method       status
+type ServiceStateType = Record<string, Record<string, statusToMediaType>>;
 
 /**
  * Implements the state management for a service
@@ -41,8 +47,7 @@ export class Service implements IService {
    * Third level kv pairs: status codes -> response template overrides
    * Fourth and beyond: template-specific.
    */
-  // @ts-ignore // ignored because it's currently only being read and not written
-  private state: UnmockServiceState = {};
+  private state: ServiceStateType = {};
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
@@ -66,38 +71,67 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public updateState({
-    method,
-    endpoint,
-    // @ts-ignore TODO
-    newState,
-  }: IStateInput): { success: boolean; error?: string } {
-    // Four possible cases:
-    // 1. Default endpoint ("**"), default method ("any") =>
-    //    applies to all paths with any method where it fits. If none fit -> return false.
-    // 2. Default endpoint ("**"), with specific method =>
-    //    applies to all paths with that method where it fits. If none fit -> return false.
-    // 3. Specific endpoint, default method ("any") =>
-    //    applies to all methods in that endpoint, if it fits. If none fit -> return false.
-    // 4. Specific endpoint, specific method =>
-    //    applies to that combination only. If anything is the state doesn't fit -> return false.
-    //
+  public updateState({ method, endpoint, newState }: IStateInput) {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
     debugLog(`Fetching operations for '${method} ${endpoint}'...`);
-    const { operations, error } = this.getOperations(method, endpoint);
-    if (error !== undefined) {
-      debugLog(`Couldn't find any matching operations: ${error}`);
-      return { success: false, error };
+    const ops = this.getOperations(method, endpoint);
+    if (ops.error !== undefined) {
+      debugLog(`Couldn't find any matching operations: ${ops.error}`);
+      return ops.error;
     }
-    debugLog(`Found follow operations: ${operations}`);
+    if (newState === undefined) {
+      // No state given, no changes to make
+      return;
+    }
+    debugLog(`Found follow operations: ${ops.operations}`);
 
-    operations.forEach((op: IOperationForStateUpdate) => {
-      // For each operation, verify the new state applies and save in `this.state`
-    });
+    const opsResult = ops.operations.reduce(
+      (
+        { nErrors, lastError }: { nErrors: number; lastError?: string },
+        op: IOperationForStateUpdate,
+      ) => {
+        // For each operation, verify the new state applies and save in `this.state`
+        const stateResponses = getValidResponsesForOperationWithState(
+          op.operation,
+          newState,
+        );
+        if (stateResponses.error === undefined) {
+          debugLog(`Matched successfully for ${op.operation.operationId}`);
+          this.updateStateInternal(endpoint, method, stateResponses.responses);
+          return { nErrors, lastError };
+        }
+        // failed path
+        debugLog(
+          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
+        );
+        return { nErrors: nErrors + 1, lastError: stateResponses.error };
+      },
+      { nErrors: 0, lastError: undefined },
+    );
 
-    return { success: true };
+    if (opsResult.nErrors === ops.operations.length) {
+      throw new Error(opsResult.lastError);
+    }
+    return;
+  }
+
+  private updateStateInternal(
+    endpoint: string,
+    method: ExtendedHTTPMethod,
+    responses?: IResponsesFromOperation,
+  ) {
+    if (this.state[endpoint] === undefined) {
+      this.state[endpoint] = {};
+    }
+    if (this.state[endpoint][method] === undefined) {
+      this.state[endpoint][method] = {};
+    }
+    this.state[endpoint][method] = {
+      ...this.state[endpoint][method],
+      ...responses,
+    };
   }
 
   /**

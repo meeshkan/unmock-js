@@ -10,8 +10,8 @@ import { ServiceStore } from "./serviceStore";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_ENDPOINT,
-  method: ExtendedHTTPMethod = DEFAULT_HTTP_METHOD,
   state: UnmockServiceState,
+  method: ExtendedHTTPMethod = DEFAULT_HTTP_METHOD,
 ) => {
   // Returns a function for the end user to update the state in,
   // while maintaining endpoints and methods.
@@ -27,7 +27,7 @@ const saveStateHelper = (fn: any, method: HTTPMethod) => (
   // Redirects method, endpoint and state via currying to fn()
   endpoint = DEFAULT_ENDPOINT,
   state: UnmockServiceState,
-) => fn(endpoint, method, state);
+) => fn(endpoint, state, method);
 
 const MethodHandler = {
   // we get here if a user used e.g `state.github.get(...)`
