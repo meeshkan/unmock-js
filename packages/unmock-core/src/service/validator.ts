@@ -38,7 +38,9 @@ export class StateRequestValidator {
         // If the service schema contains a matching value (schema), store that one
         // Otherwise recursively look for matching key in nested schema.
         matches[key] =
-          scm === undefined || scm.properties !== undefined
+          scm === undefined ||
+          scm.properties !== undefined ||
+          scm.items !== undefined
             ? this.matchNested(serviceSchema, key)
             : scm;
       } else if (
@@ -50,13 +52,22 @@ export class StateRequestValidator {
           // Nowhere left to traverse, undefined result
           matches[key] = undefined;
         } else {
-          const hasProps = scm !== undefined && scm.properties !== undefined;
-          // Recursively look into `properties` if they exist, maintaining the path
-          const properties = this.spreadStateFromService(
-            hasProps ? scm.properties : scm,
-            statePath[key],
-          );
-          matches[key] = hasProps ? { properties } : properties;
+          // Recursively look into `properties` or `items` if they exist, maintaining the path
+          // (offers one-level of indirection between nested state and actual specification)
+          if (scm !== undefined && scm.properties !== undefined) {
+            matches[key] = {
+              properties: this.spreadStateFromService(
+                scm.properties,
+                statePath[key],
+              ),
+            };
+          } else if (scm !== undefined && scm.items !== undefined) {
+            matches[key] = {
+              items: this.spreadStateFromService(scm.items, statePath[key]),
+            };
+          } else {
+            matches[key] = this.spreadStateFromService(scm, statePath[key]);
+          }
         }
       } else {
         // None of the above - this hints at malformed state (i.e. `{ someKey: undefined }`)
@@ -85,9 +96,9 @@ export class StateRequestValidator {
     const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
     // For now, ignore $DSL notation and types
     const responseModsForState = this.spreadStateFromService(
-      schema.properties,
+      schema.properties, // Assumes all response information is under properties
       state,
-    ) as Record<string, Schema>; // TODO is this the right type?
+    ) as Record<string, Schema>;
     // TODO: Ignore DSL/convert elements
     const { missingParam } = this.DFSVerifyNoneAreUndefined(
       responseModsForState,
