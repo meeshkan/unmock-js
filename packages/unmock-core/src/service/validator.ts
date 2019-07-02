@@ -114,6 +114,11 @@ export class StateRequestValidator {
     // We do not resolve anything at this point.
     const responses = operation.responses;
     const statusCode = state.$code;
+    const relevantResponses: {
+      // Maps between a status code, to a response type (e.g. "application/json") to spread state
+      [statusCode: string]: Record<string, Record<string, Schema>>;
+    } = {};
+
     if (statusCode !== undefined) {
       // Applies only to specific response
       const response = (responses as any)[statusCode] as Response;
@@ -121,12 +126,38 @@ export class StateRequestValidator {
         return undefined;
       }
       delete state.$code; // TODO: Remove other top-level DSL elements...
-      const content = response.content[Object.keys(response.content)[0]];
-      return {
-        [statusCode]: this.getUpdatedStateFromContent(content, state),
-      };
+      relevantResponses[statusCode] = this.getStateFromMedia(
+        response.content,
+        state,
+      );
+      return relevantResponses;
     }
-    throw new Error(`Not implemented yet for all paths`);
+    // If $code is undefined, we look over all responses listed and find the suitable ones
+    for (const code of Object.keys(responses)) {
+      const response = (responses as any)[code] as Response;
+      if (response.content === undefined) {
+        continue;
+      }
+      relevantResponses[code] = this.getStateFromMedia(response.content, state);
+    }
+    return relevantResponses;
+  }
+
+  private static getStateFromMedia(
+    contentRecord: Record<string, MediaType>,
+    state: UnmockServiceState,
+  ) {
+    const relevantResponses: {
+      [contentType: string]: Record<string, Schema>;
+    } = {};
+    for (const contentType of Object.keys(contentRecord)) {
+      const content = contentRecord[contentType];
+      relevantResponses[contentType] = this.getUpdatedStateFromContent(
+        content,
+        state,
+      );
+    }
+    return relevantResponses;
   }
 
   /**

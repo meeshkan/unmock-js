@@ -93,27 +93,25 @@ export class Service implements IService {
     }
     debugLog(`Found follow operations: ${operations}`);
 
-    // @ts-ignore TODO
     operations.forEach((op: IOperationForStateUpdate) => {
-      // applyStateToOperation(op, newState);
       // For each operation, verify the new state applies and save in `this.state`
     });
 
     return { success: true };
   }
 
+  /**
+   * Gets relevant operations for given method and endpoint, filtering out
+   * any endpoints/method combinations that do not match.
+   * @returns An object with operations and possibly an error message. If
+   *          error is defined, operations is guaranteed to be an empty array.
+   *          An error is always an indication that something couldn't be found
+   *          with the given (method, endpoint) combination in this service.
+   */
   private getOperations(
     method: ExtendedHTTPMethod,
     endpoint: string,
   ): { operations: OperationsForStateUpdate; error?: string } {
-    /**
-     * Gets relevant operations for given method and endpoint, filtering out
-     * any endpoints/method combinations that do not match.
-     * @returns An object with operations and possibly an error message. If
-     *          error is defined, operations is guaranteed to be an empty array.
-     *          An error is always an indication that something couldn't be found
-     *          with the given (method, endpoint) combination in this service.
-     */
     const isDefMethod = method === DEFAULT_HTTP_METHOD;
     // Short handle for returning a failed result
     const errPref = "Can't find ";

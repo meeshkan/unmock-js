@@ -156,7 +156,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       op,
       { $code: 200 },
     );
-    expect(spreadState).toEqual({ 200: {} });
+    expect(spreadState).toEqual({ 200: { "application/json": {} } });
   });
 
   it("with missing $code specified", () => {
@@ -170,10 +170,38 @@ describe("Tests getValidResponsesForOperationWithState", () => {
 
   it("with no $code specified", () => {
     const op = { responses: { 200: { ...response } } };
-    const spreadState = () =>
-      StateRequestValidator.getValidResponsesForOperationWithState(op, {
+    const spreadState = StateRequestValidator.getValidResponsesForOperationWithState(
+      op,
+      {
         id: 5,
-      });
-    expect(spreadState).toThrow("Not implemented yet");
+      },
+    );
+    expect(spreadState).toEqual({
+      200: {
+        "application/json": {
+          id: {
+            test: {
+              properties: {
+                id: {
+                  type: "integer",
+                  format: "int64",
+                },
+              },
+            },
+            foo: {
+              properties: {
+                bar: {
+                  properties: {
+                    id: {
+                      type: "integer",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   });
 });
