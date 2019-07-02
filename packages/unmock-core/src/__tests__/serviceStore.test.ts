@@ -265,7 +265,8 @@ describe("Test state management", () => {
   // });
 
   test("with several properties from different methods", () => {
-    // store.foo({ error: "boom", notId: "x", foo: { ida: 5 } });
-    store.foo({ foo: { ida: 5 } });
+    expect(() =>
+      store.foo({ error: "boom", notId: "x", foo: { ida: 5 } }),
+    ).toThrow("Can't find definition"); // No method exists for this combination
   });
 });

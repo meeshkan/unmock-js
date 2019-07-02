@@ -113,7 +113,7 @@ describe("Tests spreadStateFromService", () => {
       resp["application/json"].schema,
       { ida: "a" },
     );
-    expect(spreadState.ida).toBeUndefined(); // Nothing to spread
+    expect(spreadState.ida).toBeNull(); // Nothing to spread
   });
 });
 
@@ -132,13 +132,13 @@ describe("Tests getUpdatedStateFromContent", () => {
     const spreadState = getUpdatedStateFromContent(resp["application/json"], {
       boom: 5,
     });
-    expect(spreadState.error).toContain("Can't find definition for boom");
+    expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
   });
 
   it("with empty schema", () => {
     const resp = response.content as any;
     const spreadState = getUpdatedStateFromContent(resp.boom, {});
-    expect(spreadState.error).toContain("No schema defined");
+    expect(spreadState.error.msg).toContain("No schema defined");
 
     const resp2 = {
       "application/json": {},
@@ -147,7 +147,7 @@ describe("Tests getUpdatedStateFromContent", () => {
       resp2["application/json"],
       {},
     );
-    expect(spreadState2.error).toContain("No schema defined");
+    expect(spreadState2.error.msg).toContain("No schema defined");
   });
 });
 
