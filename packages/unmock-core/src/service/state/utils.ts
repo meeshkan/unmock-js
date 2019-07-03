@@ -29,12 +29,21 @@ interface ICodesToMediaTypes {
 
 const debugLog = debug("unmock:state:utils");
 
+/**
+ * Given a list of possibly relevent `states` (each being a mapping from
+ * a status code, to a mediatype, to the state itself), and an `operation`,
+ * filter and return only those states that are relevant for the request Operation.
+ * If multiple states apply, spread them into a single state - `states` is expected
+ * to be sorted so that the first element is the "widest" match, and the last element
+ * is the most specific match.
+ */
 export const filterStatesByOperation = (
   states: codeToMedia[],
   operation: Operation,
 ): codeToMedia => {
   const opResponses = operation.responses;
   const statusCodes = Object.keys(opResponses);
+  // Types of 'MediaType' keys that are present in given Operation
   const mediaTypes: ICodesToMediaTypes = Object.keys(opResponses).reduce(
     (types: ICodesToMediaTypes, code: string) => {
       const response = opResponses[code as codeKey];
@@ -49,6 +58,7 @@ export const filterStatesByOperation = (
     },
     {},
   );
+  // Filter each state by status code and media type present in Operation
   const filtered = states.reduce(
     (stateAcc: codeToMedia[], state: codeToMedia) => {
       const relCodesInState = Object.keys(state).filter((code: string) =>
