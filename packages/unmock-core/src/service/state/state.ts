@@ -86,21 +86,29 @@ export class State {
     endpoint: string,
     operation: Operation,
   ): codeToMedia | undefined {
-    // get all states that match the endpoint
+    debugLog(`Filtering all saved states that match '${endpoint}'...`);
+
     const matchingEndpointKeys = Object.keys(this.state).filter(
       (sKey: string) => minimatch(endpoint, sKey, { nocase: true }),
     );
     if (matchingEndpointKeys.length === 0) {
+      debugLog(`No states match '${endpoint}'`);
       return undefined;
     }
     // sort endpoints by location of asterisks and frequency
-    // (done to spread and overwrite as needed)
-    // Results is e.g. (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
+    // (done to spread and overwrite as needed). Results is e.g:
+    // (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
     matchingEndpointKeys.sort((a: string, b: string) => {
       const nA = a.split("*");
       const nB = b.split("*");
       return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? 1 : -1;
     });
+
+    debugLog(
+      `Found following endpoints as matches for '${matchingEndpointKeys}: ${JSON.stringify(
+        matchingEndpointKeys,
+      )}`,
+    );
 
     // get all states that match the method, from the above endpoints
     const states = matchingEndpointKeys
