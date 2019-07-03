@@ -5,6 +5,7 @@ import {
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
+  HTTPMethod,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
@@ -43,11 +44,22 @@ export class Service implements IService {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
-    this.state.update({
+    const schemaEndpoint = this.matcher.findEndpoint(stateInput.endpoint);
+    if (schemaEndpoint === undefined) {
+      throw new Error(`Can't find '${stateInput.endpoint}' in '${this.name}'`);
+    }
+    const err = this.state.update({
       stateInput,
       serviceName: this.name,
-      matcher: this.matcher,
+      schemaEndpoint,
       paths: this.schema.paths,
     });
+    if (err !== undefined) {
+      throw new Error(err);
+    }
+  }
+
+  public getState(endpoint: string, method: HTTPMethod) {
+    const schemaEndpoint = this.matcher.findEndpoint(endpoint);
   }
 }

@@ -11,7 +11,6 @@ import {
   PathItem,
   Paths,
 } from "../interfaces";
-import { OASMatcher } from "../matcher";
 import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
 
 type PathKey = keyof PathItem & HTTPMethod;
@@ -28,8 +27,8 @@ const debugLog = debug("unmock:state:utils");
  */
 export const getOperations = ({
   stateInput,
+  schemaEndpoint,
   serviceName,
-  matcher,
   paths,
 }: IStateUpdate): { operations: OperationsForStateUpdate; error?: string } => {
   const { method, endpoint } = stateInput;
@@ -44,7 +43,7 @@ export const getOperations = ({
 
   if (endpoint !== DEFAULT_STATE_ENDPOINT) {
     debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
-    const pathItem = getPathItem(endpoint, matcher, paths);
+    const pathItem = paths[schemaEndpoint];
     if (pathItem === undefined) {
       return err(`endpoint '${endpoint}'`);
     }
@@ -82,18 +81,6 @@ export const getOperations = ({
           `${isDefMethod ? "operations" : `method '${method}'`}`,
       )
     : { operations };
-};
-
-const getPathItem = (
-  endpoint: string,
-  matcher: OASMatcher,
-  paths: Paths,
-): PathItem | undefined => {
-  const keyOfEndpointInSchema = matcher.findEndpoint(endpoint);
-  if (keyOfEndpointInSchema === undefined) {
-    return undefined;
-  }
-  return paths[keyOfEndpointInSchema];
 };
 
 const getOperationsByMethod = (

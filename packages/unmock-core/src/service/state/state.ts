@@ -1,6 +1,7 @@
 import debug from "debug";
 import {
   ExtendedHTTPMethod,
+  HTTPMethod,
   IResponsesFromOperation,
   Schema,
 } from "../interfaces";
@@ -8,7 +9,9 @@ import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
 
+//           (e.g. "application/json")   schema
 type mediaTypeToSchema = Record<string, Schema>;
+//                              status   (e.g. "application/json")
 type statusToMediaType = Record<string, mediaTypeToSchema>;
 //                              path           method       status
 type ServiceStateType = Record<string, Record<string, statusToMediaType>>;
@@ -66,6 +69,20 @@ export class State {
     }
     return;
   }
+
+  /**
+   * Returns the state for given combination of method, endpoint and status code (if given)
+   * At this point, method is expected to be a valid HTTP method, and endpoint is expected
+   * to be specific endpoint.
+   * @param method
+   * @param endpoint
+   * @param statusCode
+   */
+  public getState(
+    method: HTTPMethod,
+    endpoint: string,
+    statusCode?: string,
+  ): Record<string, Schema> | Schema | undefined {}
 
   private updateStateInternal(
     endpoint: string,

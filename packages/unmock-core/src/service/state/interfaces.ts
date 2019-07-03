@@ -1,11 +1,14 @@
 import { HTTPMethod, IStateInput, Operation, Paths } from "../interfaces";
-import { OASMatcher } from "../matcher";
 
 export interface IStateUpdate {
   stateInput: IStateInput;
   serviceName: string;
   paths: Paths;
-  matcher: OASMatcher;
+  /**
+   * Complements the endpoint given in IStateInput, by redirecting to the correct endpoint in Schema.
+   * This happens when an endpoint consists of variables, for example.
+   */
+  schemaEndpoint: string;
 }
 export interface IOperationForStateUpdate {
   endpoint: string;
