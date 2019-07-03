@@ -15,55 +15,63 @@ describe("Tests getAtLevel", () => {
       post: { 201: {}, default: {} },
     },
   };
-  it("tests different levels without filter", () => {
+  it("different levels without filter returns all nested items at requested level", () => {
     expect(getAtLevel(schema, 0).length).toBe(2); // Only 2 items at first level
     expect(getAtLevel(schema, 1).length).toBe(3); // 3 methods present
     expect(getAtLevel(schema, 2).length).toBe(6); // 6 matching response codes and defaults
     expect(getAtLevel(schema, 3).length).toBe(0); // Empty content
   });
 
-  it("tests illogical levels without filter", () => {
+  it("negative nested level throws", () => {
     expect(() => getAtLevel(schema, -1)).toThrow("Not sure");
+  });
+
+  it("excessive nested level returns empty list", () => {
     expect(getAtLevel(schema, 100).length).toBe(0);
   });
 
-  it("tests with invalid object", () => {
+  it("getting from invalid object throws", () => {
     expect(() => getAtLevel(undefined, 2)).toThrow("nestedObj");
     expect(() => getAtLevel({}, 2)).toThrow("nestedObj");
   });
 
-  it("Tests with filters", () => {
-    expect(
-      getAtLevel(schema, 0, (k: string, _: any) => k === "/pets").length,
-    ).toBe(1);
-    expect(
-      getAtLevel(schema, 1, (k: string, _: any) => k === "post").length,
-    ).toBe(1);
-    expect(
-      getAtLevel(schema, 2, (k: string, _: any) => k === "200").length,
-    ).toBe(2);
+  it("using filters returned only matching nested objects", () => {
+    let got = getAtLevel(
+      schema,
+      0,
+      (k: string | undefined, _: any) => k === "/pets",
+    );
+    expect(got.length).toBe(1);
+    got = getAtLevel(
+      schema,
+      1,
+      (k: string | undefined, _: any) => k === "post",
+    );
+    expect(got.length).toBe(1);
+    got = getAtLevel(schema, 2, (k: string | undefined, _: any) => k === "200");
+    expect(got.length).toBe(2);
   });
 });
 
 describe("Tests getPathParametersFromPath", () => {
-  it("Tests a path without parameters", () => {
+  it("path without parameters returns empty list", () => {
     expect(getPathParametersFromPath("/pets").length).toBe(0);
   });
 
-  it("Tests a path with a single parameters", () => {
+  it("path with a single parameters returns a list with single item", () => {
     const params = getPathParametersFromPath("/pets/{petId}");
     expect(params.length).toBe(1);
     expect(params[0]).toBe("petId");
   });
 
-  it("Tests a path with multiple parameters", () => {
+  it("path with multiple parameters returns a list with matching parameters", () => {
     const params = getPathParametersFromPath("/stores/{storeId}/{product}");
     expect(params.length).toBe(2);
     expect(params[0]).toBe("storeId");
     expect(params[1]).toBe("product");
   });
 
-  it("Tests with empty path", () => {
+  it("invalid paths returns empty list", () => {
     expect(getPathParametersFromPath("").length).toBe(0);
     // Check with undefined and null even though the type is meant to be concretely string
     // @ts-ignore
@@ -77,14 +85,14 @@ describe("Tests getPathParametersFromSchema", () => {
   const baseSchema = (params: Parameter[]) => ({
     get: { parameters: params, responses: {} },
   });
-  it("Tests a path without parameters", () => {
+  it("static path without parameters returns empty list", () => {
     const schema = {
       "/pets": { ...baseSchema([{ in: "path", name: "foo" }]) },
     };
     expect(getPathParametersFromSchema(schema, "/pets").length).toBe(0);
   });
 
-  it("Tests a dynamic path with existing parameters", () => {
+  it("dynamic path with existing parameters returns matching items", () => {
     const schema = {
       "/pets/{petId}": {
         ...baseSchema([
@@ -96,14 +104,14 @@ describe("Tests getPathParametersFromSchema", () => {
     expect(getPathParametersFromSchema(schema, "/pets/{petId}").length).toBe(1);
   });
 
-  it("Tests a path without schema", () => {
+  it("static path without schema returns empty list", () => {
     const schema = {
       "/pets/{petId}": { ...baseSchema([{ in: "path", name: "foo" }]) },
     };
     expect(getPathParametersFromSchema(schema, "/pets/").length).toBe(0);
   });
 
-  it("Tests a dynamic path without parameters", () => {
+  it("dynamic path without parameters throws", () => {
     const schema = { "/pets/{petId}": { ...baseSchema([]) } };
     expect(() => getPathParametersFromSchema(schema, "/pets/{petId}")).toThrow(
       "no description for path parameters",
@@ -122,54 +130,70 @@ describe("Tests buildPathRegexStringFromParameters", () => {
     { in: "query", name: "foo" },
   ];
 
-  it("Tests path", () => {
-    // Empty schema - nothing to do
-    expect(buildPathRegexStringFromParameters("/pets", emptySchema, [])).toBe(
-      "/pets",
-    );
-    // Empty schema - nothing to do (even if parameters are given)
-    expect(
-      buildPathRegexStringFromParameters("/pets", emptySchema, ["petId"]),
-    ).toBe("/pets");
-    // Parameter from path matches parameter from schema, but no replacement takes place
-    expect(
-      buildPathRegexStringFromParameters("/pets", schemaWithMatchingParams, [
-        "petId",
-      ]),
-    ).toBe("/pets");
-    // // Expected to fail as we still have a path parameter that was unresolved
-    expect(() =>
-      buildPathRegexStringFromParameters("/pets", schemaWithMissingParams, [
-        "petId",
-      ]),
-    ).toThrow("following path parameters have not been described");
+  describe("static path", () => {
+    it("without schema nor parameters stays the same", () => {
+      expect(buildPathRegexStringFromParameters("/pets", emptySchema, [])).toBe(
+        "/pets",
+      );
+    });
+
+    it("empty schema with non-empty parameter list stays the same", () => {
+      expect(
+        buildPathRegexStringFromParameters("/pets", emptySchema, ["petId"]),
+      ).toBe("/pets");
+    });
+
+    it("non-empty schema with non-empty parameter list stays the same", () => {
+      expect(
+        buildPathRegexStringFromParameters("/pets", schemaWithMatchingParams, [
+          "petId",
+        ]),
+      ).toBe("/pets");
+    });
+
+    it("non-empty schema with missing parameters from list throws", () => {
+      // Expected to fail as we still have a path parameter that was unresolved
+      expect(() =>
+        buildPathRegexStringFromParameters("/pets", schemaWithMissingParams, [
+          "petId",
+        ]),
+      ).toThrow("following path parameters have not been described");
+    });
   });
 
-  it("Tests dynamic path", () => {
-    // Empty schema - nothing to do
-    expect(
-      buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, []),
-    ).toBe("/pets/{petId}");
-    expect(
-      buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, [
-        "petId",
-      ]),
-    ).toBe("/pets/{petId}");
-    // Replacement should happen
-    const newPath = buildPathRegexStringFromParameters(
-      "/pets/{petId}",
-      schemaWithMatchingParams,
-      ["petId"],
-    );
-    expect(newPath).toBe("/pets/(?<petId>[^/]+)");
-    expect(XRegExp(newPath).test("/pets/2")).toBeTruthy();
-    // Expected to fail as we still have a path parameter that was unresolved
-    expect(() =>
-      buildPathRegexStringFromParameters(
+  describe("dynamic path", () => {
+    it("empty schema with empty parameter list stays the same", () => {
+      expect(
+        buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, []),
+      ).toBe("/pets/{petId}");
+    });
+
+    it("empty schema with non-empty parameter list stays the same", () => {
+      expect(
+        buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, [
+          "petId",
+        ]),
+      ).toBe("/pets/{petId}");
+    });
+
+    it("matching schema and parameter list constructor regexp", () => {
+      const newPath = buildPathRegexStringFromParameters(
         "/pets/{petId}",
-        schemaWithMissingParams,
+        schemaWithMatchingParams,
         ["petId"],
-      ),
-    ).toThrow("following path parameters have not been described");
+      );
+      expect(newPath).toBe("/pets/(?<petId>[^/]+)");
+      expect(XRegExp(newPath).test("/pets/2")).toBeTruthy();
+    });
+
+    it("schema with parameter missing throws", () => {
+      expect(() =>
+        buildPathRegexStringFromParameters(
+          "/pets/{petId}",
+          schemaWithMissingParams,
+          ["petId"],
+        ),
+      ).toThrow("following path parameters have not been described");
+    });
   });
 });
