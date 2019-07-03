@@ -102,6 +102,37 @@ describe("Test state management", () => {
     ).toContain("Can't find response for 'post /test/5'");
   });
 
+  it("saves state from any endpoint and get method as expected", () => {
+    const state = new State();
+    state.update({
+      stateInput: { method: "get", endpoint: "**", newState: { id: 5 } },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "**",
+    });
+    const stateResult = state.getState(
+      "get",
+      "/",
+      fullSchema.paths["/test/{test_id}"].get,
+    );
+    expect(stateResult).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              foo: {
+                properties: {
+                  id: 5,
+                },
+              },
+              id: 5,
+            },
+          },
+        },
+      },
+    });
+  });
+
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({
