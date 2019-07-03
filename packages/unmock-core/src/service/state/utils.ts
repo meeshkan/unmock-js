@@ -11,8 +11,8 @@ import {
   Operation,
   PathItem,
   Paths,
-  Response,
   Responses,
+  Schema,
 } from "../interfaces";
 import {
   codeToMedia,
@@ -39,12 +39,12 @@ export const filterStatesByOperation = (
     (types: ICodesToMediaTypes, code: string) => {
       const response = opResponses[code as codeKey];
       return Object.assign(
-        types[code],
+        types,
         response === undefined ||
           isReference(response) ||
           response.content === undefined
-          ? []
-          : Object.keys(response.content),
+          ? { [code]: [] }
+          : { [code]: Object.keys(response.content) },
       );
     },
     {},
@@ -72,13 +72,13 @@ const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
   const spreaded: codeToMedia = {};
   for (const state of nested) {
     for (const code of Object.keys(state)) {
-      const resp: Response = state[code as codeKey] as any;
+      const resp: Record<string, Schema> = state[code as codeKey] as any;
       for (const mediaType of Object.keys(state[code])) {
-        const content = resp.content;
+        const content = resp[mediaType];
         if (content !== undefined) {
           const spreadSchema = {
-            ...spreaded[code][mediaType],
-            ...content[mediaType].schema,
+            ...(spreaded[code] || {})[mediaType],
+            ...content,
           };
           spreaded[code] = {
             ...spreaded[code],

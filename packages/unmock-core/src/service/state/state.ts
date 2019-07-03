@@ -13,6 +13,7 @@ import {
 } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
+import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 
 const debugLog = debug("unmock:state");
 
@@ -109,9 +110,18 @@ export class State {
     const states = matchingEndpointKeys
       .filter((key: string) => this.state[key][method] !== undefined)
       .map((key: string) => this.state[key][method]);
+    // Also include all the matching endpoint with DEFAULT_STATE_HTTP_METHOD:
+    const expandedStates = states.concat(
+      matchingEndpointKeys
+        .filter(
+          (key: string) =>
+            this.state[key][DEFAULT_STATE_HTTP_METHOD] !== undefined,
+        )
+        .map((key: string) => this.state[key][DEFAULT_STATE_HTTP_METHOD]),
+    );
 
     // Filter all the states that do not match the operation schema
-    return filterStatesByOperation(states, operation);
+    return filterStatesByOperation(expandedStates, operation);
   }
 
   private updateStateInternal(
