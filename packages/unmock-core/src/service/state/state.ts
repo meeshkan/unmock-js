@@ -35,7 +35,7 @@ export class State {
       debugLog(`Couldn't find any matching operations: ${ops.error}`);
       return ops.error;
     }
-    if (newState === undefined) {
+    if (newState === undefined || Object.keys(newState).length === 0) {
       // No state given, no changes to make
       return;
     }
@@ -67,7 +67,7 @@ export class State {
 
     if (opsResult.nErrors === ops.operations.length) {
       // all paths had an error - can't operate properly
-      throw new Error(opsResult.lastError);
+      return opsResult.lastError;
     }
     return;
   }
@@ -103,7 +103,7 @@ export class State {
     matchingEndpointKeys.sort((a: string, b: string) => {
       const nA = a.split("*");
       const nB = b.split("*");
-      return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? -1 : 1;
+      return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? 1 : -1;
     });
 
     // get all states that match the method, from the above endpoints

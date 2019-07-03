@@ -1,14 +1,4 @@
-import fs from "fs";
-import jsYaml from "js-yaml";
-import path from "path";
 import { State } from "../service/state/state";
-
-const schema = jsYaml.safeLoad(
-  fs.readFileSync(
-    path.join(__dirname, "__unmock__", "petstore", "spec_parsed.yaml"),
-    "utf-8",
-  ),
-);
 
 const fullSchema = {
   paths: {
@@ -76,6 +66,42 @@ const fullSchema = {
 };
 
 describe("Test state management", () => {
+  it("returns undefined when setting empty state", () => {
+    const state = new State();
+    expect(
+      state.update({
+        stateInput: { method: "any", endpoint: "**", newState: {} },
+        serviceName: "foo",
+        paths: fullSchema.paths,
+        schemaEndpoint: "**",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("returns error when setting state for non-existing method with generic endpoint", () => {
+    const state = new State();
+    expect(
+      state.update({
+        stateInput: { method: "post", endpoint: "**", newState: {} },
+        serviceName: "foo",
+        paths: fullSchema.paths,
+        schemaEndpoint: "**",
+      }),
+    ).toContain("Can't find any endpoints with method 'post'");
+  });
+
+  it("returns error when setting state for non-existing method with specific, existing endpoint", () => {
+    const state = new State();
+    expect(
+      state.update({
+        stateInput: { method: "post", endpoint: "/test/5", newState: {} },
+        serviceName: "foo",
+        paths: fullSchema.paths,
+        schemaEndpoint: "/test/{test_id}",
+      }),
+    ).toContain("Can't find response for 'post /test/5'");
+  });
+
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({
@@ -84,12 +110,12 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
-    const singleState = state.getState(
+    const stateResult = state.getState(
       "get",
       "/",
       fullSchema.paths["/test/{test_id}"].get,
     );
-    expect(singleState).toEqual({
+    expect(stateResult).toEqual({
       200: {
         "application/json": {
           items: {
@@ -100,6 +126,49 @@ describe("Test state management", () => {
                 },
               },
               id: 5,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("spreads states from multiple paths correctly", () => {
+    const state = new State();
+    state.update({
+      stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "**",
+    });
+    state.update({
+      stateInput: { method: "any", endpoint: "/test/5", newState: { id: 3 } },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "/test/{test_id}",
+    });
+    state.update({
+      stateInput: { method: "any", endpoint: "/test/*", newState: { id: -1 } },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "/test/{test_id}",
+    });
+    const stateResult = state.getState(
+      "get",
+      "/test/5",
+      fullSchema.paths["/test/{test_id}"].get,
+    );
+    expect(stateResult).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              foo: {
+                properties: {
+                  id: 3,
+                },
+              },
+              id: 3,
             },
           },
         },
