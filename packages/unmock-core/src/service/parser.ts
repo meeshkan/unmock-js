@@ -31,13 +31,15 @@ export class ServiceParser implements IServiceParser {
 
     const { val: schema, errors } = loas3(jsYaml.safeLoad(contents));
     if (errors) {
-      throw new Error([
-        "The following errors occured while parsing your loas3 schema",
-        ...errors.map(i => `  ${i.message}`)].join("\n"));
+      throw new Error(
+        [
+          "The following errors occured while parsing your loas3 schema",
+          ...errors.map(i => `  ${i.message}`),
+        ].join("\n"),
+      );
     }
-
-    if (!schema) {
-      throw new Error("loas3 error - please contact the maintainer.")
+    if (schema === undefined) {
+      throw new Error(`Could not load schema from ${contents}`);
     }
 
     // TODO Maybe read from the schema first

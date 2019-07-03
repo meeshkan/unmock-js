@@ -1,22 +1,33 @@
+import debug from "debug";
 import { ISerializedRequest } from "../interfaces";
-import { DEFAULT_ENDPOINT } from "./constants";
+import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
 import {
+  ExtendedHTTPMethod,
   HTTPMethod,
   IService,
   IServiceInput,
+  isRESTMethod,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
+  Operation,
+  PathItem,
   UnmockServiceState,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
-import { getAtLevel } from "./util";
+
+const debugLog = debug("unmock:service");
+
+interface IOperationForStateUpdate {
+  endpoint: string;
+  method: HTTPMethod;
+  operation: Operation;
+}
+type OperationsForStateUpdate = IOperationForStateUpdate[];
 
 /**
  * Implements the state management for a service
  */
-
-// TODO: Is there room here for xstate, in the future?
 
 export class Service implements IService {
   public readonly name: string;
@@ -55,58 +66,165 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public verifyRequest(method: HTTPMethod, endpoint: string) {
-    // Throws if method + endpoint are invalid for this service
-    if (!this.hasDefinedPaths) {
-      throw new Error(`'${this.name}' has no defined paths!`);
-    }
-
-    if (endpoint !== DEFAULT_ENDPOINT) {
-      const servicePaths = this.schema.paths;
-      const schemaEndpoint = this.matcher.findEndpoint(endpoint);
-      if (schemaEndpoint === undefined) {
-        // This endpoint does not exist, no need to retain state
-        throw new Error(
-          `Can't find endpoint '${endpoint}' for '${this.name}'!`,
-        );
-      }
-      if (
-        // If the method is 'all', we assume there exists some content under the specified endpoint...
-        method !== "all" &&
-        servicePaths[schemaEndpoint][method] === undefined
-      ) {
-        // The endpoint exists but the specified method for that endpoint doesnt
-        throw new Error(
-          `Can't find response for '${method} ${endpoint}' in ${this.name}!`,
-        );
-      }
-    } else if (method !== "all") {
-      // If endpoint is default (all), we make sure that at least one path exists with the given method
-      if (
-        getAtLevel(this.schema.paths, 1, (k: string, _: any) => k === method)
-          .length === 0
-      ) {
-        throw new Error(
-          `Can't find any endpoints with method '${method}' in ${this.name}!`,
-        );
-      }
-    }
-  }
-
-  public updateState({ newState }: IStateInput): boolean {
-    // Input: method, endpoint, newState
+  public updateState({
+    method,
+    endpoint,
+    // @ts-ignore TODO
+    newState,
+  }: IStateInput): { success: boolean; error?: string } {
     // Four possible cases:
-    // 1. Default endpoint ("**"), default method ("all") =>
+    // 1. Default endpoint ("**"), default method ("any") =>
     //    applies to all paths with any method where it fits. If none fit -> return false.
     // 2. Default endpoint ("**"), with specific method =>
     //    applies to all paths with that method where it fits. If none fit -> return false.
-    // 3. Specific endpoint, default method ("all") =>
+    // 3. Specific endpoint, default method ("any") =>
     //    applies to all methods in that endpoint, if it fits. If none fit -> return false.
     // 4. Specific endpoint, specific method =>
     //    applies to that combination only. If anything is the state doesn't fit -> return false.
     //
+    if (!this.hasDefinedPaths) {
+      throw new Error(`'${this.name}' has no defined paths!`);
+    }
+    debugLog(`Fetching operations for '${method} ${endpoint}'...`);
+    const { operations, error } = this.getOperations(method, endpoint);
+    if (error !== undefined) {
+      debugLog(`Couldn't find any matching operations: ${error}`);
+      return { success: false, error };
+    }
+    debugLog(`Found follow operations: ${operations}`);
 
-    this.state = newState; // For PR purposes, we just save the state as is.
-    return true;
+    // @ts-ignore TODO
+    operations.forEach((op: IOperationForStateUpdate) => {
+      // applyStateToOperation(op, newState);
+      // For each operation, verify the new state applies and save in `this.state`
+    });
+
+    return { success: true };
+  }
+
+  private getOperations(
+    method: ExtendedHTTPMethod,
+    endpoint: string,
+  ): { operations: OperationsForStateUpdate; error?: string } {
+    /**
+     * Gets relevant operations for given method and endpoint, filtering out
+     * any endpoints/method combinations that do not match.
+     * @returns An object with operations and possibly an error message. If
+     *          error is defined, operations is guaranteed to be an empty array.
+     *          An error is always an indication that something couldn't be found
+     *          with the given (method, endpoint) combination in this service.
+     */
+    const isDefMethod = method === DEFAULT_HTTP_METHOD;
+    // Short handle for returning a failed result
+    const errPref = "Can't find ";
+    const errSuff = ` in '${this.name}'!`;
+    const err = (msg: string) => ({
+      operations: [],
+      error: errPref + msg + errSuff,
+    });
+
+    if (endpoint !== DEFAULT_ENDPOINT) {
+      debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
+      const pathItem = this.getPathItem(endpoint);
+      if (pathItem === undefined) {
+        return err(`endpoint '${endpoint}'`);
+      }
+
+      if (isDefMethod) {
+        // Specific endpoint, all methods
+        debugLog(`Fetching operations for any REST method...`);
+        const ops = this.getOperationsFromPathItem(pathItem, endpoint);
+        return ops === undefined
+          ? err(`any operations under '${endpoint}'`)
+          : { operations: ops };
+      }
+
+      // Specific endpoint, specific method
+      debugLog(`Fetching operations for REST method '${method}'...`);
+      method = method as HTTPMethod;
+      const op = pathItem[method];
+      return op === undefined
+        ? err(`response for '${method} ${endpoint}'`)
+        : {
+            operations: [
+              {
+                endpoint,
+                method,
+                operation: op,
+              },
+            ],
+          };
+    }
+    // any endpoint
+    debugLog(`Fetching operations for any endpoint...`);
+    const operations = this.getOperationsByMethod(method);
+    return operations === undefined
+      ? err(
+          `any endpoints with ` +
+            `${isDefMethod ? "operations" : `method '${method}'`}`,
+        )
+      : { operations };
+  }
+
+  private getPathItem(endpoint: string): PathItem | undefined {
+    const keyOfEndpointInSchema = this.matcher.findEndpoint(endpoint);
+    if (keyOfEndpointInSchema === undefined) {
+      return undefined;
+    }
+    return this.schema.paths[keyOfEndpointInSchema];
+  }
+
+  private getOperationsByMethod(
+    method: ExtendedHTTPMethod,
+  ): OperationsForStateUpdate | undefined {
+    const anyMethod = method === DEFAULT_HTTP_METHOD;
+    const filterFn = anyMethod
+      ? (pathItemKey: string) => isRESTMethod(pathItemKey)
+      : (pathItemKey: string) => pathItemKey === method;
+
+    const operations: OperationsForStateUpdate = Object.keys(
+      this.schema.paths,
+    ).reduce((ops: OperationsForStateUpdate, path: string) => {
+      // For each path, we reduce the relevant methods (= operations)
+      const pathItem = this.schema.paths[path];
+      const pathOperations = Object.keys(pathItem).reduce(
+        (pathOps: OperationsForStateUpdate, maybeOperationKey: string) =>
+          filterFn(maybeOperationKey)
+            ? pathOps.concat([
+                {
+                  endpoint: path,
+                  method: maybeOperationKey as HTTPMethod,
+                  operation: (pathItem as any)[maybeOperationKey],
+                },
+              ])
+            : pathOps,
+        [],
+      );
+      return ops.concat(pathOperations);
+    }, []);
+    if (operations.length === 0) {
+      return undefined;
+    }
+    return operations;
+  }
+
+  private getOperationsFromPathItem(
+    pathItem: PathItem,
+    endpoint: string,
+  ): OperationsForStateUpdate | undefined {
+    const operations: OperationsForStateUpdate = [];
+    Object.keys(pathItem).forEach((key: string) => {
+      if (isRESTMethod(key)) {
+        const method = key as HTTPMethod;
+        const operation = (pathItem as any)[key] as Operation;
+        if (operation !== undefined) {
+          operations.push({ endpoint, method, operation });
+        }
+      }
+    });
+    if (operations.length === 0) {
+      return undefined;
+    }
+    return operations;
   }
 }

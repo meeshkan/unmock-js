@@ -21,12 +21,9 @@ export const getPathParametersFromSchema = (
   const schemaPathParameters = getAtLevel(
     schema[path],
     2,
-    (_: string, v: any) => v.in === OAS_PATH_PARAMS_KW,
+    (_: string | undefined, v: any) => v.in === OAS_PATH_PARAMS_KW,
   ) as Parameter[];
-  if (
-    schemaPathParameters.length === 0 ||
-    Object.keys(schemaPathParameters[0]).length === 0
-  ) {
+  if (schemaPathParameters.length === 0) {
     throw new Error(
       `Found a dynamic path '${path}' but no description for path parameters!`,
     );
@@ -39,16 +36,13 @@ export const buildPathRegexStringFromParameters = (
   schemaParameters: Parameter[],
   pathParameters: string[],
 ): string => {
-  if (
-    schemaParameters.length === 0 ||
-    Object.values(schemaParameters[0]).length === 0
-  ) {
+  if (schemaParameters.length === 0) {
     return path;
   }
 
   let newPath = `${path}`;
   // Assumption: All methods describe the parameter the same way.
-  Object.values(schemaParameters[0]).forEach((p: any) => {
+  schemaParameters.forEach((p: Parameter) => {
     const paramLoc = pathParameters.indexOf(p.name);
     if (paramLoc !== -1) {
       // replace the original path with regex as needed
@@ -68,15 +62,15 @@ export const buildPathRegexStringFromParameters = (
   return newPath;
 };
 
+/** Returns all nested objects at a certain level from nestedObj with additional
+ * filtering based on key and value from callback. Filtering only applies at the requested level.
+ * `level` is 0-based. Works in BFS manner.
+ */
 export const getAtLevel = (
   nestedObj: any,
   level: number,
-  filterFn?: (key: string, value: any) => boolean,
+  filterFn?: (key: string | undefined, value: any) => boolean,
 ) => {
-  /** Returns all nested objects at a certain level from nestedObj with additional
-   * filtering based on key and value from callback. Filtering only applies at the requested level.
-   * `level` is 0-based.
-   */
   if (level < 0) {
     throw new Error(`Not sure what should I find at nested level ${level}...`);
   }
@@ -90,8 +84,15 @@ export const getAtLevel = (
   let prevObjects: any[] = [nestedObj];
   while (i < level) {
     prevObjects.forEach(o => {
-      if (typeof o === "object") {
-        Object.values(o).forEach(v => subObjects.push(v));
+      if (Array.isArray(o)) {
+        o.forEach(e => subObjects.push(e));
+      } else if (typeof o === "object") {
+        const vals = Object.values(o);
+        if (vals.length === 1) {
+          subObjects.push(vals[0]);
+        } else {
+          Object.values(o).forEach(v => subObjects.push(v));
+        }
       }
     });
     prevObjects = subObjects;
@@ -99,7 +100,13 @@ export const getAtLevel = (
     i++;
   }
   prevObjects.forEach(o => {
-    if (typeof o === "object") {
+    if (Array.isArray(o)) {
+      o.forEach(e => {
+        if (filterFn === undefined || filterFn(undefined, e)) {
+          subObjects.push(e);
+        }
+      });
+    } else if (typeof o === "object") {
       Object.keys(o).forEach(k => {
         if (filterFn === undefined || filterFn(k, o[k])) {
           subObjects.push({ [k]: o[k] });
