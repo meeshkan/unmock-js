@@ -1,5 +1,6 @@
 import debug from "debug";
 import minimatch from "minimatch";
+import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
@@ -13,7 +14,6 @@ import {
 } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
-import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 
 const debugLog = debug("unmock:state");
 

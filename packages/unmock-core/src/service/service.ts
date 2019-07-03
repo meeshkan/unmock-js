@@ -1,15 +1,15 @@
 import { ISerializedRequest } from "../interfaces";
+import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
+  HTTPMethod,
   IService,
   IServiceInput,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
-  HTTPMethod,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
-import { DEFAULT_STATE_ENDPOINT } from "./constants";
 
 export class Service implements IService {
   public readonly name: string;
