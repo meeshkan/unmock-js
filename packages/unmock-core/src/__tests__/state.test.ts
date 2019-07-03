@@ -82,6 +82,7 @@ describe("Test state management", () => {
       stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
       serviceName: "foo",
       paths: fullSchema.paths,
+      schemaEndpoint: "**",
     });
     console.log(
       state.getState("get", "/", fullSchema.paths["/test/{test_id}"].get),
