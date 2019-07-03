@@ -65,7 +65,7 @@ describe("Tests spreadStateFromService", () => {
       properties: {
         test: {
           properties: {
-            id: "a",
+            id: null, // Will be removed due to wrong type
           },
         },
       },
@@ -76,21 +76,21 @@ describe("Tests spreadStateFromService", () => {
     const resp = response.content as any;
     const spreadState = spreadStateFromService(
       resp["application/json"].schema,
-      { id: "a" },
+      { id: 5 },
     );
     // Spreading from "id : { ... " should match all nested "id"s
     expect(spreadState).toEqual({
       properties: {
         test: {
           properties: {
-            id: "a",
+            id: 5,
           },
         },
         foo: {
           properties: {
             bar: {
               properties: {
-                id: "a",
+                id: 5,
               },
             },
           },
@@ -119,7 +119,7 @@ describe("Tests getUpdatedStateFromContent", () => {
     expect(spreadState.spreadState).toEqual({});
   });
 
-  it("with invalid parameter", () => {
+  it("invalid parameter returns error", () => {
     const resp = response.content as any;
     const spreadState = getUpdatedStateFromContent(resp["application/json"], {
       boom: 5,
@@ -127,7 +127,7 @@ describe("Tests getUpdatedStateFromContent", () => {
     expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
   });
 
-  it("with empty schema", () => {
+  it("empty schema returns error", () => {
     const resp = response.content as any;
     const spreadState = getUpdatedStateFromContent(resp.boom, {});
     expect(spreadState.error.msg).toContain("No schema defined");

@@ -2,6 +2,7 @@
  * Contains logic about validating a state request for a service.
  */
 
+import Ajv from "ajv";
 import {
   IResponsesFromOperation,
   isReference,
@@ -12,6 +13,9 @@ import {
   Schema,
   UnmockServiceState,
 } from "../interfaces";
+
+// These are specific to OAS and not part of json schema standard
+const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
 
 type codeType = keyof Responses;
 
@@ -268,7 +272,8 @@ const matchNested = (obj: any, pathKey: string, value: any) => {
 
   if (isSchema(obj[pathKey])) {
     // TODO type checking goes here
-    foundPath[pathKey] = value;
+    // For now, basic type-checking is fine (using Ajv):
+    foundPath[pathKey] = ajv.validate(obj[pathKey], value) ? value : null;
   }
   if (typeof obj === "object") {
     for (const objKey of Object.keys(obj)) {
@@ -299,7 +304,7 @@ const DFSVerifyNoneAreNull = (
   for (const key of Object.keys(obj)) {
     if (obj[key] === null) {
       return {
-        msg: `Can't find definition for '${key}'`,
+        msg: `Can't find definition for '${key}', or its type is incorrect`,
         nestedLevel,
       };
     }

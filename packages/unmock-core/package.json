@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@types/xregexp": "^3.0.30",
+    "ajv": "^6.10.0",
     "axios": "^0.18.0",
     "js-yaml": "^3.13.1",
     "json-schema-faker": "^0.5.0-rc17",
