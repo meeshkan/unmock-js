@@ -1,5 +1,4 @@
 import { ISerializedRequest } from "../interfaces";
-import { State } from "./state/state";
 import {
   IService,
   IServiceInput,
@@ -8,6 +7,7 @@ import {
   OpenAPIObject,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
+import { State } from "./state/state";
 
 export class Service implements IService {
   public readonly name: string;
