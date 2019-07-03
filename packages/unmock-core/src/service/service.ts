@@ -9,6 +9,7 @@ import {
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
+import { DEFAULT_STATE_ENDPOINT } from "./constants";
 
 export class Service implements IService {
   public readonly name: string;
@@ -44,10 +45,15 @@ export class Service implements IService {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
-    const schemaEndpoint = this.matcher.findEndpoint(stateInput.endpoint);
+    const { endpoint } = stateInput;
+    const schemaEndpoint =
+      endpoint !== DEFAULT_STATE_ENDPOINT
+        ? this.matcher.findEndpoint(endpoint)
+        : endpoint;
     if (schemaEndpoint === undefined) {
-      throw new Error(`Can't find '${stateInput.endpoint}' in '${this.name}'`);
+      throw new Error(`Can't find endpoint '${endpoint}' in '${this.name}'`);
     }
+
     const err = this.state.update({
       stateInput,
       serviceName: this.name,
@@ -59,7 +65,16 @@ export class Service implements IService {
     }
   }
 
-  public getState(endpoint: string, method: HTTPMethod) {
+  public getState(method: HTTPMethod, endpoint: string) {
     const schemaEndpoint = this.matcher.findEndpoint(endpoint);
+    if (schemaEndpoint === undefined) {
+      return undefined;
+    }
+    const operationSchema = this.schema.paths[schemaEndpoint][method];
+    if (operationSchema === undefined) {
+      return undefined;
+    }
+
+    return this.state.getState(method, endpoint, operationSchema);
   }
 }

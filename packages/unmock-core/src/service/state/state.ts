@@ -1,22 +1,23 @@
 import debug from "debug";
+import minimatch from "minimatch";
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
   IResponsesFromOperation,
-  Schema,
+  Operation,
 } from "../interfaces";
-import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
-import { getOperations } from "./utils";
+import {
+  codeToMedia,
+  IOperationForStateUpdate,
+  IStateUpdate,
+} from "./interfaces";
+import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
 
-//           (e.g. "application/json")   schema
-type mediaTypeToSchema = Record<string, Schema>;
-//                              status   (e.g. "application/json")
-type statusToMediaType = Record<string, mediaTypeToSchema>;
-//                              path           method       status
-type ServiceStateType = Record<string, Record<string, statusToMediaType>>;
-
 const debugLog = debug("unmock:state");
+
+//                              path           method       status
+type ServiceStateType = Record<string, Record<string, codeToMedia>>;
 
 /**
  * Maintains a state for service
@@ -71,18 +72,47 @@ export class State {
   }
 
   /**
-   * Returns the state for given combination of method, endpoint and status code (if given)
+   * Returns the state for given combination of method and endpoint.
    * At this point, method is expected to be a valid HTTP method, and endpoint is expected
    * to be specific endpoint.
    * @param method
    * @param endpoint
-   * @param statusCode
+   * @returns Depending on matching results, one of the following:
+   *          1. undefined if no state was defined for the endpoint + method
+   *          2. Record<string, Record<string, Schema>>[] where the first level has status codes as key,
+   *             and second level has MediaType as key (e.g. "application/json").
+   *             Each of the array items matches the endpoint and method, and has to be filtered according to the schema
+   *             the true endpoint really has.
    */
   public getState(
     method: HTTPMethod,
     endpoint: string,
-    statusCode?: string,
-  ): Record<string, Schema> | Schema | undefined {}
+    operation: Operation,
+  ): codeToMedia | undefined {
+    // get all states that match the endpoint
+    const matchingEndpointKeys = Object.keys(this.state).filter(
+      (sKey: string) => minimatch(endpoint, sKey, { nocase: true }),
+    );
+    if (matchingEndpointKeys.length === 0) {
+      return undefined;
+    }
+    // sort endpoints by location of asterisks and frequency
+    // (done to spread and overwrite as needed)
+    // Results is e.g. (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
+    matchingEndpointKeys.sort((a: string, b: string) => {
+      const nA = a.split("*");
+      const nB = b.split("*");
+      return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? -1 : 1;
+    });
+
+    // get all states that match the method, from the above endpoints
+    const states = matchingEndpointKeys
+      .filter((key: string) => this.state[key][method] !== undefined)
+      .map((key: string) => this.state[key][method]);
+
+    // Filter all the states that do not match the operation schema
+    return filterStatesByOperation(states, operation);
+  }
 
   private updateStateInternal(
     endpoint: string,

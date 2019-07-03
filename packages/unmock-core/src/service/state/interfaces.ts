@@ -1,4 +1,10 @@
-import { HTTPMethod, IStateInput, Operation, Paths } from "../interfaces";
+import {
+  HTTPMethod,
+  IStateInput,
+  Operation,
+  Paths,
+  Schema,
+} from "../interfaces";
 
 export interface IStateUpdate {
   stateInput: IStateInput;
@@ -16,3 +22,8 @@ export interface IOperationForStateUpdate {
   operation: Operation;
 }
 export type OperationsForStateUpdate = IOperationForStateUpdate[];
+
+//           (e.g. "application/json")   schema
+export type mediaTypeToSchema = Record<string, Schema>;
+//                              status   (e.g. "application/json")
+export type codeToMedia = Record<string, mediaTypeToSchema>;

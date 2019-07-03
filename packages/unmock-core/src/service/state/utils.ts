@@ -6,16 +6,116 @@ import {
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
+  isReference,
   isRESTMethod,
   Operation,
   PathItem,
   Paths,
+  Response,
+  Responses,
 } from "../interfaces";
-import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
+import {
+  codeToMedia,
+  IStateUpdate,
+  mediaTypeToSchema,
+  OperationsForStateUpdate,
+} from "./interfaces";
 
 type PathKey = keyof PathItem & HTTPMethod;
+type codeKey = keyof Responses;
+interface ICodesToMediaTypes {
+  [code: string]: string[];
+}
 
 const debugLog = debug("unmock:state:utils");
+
+export const filterStatesByOperation = (
+  states: codeToMedia[],
+  operation: Operation,
+): codeToMedia => {
+  const opResponses = operation.responses;
+  const statusCodes = Object.keys(opResponses);
+  const mediaTypes: ICodesToMediaTypes = Object.keys(opResponses).reduce(
+    (types: ICodesToMediaTypes, code: string) => {
+      const response = opResponses[code as codeKey];
+      return Object.assign(
+        types[code],
+        response === undefined ||
+          isReference(response) ||
+          response.content === undefined
+          ? []
+          : Object.keys(response.content),
+      );
+    },
+    {},
+  );
+
+  const filtered = states.reduce(
+    (stateAcc: codeToMedia[], state: codeToMedia) => {
+      const relCodesInState = Object.keys(state).filter((code: string) =>
+        statusCodes.includes(code),
+      );
+      if (relCodesInState.length === 0) {
+        // None match - we can safely ignore this state
+        return stateAcc;
+      }
+      stateAcc.push(filterByMediaType(relCodesInState, state, mediaTypes));
+      return stateAcc;
+    },
+    [],
+  );
+  // Spread out for each status code and each media type
+  return spreadNestedCodeToMedia(filtered);
+};
+
+const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
+  const spreaded: codeToMedia = {};
+  for (const state of nested) {
+    for (const code of Object.keys(state)) {
+      const resp: Response = state[code as codeKey] as any;
+      for (const mediaType of Object.keys(state[code])) {
+        const content = resp.content;
+        if (content !== undefined) {
+          const spreadSchema = {
+            ...spreaded[code][mediaType],
+            ...content[mediaType].schema,
+          };
+          spreaded[code] = {
+            ...spreaded[code],
+            ...{ [mediaType]: spreadSchema },
+          };
+        }
+      }
+    }
+  }
+  return spreaded;
+};
+
+const filterByMediaType = (
+  statusCodes: string[],
+  stateObj: codeToMedia,
+  allowedMediaTypes: ICodesToMediaTypes,
+) => {
+  const stateCodeToMedia: codeToMedia = {};
+  for (const code of statusCodes) {
+    const codeSchema = stateObj[code];
+    const validMediaTypes = Object.keys(codeSchema).filter(
+      (mediaType: string) => allowedMediaTypes[code].includes(mediaType),
+    );
+    if (validMediaTypes.length === 0) {
+      continue;
+    }
+    // some are valid, add them to the list
+    stateCodeToMedia[code] = validMediaTypes.reduce(
+      (filteredCodeToMedia: mediaTypeToSchema, mediaType: string) =>
+        Object.assign(filteredCodeToMedia, {
+          [mediaType]: codeSchema[mediaType],
+        }),
+      {},
+    );
+  }
+  return stateCodeToMedia;
+};
 
 /**
  * Gets relevant operations for given method and endpoint, filtering out
