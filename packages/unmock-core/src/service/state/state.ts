@@ -26,6 +26,14 @@ type ServiceStateType = Record<string, Record<string, codeToMedia>>;
 export class State {
   private state: ServiceStateType = {};
 
+  /***
+   * Updates the current state, validating the input as needed.
+   * @param stateUpdate - contains the `IStateUpdate` object, which is
+   * the defacto update requested, and `schemaEndpoint`, `paths` and `serviceName`.
+   * The latter is used for error messages only.
+   * `schemaEndpoint` is a mapping from the actual requested `endpoint` to the one in `paths`,
+   * and the result is used to verify the contents of `stateInput`.
+   */
   public update(stateUpdate: IStateUpdate) {
     const { stateInput } = stateUpdate;
     const { endpoint, method, newState } = stateInput;
