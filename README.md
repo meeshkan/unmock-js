@@ -21,7 +21,7 @@ A new way to mock API dependencies.
 
 ## How does it work?
 
-Unmock works by capturing HTTP calls in your code, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock works by capturing HTTP calls in your code and injecting responses from mocked versions of services initialized at arbitrary states.
 
 ## Install
 
