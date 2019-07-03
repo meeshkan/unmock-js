@@ -1,53 +1,20 @@
-import debug from "debug";
 import { ISerializedRequest } from "../interfaces";
-import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
+import { State } from "./state/state";
 import {
-  ExtendedHTTPMethod,
-  HTTPMethod,
-  IResponsesFromOperation,
   IService,
   IServiceInput,
-  isRESTMethod,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
-  Operation,
-  PathItem,
-  Schema,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
-import { getValidResponsesForOperationWithState } from "./validator";
-
-const debugLog = debug("unmock:service");
-
-interface IOperationForStateUpdate {
-  endpoint: string;
-  method: HTTPMethod;
-  operation: Operation;
-}
-type OperationsForStateUpdate = IOperationForStateUpdate[];
-type mediaTypeToSchema = Record<string, Schema>;
-type statusToMediaType = Record<string, mediaTypeToSchema>;
-//                              path           method       status
-type ServiceStateType = Record<string, Record<string, statusToMediaType>>;
-
-/**
- * Implements the state management for a service
- */
 
 export class Service implements IService {
   public readonly name: string;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
-  /**
-   * Maintains a state for service
-   * First level kv pairs: paths -> methods
-   * Second level kv pairs: methods -> status codes
-   * Third level kv pairs: status codes -> response template overrides
-   * Fourth and beyond: template-specific.
-   */
-  private state: ServiceStateType = {};
+  private readonly state: State;
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
@@ -57,6 +24,7 @@ export class Service implements IService {
       this.schema.paths !== undefined &&
       Object.keys(this.schema.paths).length > 0;
     this.matcher = new OASMatcher({ schema: this.schema });
+    this.state = new State();
   }
 
   get schema(): OpenAPIObject {
@@ -71,192 +39,15 @@ export class Service implements IService {
     return this.matcher.matchToOperationObject(sreq);
   }
 
-  public updateState({ method, endpoint, newState }: IStateInput) {
+  public updateState(stateInput: IStateInput) {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
-    debugLog(`Fetching operations for '${method} ${endpoint}'...`);
-    const ops = this.getOperations(method, endpoint);
-    if (ops.error !== undefined) {
-      debugLog(`Couldn't find any matching operations: ${ops.error}`);
-      return ops.error;
-    }
-    if (newState === undefined) {
-      // No state given, no changes to make
-      return;
-    }
-    debugLog(`Found follow operations: ${ops.operations}`);
-
-    const opsResult = ops.operations.reduce(
-      (
-        { nErrors, lastError }: { nErrors: number; lastError?: string },
-        op: IOperationForStateUpdate,
-      ) => {
-        // For each operation, verify the new state applies and save in `this.state`
-        const stateResponses = getValidResponsesForOperationWithState(
-          op.operation,
-          newState,
-        );
-        if (stateResponses.error === undefined) {
-          debugLog(`Matched successfully for ${op.operation.operationId}`);
-          this.updateStateInternal(endpoint, method, stateResponses.responses);
-          return { nErrors, lastError };
-        }
-        // failed path
-        debugLog(
-          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
-        );
-        return { nErrors: nErrors + 1, lastError: stateResponses.error };
-      },
-      { nErrors: 0, lastError: undefined },
-    );
-
-    if (opsResult.nErrors === ops.operations.length) {
-      throw new Error(opsResult.lastError);
-    }
-    return;
-  }
-
-  private updateStateInternal(
-    endpoint: string,
-    method: ExtendedHTTPMethod,
-    responses?: IResponsesFromOperation,
-  ) {
-    if (this.state[endpoint] === undefined) {
-      this.state[endpoint] = {};
-    }
-    if (this.state[endpoint][method] === undefined) {
-      this.state[endpoint][method] = {};
-    }
-    this.state[endpoint][method] = {
-      ...this.state[endpoint][method],
-      ...responses,
-    };
-  }
-
-  /**
-   * Gets relevant operations for given method and endpoint, filtering out
-   * any endpoints/method combinations that do not match.
-   * @returns An object with operations and possibly an error message. If
-   *          error is defined, operations is guaranteed to be an empty array.
-   *          An error is always an indication that something couldn't be found
-   *          with the given (method, endpoint) combination in this service.
-   */
-  private getOperations(
-    method: ExtendedHTTPMethod,
-    endpoint: string,
-  ): { operations: OperationsForStateUpdate; error?: string } {
-    const isDefMethod = method === DEFAULT_HTTP_METHOD;
-    // Short handle for returning a failed result
-    const errPref = "Can't find ";
-    const errSuff = ` in '${this.name}'!`;
-    const err = (msg: string) => ({
-      operations: [],
-      error: errPref + msg + errSuff,
+    this.state.update({
+      stateInput,
+      serviceName: this.name,
+      matcher: this.matcher,
+      paths: this.schema.paths,
     });
-
-    if (endpoint !== DEFAULT_ENDPOINT) {
-      debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
-      const pathItem = this.getPathItem(endpoint);
-      if (pathItem === undefined) {
-        return err(`endpoint '${endpoint}'`);
-      }
-
-      if (isDefMethod) {
-        // Specific endpoint, all methods
-        debugLog(`Fetching operations for any REST method...`);
-        const ops = this.getOperationsFromPathItem(pathItem, endpoint);
-        return ops === undefined
-          ? err(`any operations under '${endpoint}'`)
-          : { operations: ops };
-      }
-
-      // Specific endpoint, specific method
-      debugLog(`Fetching operations for REST method '${method}'...`);
-      method = method as HTTPMethod;
-      const op = pathItem[method];
-      return op === undefined
-        ? err(`response for '${method} ${endpoint}'`)
-        : {
-            operations: [
-              {
-                endpoint,
-                method,
-                operation: op,
-              },
-            ],
-          };
-    }
-    // any endpoint
-    debugLog(`Fetching operations for any endpoint...`);
-    const operations = this.getOperationsByMethod(method);
-    return operations === undefined
-      ? err(
-          `any endpoints with ` +
-            `${isDefMethod ? "operations" : `method '${method}'`}`,
-        )
-      : { operations };
-  }
-
-  private getPathItem(endpoint: string): PathItem | undefined {
-    const keyOfEndpointInSchema = this.matcher.findEndpoint(endpoint);
-    if (keyOfEndpointInSchema === undefined) {
-      return undefined;
-    }
-    return this.schema.paths[keyOfEndpointInSchema];
-  }
-
-  private getOperationsByMethod(
-    method: ExtendedHTTPMethod,
-  ): OperationsForStateUpdate | undefined {
-    const anyMethod = method === DEFAULT_HTTP_METHOD;
-    const filterFn = anyMethod
-      ? (pathItemKey: string) => isRESTMethod(pathItemKey)
-      : (pathItemKey: string) => pathItemKey === method;
-
-    const operations: OperationsForStateUpdate = Object.keys(
-      this.schema.paths,
-    ).reduce((ops: OperationsForStateUpdate, path: string) => {
-      // For each path, we reduce the relevant methods (= operations)
-      const pathItem = this.schema.paths[path];
-      const pathOperations = Object.keys(pathItem).reduce(
-        (pathOps: OperationsForStateUpdate, maybeOperationKey: string) =>
-          filterFn(maybeOperationKey)
-            ? pathOps.concat([
-                {
-                  endpoint: path,
-                  method: maybeOperationKey as HTTPMethod,
-                  operation: (pathItem as any)[maybeOperationKey],
-                },
-              ])
-            : pathOps,
-        [],
-      );
-      return ops.concat(pathOperations);
-    }, []);
-    if (operations.length === 0) {
-      return undefined;
-    }
-    return operations;
-  }
-
-  private getOperationsFromPathItem(
-    pathItem: PathItem,
-    endpoint: string,
-  ): OperationsForStateUpdate | undefined {
-    const operations: OperationsForStateUpdate = [];
-    Object.keys(pathItem).forEach((key: string) => {
-      if (isRESTMethod(key)) {
-        const method = key as HTTPMethod;
-        const operation = (pathItem as any)[key] as Operation;
-        if (operation !== undefined) {
-          operations.push({ endpoint, method, operation });
-        }
-      }
-    });
-    if (operations.length === 0) {
-      return undefined;
-    }
-    return operations;
   }
 }

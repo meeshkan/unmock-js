@@ -1,9 +1,9 @@
 import { Response, Schema } from "../service/interfaces";
 import {
-  spreadStateFromService,
   getUpdatedStateFromContent,
   getValidResponsesForOperationWithState,
-} from "../service/validator";
+  spreadStateFromService,
+} from "../service/state/validator";
 
 const schema: Schema = {
   properties: {

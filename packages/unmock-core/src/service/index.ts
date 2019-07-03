@@ -1,4 +1,4 @@
-import { DEFAULT_ENDPOINT, DEFAULT_HTTP_METHOD } from "./constants";
+import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
@@ -9,15 +9,15 @@ import {
 import { ServiceStore } from "./serviceStore";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
-  endpoint = DEFAULT_ENDPOINT,
+  endpoint = DEFAULT_STATE_ENDPOINT,
   state: UnmockServiceState,
-  method: ExtendedHTTPMethod = DEFAULT_HTTP_METHOD,
+  method: ExtendedHTTPMethod = DEFAULT_STATE_HTTP_METHOD,
 ) => {
   // Returns a function for the end user to update the state in,
   // while maintaining endpoints and methods.
   if (typeof endpoint !== "string") {
     state = endpoint;
-    endpoint = DEFAULT_ENDPOINT;
+    endpoint = DEFAULT_STATE_ENDPOINT;
   }
   store.saveState({ endpoint, method, serviceName, state });
   return new Proxy(store, StateHandler(serviceName));
@@ -25,7 +25,7 @@ const saveStateProxy = (store: ServiceStore, serviceName: string) => (
 
 const saveStateHelper = (fn: any, method: HTTPMethod) => (
   // Redirects method, endpoint and state via currying to fn()
-  endpoint = DEFAULT_ENDPOINT,
+  endpoint = DEFAULT_STATE_ENDPOINT,
   state: UnmockServiceState,
 ) => fn(endpoint, state, method);
 

@@ -4,13 +4,16 @@
 
 import {
   IResponsesFromOperation,
+  isReference,
   isSchema,
   MediaType,
   Operation,
-  Response,
+  Responses,
   Schema,
   UnmockServiceState,
-} from "./interfaces";
+} from "../interfaces";
+
+type codeType = keyof Responses;
 
 interface IResponsesFromContent {
   [contentType: string]: Record<string, Schema>;
@@ -87,8 +90,12 @@ export const getValidResponsesForOperationWithState = (
     statusCode === undefined ? Object.keys(responses) : [statusCode];
   if (statusCode !== undefined) {
     // Applies only to specific response
-    const response = (responses as any)[statusCode] as Response;
-    if (response === undefined || response.content === undefined) {
+    const response = responses[String(statusCode) as codeType];
+    if (
+      response === undefined ||
+      isReference(response) ||
+      response.content === undefined
+    ) {
       return {
         error: `Can't find response for given status code '${statusCode}'!`,
       };
@@ -97,8 +104,12 @@ export const getValidResponsesForOperationWithState = (
   }
 
   for (const code of codes) {
-    const response = (responses as any)[code] as Response;
-    if (response.content === undefined) {
+    const response = responses[code as codeType];
+    if (
+      response === undefined ||
+      isReference(response) ||
+      response.content === undefined
+    ) {
       continue;
     }
     const stateMedia = getStateFromMedia(response.content, state);
