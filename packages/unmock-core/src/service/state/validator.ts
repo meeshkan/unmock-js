@@ -214,7 +214,7 @@ export const spreadStateFromService = (
       // Otherwise recursively look for matching key in nested schema.
       let nested =
         scm === undefined || hasNestedItems(scm)
-          ? matchNested(serviceSchema, key)
+          ? matchNested(serviceSchema, key, statePath[key])
           : scm;
       if (nested === undefined) {
         nested = { [key]: null }; // Note that `key` was missing
@@ -263,18 +263,19 @@ export const spreadStateFromService = (
  * @returns An object leading up to the requested key and it's value in `obj`
  *          or `undefined`.
  */
-const matchNested = (obj: any, pathKey: string) => {
+const matchNested = (obj: any, pathKey: string, value: any) => {
   const foundPath: { [key: string]: any } = {};
 
   if (isSchema(obj[pathKey])) {
-    foundPath[pathKey] = obj[pathKey];
+    // TODO type checking goes here
+    foundPath[pathKey] = value;
   }
   if (typeof obj === "object") {
     for (const objKey of Object.keys(obj)) {
       if (typeof obj[objKey] !== "object") {
         continue;
       }
-      const subMatches = matchNested(obj[objKey], pathKey);
+      const subMatches = matchNested(obj[objKey], pathKey, value);
       if (subMatches !== undefined) {
         foundPath[objKey] = subMatches;
       }

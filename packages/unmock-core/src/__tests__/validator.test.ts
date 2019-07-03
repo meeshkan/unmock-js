@@ -65,10 +65,7 @@ describe("Tests spreadStateFromService", () => {
       properties: {
         test: {
           properties: {
-            id: {
-              type: "integer",
-              format: "int64",
-            },
+            id: "a",
           },
         },
       },
@@ -86,19 +83,14 @@ describe("Tests spreadStateFromService", () => {
       properties: {
         test: {
           properties: {
-            id: {
-              type: "integer",
-              format: "int64",
-            },
+            id: "a",
           },
         },
         foo: {
           properties: {
             bar: {
               properties: {
-                id: {
-                  type: "integer",
-                },
+                id: "a",
               },
             },
           },
@@ -184,19 +176,14 @@ describe("Tests getValidResponsesForOperationWithState", () => {
           properties: {
             test: {
               properties: {
-                id: {
-                  type: "integer",
-                  format: "int64",
-                },
+                id: 5,
               },
             },
             foo: {
               properties: {
                 bar: {
                   properties: {
-                    id: {
-                      type: "integer",
-                    },
+                    id: 5,
                   },
                 },
               },

@@ -49,7 +49,6 @@ export const filterStatesByOperation = (
     },
     {},
   );
-
   const filtered = states.reduce(
     (stateAcc: codeToMedia[], state: codeToMedia) => {
       const relCodesInState = Object.keys(state).filter((code: string) =>

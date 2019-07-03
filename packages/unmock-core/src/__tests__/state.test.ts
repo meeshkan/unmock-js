@@ -76,7 +76,7 @@ const fullSchema = {
 };
 
 describe("Test state management", () => {
-  it("saves states as expected", () => {
+  it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({
       stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
@@ -84,8 +84,26 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
-    console.log(
-      state.getState("get", "/", fullSchema.paths["/test/{test_id}"].get),
+    const singleState = state.getState(
+      "get",
+      "/",
+      fullSchema.paths["/test/{test_id}"].get,
     );
+    expect(singleState).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              foo: {
+                properties: {
+                  id: 5,
+                },
+              },
+              id: 5,
+            },
+          },
+        },
+      },
+    });
   });
 });
