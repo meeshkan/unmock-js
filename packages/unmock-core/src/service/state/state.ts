@@ -41,33 +41,29 @@ export class State {
     }
     debugLog(`Found follow operations: ${ops.operations}`);
 
-    const opsResult = ops.operations.reduce(
-      (
-        { nErrors, lastError }: { nErrors: number; lastError?: string },
-        op: IOperationForStateUpdate,
-      ) => {
-        // For each operation, verify the new state applies and save in `this.state`
-        const stateResponses = getValidResponsesForOperationWithState(
-          op.operation,
-          newState,
-        );
-        if (stateResponses.error === undefined) {
-          debugLog(`Matched successfully for ${op.operation.operationId}`);
-          this.updateStateInternal(endpoint, method, stateResponses.responses);
-          return { nErrors, lastError };
-        }
-        // failed path
-        debugLog(
-          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
-        );
-        return { nErrors: nErrors + 1, lastError: stateResponses.error };
-      },
-      { nErrors: 0, lastError: undefined },
-    );
+    let errorMsg: string | undefined;
+    const opsResult = ops.operations.some((op: IOperationForStateUpdate) => {
+      // For each operation, verify the new state applies and save in `this.state`
+      const stateResponses = getValidResponsesForOperationWithState(
+        op.operation,
+        newState,
+      );
+      if (stateResponses.error === undefined) {
+        debugLog(`Matched successfully for ${op.operation.operationId}`);
+        this.updateStateInternal(endpoint, method, stateResponses.responses);
+        return true;
+      }
+      // failed path
+      debugLog(
+        `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
+      );
+      errorMsg = stateResponses.error;
+      return false;
+    });
 
-    if (opsResult.nErrors === ops.operations.length) {
+    if (opsResult === false) {
       // all paths had an error - can't operate properly
-      return opsResult.lastError;
+      return errorMsg;
     }
     return;
   }
