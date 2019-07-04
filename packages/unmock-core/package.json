@@ -15,11 +15,13 @@
   "dependencies": {
     "@types/debug": "^4.1.4",
     "@types/xregexp": "^3.0.30",
+    "ajv": "^6.10.0",
     "axios": "^0.18.0",
     "debug": "^4.1.1",
     "js-yaml": "^3.13.1",
     "json-schema-faker": "^0.5.0-rc17",
     "loas3": "0.0.3",
+    "minimatch": "^3.0.4",
     "querystring": "^0.2.0",
     "xregexp": "^4.2.4"
   }
