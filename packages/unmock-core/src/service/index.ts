@@ -2,7 +2,6 @@ import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
   HTTPMethod,
-  IService,
   isRESTMethod,
   UnmockServiceState,
 } from "./interfaces";
@@ -70,5 +69,5 @@ const StateHandler = (prevServiceName?: string) => {
 };
 
 // Returns as any to allow for type-free DSL-like access to services and states
-export const stateStoreFactory = (services: IService[]): any =>
-  new Proxy(new ServiceStore(services), StateHandler());
+export const stateStoreFactory = (serviceStore: ServiceStore): any =>
+  new Proxy(serviceStore, StateHandler());

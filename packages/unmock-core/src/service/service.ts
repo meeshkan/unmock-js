@@ -43,7 +43,6 @@ export class Service implements IService {
       return undefined;
     }
     const state = this.getState(sreq.method as HTTPMethod, sreq.path);
-    console.log(state);
     return {
       operation: maybeOp,
       state,

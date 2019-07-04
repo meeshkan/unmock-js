@@ -11,6 +11,7 @@ import {
   IServiceDef,
   IServiceDefLoader,
 } from "./interfaces";
+import { stateStoreFactory } from "./service";
 import {
   codeToMedia,
   IService,
@@ -35,15 +36,19 @@ export function responseCreatorFactory({
   serviceDefLoader,
 }: {
   serviceDefLoader: IServiceDefLoader;
-}): CreateResponse {
+}): { stateStore: any; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const parser = new ServiceParser();
   const services: IService[] = serviceDefs.map(serviceDef =>
     parser.parse(serviceDef),
   );
   const serviceStore = new ServiceStore(services);
-  return (sreq: ISerializedRequest) =>
-    generateMockFromTemplate(serviceStore.match(sreq));
+  const stateStore = stateStoreFactory(serviceStore);
+  return {
+    stateStore,
+    createResponse: (sreq: ISerializedRequest) =>
+      generateMockFromTemplate(serviceStore.match(sreq)),
+  };
 }
 
 const setupJSFUnmockProperties = () => {
@@ -140,6 +145,7 @@ const generateMockFromTemplate = (
   const { template, $code } =
     getStateForOperation(operation, state) ||
     chooseResponseFromOperation(operation);
+
   // At this point, we assume there are no references, and we only need to
   // handle x-unmock-* within the schemas, modify it according to these
   // properties + the state -> we can work with jsf out of the box
@@ -152,7 +158,7 @@ const generateMockFromTemplate = (
 
   // 5. Generate as needed
   return {
-    body: JSON.stringify(jsf.generate(resolvedTemplate).schema),
+    body: JSON.stringify(jsf.generate(resolvedTemplate)),
     // TODO: headers
     statusCode: +$code || 200,
   };
