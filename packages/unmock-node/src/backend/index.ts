@@ -75,17 +75,17 @@ export default class NodeBackend implements IBackend {
   } = {};
   private origOnSocket?: (socket: net.Socket) => void;
   private mitm: any;
-  private stateStore: any;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
   }
 
-  get states() {
-    return this.stateStore;
-  }
-
-  public initialize(options: UnmockOptions) {
+  /**
+   *
+   * @param options
+   * @returns `states` object, with which one can modify states of various services.
+   */
+  public initialize(options: UnmockOptions): any {
     if (this.mitm !== undefined) {
       this.reset();
     }
@@ -129,11 +129,12 @@ export default class NodeBackend implements IBackend {
     const { stateStore, createResponse } = responseCreatorFactory({
       serviceDefLoader,
     });
-    this.stateStore = stateStore;
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest.call(this, createResponse, req, res),
     );
+
+    return stateStore;
   }
 
   public reset() {

@@ -13,8 +13,7 @@ describe("Node.js interceptor", () => {
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
       const unmockOptions = new UnmockOptions();
-      nodeInterceptor.initialize(unmockOptions);
-      states = nodeInterceptor.states;
+      states = nodeInterceptor.initialize(unmockOptions);
     });
 
     afterAll(() => {

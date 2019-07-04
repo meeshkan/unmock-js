@@ -15,7 +15,5 @@ const defaultOptions = new UnmockOptions({
 
 const backend = new NodeBackend();
 
-export const states = backend.states;
-
 export const unmock = _unmock(defaultOptions, backend);
 export const kcomnu = _kcomnu;
