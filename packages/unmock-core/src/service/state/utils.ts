@@ -8,6 +8,7 @@ import {
   HTTPMethod,
   isReference,
   isRESTMethod,
+  OASMethodKey,
   Operation,
   PathItem,
   Paths,
@@ -21,7 +22,6 @@ import {
   OperationsForStateUpdate,
 } from "./interfaces";
 
-type PathKey = keyof PathItem & HTTPMethod;
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {
   [code: string]: string[];
@@ -210,7 +210,7 @@ const getOperationsByMethod = (
         .map((operationKey: string) => ({
           endpoint: path,
           method: operationKey as HTTPMethod,
-          operation: pathItem[operationKey as PathKey] as Operation,
+          operation: pathItem[operationKey as OASMethodKey] as Operation,
         }));
       return ops.concat(pathOperations);
     },

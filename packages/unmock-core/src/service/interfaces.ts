@@ -1,4 +1,4 @@
-import { OpenAPIObject, Schema } from "loas3/dist/src/generated/full";
+import { OpenAPIObject, PathItem, Schema } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 
@@ -33,6 +33,8 @@ const DEF_REST_METHOD = [DEFAULT_STATE_HTTP_METHOD] as const;
 type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
 export type HTTPMethod = typeof RESTMethodTypes[number];
 export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
+
+export type OASMethodKey = keyof PathItem & HTTPMethod;
 
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());

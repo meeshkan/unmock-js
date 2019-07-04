@@ -1,7 +1,12 @@
 import debug from "debug";
 import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
-import { MatcherResponse, OpenAPIObject, PathItem } from "./interfaces";
+import {
+  MatcherResponse,
+  OpenAPIObject,
+  PathItem,
+  OASMethodKey,
+} from "./interfaces";
 import {
   buildPathRegexStringFromParameters,
   getPathParametersFromPath,
@@ -100,7 +105,7 @@ export class OASMatcher {
     debugLog(`Matched path object, looking for match for ${requestMethod}`);
 
     const matchingPath = matchingPathItemOrUndef;
-    return (matchingPath as any)[requestMethod];
+    return matchingPath[requestMethod as OASMethodKey];
   }
 
   public findEndpoint(reqPath: string): string | undefined {
