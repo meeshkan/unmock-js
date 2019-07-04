@@ -100,6 +100,12 @@ export interface IService {
   updateState(input: IStateInput): void;
 
   /**
+   * Resets the entire state saved for this service.
+   * This provides easy access to wipe a state after every test.
+   */
+  resetState(): void;
+
+  /**
    * Match a given request to the service. Return an operation object for successful match,
    * undefined otherwise.
    * @param sreq Serialized request

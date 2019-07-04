@@ -27,8 +27,18 @@ export class ServiceStore {
     return undefined;
   }
 
+  public resetState(serviceName: string | undefined) {
+    if (serviceName === undefined) {
+      for (const service of Object.values(this.serviceMapping)) {
+        service.resetState();
+      }
+    } else if (this.serviceMapping[serviceName] !== undefined) {
+      this.serviceMapping[serviceName].resetState();
+    }
+  }
+
   public saveState({
-    serviceName: service,
+    serviceName,
     method,
     endpoint,
     state,
@@ -43,7 +53,7 @@ export class ServiceStore {
      * the ServiceState object.
      */
     if (
-      this.serviceMapping[service] === undefined ||
+      this.serviceMapping[serviceName] === undefined ||
       !isExtendedRESTMethod(method)
     ) {
       // Service does not exist, no need to retain state.
@@ -55,12 +65,12 @@ export class ServiceStore {
       // i.e. `state.github.get(...).post(...)` // make sure both `get` and `post` are correct methods
       throw new Error(
         `Can't find specification for service named '${
-          isExtendedRESTMethod(method) ? service : method
+          isExtendedRESTMethod(method) ? serviceName : method
         }'!`,
       );
     }
 
-    const error = this.serviceMapping[service].updateState({
+    const error = this.serviceMapping[serviceName].updateState({
       endpoint,
       method,
       newState: state,

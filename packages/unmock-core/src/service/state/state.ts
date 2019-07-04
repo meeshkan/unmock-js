@@ -131,6 +131,10 @@ export class State {
     return filterStatesByOperation(expandedStates, operation);
   }
 
+  public reset() {
+    this.state = {};
+  }
+
   private updateStateInternal(
     endpoint: string,
     method: ExtendedHTTPMethod,

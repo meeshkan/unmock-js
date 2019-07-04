@@ -49,6 +49,10 @@ export class Service implements IService {
     };
   }
 
+  public resetState() {
+    this.state.reset();
+  }
+
   public updateState(stateInput: IStateInput) {
     if (!this.hasDefinedPaths) {
       throw new Error(`'${this.name}' has no defined paths!`);
