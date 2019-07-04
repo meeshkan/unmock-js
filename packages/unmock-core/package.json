@@ -15,9 +15,10 @@
   "dependencies": {
     "@types/xregexp": "^3.0.30",
     "axios": "^0.18.0",
+    "fp-ts": "^2.0.0",
     "js-yaml": "^3.13.1",
     "json-schema-faker": "^0.5.0-rc17",
-    "loas3": "0.0.3",
+    "loas3": "0.0.4",
     "querystring": "^0.2.0",
     "xregexp": "^4.2.4"
   }
