@@ -70,13 +70,10 @@ export class ServiceStore {
       );
     }
 
-    const error = this.serviceMapping[serviceName].updateState({
+    this.serviceMapping[serviceName].updateState({
       endpoint,
       method,
       newState: state,
     });
-    if (error !== undefined) {
-      throw new Error(error);
-    }
   }
 }

@@ -62,9 +62,9 @@ export interface IServiceInput {
   name: string;
 }
 
-//           (e.g. "application/json")   schema
+// maps from media types (e.g. "application/json") to schema
 export type mediaTypeToSchema = Record<string, Schema>;
-//                              status   (e.g. "application/json")
+// maps from status to mediaTypeToSchema
 export type codeToMedia = Record<string, mediaTypeToSchema>;
 
 export interface IResponsesFromOperation {
