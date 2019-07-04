@@ -38,7 +38,16 @@ export class Service implements IService {
   }
 
   public match(sreq: ISerializedRequest): MatcherResponse {
-    return this.matcher.matchToOperationObject(sreq);
+    const maybeOp = this.matcher.matchToOperationObject(sreq);
+    if (maybeOp === undefined) {
+      return undefined;
+    }
+    const state = this.getState(sreq.method as HTTPMethod, sreq.path);
+    console.log(state);
+    return {
+      operation: maybeOp,
+      state,
+    };
   }
 
   public updateState(stateInput: IStateInput) {
@@ -63,6 +72,9 @@ export class Service implements IService {
   }
 
   public getState(method: HTTPMethod, endpoint: string) {
+    // TODO at some point we'd probably want to move to regex for case insensitivity
+    method = method.toLowerCase() as HTTPMethod;
+    endpoint = endpoint.toLowerCase();
     const schemaEndpoint = this.matcher.findEndpoint(endpoint);
     if (schemaEndpoint === undefined) {
       return undefined;

@@ -4,10 +4,12 @@ import {
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
 import {
+  codeToMedia,
   ExtendedHTTPMethod,
   HTTPMethod,
   isReference,
   isRESTMethod,
+  mediaTypeToSchema,
   OASMethodKey,
   Operation,
   PathItem,
@@ -15,12 +17,7 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import {
-  codeToMedia,
-  IStateUpdate,
-  mediaTypeToSchema,
-  OperationsForStateUpdate,
-} from "./interfaces";
+import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
 
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {

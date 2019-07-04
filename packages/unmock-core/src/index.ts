@@ -5,6 +5,7 @@ import { doUsefulStuffWithRequestAndResponse } from "./util";
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./generator";
+export { stateStoreFactory, ServiceParser } from "./service";
 
 export const util = {
   doUsefulStuffWithRequestAndResponse,

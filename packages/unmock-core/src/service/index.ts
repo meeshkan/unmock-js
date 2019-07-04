@@ -7,6 +7,7 @@ import {
   UnmockServiceState,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
+export { ServiceParser } from "./parser";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   endpoint = DEFAULT_STATE_ENDPOINT,

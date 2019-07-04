@@ -1,4 +1,9 @@
-import { OpenAPIObject, PathItem, Schema } from "loas3/dist/src/generated/full";
+import {
+  OpenAPIObject,
+  Operation,
+  PathItem,
+  Schema,
+} from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 
@@ -57,12 +62,19 @@ export interface IServiceInput {
   name: string;
 }
 
+//           (e.g. "application/json")   schema
+export type mediaTypeToSchema = Record<string, Schema>;
+//                              status   (e.g. "application/json")
+export type codeToMedia = Record<string, mediaTypeToSchema>;
+
 export interface IResponsesFromOperation {
-  // Maps between a status code, to a response type (e.g. "application/json") to a spread state
-  [statusCode: string]: Record<string, Record<string, Schema>>;
+  // Maps between a response method, to codeToMedia
+  [method: string]: codeToMedia;
 }
 
-export type MatcherResponse = any | undefined;
+export type MatcherResponse =
+  | { operation: Operation; state: codeToMedia | undefined }
+  | undefined;
 
 export interface IService {
   /**

@@ -2,16 +2,12 @@ import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import {
+  codeToMedia,
   ExtendedHTTPMethod,
   HTTPMethod,
-  IResponsesFromOperation,
   Operation,
 } from "../interfaces";
-import {
-  codeToMedia,
-  IOperationForStateUpdate,
-  IStateUpdate,
-} from "./interfaces";
+import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
 
@@ -138,7 +134,7 @@ export class State {
   private updateStateInternal(
     endpoint: string,
     method: ExtendedHTTPMethod,
-    responses?: IResponsesFromOperation,
+    responses?: codeToMedia,
   ) {
     if (this.state[endpoint] === undefined) {
       this.state[endpoint] = {};

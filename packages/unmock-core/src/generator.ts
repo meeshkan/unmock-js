@@ -1,7 +1,9 @@
 /**
  * Implements the logic for generating a response from a service file
  */
-import { Operation } from "loas3/dist/src/generated/full";
+// @ts-ignore // json-schema-faker doesn't have typed definitions?
+import jsf from "json-schema-faker";
+import { defaultsDeep } from "lodash";
 import {
   CreateResponse,
   ISerializedRequest,
@@ -9,16 +11,25 @@ import {
   IServiceDef,
   IServiceDefLoader,
 } from "./interfaces";
-
-import { IService } from "./service/interfaces";
-
-import { Schema, UnmockServiceState } from "./service/interfaces";
-
-// json-schema-faker doesn't have typed definitions?
-// @ts-ignore
-import jsf from "json-schema-faker";
+import {
+  codeToMedia,
+  IService,
+  isReference,
+  MatcherResponse,
+  Operation,
+  Responses,
+  Schema,
+} from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
+
+function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
+  return arr.length === 0
+    ? undefined
+    : arr.length === 1
+    ? arr[0]
+    : arr[Math.floor(Math.random() * arr.length)];
+}
 
 export function responseCreatorFactory({
   serviceDefLoader,
@@ -35,9 +46,7 @@ export function responseCreatorFactory({
     generateMockFromTemplate(serviceStore.match(sreq));
 }
 
-const setupJSFUnmockProperties = (_: UnmockServiceState) => {
-  // TODO: use the state parameter to update values as needed
-
+const setupJSFUnmockProperties = () => {
   jsf.define("unmock-size", (value: number, schema: Schema) => {
     if (schema.type !== "array") {
       return schema; // validate type
@@ -48,30 +57,103 @@ const setupJSFUnmockProperties = (_: UnmockServiceState) => {
   });
 };
 
-const generateMockFromTemplate = (
-  responseTemplate: Operation | undefined,
-): ISerializedResponse | undefined => {
-  if (responseTemplate === undefined) {
+const getStateForOperation = (
+  operation: Operation,
+  state: codeToMedia | undefined,
+): { $code: string; template: Schema } | undefined => {
+  const responses = operation.responses;
+  const operationCodes = Object.keys(responses);
+  if (state === undefined || Object.keys(state).length === 0) {
     return undefined;
   }
-  // 1. Take in state from DSL
-  // TODO: Link with Matcher/Service
-  const state = { $code: 200 };
-  // const responseCode = String(state.$code || "default");
-  // 2. At this point, we assume there are no references, and we only need to
-  //    handle x-unmock-* within the schemas, modify it according to these
-  //    properties + the state -> we can work with jsf out of the box
+  const possibleResponseCodes = Object.keys(state).filter((code: string) =>
+    operationCodes.includes(code),
+  );
+  // if only one response code is set - use that one; otherwise draw at random
+  // TODO - do we want to set sensible defaults?
+  const statusCode = firstOrRandomOrUndefined(possibleResponseCodes);
+  if (statusCode === undefined) {
+    return undefined;
+  }
+
+  const operationResponse = responses[statusCode as keyof Responses];
+  if (
+    operationResponse === undefined ||
+    isReference(operationResponse) ||
+    operationResponse.content === undefined
+  ) {
+    return undefined;
+  }
+  const operationContent = operationResponse.content;
+
+  const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
+    Object.keys(operationContent).includes(type),
+  );
+  const mediaType = firstOrRandomOrUndefined(mediaTypes); // Ditto
+  if (mediaType === undefined) {
+    return undefined;
+  }
+
+  // Filter the state so it matches the schema
+  const requestedState = state[statusCode][mediaType];
+  const matchedOperation = operationContent[mediaType].schema;
+  return {
+    $code: statusCode,
+    template: defaultsDeep(requestedState, matchedOperation),
+  };
+};
+
+const chooseResponseFromOperation = (
+  operation: Operation,
+): { $code: string; template: Schema } => {
+  const responses = operation.responses;
+  const chosenCode = firstOrRandomOrUndefined(Object.keys(responses));
+  if (chosenCode === undefined) {
+    throw new Error("Not sure what went wrong");
+  }
+
+  const response = responses[chosenCode as keyof Responses];
+  if (
+    response === undefined ||
+    isReference(response) ||
+    response.content === undefined
+  ) {
+    throw new Error("Not sure what went wrong");
+  }
+
+  const content = response.content;
+  const chosenMediaType = firstOrRandomOrUndefined(Object.keys(content));
+  if (chosenMediaType === undefined) {
+    throw new Error("Not sure what went wrong");
+  }
+
+  return { $code: chosenCode, template: content[chosenMediaType] };
+};
+
+const generateMockFromTemplate = (
+  matchedService: MatcherResponse,
+): ISerializedResponse | undefined => {
+  if (matchedService === undefined) {
+    return undefined;
+  }
+  const { operation, state } = matchedService;
+  const { template, $code } =
+    getStateForOperation(operation, state) ||
+    chooseResponseFromOperation(operation);
+  // At this point, we assume there are no references, and we only need to
+  // handle x-unmock-* within the schemas, modify it according to these
+  // properties + the state -> we can work with jsf out of the box
 
   // Setup the unmock properties for jsf parsing
-  setupJSFUnmockProperties(state);
+  setupJSFUnmockProperties();
   // First iteration simply parses these and returns the updated schema
-  const resolvedTemplate = jsf.generate(responseTemplate);
+  const resolvedTemplate = jsf.generate(template);
   jsf.reset();
 
   // 5. Generate as needed
   return {
-    body: jsf.generate(resolvedTemplate).schema,
+    body: JSON.stringify(jsf.generate(resolvedTemplate).schema),
     // TODO: headers
-    statusCode: state.$code, // TODO: what if `$code` response doesn't exist?
+    statusCode: +$code || 200,
   };
 };
