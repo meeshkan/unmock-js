@@ -1,10 +1,11 @@
 import jsYaml from "js-yaml";
 import loas3 from "loas3";
+import path from "path";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
 
 export class ServiceParser implements IServiceParser {
-  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
+  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.(ya?ml|json)$/i;
 
   public parse(serviceDef: IServiceDef): Service {
     const serviceFiles = serviceDef.serviceFiles;
@@ -23,13 +24,16 @@ export class ServiceParser implements IServiceParser {
     }
 
     const serviceFile = matchingFiles[0];
+    const specExt = path.extname(serviceFile.basename);
 
     const contents: string =
       serviceFile.contents instanceof Buffer
         ? serviceFile.contents.toString("utf-8")
         : serviceFile.contents;
 
-    const { val: schema, errors } = loas3(jsYaml.safeLoad(contents));
+    const { val: schema, errors } = loas3(
+      specExt === ".json" ? JSON.parse(contents) : jsYaml.safeLoad(contents),
+    );
     if (errors) {
       throw new Error(
         [
