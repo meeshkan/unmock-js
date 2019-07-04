@@ -215,6 +215,7 @@ export const spreadStateFromService = (
 
     if (scm === undefined) {
       if (hasNestedItems(serviceSchema)) {
+        // Option 1: current schema has no matching key, but contains indirection (items/properties, etc)
         const spread = oneLevelOfIndirectNestedness(serviceSchema, statePath);
         if (Object.keys(spread).length === 0) {
           spread[key] = null;
@@ -223,17 +224,21 @@ export const spreadStateFromService = (
       }
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
+        // Option 2: Current scheme has matching key, and the state specifies a non-object. Validate schema.
         const spread = {
-          [key]: ajv.validate(scm, stateValue) ? stateValue : null,
+          [key]:
+            isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
         };
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
+        // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
         const spread = { [key]: spreadStateFromService(scm, stateValue) };
         matches = {
           ...matches,
           ...oneLevelOfIndirectNestedness(scm, statePath, spread),
         };
       } else {
+        // Option 4: Current schema has matching key, but state specifies an object and schema has final value
         matches[key] = null;
       }
     } else {
