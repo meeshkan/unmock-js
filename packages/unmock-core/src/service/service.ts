@@ -54,15 +54,12 @@ export class Service implements IService {
       throw new Error(`Can't find endpoint '${endpoint}' in '${this.name}'`);
     }
 
-    const err = this.state.update({
+    this.state.update({
       stateInput,
       serviceName: this.name,
       schemaEndpoint,
       paths: this.schema.paths,
     });
-    if (err !== undefined) {
-      throw new Error(err);
-    }
   }
 
   public getState(method: HTTPMethod, endpoint: string) {

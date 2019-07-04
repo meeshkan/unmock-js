@@ -113,14 +113,17 @@ interface IDSL {
    * Used to control and generate arrays of specific sizes.
    */
   $size?: number;
+  [key: string]: number | string | boolean | undefined;
 }
 
 interface INestedState<T> {
   [key: string]: INestedState<T> | T;
 }
 
-interface IUnmockServiceState
-  extends INestedState<IDSL | string | number | (() => string | number)> {}
+export interface IUnmockServiceState
+  extends INestedState<
+    IDSL | string | number | (() => string | number) | undefined | boolean
+  > {}
 /**
  * Defines how a state can look like without validation against
  * the actual service specification.

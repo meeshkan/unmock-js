@@ -210,45 +210,33 @@ export const spreadStateFromService = (
 ): { [pathKey: string]: any | null } => {
   let matches: { [key: string]: any } = {};
   for (const key of Object.keys(statePath)) {
-    // Traverse along the different paths in the state
     const scm = serviceSchema[key];
-    if (isConcreteValue(statePath[key])) {
-      // The value of the current state key is concrete (non-object)
-      // If the service schema contains a matching value (schema), store that one
-      // Otherwise recursively look for matching key in nested schema.
-      let nested =
-        scm === undefined || hasNestedItems(scm)
-          ? matchNested(serviceSchema, key, statePath[key])
-          : scm;
-      if (nested === undefined) {
-        nested = { [key]: null }; // Note that `key` was missing
-      }
-      matches = { ...matches, ...nested };
-    } else if (isNonEmptyObject(statePath[key])) {
-      // Keep digging through the state and service schema
-      if (scm === undefined && hasNestedItems(serviceSchema)) {
-        // Option 1: current schema has no matching key, but contains nested items. Traverse schema.
+    const stateValue = statePath[key];
+
+    if (scm === undefined) {
+      if (hasNestedItems(serviceSchema)) {
         const spread = oneLevelOfIndirectNestedness(serviceSchema, statePath);
         if (Object.keys(spread).length === 0) {
           spread[key] = null;
         }
         matches = { ...matches, ...spread };
-      } else if (scm !== undefined) {
-        if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
-          // Option 2: current schema has matching key. Traverse schema, nested items and state.
-          const spread = { [key]: spreadStateFromService(scm, statePath[key]) };
-          matches = {
-            ...matches,
-            ...oneLevelOfIndirectNestedness(scm, statePath, spread),
-          };
-        } else {
-          // Option 3: current schema has no matching key and does not contain nested items,
-          //           or has matching key and it's non-traversable type. Stop traversal.
-          matches[key] = null;
-        }
+      }
+    } else if (scm !== undefined) {
+      if (isConcreteValue(stateValue)) {
+        const spread = {
+          [key]: ajv.validate(scm, stateValue) ? stateValue : null,
+        };
+        matches = { ...matches, ...spread };
+      } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
+        const spread = { [key]: spreadStateFromService(scm, stateValue) };
+        matches = {
+          ...matches,
+          ...oneLevelOfIndirectNestedness(scm, statePath, spread),
+        };
+      } else {
+        matches[key] = null;
       }
     } else {
-      // None of the above - this hints at malformed state (i.e. `{ someKey: undefined }`)
       throw new Error(
         `${statePath[key]} (object '${JSON.stringify(
           statePath,
@@ -257,36 +245,6 @@ export const spreadStateFromService = (
     }
   }
   return matches;
-};
-
-/**
- * Helper method to `findStatePathInService`;
- * Helps find given `pathKey` in `obj` in a recursive manner.
- * @param obj
- * @param pathKey
- * @returns An object leading up to the requested key and it's value in `obj`
- *          or `undefined`.
- */
-const matchNested = (obj: any, pathKey: string, value: any) => {
-  const foundPath: { [key: string]: any } = {};
-
-  if (isSchema(obj[pathKey])) {
-    // TODO type checking goes here
-    // For now, basic type-checking is fine (using Ajv):
-    foundPath[pathKey] = ajv.validate(obj[pathKey], value) ? value : null;
-  }
-  if (typeof obj === "object") {
-    for (const objKey of Object.keys(obj)) {
-      if (typeof obj[objKey] !== "object") {
-        continue;
-      }
-      const subMatches = matchNested(obj[objKey], pathKey, value);
-      if (subMatches !== undefined) {
-        foundPath[objKey] = subMatches;
-      }
-    }
-  }
-  return Object.keys(foundPath).length > 0 ? foundPath : undefined;
 };
 
 /**

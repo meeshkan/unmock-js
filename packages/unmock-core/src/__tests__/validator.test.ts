@@ -78,25 +78,8 @@ describe("Tests spreadStateFromService", () => {
       resp["application/json"].schema,
       { id: 5 },
     );
-    // Spreading from "id : { ... " should match all nested "id"s
-    expect(spreadState).toEqual({
-      properties: {
-        test: {
-          properties: {
-            id: 5,
-          },
-        },
-        foo: {
-          properties: {
-            bar: {
-              properties: {
-                id: 5,
-              },
-            },
-          },
-        },
-      },
-    });
+    // no "id" in top-most level or immediately under properties\items
+    expect(spreadState).toEqual({ id: null });
   });
 
   it("with missing parameters", () => {
@@ -167,7 +150,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with no $code specified", () => {
     const op = { responses: { 200: { ...response } } };
     const spreadState = getValidResponsesForOperationWithState(op, {
-      id: 5,
+      test: { id: 5 },
     });
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
@@ -177,15 +160,6 @@ describe("Tests getValidResponsesForOperationWithState", () => {
             test: {
               properties: {
                 id: 5,
-              },
-            },
-            foo: {
-              properties: {
-                bar: {
-                  properties: {
-                    id: 5,
-                  },
-                },
               },
             },
           },

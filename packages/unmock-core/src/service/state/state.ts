@@ -41,7 +41,7 @@ export class State {
     const ops = getOperations(stateUpdate);
     if (ops.error !== undefined) {
       debugLog(`Couldn't find any matching operations: ${ops.error}`);
-      return ops.error;
+      throw new Error(ops.error);
     }
     if (newState === undefined || Object.keys(newState).length === 0) {
       // No state given, no changes to make
@@ -71,9 +71,8 @@ export class State {
 
     if (opsResult === false) {
       // all paths had an error - can't operate properly
-      return errorMsg;
+      throw new Error(errorMsg);
     }
-    return;
   }
 
   /**

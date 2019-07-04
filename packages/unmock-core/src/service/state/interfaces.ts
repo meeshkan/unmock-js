@@ -13,6 +13,7 @@ export interface IStateUpdate {
   /**
    * Complements the endpoint given in IStateInput, by redirecting to the correct endpoint in Schema.
    * This happens when an endpoint consists of variables, for example.
+   * Example: endpoint (in stateInput) is '/pets/5', schemaEndpoint is '/pets/{petId}'.
    */
   schemaEndpoint: string;
 }

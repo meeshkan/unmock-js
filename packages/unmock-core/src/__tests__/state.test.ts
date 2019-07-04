@@ -78,34 +78,38 @@ describe("Test state management", () => {
     ).toBeUndefined();
   });
 
-  it("returns error when setting state for non-existing method with generic endpoint", () => {
+  it("throws when setting state for non-existing method with generic endpoint", () => {
     const state = new State();
-    expect(
+    expect(() =>
       state.update({
         stateInput: { method: "post", endpoint: "**", newState: {} },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
       }),
-    ).toContain("Can't find any endpoints with method 'post'");
+    ).toThrow("Can't find any endpoints with method 'post'");
   });
 
-  it("returns error when setting state for non-existing method with specific, existing endpoint", () => {
+  it("throws when setting state for non-existing method with specific, existing endpoint", () => {
     const state = new State();
-    expect(
+    expect(() =>
       state.update({
         stateInput: { method: "post", endpoint: "/test/5", newState: {} },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "/test/{test_id}",
       }),
-    ).toContain("Can't find response for 'post /test/5'");
+    ).toThrow("Can't find response for 'post /test/5'");
   });
 
   it("saves state from any endpoint and get method as expected", () => {
     const state = new State();
     state.update({
-      stateInput: { method: "get", endpoint: "**", newState: { id: 5 } },
+      stateInput: {
+        method: "get",
+        endpoint: "**",
+        newState: { foo: { id: 5 } },
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "**",
@@ -125,7 +129,6 @@ describe("Test state management", () => {
                   id: 5,
                 },
               },
-              id: 5,
             },
           },
         },
@@ -151,11 +154,6 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
-              foo: {
-                properties: {
-                  id: 5,
-                },
-              },
               id: 5,
             },
           },
@@ -194,12 +192,41 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
+              id: 3,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("saves nested state correctly", () => {
+    const state = new State();
+    state.update({
+      stateInput: {
+        method: "any",
+        endpoint: "**",
+        newState: { foo: { id: 5 } },
+      },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "**",
+    });
+    const stateResult = state.getState(
+      "get",
+      "/",
+      fullSchema.paths["/test/{test_id}"].get,
+    );
+    expect(stateResult).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
               foo: {
                 properties: {
-                  id: 3,
+                  id: 5,
                 },
               },
-              id: 3,
             },
           },
         },
