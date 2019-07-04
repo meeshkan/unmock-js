@@ -72,7 +72,7 @@
     "unmock-jsdom": "file:packages/unmock-jsdom",
     "unmock-node": "file:packages/unmock-node",
     "unmock-hash": "file:packages/unmock-hash",
-    "snyk": "^1.189.0"
+    "snyk": "^1.190.0"
   },
   "name": "unmock",
   "jest": {
