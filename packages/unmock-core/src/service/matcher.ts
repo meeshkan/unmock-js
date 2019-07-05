@@ -57,7 +57,7 @@ export class OASMatcher {
         );
       }
 
-      const newPathRegex = XRegExp(`^${newPath}$`, "g");
+      const newPathRegex = XRegExp(`^${newPath}$`, "gi");
       mapping[path] = newPathRegex;
     });
     return mapping;
@@ -103,7 +103,9 @@ export class OASMatcher {
     return matchingPath[requestMethod as OASMethodKey];
   }
 
-  public findEndpoint(reqPath: string): string | undefined {
+  public findEndpoint(
+    reqPath: string,
+  ): { schemaEndpoint: string; normalizedEndpoint: string } | undefined {
     /**
      * Finds the endpoint key that matches given endpoint string
      * First attempts a direct match by dictionary look-up
@@ -130,11 +132,10 @@ export class OASMatcher {
         }
       }
     }
-
     const directMatch = paths[reqPath];
     if (directMatch !== undefined) {
       debugLog(`Found direct path match for ${reqPath}`);
-      return reqPath;
+      return { schemaEndpoint: reqPath, normalizedEndpoint: reqPath };
     }
 
     const definedPaths = Object.keys(paths);
@@ -142,20 +143,17 @@ export class OASMatcher {
 
     for (const pathItemKey of Object.keys(paths)) {
       const pathRegex = this.endpointToRegexMapping[pathItemKey];
-      if (pathRegex === undefined) {
-        continue;
-      }
-      if (pathRegex.test(reqPath)) {
-        return pathItemKey;
+      if (XRegExp.test(reqPath, pathRegex)) {
+        return { schemaEndpoint: pathItemKey, normalizedEndpoint: reqPath };
       }
     }
     return undefined;
   }
 
   private findMatchingPathItem(reqPath: string): PathItem | undefined {
-    const pathItemKey = this.findEndpoint(reqPath);
-    return pathItemKey !== undefined
-      ? this.schema.paths[pathItemKey]
+    const maybePathItemKey = this.findEndpoint(reqPath);
+    return maybePathItemKey !== undefined
+      ? this.schema.paths[maybePathItemKey.schemaEndpoint]
       : undefined;
   }
 
