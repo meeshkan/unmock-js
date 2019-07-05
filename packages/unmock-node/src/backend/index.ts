@@ -67,12 +67,13 @@ const nodeBackendDefaultOptions: INodeBackendOptions = {};
 const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
 
 export default class NodeBackend implements IBackend {
-  private readonly config: INodeBackendOptions;
-  private clientRequests: {
+  private static outgoingRequests: {
     [requestId: string]: {
       clientRequest: ClientRequest;
     };
   } = {};
+  private readonly config: INodeBackendOptions;
+
   private origOnSocket?: (socket: net.Socket) => void;
   private mitm: any;
 
@@ -86,7 +87,6 @@ export default class NodeBackend implements IBackend {
     }
     this.mitm = Mitm();
 
-    const self = this;
     this.origOnSocket = ClientRequest.prototype.onSocket;
 
     /**
@@ -106,7 +106,7 @@ export default class NodeBackend implements IBackend {
         debugLog(
           `New socket assigned to client request, assigned ID: ${requestId}`,
         );
-        self.clientRequests[requestId] = { clientRequest: this };
+        NodeBackend.outgoingRequests[requestId] = { clientRequest: this };
         this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
         return socket;
       },
@@ -139,7 +139,6 @@ export default class NodeBackend implements IBackend {
       ClientRequest.prototype.onSocket = this.origOnSocket;
       this.origOnSocket = undefined;
     }
-    this.clientRequests = {};
   }
 
   private extractTrackedClientRequest(
@@ -148,16 +147,17 @@ export default class NodeBackend implements IBackend {
     const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
     debugLog(
       `Intercepted incoming request with ID ${reqId}, matching to existing IDs:`,
-      Object.keys(this.clientRequests),
+      Object.keys(NodeBackend.outgoingRequests),
     );
     if (typeof reqId !== "string") {
       throw Error("Expected to get a non empty request ID");
     }
-    const clientRequest = this.clientRequests[reqId].clientRequest;
-    if (clientRequest === undefined) {
+    const outgoingRequest = NodeBackend.outgoingRequests[reqId];
+    if (outgoingRequest === undefined) {
       throw Error(`Expected to find a client request for request ID ${reqId}`);
     }
-    return clientRequest;
+
+    return outgoingRequest.clientRequest;
   }
 
   private mitmOnRequest(
