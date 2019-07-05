@@ -1,4 +1,9 @@
-import { OpenAPIObject, Schema } from "loas3/dist/src/generated/full";
+import {
+  OpenAPIObject,
+  Operation,
+  PathItem,
+  Schema,
+} from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 
@@ -34,6 +39,8 @@ type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
 export type HTTPMethod = typeof RESTMethodTypes[number];
 export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
 
+export type OASMethodKey = keyof PathItem & HTTPMethod;
+
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 export const isExtendedRESTMethod = (
@@ -55,12 +62,19 @@ export interface IServiceInput {
   name: string;
 }
 
+// maps from media types (e.g. "application/json") to schema
+export type mediaTypeToSchema = Record<string, Schema>;
+// maps from status to mediaTypeToSchema
+export type codeToMedia = Record<string, mediaTypeToSchema>;
+
 export interface IResponsesFromOperation {
-  // Maps between a status code, to a response type (e.g. "application/json") to a spread state
-  [statusCode: string]: Record<string, Record<string, Schema>>;
+  // Maps between a response method, to codeToMedia
+  [method: string]: codeToMedia;
 }
 
-export type MatcherResponse = any | undefined;
+export type MatcherResponse =
+  | { operation: Operation; state: codeToMedia | undefined }
+  | undefined;
 
 export interface IService {
   /**
@@ -84,6 +98,12 @@ export interface IService {
    * @throws on logical errors where the state is invalid.
    */
   updateState(input: IStateInput): void;
+
+  /**
+   * Resets the entire state saved for this service.
+   * This provides easy access to wipe a state after every test.
+   */
+  resetState(): void;
 
   /**
    * Match a given request to the service. Return an operation object for successful match,
