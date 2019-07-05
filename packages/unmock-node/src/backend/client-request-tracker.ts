@@ -76,7 +76,9 @@ export default abstract class ClientRequestTracker {
       Object.keys(ClientRequestTracker.clientRequests),
     );
     if (typeof reqId !== "string") {
-      throw Error("Expected to get a non empty request ID");
+      throw Error(
+        `Expected to find a string request ID in request header, got type: ${typeof reqId}`,
+      );
     }
     const clientRequest = ClientRequestTracker.clientRequests[reqId];
     if (clientRequest === undefined) {
