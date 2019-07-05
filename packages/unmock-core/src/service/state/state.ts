@@ -113,22 +113,21 @@ export class State {
       )}`,
     );
 
-    // get all states that match the method, from the above endpoints
-    const states = matchingEndpointKeys
-      .filter((key: string) => this.state[key][method] !== undefined)
-      .map((key: string) => this.state[key][method]);
-    // Also include all the matching endpoint with DEFAULT_STATE_HTTP_METHOD:
-    const expandedStates = states.concat(
-      matchingEndpointKeys
-        .filter(
-          (key: string) =>
-            this.state[key][DEFAULT_STATE_HTTP_METHOD] !== undefined,
-        )
-        .map((key: string) => this.state[key][DEFAULT_STATE_HTTP_METHOD]),
-    );
+    // From the above, sorted methods, get all states that match either DEFAULT_STATE_HTTP_METHOD
+    // or the given method. Push the DEFAULT_STATE one before to maintain order.
+    const states: codeToMedia[] = [];
+    for (const key of matchingEndpointKeys) {
+      const methodToStatus = this.state[key];
+      if (methodToStatus[DEFAULT_STATE_HTTP_METHOD] !== undefined) {
+        states.push(methodToStatus[DEFAULT_STATE_HTTP_METHOD]);
+      }
+      if (methodToStatus[method] !== undefined) {
+        states.push(methodToStatus[method]);
+      }
+    }
 
     // Filter all the states that do not match the operation schema
-    return filterStatesByOperation(expandedStates, operation);
+    return filterStatesByOperation(states, operation);
   }
 
   public reset() {

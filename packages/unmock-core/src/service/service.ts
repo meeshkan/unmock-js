@@ -42,6 +42,7 @@ export class Service implements IService {
     if (maybeOp === undefined) {
       return undefined;
     }
+
     const state = this.getState(sreq.method as HTTPMethod, sreq.path);
     return {
       operation: maybeOp,
@@ -58,12 +59,13 @@ export class Service implements IService {
       throw new Error(`'${this.name}' has no defined paths!`);
     }
     const { endpoint } = stateInput;
-    const schemaEndpoint =
-      endpoint !== DEFAULT_STATE_ENDPOINT
-        ? this.matcher.findEndpoint(endpoint)
-        : endpoint;
-    if (schemaEndpoint === undefined) {
-      throw new Error(`Can't find endpoint '${endpoint}' in '${this.name}'`);
+    let schemaEndpoint = endpoint;
+    if (endpoint !== DEFAULT_STATE_ENDPOINT) {
+      const parsedEndpoint = this.matcher.findEndpoint(endpoint);
+      if (parsedEndpoint === undefined) {
+        throw new Error(`Can't find endpoint '${endpoint}' in '${this.name}'`);
+      }
+      schemaEndpoint = parsedEndpoint.schemaEndpoint;
     }
 
     this.state.update({
@@ -78,15 +80,20 @@ export class Service implements IService {
     // TODO at some point we'd probably want to move to regex for case insensitivity
     method = method.toLowerCase() as HTTPMethod;
     endpoint = endpoint.toLowerCase();
-    const schemaEndpoint = this.matcher.findEndpoint(endpoint);
-    if (schemaEndpoint === undefined) {
+    const realEndpoint = this.matcher.findEndpoint(endpoint);
+    if (realEndpoint === undefined) {
       return undefined;
     }
+    const schemaEndpoint = realEndpoint.schemaEndpoint;
     const operationSchema = this.schema.paths[schemaEndpoint][method];
     if (operationSchema === undefined) {
       return undefined;
     }
 
-    return this.state.getState(method, endpoint, operationSchema);
+    return this.state.getState(
+      method,
+      realEndpoint.normalizedEndpoint,
+      operationSchema,
+    );
   }
 }
