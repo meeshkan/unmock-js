@@ -1,7 +1,7 @@
 import debug from "debug";
 import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
-import { MatcherResponse, OpenAPIObject, PathItem } from "./interfaces";
+import { OASMethodKey, OpenAPIObject, PathItem } from "./interfaces";
 import {
   buildPathRegexStringFromParameters,
   getPathParametersFromPath,
@@ -57,7 +57,7 @@ export class OASMatcher {
         );
       }
 
-      const newPathRegex = XRegExp(`^${newPath}$`, "g");
+      const newPathRegex = XRegExp(`^${newPath}$`, "gi");
       mapping[path] = newPathRegex;
     });
     return mapping;
@@ -71,7 +71,7 @@ export class OASMatcher {
     this.endpointToRegexMapping = OASMatcher.buildRegexpForPaths(this.schema);
   }
 
-  public matchToOperationObject(sreq: ISerializedRequest): MatcherResponse {
+  public matchToOperationObject(sreq: ISerializedRequest) {
     const { matches, reqPathWithoutServerPrefix } = this.matchesServer(sreq);
     // TODO: If the Servers object is not at the top level
     if (!matches) {
@@ -100,10 +100,12 @@ export class OASMatcher {
     debugLog(`Matched path object, looking for match for ${requestMethod}`);
 
     const matchingPath = matchingPathItemOrUndef;
-    return (matchingPath as any)[requestMethod];
+    return matchingPath[requestMethod as OASMethodKey];
   }
 
-  public findEndpoint(reqPath: string): string | undefined {
+  public findEndpoint(
+    reqPath: string,
+  ): { schemaEndpoint: string; normalizedEndpoint: string } | undefined {
     /**
      * Finds the endpoint key that matches given endpoint string
      * First attempts a direct match by dictionary look-up
@@ -111,15 +113,29 @@ export class OASMatcher {
      * Matching path key is returned so that future matching, reference, etc can be done as needed.
      */
     const paths = this.schema.paths;
-
     if (paths === undefined || paths.length === 0) {
       return undefined;
     }
 
+    // Remove server base address
+    const servers: any[] | undefined = this.schema.servers;
+    if (servers !== undefined && servers.length > 0) {
+      // Try and normalize the requested path...
+      for (const server of servers) {
+        const serverUrl = new URL(server.url);
+        if (reqPath.startsWith(serverUrl.pathname)) {
+          reqPath = OASMatcher.normalizeRequestPathToServerPath(
+            reqPath,
+            serverUrl.pathname,
+          );
+          break;
+        }
+      }
+    }
     const directMatch = paths[reqPath];
     if (directMatch !== undefined) {
       debugLog(`Found direct path match for ${reqPath}`);
-      return reqPath;
+      return { schemaEndpoint: reqPath, normalizedEndpoint: reqPath };
     }
 
     const definedPaths = Object.keys(paths);
@@ -127,20 +143,17 @@ export class OASMatcher {
 
     for (const pathItemKey of Object.keys(paths)) {
       const pathRegex = this.endpointToRegexMapping[pathItemKey];
-      if (pathRegex === undefined) {
-        continue;
-      }
-      if (pathRegex.test(reqPath)) {
-        return pathItemKey;
+      if (XRegExp.test(reqPath, pathRegex)) {
+        return { schemaEndpoint: pathItemKey, normalizedEndpoint: reqPath };
       }
     }
     return undefined;
   }
 
   private findMatchingPathItem(reqPath: string): PathItem | undefined {
-    const pathItemKey = this.findEndpoint(reqPath);
-    return pathItemKey !== undefined
-      ? this.schema.paths[pathItemKey]
+    const maybePathItemKey = this.findEndpoint(reqPath);
+    return maybePathItemKey !== undefined
+      ? this.schema.paths[maybePathItemKey.schemaEndpoint]
       : undefined;
   }
 

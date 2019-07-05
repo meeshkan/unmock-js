@@ -4,24 +4,21 @@ import {
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
 import {
+  codeToMedia,
   ExtendedHTTPMethod,
   HTTPMethod,
   isReference,
   isRESTMethod,
+  mediaTypeToSchema,
+  OASMethodKey,
   Operation,
   PathItem,
   Paths,
   Responses,
   Schema,
 } from "../interfaces";
-import {
-  codeToMedia,
-  IStateUpdate,
-  mediaTypeToSchema,
-  OperationsForStateUpdate,
-} from "./interfaces";
+import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
 
-type PathKey = keyof PathItem & HTTPMethod;
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {
   [code: string]: string[];
@@ -210,7 +207,7 @@ const getOperationsByMethod = (
         .map((operationKey: string) => ({
           endpoint: path,
           method: operationKey as HTTPMethod,
-          operation: pathItem[operationKey as PathKey] as Operation,
+          operation: pathItem[operationKey as OASMethodKey] as Operation,
         }));
       return ops.concat(pathOperations);
     },

@@ -1,6 +1,7 @@
 import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import { stateStoreFactory } from "../service";
 import { Service } from "../service/service";
+import { ServiceStore } from "../service/serviceStore";
 
 const schemaBase: OpenAPIObject = {
   openapi: "3.0.0",
@@ -14,16 +15,16 @@ const schemaBase: OpenAPIObject = {
 
 describe("Fluent API and Service instantiation tests", () => {
   // define some service populators that match IOASMappingGenerator type
-  const PetStoreWithEmptyPaths = [
+  const PetStoreWithEmptyPaths = new ServiceStore([
     new Service({ schema: schemaBase, name: "petstore" }),
-  ];
-  const PetStoreWithEmptyResponses = [
+  ]);
+  const PetStoreWithEmptyResponses = new ServiceStore([
     new Service({
       name: "petstore",
       schema: { ...schemaBase, paths: { "/pets": { get: { responses: {} } } } },
     }),
-  ];
-  const PetStoreWithPseudoResponses = [
+  ]);
+  const PetStoreWithPseudoResponses = new ServiceStore([
     new Service({
       name: "petstore",
       schema: {
@@ -35,7 +36,7 @@ describe("Fluent API and Service instantiation tests", () => {
         },
       },
     }),
-  ];
+  ]);
 
   it("Store with empty paths throws", () => {
     const store = stateStoreFactory(PetStoreWithEmptyPaths);
@@ -128,7 +129,7 @@ describe("Test paths matching on serviceStore", () => {
     ...additionalPathElement: string[]
   ) => {
     const path = `/pets/{petId}${additionalPathElement.join("/")}`;
-    return [
+    return new ServiceStore([
       new Service({
         schema: {
           ...schemaBase,
@@ -148,7 +149,7 @@ describe("Test paths matching on serviceStore", () => {
         },
         name: "petstore",
       }),
-    ];
+    ]);
   };
 
   it("Paths are converted to regexp", () => {
