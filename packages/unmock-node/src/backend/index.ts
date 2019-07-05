@@ -157,6 +157,8 @@ export default class NodeBackend implements IBackend {
       throw Error(`Expected to find a client request for request ID ${reqId}`);
     }
 
+    delete NodeBackend.outgoingRequests[reqId];
+
     return outgoingRequest.clientRequest;
   }
 
