@@ -131,8 +131,12 @@ const chooseResponseFromOperation = (
   if (chosenMediaType === undefined) {
     throw new Error("Not sure what went wrong");
   }
+  const schema = content[chosenMediaType].schema;
+  if (schema === undefined || isReference(schema)) {
+    throw new Error("Missing schema for a response!"); // Or do we want to simply choose another response?
+  }
 
-  return { $code: chosenCode, template: content[chosenMediaType] };
+  return { $code: chosenCode, template: schema };
 };
 
 const generateMockFromTemplate = (
