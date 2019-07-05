@@ -67,14 +67,68 @@ const nodeBackendDefaultOptions: INodeBackendOptions = {};
 const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
 
 export default class NodeBackend implements IBackend {
+  private static onSocketModified: boolean = false;
   private static outgoingRequests: {
     [requestId: string]: {
       clientRequest: ClientRequest;
     };
   } = {};
+  private static origOnSocket?: (socket: net.Socket) => void;
+
+  private static augmentClientRequest() {
+    if (NodeBackend.onSocketModified) {
+      return;
+    }
+
+    NodeBackend.origOnSocket = ClientRequest.prototype.onSocket;
+
+    /**
+     * When a socket is assigned to a client request, create an internal ID
+     * and add the ID in the request header. Thereby we can map
+     * the server-side incoming request to the corresponding
+     * client request and emit errors properly.
+     * Borrowed from https://github.com/FormidableLabs/yesno.
+     */
+    ClientRequest.prototype.onSocket = _.flowRight(
+      NodeBackend.origOnSocket,
+      function(
+        this: ClientRequest,
+        socket: IBypassableSocket,
+      ): IBypassableSocket {
+        const requestId = uuidv4();
+        debugLog(
+          `New socket assigned to client request, assigned ID: ${requestId}`,
+        );
+        NodeBackend.outgoingRequests[requestId] = {
+          clientRequest: this,
+        };
+        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
+        return socket;
+      },
+    );
+
+    NodeBackend.onSocketModified = true;
+  }
+
+  private static resetClientRequest() {
+    if (!NodeBackend.onSocketModified) {
+      return;
+    }
+
+    if (!NodeBackend.origOnSocket) {
+      throw Error("No original onSocket");
+    }
+    ClientRequest.prototype.onSocket = NodeBackend.origOnSocket;
+
+    NodeBackend.onSocketModified = false;
+  }
+
   private readonly config: INodeBackendOptions;
 
-  private origOnSocket?: (socket: net.Socket) => void;
+  /**
+   * Modifications to ClientRequest for request tracking
+   */
+
   private mitm: any;
 
   public constructor(config?: INodeBackendOptions) {
@@ -87,30 +141,7 @@ export default class NodeBackend implements IBackend {
     }
     this.mitm = Mitm();
 
-    this.origOnSocket = ClientRequest.prototype.onSocket;
-
-    /**
-     * When a socket is assigned to a client request, create an internal ID
-     * and add the ID in the request header. Thereby we can map
-     * the server-side incoming request to the corresponding
-     * client request and emit errors properly.
-     * Borrowed from https://github.com/FormidableLabs/yesno.
-     */
-    ClientRequest.prototype.onSocket = _.flowRight(
-      this.origOnSocket,
-      function(
-        this: ClientRequest,
-        socket: IBypassableSocket,
-      ): IBypassableSocket {
-        const requestId = uuidv4();
-        debugLog(
-          `New socket assigned to client request, assigned ID: ${requestId}`,
-        );
-        NodeBackend.outgoingRequests[requestId] = { clientRequest: this };
-        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
-        return socket;
-      },
-    );
+    NodeBackend.augmentClientRequest();
 
     // Client-side socket connect, use to bypass connections
     this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
@@ -135,10 +166,7 @@ export default class NodeBackend implements IBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    if (this.origOnSocket) {
-      ClientRequest.prototype.onSocket = this.origOnSocket;
-      this.origOnSocket = undefined;
-    }
+    NodeBackend.resetClientRequest();
   }
 
   private extractTrackedClientRequest(
