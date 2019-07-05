@@ -6,10 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 
 const debugLog = debug("unmock:client-request-tracker");
 
-interface IBypassableSocket extends net.Socket {
-  bypass: () => void;
-}
-
 const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
 
 /**
@@ -43,10 +39,7 @@ export default abstract class ClientRequestTracker {
     debugLog("Modifying client request to add request ID");
     ClientRequest.prototype.onSocket = _.flowRight(
       ClientRequestTracker.origOnSocket,
-      function(
-        this: ClientRequest,
-        socket: IBypassableSocket,
-      ): IBypassableSocket {
+      function(this: ClientRequest, socket: net.Socket): net.Socket {
         const requestId = uuidv4();
         debugLog(
           `New socket assigned to client request, assigned ID: ${requestId}`,
