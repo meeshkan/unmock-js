@@ -31,10 +31,12 @@ describe("Node.js interceptor", () => {
         expect(typeof data.message === "string").toBeTruthy();
       } else {
         expect(data.length).toBeGreaterThan(0);
-        for (const user of data) {
-          expect(typeof user.id === "number").toBeTruthy();
-          expect(typeof user.name === "string").toBeTruthy();
-        }
+        expect(
+          data.every(
+            (pet: any) =>
+              typeof pet.id === "number" && typeof pet.name === "string",
+          ),
+        ).toBeTruthy();
       }
     });
 

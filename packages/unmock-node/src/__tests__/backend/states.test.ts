@@ -23,18 +23,50 @@ describe("Node.js interceptor", () => {
 
     beforeEach(() => states.reset());
 
-    test("gets successful response following state request", async () => {
+    test("Throws when asking for non existing method/path", async () => {
+      try {
+        await axios.post("http://petstore.swagger.io/v1/pets/3");
+      } catch (e) {
+        expect(e.message).toContain("No matching template found");
+        return;
+      }
+      throw new Error("Shouldn't be here :(");
+    });
+
+    test("Gets correct code upon request without other state", async () => {
+      states.petstore({ $code: 200 });
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(
+        response.data.every(
+          (pet: any) =>
+            typeof pet.id === "number" && typeof pet.name === "string",
+        ),
+      ).toBeTruthy();
+    });
+
+    test("gets correct state after setting state with status code", async () => {
       states.petstore({ $code: 200, id: 5 });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
     });
 
-    test("gets successful response following state request", async () => {
+    test("gets correct state after setting state without status code", async () => {
       states.petstore({ message: "Hello World" });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.message).toEqual("Hello World");
+    });
+
+    test("gets correct state after multiple overriden state requests", async () => {
+      states.petstore({ id: -1 }).get("/pets", { id: 5 });
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
+      const response2 = await axios("http://petstore.swagger.io/v1/pets/3");
+      expect(response2.status).toBe(200);
+      expect(response2.data.every((pet: any) => pet.id === -1)).toBeTruthy();
     });
   });
 });
