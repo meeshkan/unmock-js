@@ -23,7 +23,8 @@ export default abstract class ClientRequestTracker {
    * to an internal dictionary.
    */
   public static start() {
-    if (ClientRequestTracker.modifiedOnSocket) {
+    if (ClientRequestTracker.active) {
+      // Initialized already
       return;
     }
 
@@ -57,7 +58,7 @@ export default abstract class ClientRequestTracker {
    * Stop tracking client requests, restore `ClientRequest.prototype.onSocket`.
    */
   public static stop() {
-    if (!ClientRequestTracker.modifiedOnSocket) {
+    if (!ClientRequestTracker.active) {
       return;
     }
 
@@ -98,7 +99,7 @@ export default abstract class ClientRequestTracker {
 
   private static origOnSocket?: (socket: net.Socket) => void;
 
-  private static get modifiedOnSocket() {
+  private static get active() {
     return ClientRequestTracker.origOnSocket !== undefined;
   }
 }
