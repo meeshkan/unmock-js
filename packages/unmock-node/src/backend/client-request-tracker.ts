@@ -12,11 +12,6 @@ const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
  * "Static" class for tracking client requests.
  */
 export default abstract class ClientRequestTracker {
-  public static readonly outgoingRequests: {
-    [requestId: string]: {
-      clientRequest: ClientRequest;
-    };
-  } = {};
   /**
    * Start tracking client requests by modifying `ClientRequest.prototype.onSocket` to add
    * a unique identifier to every request header and store the request
@@ -45,9 +40,7 @@ export default abstract class ClientRequestTracker {
         debugLog(
           `New socket assigned to client request, assigned ID: ${requestId}`,
         );
-        ClientRequestTracker.outgoingRequests[requestId] = {
-          clientRequest: this,
-        };
+        ClientRequestTracker.clientRequests[requestId] = this;
         this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
         return socket;
       },
@@ -76,30 +69,32 @@ export default abstract class ClientRequestTracker {
    * Deletes the corresponding instance from the map of tracked requests.
    * @param incomingMessage Incoming message ("server" side)
    */
-  public static popTrackedClientRequest(
-    incomingMessage: IncomingMessage,
-  ): ClientRequest {
+  public static pop(incomingMessage: IncomingMessage): ClientRequest {
     const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
     debugLog(
       `Intercepted incoming request with ID ${reqId}, matching to existing IDs:`,
-      Object.keys(ClientRequestTracker.outgoingRequests),
+      Object.keys(ClientRequestTracker.clientRequests),
     );
     if (typeof reqId !== "string") {
       throw Error("Expected to get a non empty request ID");
     }
-    const outgoingRequest = ClientRequestTracker.outgoingRequests[reqId];
-    if (outgoingRequest === undefined) {
+    const clientRequest = ClientRequestTracker.clientRequests[reqId];
+    if (clientRequest === undefined) {
       throw Error(`Expected to find a client request for request ID ${reqId}`);
     }
 
-    delete ClientRequestTracker.outgoingRequests[reqId];
+    delete ClientRequestTracker.clientRequests[reqId];
 
-    return outgoingRequest.clientRequest;
+    return clientRequest;
   }
+
+  private static readonly clientRequests: {
+    [requestId: string]: ClientRequest;
+  } = {};
 
   private static origOnSocket?: (socket: net.Socket) => void;
 
-  private static get active() {
+  private static get active(): boolean {
     return ClientRequestTracker.origOnSocket !== undefined;
   }
 }
