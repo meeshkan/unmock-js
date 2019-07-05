@@ -16,9 +16,9 @@ import {
   responseCreatorFactory,
   UnmockOptions,
 } from "unmock-core";
-import { v4 as uuidv4 } from "uuid";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import { serializeRequest } from "../serialize";
+import ClientRequestTracker from "./client-request-tracker";
 
 const debugLog = debug("unmock:node");
 
@@ -59,76 +59,14 @@ export interface INodeBackendOptions {
   servicesDirectory?: string;
 }
 
+const nodeBackendDefaultOptions: INodeBackendOptions = {};
+
 interface IBypassableSocket extends net.Socket {
   bypass: () => void;
 }
 
-const nodeBackendDefaultOptions: INodeBackendOptions = {};
-const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
-
 export default class NodeBackend implements IBackend {
-  private static onSocketModified: boolean = false;
-  private static outgoingRequests: {
-    [requestId: string]: {
-      clientRequest: ClientRequest;
-    };
-  } = {};
-  private static origOnSocket?: (socket: net.Socket) => void;
-
-  private static augmentClientRequest() {
-    if (NodeBackend.onSocketModified) {
-      return;
-    }
-
-    NodeBackend.origOnSocket = ClientRequest.prototype.onSocket;
-
-    /**
-     * When a socket is assigned to a client request, create an internal ID
-     * and add the ID in the request header. Thereby we can map
-     * the server-side incoming request to the corresponding
-     * client request and emit errors properly.
-     * Borrowed from https://github.com/FormidableLabs/yesno.
-     */
-    ClientRequest.prototype.onSocket = _.flowRight(
-      NodeBackend.origOnSocket,
-      function(
-        this: ClientRequest,
-        socket: IBypassableSocket,
-      ): IBypassableSocket {
-        const requestId = uuidv4();
-        debugLog(
-          `New socket assigned to client request, assigned ID: ${requestId}`,
-        );
-        NodeBackend.outgoingRequests[requestId] = {
-          clientRequest: this,
-        };
-        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
-        return socket;
-      },
-    );
-
-    NodeBackend.onSocketModified = true;
-  }
-
-  private static resetClientRequest() {
-    if (!NodeBackend.onSocketModified) {
-      return;
-    }
-
-    if (!NodeBackend.origOnSocket) {
-      throw Error("No original onSocket");
-    }
-    ClientRequest.prototype.onSocket = NodeBackend.origOnSocket;
-
-    NodeBackend.onSocketModified = false;
-  }
-
   private readonly config: INodeBackendOptions;
-
-  /**
-   * Modifications to ClientRequest for request tracking
-   */
-
   private mitm: any;
 
   public constructor(config?: INodeBackendOptions) {
@@ -141,11 +79,11 @@ export default class NodeBackend implements IBackend {
     }
     this.mitm = Mitm();
 
-    NodeBackend.augmentClientRequest();
+    ClientRequestTracker.start();
 
     // Client-side socket connect, use to bypass connections
     this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
-      this.mitmOnConnect.call(this, options, socket, opts),
+      this.mitmOnConnect(options, socket, opts),
     );
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
@@ -157,7 +95,7 @@ export default class NodeBackend implements IBackend {
     });
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
-      this.mitmOnRequest.call(this, createResponse, req, res),
+      this.mitmOnRequest(createResponse, req, res),
     );
   }
 
@@ -166,28 +104,7 @@ export default class NodeBackend implements IBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    NodeBackend.resetClientRequest();
-  }
-
-  private extractTrackedClientRequest(
-    incomingMessage: IncomingMessage,
-  ): ClientRequest {
-    const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
-    debugLog(
-      `Intercepted incoming request with ID ${reqId}, matching to existing IDs:`,
-      Object.keys(NodeBackend.outgoingRequests),
-    );
-    if (typeof reqId !== "string") {
-      throw Error("Expected to get a non empty request ID");
-    }
-    const outgoingRequest = NodeBackend.outgoingRequests[reqId];
-    if (outgoingRequest === undefined) {
-      throw Error(`Expected to find a client request for request ID ${reqId}`);
-    }
-
-    delete NodeBackend.outgoingRequests[reqId];
-
-    return outgoingRequest.clientRequest;
+    ClientRequestTracker.stop();
   }
 
   private mitmOnRequest(
@@ -195,7 +112,7 @@ export default class NodeBackend implements IBackend {
     req: IncomingMessage,
     res: ServerResponse,
   ) {
-    const clientRequest = this.extractTrackedClientRequest(req);
+    const clientRequest = ClientRequestTracker.extractTrackedClientRequest(req);
     handleRequestAndResponse(createResponse, req, res, clientRequest);
   }
 
