@@ -27,8 +27,18 @@ export class ServiceStore {
     return undefined;
   }
 
+  public resetState(serviceName: string | undefined) {
+    if (serviceName === undefined) {
+      for (const service of Object.values(this.serviceMapping)) {
+        service.resetState();
+      }
+    } else if (this.serviceMapping[serviceName] !== undefined) {
+      this.serviceMapping[serviceName].resetState();
+    }
+  }
+
   public saveState({
-    serviceName: service,
+    serviceName,
     method,
     endpoint,
     state,
@@ -37,13 +47,13 @@ export class ServiceStore {
     endpoint: string;
     method: ExtendedHTTPMethod;
     state: UnmockServiceState;
-  }): boolean {
+  }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
      * the ServiceState object.
      */
     if (
-      this.serviceMapping[service] === undefined ||
+      this.serviceMapping[serviceName] === undefined ||
       !isExtendedRESTMethod(method)
     ) {
       // Service does not exist, no need to retain state.
@@ -55,19 +65,15 @@ export class ServiceStore {
       // i.e. `state.github.get(...).post(...)` // make sure both `get` and `post` are correct methods
       throw new Error(
         `Can't find specification for service named '${
-          isExtendedRESTMethod(method) ? service : method
+          isExtendedRESTMethod(method) ? serviceName : method
         }'!`,
       );
     }
 
-    const { success, error } = this.serviceMapping[service].updateState({
+    this.serviceMapping[serviceName].updateState({
       endpoint,
       method,
       newState: state,
     });
-    if (error !== undefined) {
-      throw new Error(error);
-    }
-    return success;
   }
 }

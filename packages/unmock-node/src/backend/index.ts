@@ -80,7 +80,12 @@ export default class NodeBackend implements IBackend {
     this.config = { ...nodeBackendDefaultOptions, ...config };
   }
 
-  public initialize(options: UnmockOptions) {
+  /**
+   *
+   * @param options
+   * @returns `states` object, with which one can modify states of various services.
+   */
+  public initialize(options: UnmockOptions): any {
     if (this.mitm !== undefined) {
       this.reset();
     }
@@ -121,13 +126,15 @@ export default class NodeBackend implements IBackend {
     const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: this.config.servicesDirectory,
     });
-    const createResponse = responseCreatorFactory({
+    const { stateStore, createResponse } = responseCreatorFactory({
       serviceDefLoader,
     });
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest.call(this, createResponse, req, res),
     );
+
+    return stateStore;
   }
 
   public reset() {
