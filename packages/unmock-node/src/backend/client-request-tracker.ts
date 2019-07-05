@@ -76,7 +76,7 @@ export default abstract class ClientRequestTracker {
    * Deletes the corresponding instance from the map of tracked requests.
    * @param incomingMessage Incoming message ("server" side)
    */
-  public static extractTrackedClientRequest(
+  public static popTrackedClientRequest(
     incomingMessage: IncomingMessage,
   ): ClientRequest {
     const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;

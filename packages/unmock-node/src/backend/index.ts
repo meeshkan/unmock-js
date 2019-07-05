@@ -112,7 +112,7 @@ export default class NodeBackend implements IBackend {
     req: IncomingMessage,
     res: ServerResponse,
   ) {
-    const clientRequest = ClientRequestTracker.extractTrackedClientRequest(req);
+    const clientRequest = ClientRequestTracker.popTrackedClientRequest(req);
     handleRequestAndResponse(createResponse, req, res, clientRequest);
   }
 
