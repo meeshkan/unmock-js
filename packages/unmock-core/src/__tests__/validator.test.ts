@@ -92,39 +92,39 @@ describe("Tests spreadStateFromService", () => {
   });
 });
 
-describe("Tests getUpdatedStateFromContent", () => {
-  it("with empty path", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(
-      resp["application/json"],
-      {},
-    );
-    expect(spreadState.spreadState).toEqual({});
-  });
+// describe("Tests getUpdatedStateFromContent", () => {
+//   it("with empty path", () => {
+//     const resp = response.content as any;
+//     const spreadState = getUpdatedStateFromContent(
+//       resp["application/json"],
+//       {},
+//     );
+//     expect(spreadState.spreadState).toEqual({});
+//   });
 
-  it("invalid parameter returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp["application/json"], {
-      boom: 5,
-    });
-    expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
-  });
+//   it("invalid parameter returns error", () => {
+//     const resp = response.content as any;
+//     const spreadState = getUpdatedStateFromContent(resp["application/json"], {
+//       boom: 5,
+//     });
+//     expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
+//   });
 
-  it("empty schema returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp.boom, {});
-    expect(spreadState.error.msg).toContain("No schema defined");
+//   it("empty schema returns error", () => {
+//     const resp = response.content as any;
+//     const spreadState = getUpdatedStateFromContent(resp.boom, {});
+//     expect(spreadState.error.msg).toContain("No schema defined");
 
-    const resp2 = {
-      "application/json": {},
-    };
-    const spreadState2 = getUpdatedStateFromContent(
-      resp2["application/json"],
-      {},
-    );
-    expect(spreadState2.error.msg).toContain("No schema defined");
-  });
-});
+//     const resp2 = {
+//       "application/json": {},
+//     };
+//     const spreadState2 = getUpdatedStateFromContent(
+//       resp2["application/json"],
+//       {},
+//     );
+//     expect(spreadState2.error.msg).toContain("No schema defined");
+//   });
+// });
 
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $code specified", () => {
