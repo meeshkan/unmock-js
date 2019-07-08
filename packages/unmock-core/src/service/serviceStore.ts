@@ -10,6 +10,7 @@ import {
   UnmockServiceState,
 } from "./interfaces";
 import { spreadStateFromService } from "./state/validator";
+import defProvider from "./state/providers";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -75,17 +76,11 @@ export class ServiceStore {
     let stateGen: IStateInputGenerator;
     if (
       state === undefined ||
-      ((state.gen === undefined || typeof state.gen !== "function") &&
-        (state.top === undefined || typeof state.top !== "function"))
+      (["function", "undefined"].includes(typeof state.gen) &&
+        ["function", "undefined"].includes(typeof state.top))
     ) {
       // Given an object, set default generator for state
-      stateGen = {
-        top: () => {
-          const staticState = state as UnmockServiceState;
-          return { $code: staticState.$code };
-        },
-        gen: (schema: Schema) => spreadStateFromService(schema, state),
-      };
+      stateGen = defProvider(state as UnmockServiceState);
     } else {
       stateGen = state as IStateInputGenerator;
     }

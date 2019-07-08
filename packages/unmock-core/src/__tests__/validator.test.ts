@@ -1,6 +1,6 @@
 import { Response, Schema } from "../service/interfaces";
+import defProvider from "../service/state/providers";
 import {
-  getUpdatedStateFromContent,
   getValidResponsesForOperationWithState,
   spreadStateFromService,
 } from "../service/state/validator";
@@ -129,18 +129,24 @@ describe("Tests spreadStateFromService", () => {
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $code specified", () => {
     const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 200,
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        $code: 200,
+      }),
+    );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
   });
 
   it("with missing $code specified", () => {
     const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 404,
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        $code: 404,
+      }),
+    );
     expect(spreadState.responses).toBeUndefined();
     expect(spreadState.error).toContain(
       "Can't find response for given status code '404'!",
@@ -149,9 +155,12 @@ describe("Tests getValidResponsesForOperationWithState", () => {
 
   it("with no $code specified", () => {
     const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      test: { id: 5 },
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        test: { id: 5 },
+      }),
+    );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
       200: {

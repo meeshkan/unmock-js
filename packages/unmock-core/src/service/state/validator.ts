@@ -150,14 +150,13 @@ const getStateFromMedia = (
         nestedLevel: -1,
       });
     }
-    const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
-    const spreadState = state.gen(schema);
+    // We assume '$ref' are already resolved at this stage
+    const spreadState = state.gen(content.schema as Schema);
+
     const missingParam = DFSVerifyNoneAreNull(spreadState);
     if (missingParam !== undefined) {
       errors.push(missingParam);
-    }
-
-    if (spreadState !== undefined) {
+    } else {
       relevantResponses[contentType] = spreadState;
     }
   }

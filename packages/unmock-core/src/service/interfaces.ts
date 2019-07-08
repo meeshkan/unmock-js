@@ -122,6 +122,11 @@ export interface IService {
 /**
  * DSL related parameters that can only be found at the top level
  */
+// Defines a mapping for top level DSL keys, to be used whed in different providers
+export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
+  $code: "number",
+} as const;
+
 interface ITopLevelDSL {
   /**
    * Defines the response based on the requested response code.

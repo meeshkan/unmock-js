@@ -31,7 +31,14 @@ describe("Fluent API and Service instantiation tests", () => {
         ...schemaBase,
         paths: {
           "/pets": {
-            get: { responses: { 200: { description: "Mock response" } } },
+            get: {
+              responses: {
+                200: {
+                  description: "Mock response",
+                  content: { "application/json": {} },
+                },
+              },
+            },
           },
         },
       },
@@ -141,7 +148,11 @@ describe("Test paths matching on serviceStore", () => {
                 tags: ["pets"],
                 ...params,
                 responses: {
-                  200: {},
+                  200: {
+                    content: {
+                      "application/json": {},
+                    },
+                  },
                 },
               },
             },
