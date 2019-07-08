@@ -53,6 +53,7 @@ export interface IServiceMapping {
 }
 
 export interface IStateInputGenerator {
+  isEmpty: boolean;
   gen: (schema: Schema) => Record<string, Schema>;
   top: () => ITopLevelDSL;
 }
