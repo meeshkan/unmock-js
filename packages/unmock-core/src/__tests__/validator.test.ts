@@ -43,6 +43,7 @@ const response: Response = {
   },
   description: "foo bar",
 };
+const op = { responses: { 200: { ...response } } };
 
 describe("Tests spreadStateFromService", () => {
   it("with empty path", () => {
@@ -92,43 +93,43 @@ describe("Tests spreadStateFromService", () => {
   });
 });
 
-// describe("Tests getUpdatedStateFromContent", () => {
-//   it("with empty path", () => {
-//     const resp = response.content as any;
-//     const spreadState = getUpdatedStateFromContent(
-//       resp["application/json"],
-//       {},
-//     );
-//     expect(spreadState.spreadState).toEqual({});
-//   });
-
-//   it("invalid parameter returns error", () => {
-//     const resp = response.content as any;
-//     const spreadState = getUpdatedStateFromContent(resp["application/json"], {
-//       boom: 5,
-//     });
-//     expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
-//   });
-
-//   it("empty schema returns error", () => {
-//     const resp = response.content as any;
-//     const spreadState = getUpdatedStateFromContent(resp.boom, {});
-//     expect(spreadState.error.msg).toContain("No schema defined");
-
-//     const resp2 = {
-//       "application/json": {},
-//     };
-//     const spreadState2 = getUpdatedStateFromContent(
-//       resp2["application/json"],
-//       {},
-//     );
-//     expect(spreadState2.error.msg).toContain("No schema defined");
-//   });
-// });
-
 describe("Tests getValidResponsesForOperationWithState", () => {
+  it("with empty state", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider(),
+    );
+    expect(spreadState.error).toBeUndefined();
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {},
+      },
+    });
+  });
+
+  it("invalid parameter returns error", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        boom: 5,
+      }),
+    );
+    expect(spreadState.error).toContain("Can't find definition for 'boom'");
+  });
+
+  it("empty schema returns error", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      {
+        responses: {
+          200: { content: { "application/json": {} }, description: "foo" },
+        },
+      },
+      defProvider(),
+    );
+    expect(spreadState.error).toContain("No schema defined");
+  });
+
   it("with $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
     const spreadState = getValidResponsesForOperationWithState(
       op,
       defProvider({
@@ -140,7 +141,6 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with missing $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
     const spreadState = getValidResponsesForOperationWithState(
       op,
       defProvider({
@@ -154,7 +154,6 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with no $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
     const spreadState = getValidResponsesForOperationWithState(
       op,
       defProvider({

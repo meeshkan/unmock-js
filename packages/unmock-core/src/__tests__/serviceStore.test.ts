@@ -35,7 +35,11 @@ describe("Fluent API and Service instantiation tests", () => {
               responses: {
                 200: {
                   description: "Mock response",
-                  content: { "application/json": {} },
+                  content: {
+                    "application/json": {
+                      schema: {},
+                    },
+                  },
                 },
               },
             },
@@ -150,7 +154,9 @@ describe("Test paths matching on serviceStore", () => {
                 responses: {
                   200: {
                     content: {
-                      "application/json": {},
+                      "application/json": {
+                        schema: {},
+                      },
                     },
                   },
                 },

@@ -146,9 +146,10 @@ const getStateFromMedia = (
     const content = contentRecord[contentType];
     if (content === undefined || content.schema === undefined) {
       errors.push({
-        msg: `No schema defined in ${JSON.stringify(content)}!`,
+        msg: `No schema defined in '${JSON.stringify(content)}'!`,
         nestedLevel: -1,
       });
+      continue;
     }
     // We assume '$ref' are already resolved at this stage
     const spreadState = state.gen(content.schema as Schema);
