@@ -26,9 +26,7 @@ const filterTopLevelDSL = (state: UnmockServiceState) => {
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
 };
 
-export default (
-  state: UnmockServiceState | undefined,
-): IStateInputGenerator => ({
+export default (state?: UnmockServiceState): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
   top: () => getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>
