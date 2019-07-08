@@ -6,10 +6,8 @@ import {
   isExtendedRESTMethod,
   IStateInputGenerator,
   MatcherResponse,
-  Schema,
   UnmockServiceState,
 } from "./interfaces";
-import { spreadStateFromService } from "./state/validator";
 import defProvider from "./state/providers";
 
 export class ServiceStore {

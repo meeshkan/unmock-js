@@ -21,9 +21,9 @@ const filterTopLevelDSL = (state: UnmockServiceState) => {
     )
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
 };
-};
 
 export default (state: UnmockServiceState | undefined) => ({
   top: () => getTopLevelDSL(state || {}),
-  gen: (schema: Schema) => spreadStateFromService(schema, filterTopLevelDSL(state || {})),
+  gen: (schema: Schema) =>
+    spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
