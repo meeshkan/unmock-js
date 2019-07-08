@@ -52,10 +52,15 @@ export interface IServiceMapping {
   [serviceName: string]: IService;
 }
 
+export interface IStateInputGenerator {
+  gen: (schema: Schema) => Record<string, Schema>;
+  top: () => ITopLevelDSL;
+}
+
 export interface IStateInput {
   method: ExtendedHTTPMethod;
   endpoint: string;
-  newState: UnmockServiceState;
+  newState: IStateInputGenerator;
 }
 export interface IServiceInput {
   schema: OpenAPIObject;

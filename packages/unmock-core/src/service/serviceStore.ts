@@ -4,9 +4,12 @@ import {
   IService,
   IServiceMapping,
   isExtendedRESTMethod,
+  IStateInputGenerator,
   MatcherResponse,
+  Schema,
   UnmockServiceState,
 } from "./interfaces";
+import { spreadStateFromService } from "./state/validator";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -46,7 +49,7 @@ export class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: ExtendedHTTPMethod;
-    state: UnmockServiceState;
+    state: IStateInputGenerator | UnmockServiceState;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
@@ -69,11 +72,28 @@ export class ServiceStore {
         }'!`,
       );
     }
+    let stateGen: IStateInputGenerator;
+    if (
+      state === undefined ||
+      ((state.gen === undefined || typeof state.gen !== "function") &&
+        (state.top === undefined || typeof state.top !== "function"))
+    ) {
+      // Given an object, set default generator for state
+      stateGen = {
+        top: () => {
+          const staticState = state as UnmockServiceState;
+          return { $code: staticState.$code };
+        },
+        gen: (schema: Schema) => spreadStateFromService(schema, state),
+      };
+    } else {
+      stateGen = state as IStateInputGenerator;
+    }
 
     this.serviceMapping[serviceName].updateState({
       endpoint,
       method,
-      newState: state,
+      newState: stateGen,
     });
   }
 }
