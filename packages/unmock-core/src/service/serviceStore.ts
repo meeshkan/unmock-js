@@ -4,6 +4,7 @@ import {
   IService,
   IServiceMapping,
   isExtendedRESTMethod,
+  isStateInputGenerator,
   IStateInputGenerator,
   MatcherResponse,
   UnmockServiceState,
@@ -48,7 +49,7 @@ export class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: ExtendedHTTPMethod;
-    state: IStateInputGenerator | UnmockServiceState;
+    state: IStateInputGenerator | UnmockServiceState | undefined;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
@@ -72,11 +73,7 @@ export class ServiceStore {
       );
     }
     let stateGen: IStateInputGenerator;
-    if (
-      state === undefined ||
-      (["function", "undefined"].includes(typeof state.gen) &&
-        ["function", "undefined"].includes(typeof state.top))
-    ) {
+    if (!isStateInputGenerator(state)) {
       // Given an object, set default generator for state
       stateGen = defProvider(state as UnmockServiceState);
     } else {

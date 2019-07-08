@@ -56,6 +56,12 @@ export interface IStateInputGenerator {
   gen: (schema: Schema) => Record<string, Schema>;
   top: () => ITopLevelDSL;
 }
+export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
+  u !== undefined &&
+  u.top !== undefined &&
+  u.gen !== undefined &&
+  typeof u.top === "function" &&
+  typeof u.gen === "function";
 
 export interface IStateInput {
   method: ExtendedHTTPMethod;
