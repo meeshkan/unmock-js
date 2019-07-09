@@ -145,6 +145,59 @@ describe("Test state management", () => {
     });
   });
 
+  it("parses $times on specific endpoint as expected", () => {
+    const state = new State();
+    state.update({
+      stateInput: {
+        method: "get",
+        endpoint: "**",
+        newState: defProvider({ id: 5, $times: 2 }),
+      },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "**",
+    });
+    const getRes = () =>
+      state.getState("get", "/", fullSchema.paths["/test/{test_id}"].get);
+    expect(getRes()).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              id: 5,
+            },
+          },
+        },
+      },
+    });
+    expect(getRes()).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              id: 5,
+            },
+          },
+        },
+      },
+    });
+    expect(getRes()).not.toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              foo: {
+                properties: {
+                  id: 5,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({

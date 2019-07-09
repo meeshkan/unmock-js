@@ -10,6 +10,7 @@ import {
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
+import { DSL } from "../dsl";
 
 const debugLog = debug("unmock:state");
 
@@ -54,7 +55,11 @@ export class State {
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);
-        this.updateStateInternal(endpoint, method, stateResponses.responses);
+        const augmentedResponses = DSL.resolveTopLevel(
+          newState.top,
+          stateResponses.responses,
+        );
+        this.updateStateInternal(endpoint, method, augmentedResponses);
         return true;
       }
       // failed path
@@ -127,7 +132,8 @@ export class State {
     }
 
     // Filter all the states that do not match the operation schema
-    return filterStatesByOperation(states, operation);
+    const filteredStates = filterStatesByOperation(states, operation);
+    return DSL.handleSchemaDSL(filteredStates);
   }
 
   public reset() {
