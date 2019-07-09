@@ -1,1 +1,1 @@
-class DSL {}
+export class DSL {}

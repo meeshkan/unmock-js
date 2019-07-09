@@ -6,7 +6,7 @@ import {
 } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
-import { ITopLevelDSL, IDSL } from "./dsl/interfaces";
+import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
 
 export {
   isOperation,
@@ -79,11 +79,6 @@ export interface IServiceInput {
 export type mediaTypeToSchema = Record<string, Schema>;
 // maps from status to mediaTypeToSchema
 export type codeToMedia = Record<string, mediaTypeToSchema>;
-
-export interface IResponsesFromOperation {
-  // Maps between a response method, to codeToMedia
-  [method: string]: codeToMedia;
-}
 
 export type MatcherResponse =
   | { operation: Operation; state: codeToMedia | undefined }
