@@ -28,7 +28,7 @@ const filterTopLevelDSL = (state: UnmockServiceState) => {
 
 export default (state?: UnmockServiceState): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
-  top: () => getTopLevelDSL(state || {}),
+  top: getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });

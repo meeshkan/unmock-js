@@ -88,8 +88,7 @@ export const getValidResponsesForOperationWithState = (
   let error: IMissingParam | undefined;
 
   // TODO: Treat other top-level DSL elements...
-  const topDSL = state.top();
-  const statusCode = topDSL.$code;
+  const statusCode = state.top.$code;
   // If $code is undefined, we look over all responses listed and find the suitable ones
   const codes =
     statusCode === undefined ? Object.keys(responses) : [statusCode];

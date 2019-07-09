@@ -55,7 +55,7 @@ export interface IServiceMapping {
 export interface IStateInputGenerator {
   isEmpty: boolean;
   gen: (schema: Schema) => Record<string, Schema>;
-  top: () => ITopLevelDSL;
+  top: ITopLevelDSL;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u !== undefined &&
