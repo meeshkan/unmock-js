@@ -6,6 +6,7 @@ import {
 } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
+import { ITopLevelDSL, IDSL } from "./dsl/interfaces";
 
 export {
   isOperation,
@@ -126,38 +127,11 @@ export interface IService {
   match(sreq: ISerializedRequest): MatcherResponse;
 }
 
-/**
- * DSL related parameters that can only be found at the top level
- */
-// Defines a mapping for top level DSL keys, to be used with different providers
-export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
-  $code: "number",
-} as const;
-
-interface ITopLevelDSL {
-  /**
-   * Defines the response based on the requested response code.
-   * If the requested response code is not found, returns 'default'
-   */
-  $code?: number;
-}
-
-/**
- * DSL related parameters that can be found at any level in the schema
- */
-interface IDSL {
-  /**
-   * Used to control and generate arrays of specific sizes.
-   */
-  $size?: number;
-  [key: string]: number | string | boolean | undefined;
-}
-
 interface INestedState<T> {
   [key: string]: INestedState<T> | T;
 }
 
-export interface IUnmockServiceState
+interface IUnmockServiceState
   extends INestedState<
     IDSL | string | number | (() => string | number) | undefined | boolean
   > {}
