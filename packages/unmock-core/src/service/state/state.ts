@@ -1,6 +1,7 @@
 import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
+import { DSL } from "../dsl";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -10,7 +11,6 @@ import {
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidResponsesForOperationWithState } from "./validator";
-import { DSL } from "../dsl";
 
 const debugLog = debug("unmock:state");
 
