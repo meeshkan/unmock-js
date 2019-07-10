@@ -29,7 +29,7 @@ export default abstract class ClientRequestTracker {
           );
           ClientRequestTracker.clientRequests[requestId] = this;
           this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
-          original.apply(this, [socket]);
+          return original.apply(this, [socket]);
         },
     );
   }
