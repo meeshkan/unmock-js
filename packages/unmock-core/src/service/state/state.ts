@@ -134,6 +134,7 @@ export class State {
     // Filter all the states that do not match the operation schema
     const filteredStates = filterStatesByOperation(states, operation);
     const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
+    // TODO: After parsing, do we want to see if we need to remove items from the current state?
     return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
   }
 
