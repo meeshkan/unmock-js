@@ -55,7 +55,7 @@ export class State {
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);
-        const augmentedResponses = DSL.resolveTopLevel(
+        const augmentedResponses = DSL.translateTopLevelToOAS(
           newState.top,
           stateResponses.responses,
         );
@@ -133,7 +133,7 @@ export class State {
 
     // Filter all the states that do not match the operation schema
     const filteredStates = filterStatesByOperation(states, operation);
-    return DSL.handleSchemaDSL(filteredStates);
+    return DSL.actTopLevelFromOAS(filteredStates);
   }
 
   public reset() {

@@ -32,7 +32,7 @@ export class DSL {
    * @param top
    * @param responses
    */
-  public static resolveTopLevel(
+  public static translateTopLevelToOAS(
     top: ITopLevelDSL,
     responses: codeToMedia | undefined,
   ) {
@@ -58,7 +58,13 @@ export class DSL {
     return responses;
   }
 
-  public static handleSchemaDSL(states: codeToMedia) {
+  /**
+   * Given a state that potentially contains top level DSL instructions in OAS,
+   * acts on those DSL instructions as needed and returns a copy of the given state.
+   * The relevant top level DSL instructions are removed from the returned copy.
+   * @param states
+   */
+  public static actTopLevelFromOAS(states: codeToMedia) {
     const copy: codeToMedia = {};
     for (const code of Object.keys(states)) {
       copy[code] = {};
