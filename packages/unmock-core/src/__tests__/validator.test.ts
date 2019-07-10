@@ -1,4 +1,4 @@
-import { MediaType, Response, Schema } from "../service/interfaces";
+import { Response, Schema } from "../service/interfaces";
 import defProvider from "../service/state/providers";
 import {
   getValidResponsesForOperationWithState,
