@@ -17,13 +17,22 @@ const buildUnmockProperty = (type: string, value: any) => ({
   [type]: { type: UNMOCK_TYPE, default: value },
 });
 const hasUnmockProperty = (schema: Schema, type: string) => {
+  const log = (found: boolean) =>
+    debugLog(
+      `${found ? "Found" : "Can't find"} '${type}' in ${JSON.stringify(
+        schema,
+      )}`,
+    );
   if (schema.properties === undefined) {
+    log(false);
     return false;
   }
   const prop = schema.properties[type];
   if (prop === undefined || isReference(prop)) {
+    log(false);
     return false;
   }
+  log(prop.type === UNMOCK_TYPE);
   return prop.type === UNMOCK_TYPE;
 };
 
@@ -82,17 +91,22 @@ export class DSL {
           handleTimes(copy[code], states[code], mediaType);
         }
         if (Object.keys(schema.properties).length === 0) {
-          // we deleted all the keys from properties!
+          debugLog(
+            `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
+          );
           delete schema.properties;
           if (Object.keys(schema).length === 0) {
-            // We also cleared out the entire mediatype then...
+            debugLog(
+              `schema is now empty, removing '${mediaType}' from copied response '${code}'`,
+            );
             delete copy[code][mediaType];
           }
         }
       }
       if (Object.keys(copy[code]).length === 0) {
-        // Also apparently deleted the entire code response.
-        // Clean up both in original and copied
+        debugLog(
+          `Entire response is empty, removing '${code}' from copied response`,
+        );
         delete copy[code];
       }
     }
@@ -113,7 +127,9 @@ const handleTimes = (
   // delete value in copy (for clean return)
   delete (copiedSchema[mediaType].properties as Props)[SCHEMA_TIMES];
   if (origTimes.default < 0) {
-    // Delete the entire state for both copies
+    debugLog(
+      `$times has expired for '${mediaType}', removing state in both copied and original`,
+    );
     delete copiedSchema[mediaType];
     delete originalSchema[mediaType];
   }
