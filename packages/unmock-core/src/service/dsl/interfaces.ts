@@ -19,6 +19,7 @@ export interface ITopLevelDSL {
 /**
  * DSL related parameters that can be found at any level in the schema
  */
+
 export interface IDSL {
   /**
    * Used to control and generate arrays of specific sizes.

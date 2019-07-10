@@ -13,6 +13,7 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
+import { DSL } from "../dsl";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
@@ -35,7 +36,7 @@ const hasNestedItems = (obj: any) =>
   NESTED_SCHEMA_ITEMS.some((key: string) => obj[key] !== undefined);
 
 const isConcreteValue = (obj: any) =>
-  ["string", "number", "boolean"].includes(typeof obj) || isSchema(obj);
+  ["string", "number", "boolean"].includes(typeof obj);
 
 const isNonEmptyObject = (obj: any) =>
   typeof obj === "object" && Object.keys(obj).length > 0;
@@ -201,11 +202,7 @@ export const spreadStateFromService = (
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
         // Option 2: Current scheme has matching key, and the state specifies a non-object (or schema). Validate schema.
-        console.log(statePath);
-        console.log(key);
-        console.log(stateValue);
-        console.log(serviceSchema);
-        console.log(scm);
+        // TODO do we want to throw for invalid types?
         const spread = {
           [key]:
             isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
@@ -213,7 +210,11 @@ export const spreadStateFromService = (
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
         // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
-        const spread = { [key]: spreadStateFromService(scm, stateValue) };
+        // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
+        const translated = DSL.translateDSLToOAS(stateValue, scm);
+        const spread = {
+          [key]: { ...spreadStateFromService(scm, stateValue), ...translated },
+        };
         matches = {
           ...matches,
           ...oneLevelOfIndirectNestedness(scm, statePath, spread),

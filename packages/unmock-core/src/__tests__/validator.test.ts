@@ -1,4 +1,4 @@
-import { Response, Schema } from "../service/interfaces";
+import { MediaType, Response, Schema } from "../service/interfaces";
 import defProvider from "../service/state/providers";
 import {
   getValidResponsesForOperationWithState,
@@ -8,7 +8,7 @@ import {
 const schema: Schema = {
   properties: {
     test: {
-      type: "object",
+      type: "array",
       properties: {
         id: {
           type: "integer",

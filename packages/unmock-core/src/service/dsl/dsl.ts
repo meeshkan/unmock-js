@@ -11,11 +11,14 @@ import { ITopLevelDSL } from "./interfaces";
 const debugLog = debug("unmock:dsl");
 
 type Props = Record<string, Schema>;
-const SCHEMA_TIMES = "x-unmock-times";
+const SCHEMA_PREFIX = "x-unmock-";
+const SCHEMA_TIMES = `${SCHEMA_PREFIX}times`;
 const UNMOCK_TYPE = "unmock";
+
 const buildUnmockProperty = (type: string, value: any) => ({
   [type]: { type: UNMOCK_TYPE, default: value },
 });
+
 const hasUnmockProperty = (schema: Schema, type: string) => {
   const log = (found: boolean) =>
     debugLog(
@@ -37,6 +40,21 @@ const hasUnmockProperty = (schema: Schema, type: string) => {
 };
 
 export class DSL {
+  /**
+   * Translated DSL instructions in `state` to OAS, based on `schema`.
+   * Modifies `state` in-place by removing the relevant DSL instructions.
+   * @param state
+   * @param schema
+   * @returns A translated list of arguments.
+   */
+  public static translateDSLToOAS(state: any, schema: Schema): any {
+    let translated: { [OASKey: string]: string | number | boolean } = {};
+    if (state.$size !== undefined) {
+      translated = { ...translated, ...translateSize(state, schema) };
+      delete state.$size;
+    }
+    return translated;
+  }
   /**
    * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
@@ -114,6 +132,15 @@ export class DSL {
   }
 }
 
+/**
+ * Handles the $times argument in top level DSL by synchronizing and modifying the copied and original schemas.
+ * The value of $times is decreased by 1 and removed from the copied schema.
+ * If the new value is less than 0 (i.e. this state has expired),
+ * the content is removed from **both** the copied and original schemas.
+ * @param copiedSchema
+ * @param originalSchema
+ * @param mediaType
+ */
 const handleTimes = (
   copiedSchema: mediaTypeToSchema,
   originalSchema: mediaTypeToSchema,
@@ -133,4 +160,21 @@ const handleTimes = (
     delete copiedSchema[mediaType];
     delete originalSchema[mediaType];
   }
+};
+
+/**
+ * Translates the $size argument in the DSL, by verifying its location and value is logical.
+ * @param state
+ * @param schema
+ */
+const translateSize = (state: any, schema: Schema): any => {
+  // assumes state.$size exists
+  if (schema.type === undefined || schema.type !== "array") {
+    throw new Error("Can't set '$size' for non-array elements!");
+  }
+  const nElements = Math.round(state.$size);
+  if (nElements < 0) {
+    throw new Error("Can't request a non-positive size of array!");
+  }
+  return { minItems: nElements, maxItems: nElements };
 };
