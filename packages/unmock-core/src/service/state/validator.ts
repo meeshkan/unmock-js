@@ -3,6 +3,7 @@
  */
 
 import Ajv from "ajv";
+import { DSL } from "../dsl";
 import {
   codeToMedia,
   isReference,
@@ -13,7 +14,6 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import { DSL } from "../dsl";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
