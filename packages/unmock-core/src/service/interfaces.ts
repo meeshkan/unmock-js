@@ -52,10 +52,22 @@ export interface IServiceMapping {
   [serviceName: string]: IService;
 }
 
+export interface IStateInputGenerator {
+  isEmpty: boolean;
+  gen: (schema: Schema) => Record<string, Schema>;
+  top: ITopLevelDSL;
+}
+export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
+  u !== undefined &&
+  u.top !== undefined &&
+  u.gen !== undefined &&
+  typeof u.top === "function" &&
+  typeof u.gen === "function";
+
 export interface IStateInput {
   method: ExtendedHTTPMethod;
   endpoint: string;
-  newState: UnmockServiceState;
+  newState: IStateInputGenerator;
 }
 export interface IServiceInput {
   schema: OpenAPIObject;
@@ -117,6 +129,11 @@ export interface IService {
 /**
  * DSL related parameters that can only be found at the top level
  */
+// Defines a mapping for top level DSL keys, to be used with different providers
+export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
+  $code: "number",
+} as const;
+
 interface ITopLevelDSL {
   /**
    * Defines the response based on the requested response code.

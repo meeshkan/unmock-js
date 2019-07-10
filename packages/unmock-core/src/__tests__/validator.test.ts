@@ -1,6 +1,6 @@
 import { Response, Schema } from "../service/interfaces";
+import defProvider from "../service/state/providers";
 import {
-  getUpdatedStateFromContent,
   getValidResponsesForOperationWithState,
   spreadStateFromService,
 } from "../service/state/validator";
@@ -43,6 +43,7 @@ const response: Response = {
   },
   description: "foo bar",
 };
+const op = { responses: { 200: { ...response } } };
 
 describe("Tests spreadStateFromService", () => {
   it("with empty path", () => {
@@ -92,55 +93,60 @@ describe("Tests spreadStateFromService", () => {
   });
 });
 
-describe("Tests getUpdatedStateFromContent", () => {
-  it("with empty path", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(
-      resp["application/json"],
-      {},
+describe("Tests getValidResponsesForOperationWithState", () => {
+  it("with empty state", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider(),
     );
-    expect(spreadState.spreadState).toEqual({});
+    expect(spreadState.error).toBeUndefined();
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {},
+      },
+    });
   });
 
   it("invalid parameter returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp["application/json"], {
-      boom: 5,
-    });
-    expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        boom: 5,
+      }),
+    );
+    expect(spreadState.error).toContain("Can't find definition for 'boom'");
   });
 
   it("empty schema returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp.boom, {});
-    expect(spreadState.error.msg).toContain("No schema defined");
-
-    const resp2 = {
-      "application/json": {},
-    };
-    const spreadState2 = getUpdatedStateFromContent(
-      resp2["application/json"],
-      {},
+    const spreadState = getValidResponsesForOperationWithState(
+      {
+        responses: {
+          200: { content: { "application/json": {} }, description: "foo" },
+        },
+      },
+      defProvider(),
     );
-    expect(spreadState2.error.msg).toContain("No schema defined");
+    expect(spreadState.error).toContain("No schema defined");
   });
-});
 
-describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 200,
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        $code: 200,
+      }),
+    );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
   });
 
   it("with missing $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 404,
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        $code: 404,
+      }),
+    );
     expect(spreadState.responses).toBeUndefined();
     expect(spreadState.error).toContain(
       "Can't find response for given status code '404'!",
@@ -148,10 +154,12 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with no $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      test: { id: 5 },
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defProvider({
+        test: { id: 5 },
+      }),
+    );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
       200: {

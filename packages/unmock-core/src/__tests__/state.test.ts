@@ -1,3 +1,4 @@
+import defProvider from "../service/state/providers";
 import { State } from "../service/state/state";
 
 const fullSchema = {
@@ -70,7 +71,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(
       state.update({
-        stateInput: { method: "any", endpoint: "**", newState: {} },
+        stateInput: {
+          method: "any",
+          endpoint: "**",
+          newState: defProvider(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
@@ -82,7 +87,7 @@ describe("Test state management", () => {
     const state = new State();
     expect(() =>
       state.update({
-        stateInput: { method: "post", endpoint: "**", newState: {} },
+        stateInput: { method: "post", endpoint: "**", newState: defProvider() },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
@@ -94,7 +99,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(() =>
       state.update({
-        stateInput: { method: "post", endpoint: "/test/5", newState: {} },
+        stateInput: {
+          method: "post",
+          endpoint: "/test/5",
+          newState: defProvider(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "/test/{test_id}",
@@ -108,7 +117,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "get",
         endpoint: "**",
-        newState: { foo: { id: 5 } },
+        newState: defProvider({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -139,7 +148,11 @@ describe("Test state management", () => {
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({
-      stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
+      stateInput: {
+        method: "any",
+        endpoint: "**",
+        newState: defProvider({ id: 5 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "**",
@@ -165,19 +178,31 @@ describe("Test state management", () => {
   it("spreads states from multiple paths correctly", () => {
     const state = new State();
     state.update({
-      stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
+      stateInput: {
+        method: "any",
+        endpoint: "**",
+        newState: defProvider({ id: 5 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
     state.update({
-      stateInput: { method: "any", endpoint: "/test/5", newState: { id: 3 } },
+      stateInput: {
+        method: "any",
+        endpoint: "/test/5",
+        newState: defProvider({ id: 3 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "/test/{test_id}",
     });
     state.update({
-      stateInput: { method: "any", endpoint: "/test/*", newState: { id: -1 } },
+      stateInput: {
+        method: "any",
+        endpoint: "/test/*",
+        newState: defProvider({ id: -1 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "/test/{test_id}",
@@ -206,7 +231,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "**",
-        newState: { foo: { id: 5 } },
+        newState: defProvider({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,

@@ -7,11 +7,11 @@ import {
   IResponsesFromOperation,
   isReference,
   isSchema,
+  IStateInputGenerator,
   MediaType,
   Operation,
   Responses,
   Schema,
-  UnmockServiceState,
 } from "../interfaces";
 
 // These are specific to OAS and not part of json schema standard
@@ -79,7 +79,7 @@ const oneLevelOfIndirectNestedness = (
  */
 export const getValidResponsesForOperationWithState = (
   operation: Operation,
-  state: UnmockServiceState,
+  state: IStateInputGenerator,
 ): { responses?: IResponsesFromOperation; error?: string } => {
   // Check if any non-DSL specific elements are found in the Operation under responses.
   // We do not resolve anything at this point.
@@ -88,7 +88,7 @@ export const getValidResponsesForOperationWithState = (
   let error: IMissingParam | undefined;
 
   // TODO: Treat other top-level DSL elements...
-  const statusCode = state.$code;
+  const statusCode = state.top.$code;
   // If $code is undefined, we look over all responses listed and find the suitable ones
   const codes =
     statusCode === undefined ? Object.keys(responses) : [statusCode];
@@ -104,7 +104,6 @@ export const getValidResponsesForOperationWithState = (
         error: `Can't find response for given status code '${statusCode}'!`,
       };
     }
-    delete state.$code;
   }
 
   for (const code of codes) {
@@ -135,7 +134,7 @@ export const getValidResponsesForOperationWithState = (
 
 const getStateFromMedia = (
   contentRecord: Record<string, MediaType>,
-  state: UnmockServiceState,
+  state: IStateInputGenerator,
 ): {
   responses: IResponsesFromContent;
   errors: IMissingParam[];
@@ -144,48 +143,24 @@ const getStateFromMedia = (
   const relevantResponses: IResponsesFromContent = {};
   for (const contentType of Object.keys(contentRecord)) {
     const content = contentRecord[contentType];
-    const { spreadState, error } = getUpdatedStateFromContent(content, state);
-    if (error !== undefined) {
-      errors.push(error);
+    if (content === undefined || content.schema === undefined) {
+      errors.push({
+        msg: `No schema defined in '${JSON.stringify(content)}'!`,
+        nestedLevel: -1,
+      });
+      continue;
     }
-    if (spreadState !== undefined) {
+    // We assume '$ref' are already resolved at this stage
+    const spreadState = state.gen(content.schema as Schema);
+
+    const missingParam = DFSVerifyNoneAreNull(spreadState);
+    if (missingParam !== undefined) {
+      errors.push(missingParam);
+    } else {
       relevantResponses[contentType] = spreadState;
     }
   }
   return { responses: relevantResponses, errors };
-};
-
-/**
- * Given a media type, return mapping between state, service and response.
- * @param content
- * @param state
- */
-// TODO: exported for testing purposes
-export const getUpdatedStateFromContent = (
-  content: MediaType,
-  state: UnmockServiceState,
-): { spreadState?: Record<string, Schema>; error?: IMissingParam } => {
-  if (content === undefined || content.schema === undefined) {
-    return {
-      error: {
-        msg: `No schema defined in ${JSON.stringify(content)}!`,
-        nestedLevel: -1,
-      },
-    };
-  }
-  const schema = content.schema as Schema; // We assume '$ref' are already resolved at this stage
-  // For now, ignore $DSL notation and types
-  const responseModsForState = spreadStateFromService(schema, state) as Record<
-    string,
-    Schema
-  >;
-
-  // TODO: Ignore DSL/convert elements
-  const missingParam = DFSVerifyNoneAreNull(responseModsForState);
-  if (missingParam !== undefined) {
-    return { error: missingParam };
-  }
-  return { spreadState: responseModsForState };
 };
 
 /**

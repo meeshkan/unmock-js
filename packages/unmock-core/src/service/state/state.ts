@@ -39,7 +39,7 @@ export class State {
       debugLog(`Couldn't find any matching operations: ${ops.error}`);
       throw new Error(ops.error);
     }
-    if (newState === undefined || Object.keys(newState).length === 0) {
+    if (newState.isEmpty) {
       // No state given, no changes to make
       return;
     }
