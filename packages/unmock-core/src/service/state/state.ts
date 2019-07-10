@@ -133,7 +133,8 @@ export class State {
 
     // Filter all the states that do not match the operation schema
     const filteredStates = filterStatesByOperation(states, operation);
-    return DSL.actTopLevelFromOAS(filteredStates);
+    const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
+    return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
   }
 
   public reset() {

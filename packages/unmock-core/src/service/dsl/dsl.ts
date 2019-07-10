@@ -1,3 +1,4 @@
+import debug from "debug";
 import { cloneDeep } from "lodash";
 import {
   codeToMedia,
@@ -6,6 +7,8 @@ import {
   Schema,
 } from "../interfaces";
 import { ITopLevelDSL } from "./interfaces";
+
+const debugLog = debug("unmock:dsl");
 
 type Props = Record<string, Schema>;
 const SCHEMA_TIMES = "x-unmock-times";
@@ -44,8 +47,9 @@ export class DSL {
     if (top.$times !== undefined) {
       const times = Math.round(top.$times); // We ignore floats by rounding to an integer
       if (times < 1) {
-        throw new Error(`Can't set response $times to ${times}!`);
+        throw new Error(`Can't set response $times to ${top.$times}!`);
       }
+      debugLog(`Rounded response $times to ${times}`);
       Object.values(responses).forEach((response: mediaTypeToSchema) => {
         Object.values(response).forEach((schema: Schema) => {
           schema.properties = {
@@ -80,7 +84,16 @@ export class DSL {
         if (Object.keys(schema.properties).length === 0) {
           // we deleted all the keys from properties!
           delete schema.properties;
+          if (Object.keys(schema).length === 0) {
+            // We also cleared out the entire mediatype then...
+            delete copy[code][mediaType];
+          }
         }
+      }
+      if (Object.keys(copy[code]).length === 0) {
+        // Also apparently deleted the entire code response.
+        // Clean up both in original and copied
+        delete copy[code];
       }
     }
     return copy;
@@ -100,7 +113,7 @@ const handleTimes = (
   // delete value in copy (for clean return)
   delete (copiedSchema[mediaType].properties as Props)[SCHEMA_TIMES];
   if (origTimes.default < 0) {
-    // Delete the entire state!
+    // Delete the entire state for both copies
     delete copiedSchema[mediaType];
     delete originalSchema[mediaType];
   }
