@@ -35,7 +35,7 @@ const hasNestedItems = (obj: any) =>
   NESTED_SCHEMA_ITEMS.some((key: string) => obj[key] !== undefined);
 
 const isConcreteValue = (obj: any) =>
-  ["string", "number", "boolean"].includes(typeof obj);
+  ["string", "number", "boolean"].includes(typeof obj) || isSchema(obj);
 
 const isNonEmptyObject = (obj: any) =>
   typeof obj === "object" && Object.keys(obj).length > 0;
@@ -184,6 +184,7 @@ export const spreadStateFromService = (
   statePath: any,
 ): { [pathKey: string]: any | null } => {
   let matches: { [key: string]: any } = {};
+
   for (const key of Object.keys(statePath)) {
     const scm = serviceSchema[key];
     const stateValue = statePath[key];
@@ -199,7 +200,12 @@ export const spreadStateFromService = (
       }
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
-        // Option 2: Current scheme has matching key, and the state specifies a non-object. Validate schema.
+        // Option 2: Current scheme has matching key, and the state specifies a non-object (or schema). Validate schema.
+        console.log(statePath);
+        console.log(key);
+        console.log(stateValue);
+        console.log(serviceSchema);
+        console.log(scm);
         const spread = {
           [key]:
             isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
