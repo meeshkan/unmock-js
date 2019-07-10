@@ -35,7 +35,7 @@ export class DSL {
   public static translateTopLevelToOAS(
     top: ITopLevelDSL,
     responses: codeToMedia | undefined,
-  ) {
+  ): codeToMedia | undefined {
     if (responses === undefined) {
       return responses;
     }
@@ -64,7 +64,7 @@ export class DSL {
    * The relevant top level DSL instructions are removed from the returned copy.
    * @param states
    */
-  public static actTopLevelFromOAS(states: codeToMedia) {
+  public static actTopLevelFromOAS(states: codeToMedia): codeToMedia {
     const copy: codeToMedia = {};
     for (const code of Object.keys(states)) {
       copy[code] = {};
