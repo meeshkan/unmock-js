@@ -71,7 +71,7 @@ const oneLevelOfIndirectNestedness = (
 };
 
 /**
- * Given a state and an operation, returns all the valid responses that
+ * Given a state and an operation, returns **a copy** of all the valid responses that
  * match the given state.
  * First-level filtering is done via $code (status code) if it exists,
  * otherwise via matching the parameters set in `state`.
