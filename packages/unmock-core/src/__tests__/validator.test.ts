@@ -8,7 +8,7 @@ import {
 const schema: Schema = {
   properties: {
     test: {
-      type: "array",
+      type: "object",
       properties: {
         id: {
           type: "integer",

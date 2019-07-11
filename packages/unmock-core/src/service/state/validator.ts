@@ -88,7 +88,6 @@ export const getValidResponsesForOperationWithState = (
   const relevantResponses: codeToMedia = {};
   let error: IMissingParam | undefined;
 
-  // TODO: Treat other top-level DSL elements...
   const statusCode = state.top.$code;
   // If $code is undefined, we look over all responses listed and find the suitable ones
   const codes =

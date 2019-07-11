@@ -27,16 +27,48 @@ describe("Resolves top level DSL to OAS", () => {
   });
 
   describe("Handles $times correctly", () => {
-    it("Throws on invalid $times (0)", () => {
+    it("Does nothing with invalid $times (0, negative, wrong type) without STRICT_MODE", () => {
+      DSL.STRICT_MODE = false;
+      let translated = DSL.translateTopLevelToOAS(
+        { $times: 0.3 },
+        responsesWithoutProperties,
+      );
+      expect(translated).toEqual({ 200: { "application/json": {} } });
+
+      translated = DSL.translateTopLevelToOAS(
+        { $times: -2 },
+        responsesWithoutProperties,
+      );
+      expect(translated).toEqual({ 200: { "application/json": {} } });
+
+      translated = DSL.translateTopLevelToOAS(
+        { $times: undefined },
+        responsesWithoutProperties,
+      );
+      expect(translated).toEqual({ 200: { "application/json": {} } });
+    });
+
+    it("Throws on invalid $times (0) with STRICT_MODE", () => {
+      DSL.STRICT_MODE = true;
       const translated = () =>
         DSL.translateTopLevelToOAS({ $times: 0.3 }, responsesWithoutProperties);
       expect(translated).toThrow("Can't set response $times to 0.3"); // 0.3 gets rounded to 0 and throws
     });
 
-    it("Throws on invalid $times (negative)", () => {
+    it("Throws on invalid $times (negative) with STRICT_MODE", () => {
+      DSL.STRICT_MODE = true;
       const translated = () =>
         DSL.translateTopLevelToOAS({ $times: -1 }, responsesWithoutProperties);
       expect(translated).toThrow("Can't set response $times to -1");
+    });
+
+    it("Throws on invalid $times (wrong type) with STRICT_MODE", () => {
+      DSL.STRICT_MODE = true;
+      const translated = () =>
+        DSL.translateTopLevelToOAS({ $times: "a" }, responsesWithoutProperties);
+      expect(translated).toThrow(
+        "Can't set response $times with non-numeric value!",
+      );
     });
 
     it("Adds properties when missing", () => {
