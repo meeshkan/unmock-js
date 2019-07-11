@@ -46,6 +46,7 @@
     "jest": "^24.7.1",
     "jest-junit": "^6.4.0",
     "lerna": "^3.13.4",
+    "lodash.template": "^4.5.0",
     "prettier": "^1.18.2",
     "prettier-check": "^2.0.0",
     "supertest": "^4.0.2",
