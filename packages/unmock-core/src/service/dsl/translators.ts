@@ -31,10 +31,10 @@ export const translate$size = (state: any, schema: Schema): any => {
     throw new Error("Can't set '$size' for non-array elements!");
   }
   if (typeof state.$size !== "number") {
-    throw new Error("Can't request a non-number size of array!");
+    throw new Error("Can't request a non-numeric size of array!");
   }
   const nElements = Math.round(state.$size);
-  if (nElements < 0) {
+  if (nElements < 1) {
     throw new Error("Can't request a non-positive size of array!");
   }
   return { minItems: nElements, maxItems: nElements };
