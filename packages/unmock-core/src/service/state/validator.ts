@@ -192,7 +192,12 @@ export const spreadStateFromService = (
     if (scm === undefined) {
       if (hasNestedItems(serviceSchema)) {
         // Option 1: current schema has no matching key, but contains indirection (items/properties, etc)
-        const spread = oneLevelOfIndirectNestedness(serviceSchema, statePath);
+        // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
+        const translated = DSL.translateDSLToOAS(statePath, serviceSchema);
+        const spread = {
+          ...oneLevelOfIndirectNestedness(serviceSchema, statePath),
+          ...translated,
+        };
         if (Object.keys(spread).length === 0) {
           spread[key] = null;
         }
