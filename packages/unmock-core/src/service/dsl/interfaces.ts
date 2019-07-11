@@ -1,3 +1,5 @@
+import { Schema } from "../interfaces";
+
 /**
  * DSL related parameters that can only be found at the top level
  */
@@ -26,4 +28,13 @@ export interface IDSL {
    */
   $size?: number;
   [key: string]: number | string | boolean | undefined;
+}
+
+export type Props = Record<string, Schema>;
+
+export interface IUnmockProperty {
+  [key: string]: {
+    type: string;
+    default: any;
+  };
 }
