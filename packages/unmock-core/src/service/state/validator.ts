@@ -4,7 +4,7 @@
 
 import Ajv from "ajv";
 import {
-  IResponsesFromOperation,
+  codeToMedia,
   isReference,
   isSchema,
   IStateInputGenerator,
@@ -80,11 +80,11 @@ const oneLevelOfIndirectNestedness = (
 export const getValidResponsesForOperationWithState = (
   operation: Operation,
   state: IStateInputGenerator,
-): { responses?: IResponsesFromOperation; error?: string } => {
+): { responses?: codeToMedia; error?: string } => {
   // Check if any non-DSL specific elements are found in the Operation under responses.
   // We do not resolve anything at this point.
   const responses = operation.responses;
-  const relevantResponses: IResponsesFromOperation = {};
+  const relevantResponses: codeToMedia = {};
   let error: IMissingParam | undefined;
 
   // TODO: Treat other top-level DSL elements...
