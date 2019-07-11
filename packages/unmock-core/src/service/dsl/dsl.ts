@@ -1,42 +1,48 @@
 import debug from "debug";
 import { cloneDeep } from "lodash";
-import {
-  codeToMedia,
-  isReference,
-  mediaTypeToSchema,
-  Schema,
-} from "../interfaces";
+import { codeToMedia, Schema } from "../interfaces";
+import { actOn$times } from "./actors";
+import { SCHEMA_TIMES } from "./constants";
 import { ITopLevelDSL } from "./interfaces";
+import { translate$size, translate$times } from "./translators";
+import {
+  hasUnmockProperty,
+  injectUnmockProperty,
+  throwOnErrorIfStrict,
+} from "./utils";
 
 const debugLog = debug("unmock:dsl");
 
-type Props = Record<string, Schema>;
-const SCHEMA_TIMES = "x-unmock-times";
-const UNMOCK_TYPE = "unmock";
-const buildUnmockProperty = (type: string, value: any) => ({
-  [type]: { type: UNMOCK_TYPE, default: value },
-});
-const hasUnmockProperty = (schema: Schema, type: string) => {
-  const log = (found: boolean) =>
-    debugLog(
-      `${found ? "Found" : "Can't find"} '${type}' in ${JSON.stringify(
-        schema,
-      )}`,
-    );
-  if (schema.properties === undefined) {
-    log(false);
-    return false;
-  }
-  const prop = schema.properties[type];
-  if (prop === undefined || isReference(prop)) {
-    log(false);
-    return false;
-  }
-  log(prop.type === UNMOCK_TYPE);
-  return prop.type === UNMOCK_TYPE;
-};
+/**
+ * Handles DSL arguments by translating them to OAS where needed.
+ * Many of these static functions modify their inputs to abstract away
+ * the DSL from the final output (after having it translated/acted upon).
+ */
+export abstract class DSL {
+  /**
+   * If true, mismatching arguments will throw
+   *    (e.g. `$size: a`, `$size: 0.1` (rounds to 0), `$size: N` with non-array type)
+   * If false, these arguments are considered "as if" when they don't match the schema.
+   */
+  public static STRICT_MODE = true;
 
-export class DSL {
+  /**
+   * Translated DSL instructions in `state` to OAS, based on `schema`.
+   * Modifies `state` in-place by removing the relevant DSL instructions.
+   * @param state
+   * @param schema
+   * @returns A translated list of arguments.
+   */
+  public static translateDSLToOAS(state: any, schema: Schema): any {
+    let translated: { [OASKey: string]: string | number | boolean } = {};
+    if (state.$size !== undefined) {
+      throwOnErrorIfStrict(() => {
+        translated = { ...translated, ...translate$size(state, schema) };
+        delete state.$size;
+      });
+    }
+    return translated;
+  }
   /**
    * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
@@ -54,18 +60,9 @@ export class DSL {
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
     if (top.$times !== undefined) {
-      const times = Math.round(top.$times); // We ignore floats by rounding to an integer
-      if (times < 1) {
-        throw new Error(`Can't set response $times to ${top.$times}!`);
-      }
-      debugLog(`Rounded response $times to ${times}`);
-      Object.values(responses).forEach((response: mediaTypeToSchema) => {
-        Object.values(response).forEach((schema: Schema) => {
-          schema.properties = {
-            ...schema.properties,
-            ...buildUnmockProperty(SCHEMA_TIMES, times),
-          };
-        });
+      throwOnErrorIfStrict(() => {
+        const translated = translate$times(top.$times);
+        injectUnmockProperty(responses, translated);
       });
     }
     return responses;
@@ -88,7 +85,7 @@ export class DSL {
           continue;
         }
         if (hasUnmockProperty(schema, SCHEMA_TIMES)) {
-          handleTimes(copy[code], states[code], mediaType);
+          actOn$times(copy[code], states[code], mediaType);
         }
         if (Object.keys(schema.properties).length === 0) {
           debugLog(
@@ -113,24 +110,3 @@ export class DSL {
     return copy;
   }
 }
-
-const handleTimes = (
-  copiedSchema: mediaTypeToSchema,
-  originalSchema: mediaTypeToSchema,
-  mediaType: string,
-) => {
-  // update the default value
-  const origTimes = (originalSchema[mediaType].properties as Props)[
-    SCHEMA_TIMES
-  ];
-  origTimes.default -= 1;
-  // delete value in copy (for clean return)
-  delete (copiedSchema[mediaType].properties as Props)[SCHEMA_TIMES];
-  if (origTimes.default < 0) {
-    debugLog(
-      `$times has expired for '${mediaType}', removing state in both copied and original`,
-    );
-    delete copiedSchema[mediaType];
-    delete originalSchema[mediaType];
-  }
-};

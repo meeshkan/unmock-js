@@ -52,14 +52,7 @@ export function responseCreatorFactory({
 }
 
 const setupJSFUnmockProperties = () => {
-  jsf.define("unmock-size", (value: number, schema: Schema) => {
-    if (schema.type !== "array") {
-      return schema; // validate type
-    }
-    schema.minItems = value;
-    schema.maxItems = value;
-    return schema;
-  });
+  // Handle post-generation references, etc?
 };
 
 const getStateForOperation = (
