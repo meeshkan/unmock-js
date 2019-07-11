@@ -55,11 +55,12 @@ export class State {
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);
-        const augmentedResponses = DSL.translateTopLevelToOAS(
+        // We apply the augmentation to copies, not the original schema.
+        const augmentedStates = DSL.translateTopLevelToOAS(
           newState.top,
           stateResponses.responses,
         );
-        this.updateStateInternal(endpoint, method, augmentedResponses);
+        this.updateStateInternal(endpoint, method, augmentedStates);
         return true;
       }
       // failed path

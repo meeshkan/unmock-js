@@ -44,34 +44,34 @@ export abstract class DSL {
     return translated;
   }
   /**
-   * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
+   * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `states`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
    * relevant value being stored in `default`.
    * @param top
-   * @param responses
+   * @param states
    */
   public static translateTopLevelToOAS(
     top: ITopLevelDSL,
-    responses: codeToMedia | undefined,
+    states: codeToMedia | undefined,
   ): codeToMedia | undefined {
-    if (responses === undefined) {
-      return responses;
+    if (states === undefined) {
+      return states;
     }
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
     if (top.$times !== undefined) {
       throwOnErrorIfStrict(() => {
         const translated = translate$times(top.$times);
-        injectUnmockProperty(responses, translated);
+        injectUnmockProperty(states, translated);
       });
     }
     if (top.$text !== undefined) {
       throwOnErrorIfStrict(() => {
         const translated = translate$text(top.$text);
-        injectUnmockProperty(responses, translated);
+        injectUnmockProperty(states, translated);
       });
     }
-    return responses;
+    return states;
   }
 
   /**

@@ -123,7 +123,7 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
-    const stateResult = state.getState(
+    const stateResult = state.augmentedStates(
       "get",
       "/",
       fullSchema.paths["/test/{test_id}"].get,
@@ -158,7 +158,11 @@ describe("Test state management", () => {
       schemaEndpoint: "**",
     });
     const getRes = () =>
-      state.getState("get", "/", fullSchema.paths["/test/{test_id}"].get);
+      state.augmentedStates(
+        "get",
+        "/",
+        fullSchema.paths["/test/{test_id}"].get,
+      );
     expect(getRes()).toEqual({
       200: {
         "application/json": {
@@ -210,7 +214,7 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
-    const stateResult = state.getState(
+    const stateResult = state.augmentedStates(
       "get",
       "/",
       fullSchema.paths["/test/{test_id}"].get,
@@ -260,7 +264,7 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "/test/{test_id}",
     });
-    const stateResult = state.getState(
+    const stateResult = state.augmentedStates(
       "get",
       "/test/5",
       fullSchema.paths["/test/{test_id}"].get,
@@ -290,7 +294,7 @@ describe("Test state management", () => {
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
-    const stateResult = state.getState(
+    const stateResult = state.augmentedStates(
       "get",
       "/",
       fullSchema.paths["/test/{test_id}"].get,
