@@ -1,29 +1,84 @@
+// @ts-ignore
+import jsf from "json-schema-faker";
 import { DSL } from "../service/dsl";
 import { codeToMedia, Schema } from "../service/interfaces";
 
 // tslint:disable: object-literal-key-quotes
 
-const responsesWithoutProperties: codeToMedia = {
-  200: {
-    "application/json": {},
-  },
-};
-
-const responsesWithProperties: codeToMedia = {
-  200: {
-    "application/json": {
-      properties: {
-        foo: {
-          type: "integer",
-        },
-      },
-    },
-  },
-};
-
 describe("Translates top level DSL to OAS", () => {
   it("Returns undefined with undefined input", () => {
     expect(DSL.translateTopLevelToOAS({}, undefined)).toBeUndefined();
+  });
+  let responsesWithoutProperties: codeToMedia;
+  let responsesWithProperties: codeToMedia;
+  let responsesWithPropertiesAndText: codeToMedia;
+
+  beforeEach(() => {
+    responsesWithoutProperties = {
+      200: {
+        "application/json": {},
+      },
+    };
+
+    responsesWithProperties = {
+      200: {
+        "application/json": {
+          properties: {
+            foo: {
+              type: "integer",
+            },
+          },
+        },
+      },
+    };
+
+    responsesWithPropertiesAndText = {
+      200: {
+        "text/plain": {
+          type: "string",
+        },
+        "application/json": {
+          properties: {
+            foo: {
+              type: "integer",
+            },
+          },
+        },
+      },
+    };
+  });
+
+  describe("Translates $text correctly", () => {
+    it("Basic test", () => {
+      const translated = DSL.translateTopLevelToOAS(
+        { $text: "foo" },
+        responsesWithPropertiesAndText,
+      );
+      expect(translated).toEqual({
+        200: {
+          "text/plain": {
+            type: "string",
+            properties: {
+              "x-unmock-text": {
+                type: "unmock",
+                default: "foo",
+              },
+            },
+          },
+          "application/json": {
+            properties: {
+              foo: {
+                type: "integer",
+              },
+              "x-unmock-text": {
+                type: "unmock",
+                default: "foo",
+              },
+            },
+          },
+        },
+      });
+    });
   });
 
   describe("Handles $times correctly", () => {
@@ -179,6 +234,35 @@ describe("Translates non-top level DSL to OAS", () => {
 });
 
 describe("Acts on top level DSL in OAS", () => {
+  describe("Acts on $text correctly", () => {
+    let states: codeToMedia;
+    beforeEach(
+      () =>
+        (states = {
+          200: {
+            "application/json": {
+              properties: {
+                "x-unmock-text": { type: "unmock", default: "foo" },
+              },
+            },
+            "plain/text": {
+              type: "string",
+              properties: {
+                "x-unmock-text": { type: "unmock", default: "foo" },
+              },
+            },
+          },
+        }),
+    );
+    it("Basic test", () => {
+      const copy = DSL.actTopLevelFromOAS(states);
+      // "application/json" is removed as the type doesn't match
+      expect(copy).toEqual({
+        200: { "plain/text": { type: "string", const: "foo" } },
+      });
+    });
+  });
+
   describe("Acts on $times correctly", () => {
     let states: codeToMedia;
     beforeEach(

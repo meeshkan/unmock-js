@@ -1,6 +1,6 @@
 import debug from "debug";
 import { mediaTypeToSchema } from "../interfaces";
-import { SCHEMA_TIMES } from "./constants";
+import { SCHEMA_TEXT, SCHEMA_TIMES } from "./constants";
 import { Props } from "./interfaces";
 
 const debugLog = debug("unmock:dsl:actors");
@@ -36,5 +36,18 @@ export const actOn$times = (
     );
     delete copiedSchema[mediaType];
     delete originalSchema[mediaType];
+  }
+};
+
+export const actOn$text = (copiedSchema: mediaTypeToSchema) => {
+  for (const mediaType of Object.keys(copiedSchema)) {
+    const isStringType = copiedSchema[mediaType].type === "string";
+    const value = (copiedSchema[mediaType].properties as Props)[SCHEMA_TEXT];
+    // Remove the property from the schema
+    delete (copiedSchema[mediaType].properties as Props)[SCHEMA_TEXT];
+    if (isStringType) {
+      // Using JSF 'const' to generate constant values.
+      (copiedSchema[mediaType] as any).const = value.default;
+    }
   }
 };

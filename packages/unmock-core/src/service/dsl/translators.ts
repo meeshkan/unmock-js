@@ -1,6 +1,6 @@
 import debug from "debug";
 import { Schema } from "../interfaces";
-import { SCHEMA_TIMES } from "./constants";
+import { SCHEMA_TEXT, SCHEMA_TIMES } from "./constants";
 import { buildUnmockPropety } from "./utils";
 
 const debugLog = debug("unmock:dsl:translators");
@@ -18,6 +18,13 @@ export const translate$times = (times: any) => {
   }
   debugLog(`Rounded response $times to ${times}`);
   return buildUnmockPropety(SCHEMA_TIMES, times);
+};
+
+export const translate$text = (text: any) => {
+  if (typeof text !== "string") {
+    throw new Error("Can't set text/plain response to non-string value!");
+  }
+  return buildUnmockPropety(SCHEMA_TEXT, text);
 };
 
 /**

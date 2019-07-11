@@ -7,6 +7,7 @@ import { Schema } from "../interfaces";
 export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
   $code: "number",
   $times: "number",
+  $text: "string",
 } as const;
 
 export interface ITopLevelDSL {
@@ -15,7 +16,12 @@ export interface ITopLevelDSL {
    * If the requested response code is not found, returns 'default'
    */
   $code?: number;
+  /**
+   * Defines the number of times a specific state will be used before expiring
+   */
   $times?: number;
+  /** Defines a textual response if the schema matches */
+  $text?: string;
 }
 
 /**

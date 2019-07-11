@@ -1,10 +1,10 @@
 import debug from "debug";
 import { cloneDeep } from "lodash";
 import { codeToMedia, Schema } from "../interfaces";
-import { actOn$times } from "./actors";
-import { SCHEMA_TIMES } from "./constants";
+import { actOn$text, actOn$times } from "./actors";
+import { SCHEMA_TEXT, SCHEMA_TIMES } from "./constants";
 import { ITopLevelDSL } from "./interfaces";
-import { translate$size, translate$times } from "./translators";
+import { translate$size, translate$text, translate$times } from "./translators";
 import {
   hasUnmockProperty,
   injectUnmockProperty,
@@ -65,6 +65,12 @@ export abstract class DSL {
         injectUnmockProperty(responses, translated);
       });
     }
+    if (top.$text !== undefined) {
+      throwOnErrorIfStrict(() => {
+        const translated = translate$text(top.$text);
+        injectUnmockProperty(responses, translated);
+      });
+    }
     return responses;
   }
 
@@ -84,9 +90,14 @@ export abstract class DSL {
         if (schema.properties === undefined) {
           continue;
         }
+
         if (hasUnmockProperty(schema, SCHEMA_TIMES)) {
           actOn$times(copy[code], states[code], mediaType);
         }
+        if (hasUnmockProperty(schema, SCHEMA_TEXT)) {
+          actOn$text(copy[code]);
+        }
+
         if (Object.keys(schema.properties).length === 0) {
           debugLog(
             `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
