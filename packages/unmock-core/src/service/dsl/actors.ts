@@ -6,7 +6,7 @@ import { Props } from "./interfaces";
 const debugLog = debug("unmock:dsl:actors");
 
 /*
- * Handlers (actOn$X) are found here. They modify the behaviour/schemas according to specific DSL instructions.
+ * Actors (actOn$X) are found here. They modify the behaviour/schemas according to specific DSL instructions.
  */
 
 /**
