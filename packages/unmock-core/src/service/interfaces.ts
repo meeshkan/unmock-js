@@ -54,8 +54,18 @@ export interface IServiceMapping {
 }
 
 export interface IStateInputGenerator {
+  /**
+   * Whether or not the given state is actually empty
+   */
   isEmpty: boolean;
-  gen: (schema: Schema) => Record<string, Schema>;
+  /**
+   * Generates a new state (copy) based on the given schema, so that
+   * future processes can use it without modifying the original schema.
+   */
+  gen: (schema: Schema) => Record<string, Schema> | Schema;
+  /**
+   * Returns top-level DSL, if it exists.
+   */
   top: ITopLevelDSL;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>

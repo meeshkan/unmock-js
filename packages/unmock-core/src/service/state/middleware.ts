@@ -17,6 +17,19 @@ export default (state?: UnmockServiceState): IStateInputGenerator => ({
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
 
+export const textMW = (state?: string): IStateInputGenerator => ({
+  isEmpty: typeof state !== "string" || state.length === 0,
+  top: {},
+  gen: (schema: Schema) => generateTextResponse(schema, state),
+});
+
+const generateTextResponse = (schema: Schema, state: string | undefined) => {
+  if (state === undefined || schema === undefined || schema.type !== "string") {
+    return {};
+  }
+  return { ...schema, const: state };
+};
+
 /**
  * Given a state request, finds the matching objects
  * within the schema that apply to the request. These

@@ -1,6 +1,7 @@
 import { Schema } from "../service/interfaces";
 import defMiddleware, {
   spreadStateFromService,
+  textMW,
 } from "../service/state/middleware";
 
 const schema: Schema = {
@@ -33,6 +34,47 @@ const schema: Schema = {
     tag: { type: "string" },
   },
 };
+
+const textSchema: Schema = {
+  type: "string",
+};
+
+describe("Test text provider", () => {
+  it("returns empty object for undefined state", () => {
+    const p = textMW();
+    expect(p.isEmpty).toBeTruthy();
+    expect(p.top).toEqual({});
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for empty state", () => {
+    const p = textMW("");
+    expect(p.isEmpty).toBeTruthy();
+    expect(p.top).toEqual({});
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for empty schema", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for non-text schema", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    expect(p.gen({ type: "array", items: {} })).toEqual({});
+  });
+
+  it("returns correct state object for valid input", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+  });
+});
 
 describe("Test default provider", () => {
   it("returns empty objects for undefined state", () => {

@@ -15,7 +15,7 @@ import {
 type codeType = keyof Responses;
 
 interface IResponsesFromContent {
-  [contentType: string]: Record<string, Schema>;
+  [contentType: string]: Record<string, Schema> | Schema;
 }
 
 interface IMissingParam {
