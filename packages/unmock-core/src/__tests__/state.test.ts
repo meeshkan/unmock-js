@@ -121,7 +121,10 @@ describe("Test state management", () => {
             properties: {
               foo: {
                 properties: {
-                  id: 5,
+                  id: {
+                    type: "integer",
+                    const: 5,
+                  },
                 },
               },
             },
@@ -140,7 +143,10 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
-              id: 5,
+              id: {
+                type: "integer",
+                const: 5,
+              },
             },
           },
         },
@@ -151,7 +157,10 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
-              id: 5,
+              id: {
+                type: "integer",
+                const: 5,
+              },
             },
           },
         },
@@ -164,7 +173,10 @@ describe("Test state management", () => {
             properties: {
               foo: {
                 properties: {
-                  id: 5,
+                  id: {
+                    type: "integer",
+                    const: 5,
+                  },
                 },
               },
             },
@@ -183,7 +195,10 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
-              id: 5,
+              id: {
+                type: "integer",
+                const: 5,
+              },
             },
           },
         },
@@ -214,7 +229,10 @@ describe("Test state management", () => {
         "application/json": {
           items: {
             properties: {
-              id: 3,
+              id: {
+                type: "integer",
+                const: 3,
+              },
             },
           },
         },
@@ -233,7 +251,10 @@ describe("Test state management", () => {
             properties: {
               foo: {
                 properties: {
-                  id: 5,
+                  id: {
+                    type: "integer",
+                    const: 5,
+                  },
                 },
               },
             },

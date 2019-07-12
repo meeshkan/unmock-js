@@ -35,15 +35,12 @@ const schema: Schema = {
   },
 };
 
-const textSchema: Schema = {
-  type: "string",
-};
-
 describe("Test text provider", () => {
   it("returns empty object for undefined state", () => {
     const p = textMW();
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
     expect(p.gen()).toEqual({});
   });
 
@@ -51,6 +48,7 @@ describe("Test text provider", () => {
     const p = textMW("");
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
     expect(p.gen()).toEqual({});
   });
 
@@ -58,6 +56,7 @@ describe("Test text provider", () => {
     const p = textMW("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
     expect(p.gen()).toEqual({});
   });
 
@@ -98,7 +97,10 @@ describe("Test default provider", () => {
     expect(p.gen({})).toEqual({}); // no schema to expand
     expect(p.gen({ properties: { foo: { type: "string" } } })).toEqual({
       properties: {
-        foo: "bar",
+        foo: {
+          type: "string",
+          const: "bar",
+        },
       },
     });
   });

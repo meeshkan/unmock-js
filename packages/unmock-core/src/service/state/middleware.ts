@@ -75,7 +75,9 @@ export const spreadStateFromService = (
         // TODO do we want to throw for invalid types?
         const spread = {
           [key]:
-            isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
+            isSchema(scm) && ajv.validate(scm, stateValue)
+              ? { ...scm, const: stateValue }
+              : null,
         };
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {

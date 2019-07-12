@@ -1,4 +1,4 @@
-import { Response, Schema } from "../service/interfaces";
+import { Response, Responses, Schema } from "../service/interfaces";
 import defMiddleware from "../service/state/middleware";
 import { getValidResponsesForOperationWithState } from "../service/state/validator";
 
@@ -68,11 +68,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       defMiddleware(),
     );
     expect(spreadState.error).toBeUndefined();
-    expect(spreadState.responses).toEqual({
-      200: {
-        "application/json": {},
-      },
-    });
+    expect(spreadState.responses).toBeUndefined();
   });
 
   it("invalid parameter returns error", () => {
@@ -102,10 +98,17 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       op,
       defMiddleware({
         $code: 200,
+        tag: "foo",
       }),
     );
     expect(spreadState.error).toBeUndefined();
-    expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {
+          properties: { tag: { type: "string", const: "foo" } },
+        },
+      },
+    });
   });
 
   it("with $size in top-level specified", () => {
@@ -151,7 +154,11 @@ describe("Tests getValidResponsesForOperationWithState", () => {
           properties: {
             test: {
               properties: {
-                id: 5,
+                id: {
+                  type: "integer",
+                  format: "int64",
+                  const: 5,
+                },
               },
             },
           },
