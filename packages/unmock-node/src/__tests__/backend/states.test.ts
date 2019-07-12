@@ -77,7 +77,7 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("foo");
     });
 
-    test("gets correct state when setting textual middleware with DSL", async () => {
+    test("throws when setting textual middleware with DSL with non-existing status code", async () => {
       expect(() => states.petstore(textMW("foo", { $code: 400 }))).toThrow(
         "status code '400'",
       );
