@@ -111,7 +111,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $size in top-level specified", () => {
     const spreadState = getValidResponsesForOperationWithState(
       arrResponses,
-      defProvider({ $size: 5 }),
+      defMiddleware({ $size: 5 }),
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
