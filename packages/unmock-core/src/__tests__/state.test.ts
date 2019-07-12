@@ -1,4 +1,4 @@
-import defProvider from "../service/state/providers";
+import defMiddleware from "../service/state/middleware";
 import { State } from "../service/state/state";
 
 const fullSchema = {
@@ -74,7 +74,7 @@ describe("Test state management", () => {
         stateInput: {
           method: "any",
           endpoint: "**",
-          newState: defProvider(),
+          newState: defMiddleware(),
         },
         serviceName: "foo",
         paths: fullSchema.paths,
@@ -87,7 +87,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(() =>
       state.update({
-        stateInput: { method: "post", endpoint: "**", newState: defProvider() },
+        stateInput: {
+          method: "post",
+          endpoint: "**",
+          newState: defMiddleware(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
@@ -102,7 +106,7 @@ describe("Test state management", () => {
         stateInput: {
           method: "post",
           endpoint: "/test/5",
-          newState: defProvider(),
+          newState: defMiddleware(),
         },
         serviceName: "foo",
         paths: fullSchema.paths,
@@ -117,7 +121,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "get",
         endpoint: "**",
-        newState: defProvider({ foo: { id: 5 } }),
+        newState: defMiddleware({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -151,7 +155,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "get",
         endpoint: "**",
-        newState: defProvider({ id: 5, $times: 2 }),
+        newState: defMiddleware({ id: 5, $times: 2 }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -204,7 +208,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "**",
-        newState: defProvider({ id: 5 }),
+        newState: defMiddleware({ id: 5 }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -234,7 +238,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "**",
-        newState: defProvider({ id: 5 }),
+        newState: defMiddleware({ id: 5 }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -244,7 +248,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "/test/5",
-        newState: defProvider({ id: 3 }),
+        newState: defMiddleware({ id: 3 }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -254,7 +258,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "/test/*",
-        newState: defProvider({ id: -1 }),
+        newState: defMiddleware({ id: -1 }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -284,7 +288,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "**",
-        newState: defProvider({ foo: { id: 5 } }),
+        newState: defMiddleware({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
