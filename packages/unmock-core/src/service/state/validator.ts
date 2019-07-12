@@ -8,6 +8,8 @@ import {
   IStateInputGenerator,
   MediaType,
   Operation,
+  Reference,
+  Response,
   Responses,
   Schema,
 } from "../interfaces";
@@ -33,6 +35,27 @@ const chooseDeepestMissingParam = (
     initError,
   );
 
+const responseForStateWithCode = (
+  response: Reference | Response | undefined,
+  state: IStateInputGenerator,
+  code: number,
+): { responses?: codeToMedia; error?: string } => {
+  if (
+    response === undefined ||
+    isReference(response) ||
+    response.content === undefined
+  ) {
+    return {
+      error: `Can't find response for given status code '${code}'!`,
+    };
+  }
+  const stateMedia = getStateFromMedia(response.content, state);
+  const error = chooseDeepestMissingParam(stateMedia.errors);
+  return {
+    responses: { [code]: stateMedia.responses },
+    error: error === undefined ? undefined : error.msg,
+  };
+};
 /**
  * Given a state and an operation, returns all the valid responses that
  * match the given state.
@@ -53,23 +76,16 @@ export const getValidResponsesForOperationWithState = (
 
   const statusCode = state.top.$code;
   // If $code is undefined, we look over all responses listed and find the suitable ones
-  const codes =
-    statusCode === undefined ? Object.keys(responses) : [statusCode];
   if (statusCode !== undefined) {
     // Applies only to specific response
-    const response = responses[String(statusCode) as codeType];
-    if (
-      response === undefined ||
-      isReference(response) ||
-      response.content === undefined
-    ) {
-      return {
-        error: `Can't find response for given status code '${statusCode}'!`,
-      };
-    }
+    return responseForStateWithCode(
+      responses[String(statusCode) as codeType],
+      state,
+      statusCode,
+    );
   }
 
-  for (const code of codes) {
+  for (const code of Object.keys(responses)) {
     const response = responses[code as codeType];
     if (
       response === undefined ||
@@ -79,8 +95,18 @@ export const getValidResponsesForOperationWithState = (
       continue;
     }
     const stateMedia = getStateFromMedia(response.content, state);
-    if (Object.keys(stateMedia.responses).length > 0) {
-      relevantResponses[code] = stateMedia.responses;
+    const filteredStateMedia = Object.keys(stateMedia.responses).reduce(
+      (acc: IResponsesFromContent, contentType: string) => {
+        const schemaOrRecord = stateMedia.responses[contentType];
+        if (Object.keys(schemaOrRecord).length > 0) {
+          acc[contentType] = schemaOrRecord;
+        }
+        return acc;
+      },
+      {},
+    );
+    if (Object.keys(filteredStateMedia).length > 0) {
+      relevantResponses[code] = filteredStateMedia;
     }
     error = chooseDeepestMissingParam(stateMedia.errors, error);
   }
@@ -88,10 +114,7 @@ export const getValidResponsesForOperationWithState = (
     return { responses: relevantResponses };
   }
   return {
-    error:
-      error === undefined
-        ? "Couldn't find a matching response but no errors were reported... Please let us know!"
-        : error.msg,
+    error: error === undefined ? undefined : error.msg,
   };
 };
 
@@ -119,7 +142,7 @@ const getStateFromMedia = (
     const missingParam = DFSVerifyNoneAreNull(spreadState);
     if (missingParam !== undefined) {
       errors.push(missingParam);
-    } else if (Object.keys(spreadState).length > 0) {
+    } else {
       relevantResponses[contentType] = spreadState;
     }
   }
