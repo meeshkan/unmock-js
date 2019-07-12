@@ -1,6 +1,6 @@
 import { Response, Responses, Schema } from "../service/interfaces";
 import defMiddleware from "../service/state/middleware";
-import { getValidResponsesForOperationWithState } from "../service/state/validator";
+import { getValidStatesForOperationWithState } from "../service/state/validator";
 
 const arraySchema: Schema = {
   type: "array",
@@ -63,7 +63,7 @@ const arrResponses: { responses: Responses } = {
 
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with empty state", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware(),
     );
@@ -72,7 +72,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("invalid parameter returns error", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         boom: 5,
@@ -82,7 +82,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("empty schema returns error", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       {
         responses: {
           200: { content: { "application/json": {} }, description: "foo" },
@@ -94,7 +94,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         $code: 200,
@@ -112,7 +112,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with $size in top-level specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       arrResponses,
       defMiddleware({ $size: 5 }),
     );
@@ -128,7 +128,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with missing $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         $code: 404,
@@ -141,7 +141,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with no $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         test: { id: 5 },

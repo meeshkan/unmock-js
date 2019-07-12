@@ -10,7 +10,7 @@ import {
 } from "../interfaces";
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
-import { getValidResponsesForOperationWithState } from "./validator";
+import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
 
@@ -49,7 +49,7 @@ export class State {
     let errorMsg: string | undefined;
     const opsResult = ops.operations.some((op: IOperationForStateUpdate) => {
       // For each operation, verify the new state applies and save in `this.state`
-      const stateResponses = getValidResponsesForOperationWithState(
+      const stateResponses = getValidStatesForOperationWithState(
         op.operation,
         newState,
       );
