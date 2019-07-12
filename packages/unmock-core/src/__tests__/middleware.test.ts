@@ -73,6 +73,13 @@ describe("Test text provider", () => {
     expect(p.top).toEqual({});
     expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
   });
+
+  it("top level DSL doesn't change response", () => {
+    const p = textMW("foo", { $code: 200, notDSL: "a" });
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({ $code: 200 }); // non DSL is filtered out
+    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+  });
 });
 
 describe("Test default provider", () => {

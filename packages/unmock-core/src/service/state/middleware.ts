@@ -1,5 +1,5 @@
 import Ajv from "ajv";
-import { DSL, filterTopLevelDSL, getTopLevelDSL } from "../dsl";
+import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
 import {
   isSchema,
   IStateInputGenerator,
@@ -17,9 +17,12 @@ export default (state?: UnmockServiceState): IStateInputGenerator => ({
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
 
-export const textMW = (state?: string): IStateInputGenerator => ({
+export const textMW = (
+  state?: string,
+  dsl?: ITopLevelDSL,
+): IStateInputGenerator => ({
   isEmpty: typeof state !== "string" || state.length === 0,
-  top: {},
+  top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
   gen: (schema: Schema) => generateTextResponse(schema, state),
 });
 

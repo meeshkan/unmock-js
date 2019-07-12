@@ -76,5 +76,11 @@ describe("Node.js interceptor", () => {
       expect(response.status).toBe(200);
       expect(response.data).toBe("foo");
     });
+
+    test("gets correct state when setting textual middleware with DSL", async () => {
+      expect(() => states.petstore(textMW("foo", { $code: 400 }))).toThrow(
+        "status code '400'",
+      );
+    });
   });
 });
