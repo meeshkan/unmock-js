@@ -30,7 +30,7 @@ paths:
               schema:
                 type: string
           content:
-            application/json:    
+            application/json:
               schema:
                 type: array
                 items:
@@ -49,6 +49,9 @@ paths:
         default:
           description: unexpected error
           content:
+            text/plain:
+              schema:
+                type: string
             application/json:
               schema:
                 required:

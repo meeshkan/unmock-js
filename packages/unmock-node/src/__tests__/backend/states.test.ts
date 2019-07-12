@@ -1,6 +1,7 @@
 import axios from "axios";
 import path from "path";
 import { UnmockOptions } from "unmock-core";
+import { textMW } from "unmock-core/dist/service/state/middleware";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
@@ -33,7 +34,7 @@ describe("Node.js interceptor", () => {
       throw new Error("Shouldn't be here :(");
     });
 
-    test("Gets correct code upon request without other state", async () => {
+    test("gets correct code upon request without other state", async () => {
       states.petstore({ $code: 200 });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
@@ -67,6 +68,13 @@ describe("Node.js interceptor", () => {
       const response2 = await axios("http://petstore.swagger.io/v1/pets/3");
       expect(response2.status).toBe(200);
       expect(response2.data.every((pet: any) => pet.id === -1)).toBeTruthy();
+    });
+
+    test("gets correct state when setting textual middleware", async () => {
+      states.petstore(textMW("foo"));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("foo");
     });
   });
 });

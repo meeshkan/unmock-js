@@ -152,10 +152,17 @@ const generateMockFromTemplate = (
   // First iteration simply parses these and returns the updated schema
   const resolvedTemplate = jsf.generate(template);
   jsf.reset();
+  // After one-pass resolving we might have new parameters to resolve.
+  let body: string;
+  try {
+    body = JSON.stringify(jsf.generate(resolvedTemplate));
+  } catch {
+    body = JSON.stringify(resolvedTemplate);
+  }
 
   // 5. Generate as needed
   return {
-    body: JSON.stringify(jsf.generate(resolvedTemplate)),
+    body,
     // TODO: headers
     statusCode: +$code || 200,
   };
