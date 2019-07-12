@@ -1,9 +1,6 @@
-import { Response, Responses, Schema } from "../service/interfaces";
-import defProvider from "../service/state/providers";
-import {
-  getValidResponsesForOperationWithState,
-  spreadStateFromService,
-} from "../service/state/validator";
+import { Response, Schema } from "../service/interfaces";
+import defMiddleware from "../service/state/middleware";
+import { getValidResponsesForOperationWithState } from "../service/state/validator";
 
 const arraySchema: Schema = {
   type: "array",
@@ -64,59 +61,11 @@ const arrResponses: { responses: Responses } = {
   },
 };
 
-describe("Tests spreadStateFromService", () => {
-  it("with empty path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      {},
-    );
-    expect(spreadState).toEqual({}); // Empty state => empty spread state
-  });
-
-  it("with specific path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { test: { id: "a" } },
-    );
-    expect(spreadState).toEqual({
-      // Spreading from "test: { id : { ... " to also inlucde properties
-      properties: {
-        test: {
-          properties: {
-            id: null, // Will be removed due to wrong type
-          },
-        },
-      },
-    });
-  });
-
-  it("with vague path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { id: 5 },
-    );
-    // no "id" in top-most level or immediately under properties\items
-    expect(spreadState).toEqual({ id: null });
-  });
-
-  it("with missing parameters", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { ida: "a" },
-    );
-    expect(spreadState.ida).toBeNull(); // Nothing to spread
-  });
-});
-
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with empty state", () => {
     const spreadState = getValidResponsesForOperationWithState(
       op,
-      defProvider(),
+      defMiddleware(),
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
@@ -129,7 +78,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("invalid parameter returns error", () => {
     const spreadState = getValidResponsesForOperationWithState(
       op,
-      defProvider({
+      defMiddleware({
         boom: 5,
       }),
     );
@@ -143,7 +92,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
           200: { content: { "application/json": {} }, description: "foo" },
         },
       },
-      defProvider(),
+      defMiddleware(),
     );
     expect(spreadState.error).toContain("No schema defined");
   });
@@ -151,7 +100,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $code specified", () => {
     const spreadState = getValidResponsesForOperationWithState(
       op,
-      defProvider({
+      defMiddleware({
         $code: 200,
       }),
     );
@@ -162,7 +111,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $size in top-level specified", () => {
     const spreadState = getValidResponsesForOperationWithState(
       arrResponses,
-      defProvider({ $size: 5 }),
+      defMiddleware({ $size: 5 }),
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
@@ -178,7 +127,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with missing $code specified", () => {
     const spreadState = getValidResponsesForOperationWithState(
       op,
-      defProvider({
+      defMiddleware({
         $code: 404,
       }),
     );
@@ -191,7 +140,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with no $code specified", () => {
     const spreadState = getValidResponsesForOperationWithState(
       op,
-      defProvider({
+      defMiddleware({
         test: { id: 5 },
       }),
     );
