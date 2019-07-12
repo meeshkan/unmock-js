@@ -3,6 +3,7 @@
  */
 
 import Ajv from "ajv";
+import { DSL } from "../dsl";
 import {
   codeToMedia,
   isReference,
@@ -87,7 +88,6 @@ export const getValidResponsesForOperationWithState = (
   const relevantResponses: codeToMedia = {};
   let error: IMissingParam | undefined;
 
-  // TODO: Treat other top-level DSL elements...
   const statusCode = state.top.$code;
   // If $code is undefined, we look over all responses listed and find the suitable ones
   const codes =
@@ -184,6 +184,7 @@ export const spreadStateFromService = (
   statePath: any,
 ): { [pathKey: string]: any | null } => {
   let matches: { [key: string]: any } = {};
+
   for (const key of Object.keys(statePath)) {
     const scm = serviceSchema[key];
     const stateValue = statePath[key];
@@ -191,7 +192,12 @@ export const spreadStateFromService = (
     if (scm === undefined) {
       if (hasNestedItems(serviceSchema)) {
         // Option 1: current schema has no matching key, but contains indirection (items/properties, etc)
-        const spread = oneLevelOfIndirectNestedness(serviceSchema, statePath);
+        // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
+        const translated = DSL.translateDSLToOAS(statePath, serviceSchema);
+        const spread = {
+          ...oneLevelOfIndirectNestedness(serviceSchema, statePath),
+          ...translated,
+        };
         if (Object.keys(spread).length === 0) {
           spread[key] = null;
         }
@@ -199,7 +205,8 @@ export const spreadStateFromService = (
       }
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
-        // Option 2: Current scheme has matching key, and the state specifies a non-object. Validate schema.
+        // Option 2: Current scheme has matching key, and the state specifies a non-object (or schema). Validate schema.
+        // TODO do we want to throw for invalid types?
         const spread = {
           [key]:
             isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
@@ -207,7 +214,11 @@ export const spreadStateFromService = (
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
         // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
-        const spread = { [key]: spreadStateFromService(scm, stateValue) };
+        // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
+        const translated = DSL.translateDSLToOAS(stateValue, scm);
+        const spread = {
+          [key]: { ...spreadStateFromService(scm, stateValue), ...translated },
+        };
         matches = {
           ...matches,
           ...oneLevelOfIndirectNestedness(scm, statePath, spread),
