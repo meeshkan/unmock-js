@@ -119,7 +119,7 @@ const getStateFromMedia = (
     const missingParam = DFSVerifyNoneAreNull(spreadState);
     if (missingParam !== undefined) {
       errors.push(missingParam);
-    } else {
+    } else if (Object.keys(spreadState).length > 0) {
       relevantResponses[contentType] = spreadState;
     }
   }
