@@ -242,4 +242,13 @@ describe("Test state management", () => {
       },
     });
   });
+
+  it("Handles textual state correctly", () => {
+    const state = new State();
+    updateState(state, "any", "**", textMW("foobar"), "**");
+    const stateResult = getState(state, "get", "/");
+    expect(stateResult).toEqual({
+      200: { "text/plain": { const: "foobar", type: "string" } },
+    });
+  });
 });
