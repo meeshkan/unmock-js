@@ -101,6 +101,20 @@ const getStateForOperation = (
   };
 };
 
+/**
+ * Provides a work-around with for functions that may fail with a default value.
+ * Attemps to return `f(value)`. If an error is thrown, returns `value`.
+ * @param value
+ * @param f
+ */
+const tryCatch = (value: any, f: (value: any) => any) => {
+  try {
+    return f(value);
+  } catch {
+    return value;
+  }
+};
+
 const chooseResponseFromOperation = (
   operation: Operation,
 ): { $code: string; template: Schema } => {
@@ -152,15 +166,10 @@ const generateMockFromTemplate = (
   // First iteration simply parses these and returns the updated schema
   const resolvedTemplate = jsf.generate(template);
   jsf.reset();
-  // After one-pass resolving we might have new parameters to resolve.
-  let body: string;
-  try {
-    body = JSON.stringify(jsf.generate(resolvedTemplate));
-  } catch {
-    body = JSON.stringify(resolvedTemplate);
-  }
 
-  // 5. Generate as needed
+  // After one-pass resolving we might have new parameters to resolve.
+  const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
+
   return {
     body,
     // TODO: headers
