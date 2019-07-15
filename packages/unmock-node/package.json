@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/readable-stream": "^2.3.2",
+    "@types/shimmer": "^1.0.1",
     "@types/uuid": "^3.4.5",
     "axios": "^0.19.0"
   }
