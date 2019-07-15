@@ -1,3 +1,4 @@
+import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
 import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
@@ -29,12 +30,12 @@ export class ServiceParser implements IServiceParser {
         ? serviceFile.contents.toString("utf-8")
         : serviceFile.contents;
 
-    const { val: schema, errors } = loas3(jsYaml.safeLoad(contents));
-    if (errors) {
+    const schema = loas3(jsYaml.safeLoad(contents));
+    if (isLeft(schema)) {
       throw new Error(
         [
           "The following errors occured while parsing your loas3 schema",
-          ...errors.map(i => `  ${i.message}`),
+          ...schema.left.map(i => `  ${i.message}`),
         ].join("\n"),
       );
     }
@@ -47,7 +48,7 @@ export class ServiceParser implements IServiceParser {
 
     return new Service({
       name,
-      schema,
+      schema: schema.right,
     });
   }
 }
