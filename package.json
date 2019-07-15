@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.123",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.14",
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
