@@ -1,10 +1,18 @@
 import { Response, Schema } from "../service/interfaces";
-import {
-  getUpdatedStateFromContent,
-  getValidResponsesForOperationWithState,
-  spreadStateFromService,
-} from "../service/state/validator";
+import defMiddleware from "../service/state/middleware";
+import { getValidResponsesForOperationWithState } from "../service/state/validator";
 
+const arraySchema: Schema = {
+  type: "array",
+  items: {
+    properties: {
+      id: {
+        type: "integer",
+        format: "int32",
+      },
+    },
+  },
+};
 const schema: Schema = {
   properties: {
     test: {
@@ -41,106 +49,88 @@ const response: Response = {
       schema,
     },
   },
-  description: "foo bar",
+  description: "foobar",
+};
+const op = { responses: { 200: { ...response } } };
+const arrResponses: { responses: Responses } = {
+  responses: {
+    200: {
+      description: "foobar",
+      content: { "application/json": { schema: arraySchema } },
+    },
+  },
 };
 
-describe("Tests spreadStateFromService", () => {
-  it("with empty path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      {},
+describe("Tests getValidResponsesForOperationWithState", () => {
+  it("with empty state", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defMiddleware(),
     );
-    expect(spreadState).toEqual({}); // Empty state => empty spread state
+    expect(spreadState.error).toBeUndefined();
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {},
+      },
+    });
   });
 
-  it("with specific path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { test: { id: "a" } },
+  it("invalid parameter returns error", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defMiddleware({
+        boom: 5,
+      }),
     );
-    expect(spreadState).toEqual({
-      // Spreading from "test: { id : { ... " to also inlucde properties
-      properties: {
-        test: {
-          properties: {
-            id: null, // Will be removed due to wrong type
-          },
+    expect(spreadState.error).toContain("Can't find definition for 'boom'");
+  });
+
+  it("empty schema returns error", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      {
+        responses: {
+          200: { content: { "application/json": {} }, description: "foo" },
+        },
+      },
+      defMiddleware(),
+    );
+    expect(spreadState.error).toContain("No schema defined");
+  });
+
+  it("with $code specified", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defMiddleware({
+        $code: 200,
+      }),
+    );
+    expect(spreadState.error).toBeUndefined();
+    expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
+  });
+
+  it("with $size in top-level specified", () => {
+    const spreadState = getValidResponsesForOperationWithState(
+      arrResponses,
+      defMiddleware({ $size: 5 }),
+    );
+    expect(spreadState.error).toBeUndefined();
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {
+          minItems: 5,
+          maxItems: 5,
         },
       },
     });
   });
 
-  it("with vague path", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { id: 5 },
-    );
-    // no "id" in top-most level or immediately under properties\items
-    expect(spreadState).toEqual({ id: null });
-  });
-
-  it("with missing parameters", () => {
-    const resp = response.content as any;
-    const spreadState = spreadStateFromService(
-      resp["application/json"].schema,
-      { ida: "a" },
-    );
-    expect(spreadState.ida).toBeNull(); // Nothing to spread
-  });
-});
-
-describe("Tests getUpdatedStateFromContent", () => {
-  it("with empty path", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(
-      resp["application/json"],
-      {},
-    );
-    expect(spreadState.spreadState).toEqual({});
-  });
-
-  it("invalid parameter returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp["application/json"], {
-      boom: 5,
-    });
-    expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
-  });
-
-  it("empty schema returns error", () => {
-    const resp = response.content as any;
-    const spreadState = getUpdatedStateFromContent(resp.boom, {});
-    expect(spreadState.error.msg).toContain("No schema defined");
-
-    const resp2 = {
-      "application/json": {},
-    };
-    const spreadState2 = getUpdatedStateFromContent(
-      resp2["application/json"],
-      {},
-    );
-    expect(spreadState2.error.msg).toContain("No schema defined");
-  });
-});
-
-describe("Tests getValidResponsesForOperationWithState", () => {
-  it("with $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 200,
-    });
-    expect(spreadState.error).toBeUndefined();
-    expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
-  });
-
   it("with missing $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      $code: 404,
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defMiddleware({
+        $code: 404,
+      }),
+    );
     expect(spreadState.responses).toBeUndefined();
     expect(spreadState.error).toContain(
       "Can't find response for given status code '404'!",
@@ -148,10 +138,12 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with no $code specified", () => {
-    const op = { responses: { 200: { ...response } } };
-    const spreadState = getValidResponsesForOperationWithState(op, {
-      test: { id: 5 },
-    });
+    const spreadState = getValidResponsesForOperationWithState(
+      op,
+      defMiddleware({
+        test: { id: 5 },
+      }),
+    );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
       200: {

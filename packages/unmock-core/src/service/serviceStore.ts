@@ -4,9 +4,12 @@ import {
   IService,
   IServiceMapping,
   isExtendedRESTMethod,
+  isStateInputGenerator,
+  IStateInputGenerator,
   MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
+import defMiddleware from "./state/middleware";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -46,7 +49,7 @@ export class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: ExtendedHTTPMethod;
-    state: UnmockServiceState;
+    state: IStateInputGenerator | UnmockServiceState | undefined;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
@@ -69,11 +72,18 @@ export class ServiceStore {
         }'!`,
       );
     }
+    let stateGen: IStateInputGenerator;
+    if (!isStateInputGenerator(state)) {
+      // Given an object, set default generator for state
+      stateGen = defMiddleware(state as UnmockServiceState);
+    } else {
+      stateGen = state as IStateInputGenerator;
+    }
 
     this.serviceMapping[serviceName].updateState({
       endpoint,
       method,
-      newState: state,
+      newState: stateGen,
     });
   }
 }

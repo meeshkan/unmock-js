@@ -1,6 +1,7 @@
 import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
+import { DSL } from "../dsl";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -39,7 +40,7 @@ export class State {
       debugLog(`Couldn't find any matching operations: ${ops.error}`);
       throw new Error(ops.error);
     }
-    if (newState === undefined || Object.keys(newState).length === 0) {
+    if (newState.isEmpty) {
       // No state given, no changes to make
       return;
     }
@@ -54,7 +55,11 @@ export class State {
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);
-        this.updateStateInternal(endpoint, method, stateResponses.responses);
+        const augmentedResponses = DSL.translateTopLevelToOAS(
+          newState.top,
+          stateResponses.responses,
+        );
+        this.updateStateInternal(endpoint, method, augmentedResponses);
         return true;
       }
       // failed path
@@ -127,7 +132,10 @@ export class State {
     }
 
     // Filter all the states that do not match the operation schema
-    return filterStatesByOperation(states, operation);
+    const filteredStates = filterStatesByOperation(states, operation);
+    const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
+    // TODO: After parsing, do we want to see if we need to remove items from the current state?
+    return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
   }
 
   public reset() {

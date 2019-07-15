@@ -1,3 +1,4 @@
+import defMiddleware from "../service/state/middleware";
 import { State } from "../service/state/state";
 
 const fullSchema = {
@@ -70,7 +71,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(
       state.update({
-        stateInput: { method: "any", endpoint: "**", newState: {} },
+        stateInput: {
+          method: "any",
+          endpoint: "**",
+          newState: defMiddleware(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
@@ -82,7 +87,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(() =>
       state.update({
-        stateInput: { method: "post", endpoint: "**", newState: {} },
+        stateInput: {
+          method: "post",
+          endpoint: "**",
+          newState: defMiddleware(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "**",
@@ -94,7 +103,11 @@ describe("Test state management", () => {
     const state = new State();
     expect(() =>
       state.update({
-        stateInput: { method: "post", endpoint: "/test/5", newState: {} },
+        stateInput: {
+          method: "post",
+          endpoint: "/test/5",
+          newState: defMiddleware(),
+        },
         serviceName: "foo",
         paths: fullSchema.paths,
         schemaEndpoint: "/test/{test_id}",
@@ -108,7 +121,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "get",
         endpoint: "**",
-        newState: { foo: { id: 5 } },
+        newState: defMiddleware({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
@@ -136,10 +149,67 @@ describe("Test state management", () => {
     });
   });
 
+  it("parses $times on specific endpoint as expected", () => {
+    const state = new State();
+    state.update({
+      stateInput: {
+        method: "get",
+        endpoint: "**",
+        newState: defMiddleware({ id: 5, $times: 2 }),
+      },
+      serviceName: "foo",
+      paths: fullSchema.paths,
+      schemaEndpoint: "**",
+    });
+    const getRes = () =>
+      state.getState("get", "/", fullSchema.paths["/test/{test_id}"].get);
+    expect(getRes()).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              id: 5,
+            },
+          },
+        },
+      },
+    });
+    expect(getRes()).toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              id: 5,
+            },
+          },
+        },
+      },
+    });
+    expect(getRes()).not.toEqual({
+      200: {
+        "application/json": {
+          items: {
+            properties: {
+              foo: {
+                properties: {
+                  id: 5,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     state.update({
-      stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
+      stateInput: {
+        method: "any",
+        endpoint: "**",
+        newState: defMiddleware({ id: 5 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "**",
@@ -165,19 +235,31 @@ describe("Test state management", () => {
   it("spreads states from multiple paths correctly", () => {
     const state = new State();
     state.update({
-      stateInput: { method: "any", endpoint: "**", newState: { id: 5 } },
+      stateInput: {
+        method: "any",
+        endpoint: "**",
+        newState: defMiddleware({ id: 5 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "**",
     });
     state.update({
-      stateInput: { method: "any", endpoint: "/test/5", newState: { id: 3 } },
+      stateInput: {
+        method: "any",
+        endpoint: "/test/5",
+        newState: defMiddleware({ id: 3 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "/test/{test_id}",
     });
     state.update({
-      stateInput: { method: "any", endpoint: "/test/*", newState: { id: -1 } },
+      stateInput: {
+        method: "any",
+        endpoint: "/test/*",
+        newState: defMiddleware({ id: -1 }),
+      },
       serviceName: "foo",
       paths: fullSchema.paths,
       schemaEndpoint: "/test/{test_id}",
@@ -206,7 +288,7 @@ describe("Test state management", () => {
       stateInput: {
         method: "any",
         endpoint: "**",
-        newState: { foo: { id: 5 } },
+        newState: defMiddleware({ foo: { id: 5 } }),
       },
       serviceName: "foo",
       paths: fullSchema.paths,
