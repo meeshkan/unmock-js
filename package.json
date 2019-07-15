@@ -36,6 +36,7 @@
     "@types/ini": "^1.3.30",
     "@types/jest": "^24.0.11",
     "@types/js-yaml": "^3.12.1",
+    "@types/lodash": "^4.14.123",
     "@types/mitm": "^1.3.2",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^11.13.5",
@@ -45,6 +46,7 @@
     "express": "^4.16.4",
     "jest": "^24.7.1",
     "jest-junit": "^6.4.0",
+    "lodash": "^4.17.14",
     "lerna": "^3.13.4",
     "lodash.template": "^4.5.0",
     "prettier": "^1.18.2",
@@ -64,8 +66,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "@types/lodash": "^4.14.123",
-    "lodash": "^4.17.14",
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
