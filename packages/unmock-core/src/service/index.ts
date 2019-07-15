@@ -9,10 +9,8 @@ import { ServiceStore } from "./serviceStore";
 export { ServiceParser } from "./parser";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
-  endpoint = DEFAULT_STATE_ENDPOINT,
-  state: UnmockServiceState,
   method: ExtendedHTTPMethod = DEFAULT_STATE_HTTP_METHOD,
-) => {
+) => (endpoint = DEFAULT_STATE_ENDPOINT, state: UnmockServiceState) => {
   // Returns a function for the end user to update the state in,
   // while maintaining endpoints and methods.
   if (typeof endpoint !== "string") {
@@ -23,16 +21,10 @@ const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   return new Proxy(store, StateHandler(serviceName));
 };
 
-const saveStateHelper = (fn: any, method: HTTPMethod) => (
-  // Redirects method, endpoint and state via currying to fn()
-  endpoint = DEFAULT_STATE_ENDPOINT,
-  state: UnmockServiceState,
-) => fn(endpoint, state, method);
-
 const MethodHandler = {
-  // we get here if a user used e.g `state.github.get(...)`
   // obj is actually saveStateProxy
-  get: (obj: any, method: HTTPMethod) => saveStateHelper(obj, method),
+  get: (obj: any, method: HTTPMethod) => obj(method),
+  apply: (obj: any, _: ServiceStore, args: any[]) => obj()(...args),
 };
 
 const StateHandler = (prevServiceName?: string) => {
@@ -76,7 +68,7 @@ const StateHandler = (prevServiceName?: string) => {
       }
       // `methodOrServiceName` is indeed a method and we use the previously used service
       const proxy = saveStateProxy(store as ServiceStore, prevServiceName);
-      return saveStateHelper(proxy, methodOrServiceName);
+      return proxy(methodOrServiceName);
     },
   };
 };

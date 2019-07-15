@@ -6,6 +6,7 @@ import {
 } from "loas3/dist/src/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
+import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
 
 export {
   isOperation,
@@ -53,15 +54,24 @@ export interface IServiceMapping {
 }
 
 export interface IStateInputGenerator {
+  /**
+   * Whether or not the given state is actually empty
+   */
   isEmpty: boolean;
-  gen: (schema: Schema) => Record<string, Schema>;
+  /**
+   * Generates a new state (copy) based on the given schema, so that
+   * future processes can use it without modifying the original schema.
+   */
+  gen: (schema: Schema) => Record<string, Schema> | Schema;
+  /**
+   * Returns top-level DSL, if it exists.
+   */
   top: ITopLevelDSL;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u !== undefined &&
   u.top !== undefined &&
   u.gen !== undefined &&
-  typeof u.top === "function" &&
   typeof u.gen === "function";
 
 export interface IStateInput {
@@ -78,11 +88,6 @@ export interface IServiceInput {
 export type mediaTypeToSchema = Record<string, Schema>;
 // maps from status to mediaTypeToSchema
 export type codeToMedia = Record<string, mediaTypeToSchema>;
-
-export interface IResponsesFromOperation {
-  // Maps between a response method, to codeToMedia
-  [method: string]: codeToMedia;
-}
 
 export type MatcherResponse =
   | { operation: Operation; state: codeToMedia | undefined }
@@ -126,38 +131,11 @@ export interface IService {
   match(sreq: ISerializedRequest): MatcherResponse;
 }
 
-/**
- * DSL related parameters that can only be found at the top level
- */
-// Defines a mapping for top level DSL keys, to be used with different providers
-export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
-  $code: "number",
-} as const;
-
-interface ITopLevelDSL {
-  /**
-   * Defines the response based on the requested response code.
-   * If the requested response code is not found, returns 'default'
-   */
-  $code?: number;
-}
-
-/**
- * DSL related parameters that can be found at any level in the schema
- */
-interface IDSL {
-  /**
-   * Used to control and generate arrays of specific sizes.
-   */
-  $size?: number;
-  [key: string]: number | string | boolean | undefined;
-}
-
 interface INestedState<T> {
   [key: string]: INestedState<T> | T;
 }
 
-export interface IUnmockServiceState
+interface IUnmockServiceState
   extends INestedState<
     IDSL | string | number | (() => string | number) | undefined | boolean
   > {}

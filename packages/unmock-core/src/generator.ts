@@ -52,14 +52,7 @@ export function responseCreatorFactory({
 }
 
 const setupJSFUnmockProperties = () => {
-  jsf.define("unmock-size", (value: number, schema: Schema) => {
-    if (schema.type !== "array") {
-      return schema; // validate type
-    }
-    schema.minItems = value;
-    schema.maxItems = value;
-    return schema;
-  });
+  // Handle post-generation references, etc?
 };
 
 const getStateForOperation = (
@@ -106,6 +99,20 @@ const getStateForOperation = (
     $code: statusCode,
     template: defaultsDeep(requestedState, matchedOperation),
   };
+};
+
+/**
+ * Provides a work-around with for functions that may fail with a default value.
+ * Attemps to return `f(value)`. If an error is thrown, returns `value`.
+ * @param value
+ * @param f
+ */
+const tryCatch = (value: any, f: (value: any) => any) => {
+  try {
+    return f(value);
+  } catch {
+    return value;
+  }
 };
 
 const chooseResponseFromOperation = (
@@ -160,9 +167,11 @@ const generateMockFromTemplate = (
   const resolvedTemplate = jsf.generate(template);
   jsf.reset();
 
-  // 5. Generate as needed
+  // After one-pass resolving we might have new parameters to resolve.
+  const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
+
   return {
-    body: JSON.stringify(jsf.generate(resolvedTemplate)),
+    body,
     // TODO: headers
     statusCode: +$code || 200,
   };

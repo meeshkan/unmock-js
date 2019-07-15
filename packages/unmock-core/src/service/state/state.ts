@@ -1,6 +1,7 @@
 import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
+import { DSL } from "../dsl";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -9,7 +10,7 @@ import {
 } from "../interfaces";
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
 import { filterStatesByOperation, getOperations } from "./utils";
-import { getValidResponsesForOperationWithState } from "./validator";
+import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
 
@@ -48,13 +49,17 @@ export class State {
     let errorMsg: string | undefined;
     const opsResult = ops.operations.some((op: IOperationForStateUpdate) => {
       // For each operation, verify the new state applies and save in `this.state`
-      const stateResponses = getValidResponsesForOperationWithState(
+      const stateResponses = getValidStatesForOperationWithState(
         op.operation,
         newState,
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);
-        this.updateStateInternal(endpoint, method, stateResponses.responses);
+        const augmentedResponses = DSL.translateTopLevelToOAS(
+          newState.top,
+          stateResponses.responses,
+        );
+        this.updateStateInternal(endpoint, method, augmentedResponses);
         return true;
       }
       // failed path
@@ -127,7 +132,10 @@ export class State {
     }
 
     // Filter all the states that do not match the operation schema
-    return filterStatesByOperation(states, operation);
+    const filteredStates = filterStatesByOperation(states, operation);
+    const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
+    // TODO: After parsing, do we want to see if we need to remove items from the current state?
+    return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
   }
 
   public reset() {
