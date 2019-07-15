@@ -1,6 +1,7 @@
 import { Schema } from "../service/interfaces";
 import defMiddleware, {
   spreadStateFromService,
+  textMW,
 } from "../service/state/middleware";
 
 const schema: Schema = {
@@ -34,6 +35,53 @@ const schema: Schema = {
   },
 };
 
+describe("Test text provider", () => {
+  it("returns empty object for undefined state", () => {
+    const p = textMW();
+    expect(p.isEmpty).toBeTruthy();
+    expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for empty state", () => {
+    const p = textMW("");
+    expect(p.isEmpty).toBeTruthy();
+    expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for empty schema", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    // @ts-ignore // deliberately checking with empty input
+    expect(p.gen()).toEqual({});
+  });
+
+  it("returns empty object for non-text schema", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    expect(p.gen({ type: "array", items: {} })).toEqual({});
+  });
+
+  it("returns correct state object for valid input", () => {
+    const p = textMW("foo");
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({});
+    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+  });
+
+  it("top level DSL doesn't change response", () => {
+    const p = textMW("foo", { $code: 200, notDSL: "a" });
+    expect(p.isEmpty).toBeFalsy();
+    expect(p.top).toEqual({ $code: 200 }); // non DSL is filtered out
+    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+  });
+});
+
 describe("Test default provider", () => {
   it("returns empty objects for undefined state", () => {
     const p = defMiddleware();
@@ -56,7 +104,10 @@ describe("Test default provider", () => {
     expect(p.gen({})).toEqual({}); // no schema to expand
     expect(p.gen({ properties: { foo: { type: "string" } } })).toEqual({
       properties: {
-        foo: "bar",
+        foo: {
+          type: "string",
+          const: "bar",
+        },
       },
     });
   });

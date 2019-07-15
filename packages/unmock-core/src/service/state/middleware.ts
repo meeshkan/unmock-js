@@ -1,5 +1,5 @@
 import Ajv from "ajv";
-import { DSL, filterTopLevelDSL, getTopLevelDSL } from "../dsl";
+import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
 import {
   isSchema,
   IStateInputGenerator,
@@ -16,6 +16,22 @@ export default (state?: UnmockServiceState): IStateInputGenerator => ({
   gen: (schema: Schema) =>
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
+
+export const textMW = (
+  state?: string,
+  dsl?: ITopLevelDSL,
+): IStateInputGenerator => ({
+  isEmpty: typeof state !== "string" || state.length === 0,
+  top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
+  gen: (schema: Schema) => generateTextResponse(schema, state),
+});
+
+const generateTextResponse = (schema: Schema, state: string | undefined) => {
+  if (state === undefined || schema === undefined || schema.type !== "string") {
+    return {};
+  }
+  return { ...schema, const: state };
+};
 
 /**
  * Given a state request, finds the matching objects
@@ -62,7 +78,9 @@ export const spreadStateFromService = (
         // TODO do we want to throw for invalid types?
         const spread = {
           [key]:
-            isSchema(scm) && ajv.validate(scm, stateValue) ? stateValue : null,
+            isSchema(scm) && ajv.validate(scm, stateValue)
+              ? { ...scm, const: stateValue }
+              : null,
         };
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {

@@ -1,6 +1,6 @@
-import { Response, Schema } from "../service/interfaces";
+import { Response, Responses, Schema } from "../service/interfaces";
 import defMiddleware from "../service/state/middleware";
-import { getValidResponsesForOperationWithState } from "../service/state/validator";
+import { getValidStatesForOperationWithState } from "../service/state/validator";
 
 const arraySchema: Schema = {
   type: "array",
@@ -63,20 +63,16 @@ const arrResponses: { responses: Responses } = {
 
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with empty state", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware(),
     );
     expect(spreadState.error).toBeUndefined();
-    expect(spreadState.responses).toEqual({
-      200: {
-        "application/json": {},
-      },
-    });
+    expect(spreadState.responses).toBeUndefined();
   });
 
   it("invalid parameter returns error", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         boom: 5,
@@ -86,7 +82,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("empty schema returns error", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       {
         responses: {
           200: { content: { "application/json": {} }, description: "foo" },
@@ -98,18 +94,25 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         $code: 200,
+        tag: "foo",
       }),
     );
     expect(spreadState.error).toBeUndefined();
-    expect(spreadState.responses).toEqual({ 200: { "application/json": {} } });
+    expect(spreadState.responses).toEqual({
+      200: {
+        "application/json": {
+          properties: { tag: { type: "string", const: "foo" } },
+        },
+      },
+    });
   });
 
   it("with $size in top-level specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       arrResponses,
       defMiddleware({ $size: 5 }),
     );
@@ -125,7 +128,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with missing $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         $code: 404,
@@ -138,7 +141,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   });
 
   it("with no $code specified", () => {
-    const spreadState = getValidResponsesForOperationWithState(
+    const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware({
         test: { id: 5 },
@@ -151,7 +154,11 @@ describe("Tests getValidResponsesForOperationWithState", () => {
           properties: {
             test: {
               properties: {
-                id: 5,
+                id: {
+                  type: "integer",
+                  format: "int64",
+                  const: 5,
+                },
               },
             },
           },

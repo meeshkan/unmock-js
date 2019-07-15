@@ -25,11 +25,12 @@ describe("Node.js interceptor", () => {
       const data = response.data;
       // As no specific code was set, we expect either valid response
       // or an error response (based on service specification)
+
       if (data.message !== undefined) {
         // error message chosen at random
         expect(typeof data.code === "number").toBeTruthy();
         expect(typeof data.message === "string").toBeTruthy();
-      } else {
+      } else if (typeof data !== "string") {
         expect(data.length).toBeGreaterThan(0);
         expect(
           data.every(

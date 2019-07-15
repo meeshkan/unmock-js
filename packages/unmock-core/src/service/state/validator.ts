@@ -8,6 +8,8 @@ import {
   IStateInputGenerator,
   MediaType,
   Operation,
+  Reference,
+  Response,
   Responses,
   Schema,
 } from "../interfaces";
@@ -15,7 +17,12 @@ import {
 type codeType = keyof Responses;
 
 interface IResponsesFromContent {
-  [contentType: string]: Record<string, Schema>;
+  [contentType: string]: Record<string, Schema> | Schema;
+}
+
+interface IValidState {
+  responses?: codeToMedia;
+  error?: IMissingParam;
 }
 
 interface IMissingParam {
@@ -34,65 +41,107 @@ const chooseDeepestMissingParam = (
   );
 
 /**
- * Given a state and an operation, returns all the valid responses that
- * match the given state.
+ * Given a response, state and code, attempts to fetch the copied, spread state that matches the different
+ * content types in `response`.
+ * @param response
+ * @param state
+ * @param code
+ */
+const validStatesForStateWithCode = (
+  response: Reference | Response | undefined,
+  state: IStateInputGenerator,
+  code: number | string,
+): IValidState => {
+  if (
+    response === undefined ||
+    isReference(response) ||
+    response.content === undefined
+  ) {
+    return {
+      error: {
+        msg: `Can't find response for given status code '${code}'!`,
+        nestedLevel: -1,
+      },
+    };
+  }
+  const stateMedia = getStateFromMedia(response.content, state);
+  const error = chooseDeepestMissingParam(stateMedia.errors);
+  return {
+    responses: { [code]: stateMedia.responses },
+    error,
+  };
+};
+
+/**
+ * Given responses and a state, attempts to fetch the copied spread states that matches the different
+ * response codes and content types in `responses`.
+ * @param operationResponses
+ * @param state
+ */
+const validStatesForStateWithoutCode = (
+  operationResponses: Responses,
+  state: IStateInputGenerator,
+): IValidState => {
+  const relevantResponses: codeToMedia = {};
+  let err: IMissingParam | undefined;
+
+  for (const code of Object.keys(operationResponses)) {
+    const { responses, error } = validStatesForStateWithCode(
+      operationResponses[code as codeType],
+      state,
+      code,
+    );
+    err = error === undefined ? err : chooseDeepestMissingParam([error], err);
+
+    if (responses === undefined) {
+      continue;
+    }
+
+    const resp = responses[code];
+    const filteredStateMedia = Object.keys(resp).reduce(
+      (acc: IResponsesFromContent, contentType: string) =>
+        Object.keys(resp[contentType]).length > 0
+          ? Object.assign(acc, { [contentType]: resp[contentType] })
+          : acc,
+      {},
+    );
+
+    if (Object.keys(filteredStateMedia).length > 0) {
+      relevantResponses[code] = filteredStateMedia;
+    }
+  }
+
+  return Object.keys(relevantResponses).length > 0
+    ? { responses: relevantResponses }
+    : { error: err };
+};
+/**
+ * Given a state and an operation, creates a copy of the requested state for each response that it matches.
  * First-level filtering is done via $code (status code) if it exists,
  * otherwise via matching the parameters set in `state`.
  * @param operation
  * @param state
  */
-export const getValidResponsesForOperationWithState = (
+export const getValidStatesForOperationWithState = (
   operation: Operation,
   state: IStateInputGenerator,
-): { responses?: codeToMedia; error?: string } => {
-  // Check if any non-DSL specific elements are found in the Operation under responses.
-  // We do not resolve anything at this point.
-  const responses = operation.responses;
-  const relevantResponses: codeToMedia = {};
-  let error: IMissingParam | undefined;
-
-  const statusCode = state.top.$code;
-  // If $code is undefined, we look over all responses listed and find the suitable ones
-  const codes =
-    statusCode === undefined ? Object.keys(responses) : [statusCode];
-  if (statusCode !== undefined) {
-    // Applies only to specific response
-    const response = responses[String(statusCode) as codeType];
-    if (
-      response === undefined ||
-      isReference(response) ||
-      response.content === undefined
-    ) {
-      return {
-        error: `Can't find response for given status code '${statusCode}'!`,
-      };
-    }
-  }
-
-  for (const code of codes) {
-    const response = responses[code as codeType];
-    if (
-      response === undefined ||
-      isReference(response) ||
-      response.content === undefined
-    ) {
-      continue;
-    }
-    const stateMedia = getStateFromMedia(response.content, state);
-    if (Object.keys(stateMedia.responses).length > 0) {
-      relevantResponses[code] = stateMedia.responses;
-    }
-    error = chooseDeepestMissingParam(stateMedia.errors, error);
-  }
-  if (Object.keys(relevantResponses).length > 0) {
-    return { responses: relevantResponses };
-  }
-  return {
-    error:
-      error === undefined
-        ? "Couldn't find a matching response but no errors were reported... Please let us know!"
-        : error.msg,
-  };
+): {
+  responses: codeToMedia | undefined;
+  error: string | undefined;
+} => {
+  const resps = operation.responses;
+  const code = state.top.$code;
+  const { responses, error } =
+    code !== undefined
+      ? // If $code is defined, we fetch the response even if no other state was set
+        validStatesForStateWithCode(
+          resps[String(code) as codeType],
+          state,
+          code,
+        )
+      : // Otherwise, iterate over all status codes and find the ones matching the given state
+        validStatesForStateWithoutCode(resps, state);
+  return { responses, error: error === undefined ? error : error.msg };
 };
 
 const getStateFromMedia = (
