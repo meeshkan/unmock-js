@@ -15,7 +15,7 @@ describe("Service parser", () => {
       directoryName: "petstore",
       serviceFiles: [
         {
-          basename: "index.yaml",
+          basename: "foo.yaml",
           contents: petStoreYamlString,
         },
       ],
@@ -28,7 +28,7 @@ describe("Service parser", () => {
     expect(service.schema.openapi).toEqual("3.0.0");
   });
 
-  it("fails for json files", () => {
+  it("fails for partial openapi files", () => {
     const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
       directoryName: "petstore",
@@ -39,6 +39,8 @@ describe("Service parser", () => {
         },
       ],
     };
-    expect(() => serviceParser.parse(serviceDef)).toThrow(/Cannot find known/);
+    expect(() => serviceParser.parse(serviceDef)).toThrow(
+      "Could not load schema",
+    );
   });
 });

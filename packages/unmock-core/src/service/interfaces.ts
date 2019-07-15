@@ -8,6 +8,7 @@ import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 
 export {
+  isOpenAPIObject,
   isOperation,
   isReference,
   isSchema,
