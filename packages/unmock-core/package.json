@@ -13,6 +13,11 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@types/debug": "^4.1.4",
+    "@types/js-yaml": "^3.12.1",
+    "@types/lodash": "^4.14.136",
+    "@types/minimatch": "^3.0.3",
+    "@types/xregexp": "^3.0.30",
     "ajv": "^6.10.0",
     "axios": "^0.18.0",
     "debug": "^4.1.1",
@@ -24,11 +29,5 @@
     "querystring": "^0.2.0",
     "xregexp": "^4.2.4"
   },
-  "devDependencies": {
-    "@types/debug": "^4.1.4",
-    "@types/js-yaml": "^3.12.1",
-    "@types/lodash": "^4.14.136",
-    "@types/minimatch": "^3.0.3",
-    "@types/xregexp": "^3.0.30"
-  }
+  "devDependencies": {}
 }
