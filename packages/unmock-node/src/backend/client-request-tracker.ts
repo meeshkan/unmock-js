@@ -1,7 +1,7 @@
 import debug from "debug";
 import { ClientRequest, IncomingMessage } from "http";
-import _ from "lodash";
 import net from "net";
+import shimmer from "shimmer";
 import { v4 as uuidv4 } from "uuid";
 
 const debugLog = debug("unmock:client-request-tracker");
@@ -18,32 +18,19 @@ export default abstract class ClientRequestTracker {
    * to an internal dictionary.
    */
   public static start() {
-    if (ClientRequestTracker.active) {
-      // Initialized already
-      return;
-    }
-
-    ClientRequestTracker.origOnSocket = ClientRequest.prototype.onSocket;
-
-    /**
-     * When a socket is assigned to a client request, create an internal ID
-     * and add the ID in the request header. Thereby we can map
-     * the server-side incoming request to the corresponding
-     * client request and emit errors properly.
-     * Borrowed from https://github.com/FormidableLabs/yesno.
-     */
-    debugLog("Modifying client request to add request ID");
-    ClientRequest.prototype.onSocket = _.flowRight(
-      ClientRequestTracker.origOnSocket,
-      function(this: ClientRequest, socket: net.Socket): net.Socket {
-        const requestId = uuidv4();
-        debugLog(
-          `New socket assigned to client request, assigned ID: ${requestId}`,
-        );
-        ClientRequestTracker.clientRequests[requestId] = this;
-        this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
-        return socket;
-      },
+    shimmer.wrap(
+      ClientRequest.prototype,
+      "onSocket",
+      (original: (socket: net.Socket) => void) =>
+        function(this: ClientRequest, socket: net.Socket) {
+          const requestId = uuidv4();
+          debugLog(
+            `New socket assigned to client request, assigned ID: ${requestId}`,
+          );
+          ClientRequestTracker.clientRequests[requestId] = this;
+          this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
+          return original.apply(this, [socket]);
+        },
     );
   }
 
@@ -55,13 +42,7 @@ export default abstract class ClientRequestTracker {
       return;
     }
 
-    if (!ClientRequestTracker.origOnSocket) {
-      throw Error("No original onSocket");
-    }
-
-    ClientRequest.prototype.onSocket = ClientRequestTracker.origOnSocket;
-
-    ClientRequestTracker.origOnSocket = undefined;
+    shimmer.unwrap(ClientRequest.prototype, "onSocket");
   }
 
   /**
@@ -94,9 +75,7 @@ export default abstract class ClientRequestTracker {
     [requestId: string]: ClientRequest;
   } = {};
 
-  private static origOnSocket?: (socket: net.Socket) => void;
-
   private static get active(): boolean {
-    return ClientRequestTracker.origOnSocket !== undefined;
+    return ClientRequest.prototype.onSocket.__wrapped !== undefined;
   }
 }
