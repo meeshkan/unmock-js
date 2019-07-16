@@ -21,7 +21,9 @@ export const getPathParametersFromSchema = (
   const schemaPathParameters = getAtLevel(
     schema[path],
     2,
-    (_: string | undefined, v: any) => v.in === OAS_PATH_PARAMS_KW,
+    // v could be "null" if specifically designed in schema
+    (_: string | undefined, v: any) =>
+      v !== null && v.in === OAS_PATH_PARAMS_KW,
   ) as Parameter[];
   if (schemaPathParameters.length === 0) {
     throw new Error(
