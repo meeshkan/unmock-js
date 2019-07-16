@@ -23,7 +23,7 @@ export interface IResponseData {
 }
 
 export interface IBackend {
-  initialize: (opts: UnmockOptions) => void;
+  initialize: (opts: UnmockOptions) => any;
   reset: () => void;
 }
 
