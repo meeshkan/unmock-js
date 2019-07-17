@@ -198,7 +198,6 @@ const generateMockFromTemplate = (
   const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
   jsf.option("useDefaultValue", true);
   const resHeaders = jsf.generate(normalizeHeaders(headers));
-  console.log(resHeaders);
   jsf.reset();
 
   return {
