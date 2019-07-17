@@ -9,4 +9,4 @@ export const options = new UnmockOptions({ logger: new _WinstonLogger() });
 export const on = unmock(options, backend);
 export const init = on;
 export const initialize = on;
-export const off = backend.reset;
+export const off = () => backend.reset();
