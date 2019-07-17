@@ -29,6 +29,7 @@ const RESTMethodTypes = [
   "head",
   "post",
   "put",
+  "patch",
   "delete",
   "options",
   "trace",
