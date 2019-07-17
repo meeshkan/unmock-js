@@ -9,6 +9,7 @@ import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
 
 export {
+  Header,
   isOperation,
   isReference,
   isSchema,
