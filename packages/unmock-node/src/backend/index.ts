@@ -68,9 +68,14 @@ interface IBypassableSocket extends net.Socket {
 export default class NodeBackend implements IBackend {
   private readonly config: INodeBackendOptions;
   private mitm: any;
+  private stateStore: any = undefined;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
+  }
+
+  public get states() {
+    return this.stateStore;
   }
 
   /**
@@ -102,6 +107,7 @@ export default class NodeBackend implements IBackend {
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
+    this.stateStore = stateStore;
 
     return stateStore;
   }
@@ -110,6 +116,10 @@ export default class NodeBackend implements IBackend {
     if (this.mitm) {
       this.mitm.disable();
       this.mitm = undefined;
+    }
+    if (this.stateStore) {
+      this.stateStore.reset();
+      this.stateStore = undefined;
     }
     ClientRequestTracker.stop();
   }
