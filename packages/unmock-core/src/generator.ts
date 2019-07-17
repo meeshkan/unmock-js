@@ -14,6 +14,7 @@ import {
 import { stateStoreFactory } from "./service";
 import {
   codeToMedia,
+  Header,
   IService,
   isReference,
   MatcherResponse,
@@ -23,6 +24,8 @@ import {
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
+
+type Headers = Record<string, Header>;
 
 function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
   return arr.length === 0
@@ -51,6 +54,15 @@ export function responseCreatorFactory({
   };
 }
 
+const normalizeHeaders = (headers: Headers | undefined): Headers | undefined =>
+  // Removes the 'schema' from each headers so it can generate a proper response
+  headers === undefined
+    ? undefined
+    : Object.keys(headers).reduce(
+        (acc: Headers, h: string) => ({ ...acc, [h]: headers[h].schema }),
+        {},
+      );
+
 const setupJSFUnmockProperties = () => {
   // Handle post-generation references, etc?
 };
@@ -58,7 +70,13 @@ const setupJSFUnmockProperties = () => {
 const getStateForOperation = (
   operation: Operation,
   state: codeToMedia | undefined,
-): { $code: string; template: Schema } | undefined => {
+):
+  | {
+      $code: string;
+      template: Schema;
+      headers: Headers | undefined;
+    }
+  | undefined => {
   const responses = operation.responses;
   const operationCodes = Object.keys(responses);
   if (state === undefined || Object.keys(state).length === 0) {
@@ -98,6 +116,7 @@ const getStateForOperation = (
   return {
     $code: statusCode,
     template: defaultsDeep(requestedState, matchedOperation),
+    headers: operationResponse.headers as Headers,
   };
 };
 
@@ -117,7 +136,11 @@ const tryCatch = (value: any, f: (value: any) => any) => {
 
 const chooseResponseFromOperation = (
   operation: Operation,
-): { $code: string; template: Schema } => {
+): {
+  $code: string;
+  template: Schema;
+  headers: Headers | undefined;
+} => {
   const responses = operation.responses;
   const chosenCode = firstOrRandomOrUndefined(Object.keys(responses));
   if (chosenCode === undefined) {
@@ -143,7 +166,11 @@ const chooseResponseFromOperation = (
     throw new Error("Missing schema for a response!"); // Or do we want to simply choose another response?
   }
 
-  return { $code: chosenCode, template: schema };
+  return {
+    $code: chosenCode,
+    template: schema,
+    headers: response.headers as Headers,
+  };
 };
 
 const generateMockFromTemplate = (
@@ -153,7 +180,7 @@ const generateMockFromTemplate = (
     return undefined;
   }
   const { operation, state } = matchedService;
-  const { template, $code } =
+  const { template, $code, headers } =
     getStateForOperation(operation, state) ||
     chooseResponseFromOperation(operation);
 
@@ -169,10 +196,14 @@ const generateMockFromTemplate = (
 
   // After one-pass resolving we might have new parameters to resolve.
   const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
+  jsf.option("useDefaultValue", true);
+  const resHeaders = jsf.generate(normalizeHeaders(headers));
+  console.log(resHeaders);
+  jsf.reset();
 
   return {
     body,
-    // TODO: headers
+    headers: resHeaders,
     statusCode: +$code || 200,
   };
 };
