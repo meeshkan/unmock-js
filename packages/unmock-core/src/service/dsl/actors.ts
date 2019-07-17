@@ -35,6 +35,6 @@ export const actOn$times = (
       `$times has expired for '${mediaType}', removing state in both copied and original`,
     );
     delete copiedSchema[mediaType];
-    delete originalSchema[mediaType];
+    delete originalSchema[mediaType]; // TODO this doesn't actually update the State's internal dictionary
   }
 };
