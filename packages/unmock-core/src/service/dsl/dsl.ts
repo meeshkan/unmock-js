@@ -92,12 +92,7 @@ export abstract class DSL {
             `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
           );
           delete schema.properties;
-          if (Object.keys(schema).length === 0) {
-            debugLog(
-              `schema is now empty, removing '${mediaType}' from copied response '${code}'`,
-            );
-            delete copy[code][mediaType];
-          }
+          // The returned `properties` might now be empty, representing an empty response.
         }
       }
       if (Object.keys(copy[code]).length === 0) {
