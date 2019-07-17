@@ -1,4 +1,6 @@
-import { IBackend, UnmockOptions } from "unmock-core";
+import { IBackend, UnmockOptions, util } from "unmock-core";
+
+const { doUsefulStuffWithRequestAndResponse } = util;
 
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
 const XMLHttpRequestSetRequestHeader =
@@ -57,20 +59,20 @@ export default class JSDomBackend implements IBackend {
         return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
       };
       const doEndReporting = (responseBody: string, responseHeaders: any) =>
-        // TODO - actually report or do something with the request, or alternatively remove jsdom...
-        opts.logger.log(
-          JSON.stringify({
-            opts,
-            // tslint:disable-next-line: object-literal-sort-keys
-            lang: "jsdom",
+        doUsefulStuffWithRequestAndResponse(
+          opts,
+          { lang: "jsdom" },
+          {
             ...(data ? { body: data.toString() } : {}),
-            headerz,
+            headers: headerz,
             host: finalHost,
             method,
             path: ro.pathname,
+          },
+          {
             body: responseBody,
             headers: responseHeaders,
-          }),
+          },
         );
       const setOnReadyStateChange = (
         request: XMLHttpRequest,

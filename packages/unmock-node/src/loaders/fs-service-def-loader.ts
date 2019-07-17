@@ -44,8 +44,8 @@ export class FsServiceDefLoader implements IServiceDefLoader {
    * 1. Injected directory
    * 2. Environment variable
    * 3. ${process.cwd()}/__unmock__
+   * TODO: Use `app-root-path` instead of `process.cwd()`?
    */
-  // TODO: Use `app-root-path` instead of `process.cwd()`?
   private static resolveServicesDirectory(servicesDirOpt?: string) {
     const servicesDirectory = path.resolve(
       servicesDirOpt ||

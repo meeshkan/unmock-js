@@ -1,18 +1,25 @@
 import { IBackend, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
+import { doUsefulStuffWithRequestAndResponse } from "./util";
 // top-level exports
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./generator";
 
-export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => (
+export const util = {
+  doUsefulStuffWithRequestAndResponse,
+};
+
+export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
   maybeOptions?: IUnmockOptions,
-): any => {
+): Promise<UnmockOptions> => {
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
-    return backend.initialize(options);
+    backend.initialize(options);
   }
-  return () => {
-    throw new Error("Are you trying to run unmock in production?");
-  };
+  return options;
+};
+
+export const kcomnu = () => {
+  // do something here
 };
