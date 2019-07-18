@@ -1,5 +1,5 @@
 {
-  "version": "0.0.55",
+  "version": "0.1.0",
   "name": "unmock-jsdom",
   "displayName": "unmock-jsdom",
   "main": "dist/index.js",
