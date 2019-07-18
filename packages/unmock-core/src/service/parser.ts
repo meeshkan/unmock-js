@@ -41,9 +41,6 @@ export class ServiceParser implements IServiceParser {
         ].join("\n"),
       );
     }
-    if (schema === undefined) {
-      throw new Error(`Could not load schema from ${contents}`);
-    }
 
     // TODO Maybe read from the schema first
     const name = serviceDef.directoryName;
