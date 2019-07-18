@@ -197,7 +197,7 @@ describe("Acts on top level DSL in OAS", () => {
     it("Removes $times in returned copy", () => {
       const copy = DSL.actTopLevelFromOAS(states);
       // removes properties as nothing's there anymore
-      expect(copy).toEqual({});
+      expect(copy).toEqual({ 200: { "application/json": {} } });
     });
 
     it("Decreases $times in original states", () => {
