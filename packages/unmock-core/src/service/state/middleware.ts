@@ -48,7 +48,7 @@ const generateTextResponse = (schema: Schema, state: string | undefined) => {
  * @throws  If a state path is defined in such a way, that the nested state isn't an object, string,
  *          number or boolean (i.e. `{ path: { to: { state: undefined } } }` )
  */
-export const spreadStateFromService = (
+const spreadStateFromService = (
   serviceSchema: any,
   statePath: any,
 ): { [pathKey: string]: any | null } => {

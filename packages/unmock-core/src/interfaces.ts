@@ -110,6 +110,10 @@ export interface IServiceDefFile {
  */
 export interface IServiceDef {
   /**
+   * Absolute path to the service directory
+   */
+  absolutePath: string;
+  /**
    * Name of the service directory: for example, `petstore`.
    */
   directoryName: string;
