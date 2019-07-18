@@ -1,16 +1,5 @@
-import {
-  constants,
-  IBackend,
-  IStories,
-  UnmockOptions,
-  util,
-} from "unmock-core";
-import { computeHashV0 } from "unmock-hash";
+import { IBackend, UnmockOptions } from "unmock-core";
 
-const { buildPath, endReporter } = util;
-const { UNMOCK_UA_HEADER_NAME, MOSES } = constants;
-
-const UNMOCK_AUTH = "___u__n_m_o_c_k_a_u_t__h_";
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
 const XMLHttpRequestSetRequestHeader =
   XMLHttpRequest.prototype.setRequestHeader;
@@ -38,12 +27,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
-  public initialize(
-    userId: string | null,
-    story: IStories,
-    token: string | undefined,
-    opts: UnmockOptions,
-  ) {
+  public initialize(opts: UnmockOptions) {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
@@ -52,7 +36,6 @@ export default class JSDomBackend implements IBackend {
       password?: string | null,
     ): void {
       let data: Document | BodyInit | null = null;
-      const { actions, signature, ignore, persistence } = opts;
       const ro = new URL(url);
       const finalHost = ro.host || ro.hostname;
       if (opts.isWhitelisted(finalHost)) {
@@ -69,53 +52,27 @@ export default class JSDomBackend implements IBackend {
         if (opts.isWhitelisted(finalHost)) {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
-        if (name === "Authorization") {
-          // store, but do not pass onto request
-          headerz[name] = value;
-        } else if (name === UNMOCK_AUTH) {
-          // do not store, but pass onto request
-          return XMLHttpRequestSetRequestHeader.apply(this, [
-            "Authorization",
-            value,
-          ]);
-        } else if (name === UNMOCK_UA_HEADER_NAME) {
-          // do not store, but pass onto request
-          return XMLHttpRequestSetRequestHeader.apply(this, [
-            UNMOCK_UA_HEADER_NAME,
-            value,
-          ]);
-        } else {
-          // store and pass onto request
-          headerz[name] = value;
-          return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
-        }
+        // store and pass onto request
+        headerz[name] = value;
+        return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
       };
-      const doEndReporting = (
-        hash: string,
-        fromCache: boolean,
-        responseBody: string,
-        responseHeaders: any,
-      ) =>
-        endReporter(
-          opts,
-          hash,
-          story.story,
-          fromCache,
-          { lang: "jsdom" },
-          {
+      const doEndReporting = (responseBody: string, responseHeaders: any) =>
+        // TODO - actually report or do something with the request, or alternatively remove jsdom...
+        opts.logger.log(
+          JSON.stringify({
+            opts,
+            // tslint:disable-next-line: object-literal-sort-keys
+            lang: "jsdom",
             ...(data ? { body: data.toString() } : {}),
-            headers: headerz,
+            headerz,
             host: finalHost,
             method,
             path: ro.pathname,
-          },
-          {
             body: responseBody,
             headers: responseHeaders,
-          },
+          }),
         );
       const setOnReadyStateChange = (
-        hash: string,
         request: XMLHttpRequest,
         shouldEndReport: boolean,
       ) => {
@@ -125,8 +82,6 @@ export default class JSDomBackend implements IBackend {
             if (!opts.isWhitelisted(finalHost)) {
               if (shouldEndReport) {
                 doEndReporting(
-                  hash,
-                  false,
                   request.response,
                   parseResponseHeaders(request.getAllResponseHeaders()),
                 );
@@ -142,96 +97,59 @@ export default class JSDomBackend implements IBackend {
         if (opts.isWhitelisted(finalHost)) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
-        const hash = computeHashV0(
-          {
-            body: data || {},
-            headers: headerz,
-            hostname: finalHost,
-            method,
-            path: ro.pathname,
-            story: story.story,
-            user_id: userId ? userId : MOSES,
-            ...(signature ? { signature } : {}),
-          },
-          ignore,
-          actions,
-        );
-        const makesNetworkCall = opts.shouldMakeNetworkCall(hash);
         if (body) {
           data = body;
         }
-        if (!makesNetworkCall) {
-          const response = persistence.loadResponse(hash);
-          doEndReporting(hash, true, response.headers, response.body);
-          setOnReadyStateChange(hash, this, false);
-          // uggggh...
-          Object.defineProperty(this, "readyState", {
-            value: 4,
-            writable: false,
-          });
-          Object.defineProperty(this, "response", {
-            value: response.body ? JSON.parse(response.body) : undefined,
-            writable: false,
-          });
-          Object.defineProperty(this, "responseText", {
-            value: response.body,
-            writable: false,
-          });
-          Object.defineProperty(this, "status", {
-            value: 200,
-            writable: false,
-          });
-          Object.defineProperty(this, "statusText", {
-            value: "OK",
-            writable: false,
-          });
-          Object.defineProperty(this, "responseURL", {
-            value: `https://${finalHost}${ro.pathname}`,
-            writable: false,
-          });
-          if (this.onloadstart) {
-            this.onloadstart(new ProgressEvent("unmock-cache"));
-          }
-          if (this.onload) {
-            this.onload(new ProgressEvent("unmock-cache"));
-          }
-          if (this.onloadend) {
-            this.onloadend(new ProgressEvent("unmock-cache"));
-          }
-          if (this.onreadystatechange) {
-            this.onreadystatechange(new Event("unmock-cache"));
-          }
-        } else {
-          setOnReadyStateChange(hash, this, true);
-          return XMLHttpRequestSend.apply(this, [body]);
+        const response = { body: "{}", headers: {} };
+        doEndReporting(response.body, response.headers);
+        setOnReadyStateChange(this, false);
+        // uggggh...
+        Object.defineProperty(this, "readyState", {
+          value: 4,
+          writable: false,
+        });
+        Object.defineProperty(this, "response", {
+          value: response.body ? JSON.parse(response.body) : undefined,
+          writable: false,
+        });
+        Object.defineProperty(this, "responseText", {
+          value: response.body,
+          writable: false,
+        });
+        Object.defineProperty(this, "status", {
+          value: 200,
+          writable: false,
+        });
+        Object.defineProperty(this, "statusText", {
+          value: "OK",
+          writable: false,
+        });
+        Object.defineProperty(this, "responseURL", {
+          value: `https://${finalHost}${ro.pathname}`,
+          writable: false,
+        });
+        if (this.onloadstart) {
+          this.onloadstart(new ProgressEvent("unmock-cache"));
+        }
+        if (this.onload) {
+          this.onload(new ProgressEvent("unmock-cache"));
+        }
+        if (this.onloadend) {
+          this.onloadend(new ProgressEvent("unmock-cache"));
+        }
+        if (this.onreadystatechange) {
+          this.onreadystatechange(new Event("unmock-cache"));
         }
       };
       // there should be no end reporting (=== 4) yet
-      setOnReadyStateChange("<placeholder>", this, true);
-      const pathForFake = buildPath(
-        opts,
-        headerz,
-        finalHost,
-        method,
-        ro.pathname,
-        story.story,
-        undefined, // for now, we do not pass a hash for validation. should change
-        token !== undefined,
-      );
+      setOnReadyStateChange(this, true);
       const res = XMLHttpRequestOpen.apply(this, [
         method,
-        opts.buildPath(pathForFake),
+        ro.pathname,
         async || false,
         username,
         password,
       ]);
-      if (token) {
-        this.setRequestHeader(UNMOCK_AUTH, `Bearer ${token}`);
-      }
-      this.setRequestHeader(
-        UNMOCK_UA_HEADER_NAME,
-        JSON.stringify({ lang: "jsdom" }),
-      );
       return res;
     };
   }

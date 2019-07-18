@@ -1,24 +1,8 @@
-import { ActionsV0 } from "unmock-hash";
-import { Mode, UnmockOptions } from "./options";
+import { UnmockOptions } from "./options";
+import { IService } from "./service/interfaces";
 
 export interface ILogger {
   log: (message: string) => void;
-}
-export interface IPersistence {
-  saveAuth: (auth: string) => void;
-  saveUserId: (userId: string) => void;
-  saveToken: (token: string) => void;
-  saveMeta: (hash: string, data: IMetaData) => void;
-  saveRequest: (hash: string, data: IRequestData) => void;
-  saveResponse: (hash: string, data: IResponseData) => void;
-  loadAuth: () => string | void;
-  loadMeta: (hash: string) => IMetaData;
-  loadRequest: (hash: string) => IRequestData;
-  loadResponse: (hash: string) => IResponseData;
-  loadToken: () => string | void;
-  loadUserId: () => string | void;
-  hasHash: (hash: string) => boolean;
-  getPath: () => string;
 }
 
 export interface IMetaData {
@@ -39,30 +23,102 @@ export interface IResponseData {
 }
 
 export interface IBackend {
-  initialize: (
-    userId: string,
-    story: { story: string[] },
-    token: string | undefined,
-    opts: UnmockOptions,
-  ) => void;
+  initialize: (opts: UnmockOptions) => any;
   reset: () => void;
-}
-
-export interface IStories {
-  story: string[];
 }
 
 export interface IUnmockOptions {
   logger?: ILogger;
-  persistence?: IPersistence;
-  save?: boolean | string[];
-  unmockHost?: string;
-  unmockPort?: string;
-  ignore?: any;
-  actions?: ActionsV0 | ActionsV0[];
   signature?: string;
-  token?: string;
   whitelist?: string[] | string;
   useInProduction?: boolean;
-  mode?: Mode;
+}
+
+/**
+ * Analogous to `IncomingHttpHeaders` in @types/node.
+ * Header names are expected to be _lowercased_.
+ */
+export interface IIncomingHeaders {
+  [header: string]: string | string[] | undefined;
+}
+
+/**
+ * Analogous to `OutgoingHttpHeaders` in @types/node.
+ * Allows numbers as they are converted to strings internally.
+ */
+export interface IOutgoingHeaders {
+  [header: string]: string | string[] | number | undefined;
+}
+
+export interface ISerializedRequest {
+  body?: string;
+  headers?: IIncomingHeaders;
+  host: string;
+  method: string;
+  path: string;
+  protocol: "http" | "https";
+}
+
+export type IMockRequest = {
+  [P in keyof ISerializedRequest]?: ISerializedRequest[P] | RegExp;
+};
+
+export interface ISerializedResponse {
+  body?: string;
+  headers?: IOutgoingHeaders;
+  statusCode: number;
+}
+
+export interface IMock {
+  request: IMockRequest;
+  response: ISerializedResponse;
+}
+
+export type CreateResponse = (
+  request: ISerializedRequest,
+) => ISerializedResponse | undefined;
+
+// Used to load a service specification from a serialized request
+// Returns an object (parsed from specification)
+export type RequestToSpec = (sreq: ISerializedRequest) => any;
+export type GeneratedMock = any;
+
+export interface IServiceDefLoader {
+  /**
+   * Asynchronously read service definitions.
+   */
+  load(): Promise<IServiceDef[]>;
+  /**
+   * Synchronously read service definitions.
+   */
+  loadSync(): IServiceDef[];
+}
+
+export interface IServiceDefFile {
+  /**
+   * Basename for the service definition file: for example, `index.yaml`.
+   */
+  basename: string;
+  /**
+   * Contents of the service definition file
+   */
+  contents: string | Buffer;
+}
+
+/**
+ * Input to the service parser. Contains, e.g., the directory name and all available files.
+ */
+export interface IServiceDef {
+  /**
+   * Name of the service directory: for example, `petstore`.
+   */
+  directoryName: string;
+  /**
+   * All the files defining the service.
+   */
+  serviceFiles: IServiceDefFile[];
+}
+
+export interface IServiceParser {
+  parse(serviceDef: IServiceDef): IService;
 }

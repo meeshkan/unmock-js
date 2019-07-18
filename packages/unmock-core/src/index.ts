@@ -1,52 +1,20 @@
-import * as importedConstants from "./constants";
-import { IBackend, IStories, IUnmockOptions } from "./interfaces";
+import { IBackend, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
-import getToken from "./token";
-import { buildPath, endReporter, getUserId, makeAuthHeader } from "./util";
-
+import * as mw from "./service/state/middleware";
 // top-level exports
-export { UnmockOptions, Mode } from "./options";
+export { UnmockOptions } from "./options";
 export * from "./interfaces";
-export const util = {
-  buildPath,
-  endReporter,
-  makeAuthHeader,
-};
-export const constants = {
-  MOSES: importedConstants.MOSES,
-  UNMOCK_UA_HEADER_NAME: importedConstants.UNMOCK_UA_HEADER_NAME,
-};
+export * from "./generator";
 
-// First level indirection defines what to ignore
-// Second level indirection provides basic/default options
-// Third indirection provides the final call + optional parameters to modify
-const baseIgnore = (ignore: any) => (opts?: UnmockOptions) => (
+export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => (
   maybeOptions?: IUnmockOptions,
-) => {
-  if (opts === undefined) {
-    opts = new UnmockOptions();
-  }
-  opts.reset(maybeOptions);
-  opts.addIgnore(ignore);
-  return opts;
-};
-
-export const ignoreStory = baseIgnore("story");
-export const ignoreAuth = baseIgnore({ headers: "Authorization" });
-
-export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => async (
-  maybeOptions?: IUnmockOptions,
-): Promise<UnmockOptions> => {
+): any => {
   const options = baseOptions.reset(maybeOptions);
   if (process.env.NODE_ENV !== "production" || options.useInProduction) {
-    const story: IStories = { story: [] };
-    const accessToken = await getToken(options);
-    const userId = await getUserId(options, accessToken);
-    backend.initialize(userId, story, accessToken, options);
+    return backend.initialize(options);
   }
-  return options;
+  return () => {
+    throw new Error("Are you trying to run unmock in production?");
+  };
 };
-
-export const kcomnu = (backend: IBackend) => () => {
-  backend.reset();
-};
+export const middleware = mw;

@@ -21,7 +21,7 @@ A new way to mock API dependencies.
 
 ## How does it work?
 
-Unmock works by capturing HTTP calls in your code, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock works by capturing HTTP calls in your code and injecting responses from mocked versions of services initialized at arbitrary states.
 
 ## Install
 
@@ -41,7 +41,6 @@ This package contains the following six repositories.
 | [`unmock`](packages/unmock/README.md)             | Main CLI                                                |
 | [`unmock-cli`](packages/unmock-cli/README.md)     | Functions for the CLI, useful for building a custom CLI |
 | [`unmock-core`](packages/unmock-core/README.md)   | Core functions useful for building alternative backends |
-| [`unmock-hash`](packages/unmock-hash/README.md)   | Function to hash mocks                                  |
 | [`unmock-jsdom`](packages/unmock-jsdom/README.md) | Browser SDK                                             |
 | [`unmock-node`](packages/unmock-node/README.md)   | Node SDK                                                |
 
