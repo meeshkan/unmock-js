@@ -1,5 +1,7 @@
 import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
+// @ts-ignore // missing type definitions
+import deref from "json-schema-deref-sync";
 import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
@@ -39,16 +41,13 @@ export class ServiceParser implements IServiceParser {
         ].join("\n"),
       );
     }
-    if (schema === undefined) {
-      throw new Error(`Could not load schema from ${contents}`);
-    }
 
     // TODO Maybe read from the schema first
     const name = serviceDef.directoryName;
 
     return new Service({
       name,
-      schema: schema.right,
+      schema: deref(schema.right, { baseFolder: serviceDef.absolutePath }),
     });
   }
 }

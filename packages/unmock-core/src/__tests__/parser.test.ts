@@ -3,15 +3,14 @@ import path from "path";
 import { IServiceDef } from "../interfaces";
 import { ServiceParser } from "../service/parser";
 
-const petStoreYamlString: string = fs.readFileSync(
-  path.join(__dirname, "__unmock__", "petstore", "spec.yaml"),
-  "utf-8",
-);
+const absPath = path.join(__dirname, "__unmock__", "petstore", "spec.yaml");
+const petStoreYamlString: string = fs.readFileSync(absPath, "utf-8");
 
 describe("Service parser", () => {
   it("creates a service from petstore yaml", () => {
     const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
+      absolutePath: absPath,
       directoryName: "petstore",
       serviceFiles: [
         {
@@ -31,6 +30,7 @@ describe("Service parser", () => {
   it("fails for json files", () => {
     const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
+      absolutePath: absPath,
       directoryName: "petstore",
       serviceFiles: [
         {
