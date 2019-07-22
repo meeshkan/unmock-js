@@ -9,42 +9,42 @@ import { OpenAPIObject, Parameter, Paths } from "./interfaces";
  * Simple dereferencing JSON schema $ref with JSON pointers or URIs.
  * See https://json-schema.org/understanding-json-schema/structuring.html for more.
  */
-export function derefIfNeeded(
-  mightHaveReference: any,
-  derefSchema: { schema: OpenAPIObject; absPath: string },
-): any {
-  if (
-    typeof mightHaveReference !== "object" ||
-    Object.keys(mightHaveReference).length === 0
-  ) {
-    return mightHaveReference;
-  }
-  // DFS deref all items as needed
-  for (const childKey of Object.keys(mightHaveReference)) {
-    mightHaveReference[childKey] = derefIfNeeded(
-      mightHaveReference[childKey],
-      derefSchema,
-    );
-  }
-  const refValue = mightHaveReference.$ref;
-  if (refValue === undefined) {
-    return mightHaveReference;
-  }
-  // decide between local and path URI
-  const isLocal = refValue.startsWith("#");
-  const afterPound = refValue
-    .split("#")
-    .slice(1)
-    .join("#");
+export function derefIfNeeded({
+  schema,
+  absPath,
+}: {
+  schema: OpenAPIObject;
+  absPath: string;
+}) {
+  return <T>(mightHaveReference: any): T => {
+    const selfDeref = derefIfNeeded({ schema, absPath });
+    if (
+      typeof mightHaveReference !== "object" ||
+      Object.keys(mightHaveReference).length === 0
+    ) {
+      return mightHaveReference;
+    }
+    // DFS deref all items as needed
+    for (const childKey of Object.keys(mightHaveReference)) {
+      mightHaveReference[childKey] = selfDeref(mightHaveReference[childKey]);
+    }
+    const refValue = mightHaveReference.$ref;
+    if (refValue === undefined) {
+      return mightHaveReference;
+    }
+    // decide between local and path URI
+    const isLocal = refValue.startsWith("#");
+    const afterPound = refValue
+      .split("#")
+      .slice(1)
+      .join("#");
 
-  const schema = isLocal
-    ? derefSchema.schema
-    : fs.readFileSync(
-        fspath.join(derefSchema.absPath, refValue.split("#")[0]),
-        "utf8",
-      );
-  const ref = pointer.get(schema, afterPound);
-  return derefIfNeeded(ref, derefSchema);
+    const resolvedSchema = isLocal
+      ? schema
+      : fs.readFileSync(fspath.join(absPath, refValue.split("#")[0]), "utf8");
+    const ref = pointer.get(resolvedSchema, afterPound);
+    return selfDeref(ref) as T;
+  };
 }
 
 export const getPathParametersFromPath = (path: string): string[] => {

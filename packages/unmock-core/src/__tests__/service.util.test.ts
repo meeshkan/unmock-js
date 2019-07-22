@@ -17,10 +17,9 @@ describe("Tests deref", () => {
     fs.readFileSync(path.join(absPath, "spec.yaml"), "utf8"),
   );
   it("Basic test for derefencing", () => {
-    const derefed = derefIfNeeded(
+    const derefed = derefIfNeeded({ schema, absPath })(
       schema.paths["/pets"].get.responses["200"].content["application/json"]
         .schema,
-      { schema, absPath },
     );
     expect(derefed).toEqual({
       type: "array",

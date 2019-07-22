@@ -32,8 +32,8 @@ export class Service implements IService {
       Object.keys(this.schema.paths).length > 0;
     this.matcher = new OASMatcher({ schema: this.schema });
     this.state = new State();
-    this.dereferencer = (objToDeref: any) =>
-      derefIfNeeded(objToDeref, { schema: this.schema, absPath: this.absPath });
+    const deref = derefIfNeeded({ schema: this.schema, absPath: this.absPath });
+    this.dereferencer = <T>(objToDeref: any) => deref<T>(objToDeref);
   }
 
   get schema(): OpenAPIObject {

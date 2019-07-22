@@ -76,7 +76,7 @@ export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u.gen !== undefined &&
   typeof u.gen === "function";
 
-export type Dereferencer = (obj: any) => any;
+export type Dereferencer = <T>(obj: any) => T;
 
 export interface IStateInput {
   method: ExtendedHTTPMethod;

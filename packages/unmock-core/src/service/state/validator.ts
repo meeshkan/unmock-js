@@ -53,7 +53,7 @@ const validStatesForStateWithCode = (
   code: number | string,
   deref: Dereferencer,
 ): IValidState => {
-  const resolvedResponse: Response | undefined = deref(response);
+  const resolvedResponse = deref<Response | undefined>(response);
   if (
     resolvedResponse === undefined ||
     resolvedResponse.content === undefined
@@ -168,7 +168,7 @@ const getStateFromMedia = (
       });
       continue;
     }
-    const spreadState = state.gen(deref(content.schema) as Schema);
+    const spreadState = state.gen(deref<Schema>(content.schema) as Schema);
 
     const missingParam = DFSVerifyNoneAreNull(spreadState);
     if (missingParam !== undefined) {

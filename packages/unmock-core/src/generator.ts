@@ -98,11 +98,15 @@ const getStateForOperation = (
   if (operationResponse === undefined) {
     return undefined;
   }
-  const resolvedResponse = deref(operationResponse);
+  const resolvedResponse = deref<Response>(operationResponse);
   const operationContent = resolvedResponse.content;
+  if (operationContent === undefined) {
+    return undefined;
+  }
+  const operationContentKeys = Object.keys(operationContent);
 
   const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
-    Object.keys(operationContent).includes(type),
+    operationContentKeys.includes(type),
   );
   const mediaType = firstOrRandomOrUndefined(mediaTypes); // Ditto
   if (mediaType === undefined) {
@@ -115,7 +119,7 @@ const getStateForOperation = (
   return {
     $code: statusCode,
     template: defaultsDeep(requestedState, matchedOperation),
-    headers: resolvedResponse.headers,
+    headers: deref<Record<string, Header>>(resolvedResponse.headers),
   };
 };
 
