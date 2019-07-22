@@ -51,7 +51,7 @@ workflows:
   test-and-deploy:
     jobs:
       - build
-      - deploy:
+      - publish:
           requires:
             - build
           filters:
