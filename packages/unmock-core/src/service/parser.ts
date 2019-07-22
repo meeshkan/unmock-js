@@ -44,6 +44,7 @@ export class ServiceParser implements IServiceParser {
     const name = serviceDef.directoryName;
 
     return new Service({
+      absPath: serviceDef.absolutePath,
       name,
       schema: schema.right,
     });

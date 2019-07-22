@@ -84,6 +84,7 @@ export interface IStateInput {
 export interface IServiceInput {
   schema: OpenAPIObject;
   name: string;
+  absPath: string;
 }
 
 // maps from media types (e.g. "application/json") to schema
@@ -105,6 +106,11 @@ export interface IService {
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
   readonly schema: OpenAPIObject;
+
+  /**
+   * Holds the absolute path where the service specification resides.
+   */
+  readonly absPath: string;
 
   /**
    * Whether the OAS has a defined "paths" object or not.

@@ -13,6 +13,7 @@ import { State } from "./state/state";
 
 export class Service implements IService {
   public readonly name: string;
+  public readonly absPath: string;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
@@ -21,6 +22,7 @@ export class Service implements IService {
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
+    this.absPath = opts.absPath;
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
