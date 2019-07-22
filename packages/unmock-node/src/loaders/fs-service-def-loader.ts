@@ -34,7 +34,6 @@ export class FsServiceDefLoader implements IServiceDefLoader {
       }));
 
     return {
-      absolutePath: absoluteDirectory,
       directoryName: path.basename(absoluteDirectory),
       serviceFiles,
     };
