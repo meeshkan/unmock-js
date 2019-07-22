@@ -144,24 +144,34 @@ const chooseResponseFromOperation = (
   const responses = operation.responses;
   const chosenCode = firstOrRandomOrUndefined(Object.keys(responses));
   if (chosenCode === undefined) {
-    throw new Error("Not sure what went wrong");
+    throw new Error(
+      `Could not find any responses in operation '${operation.description}'`,
+    );
   }
 
   const response = responses[chosenCode as keyof Responses];
   if (response === undefined) {
-    throw new Error("Not sure what went wrong");
+    // type-checking only, we'll never end up here as chosenCode is a key of responses
+    // each of which must have a valid Response | Reference
+    throw new Error(
+      `Could not load response for status code '${chosenCode}' in '${operation.description}'`,
+    );
   }
 
   const deRefedResponse: Response = deref(response);
 
   const content = deRefedResponse.content;
   if (content === undefined) {
-    throw new Error("Not sure what went wrong");
+    throw new Error(
+      `Chosen response (${JSON.stringify(content)}) does not have any content!`,
+    );
   }
 
   const chosenMediaType = firstOrRandomOrUndefined(Object.keys(content));
   if (chosenMediaType === undefined) {
-    throw new Error("Not sure what went wrong");
+    throw new Error(
+      `Chosen response (${JSON.stringify(content)}) does not have any content!`,
+    );
   }
 
   const schema = content[chosenMediaType].schema;
