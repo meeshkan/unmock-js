@@ -32,7 +32,7 @@ export class State {
    * and the result is used to verify the contents of `stateInput`.
    */
   public update(stateUpdate: IStateUpdate) {
-    const { stateInput, schemaInfo: derefSchema } = stateUpdate;
+    const { stateInput } = stateUpdate;
     const { endpoint, method, newState } = stateInput;
     debugLog(`Fetching operations for '${method} ${endpoint}'...`);
     const ops = getOperations(stateUpdate);
@@ -52,7 +52,7 @@ export class State {
       const stateResponses = getValidStatesForOperationWithState(
         op.operation,
         newState,
-        derefSchema,
+        stateUpdate.dereferencer,
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);

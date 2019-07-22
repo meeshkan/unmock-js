@@ -3,7 +3,7 @@ import pointer from "json-pointer";
 import fspath from "path";
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { ISchemaForDeref, Parameter, Paths } from "./interfaces";
+import { OpenAPIObject, Parameter, Paths } from "./interfaces";
 
 /**
  * Simple dereferencing JSON schema $ref with JSON pointers or URIs.
@@ -11,7 +11,7 @@ import { ISchemaForDeref, Parameter, Paths } from "./interfaces";
  */
 export function derefIfNeeded(
   mightHaveReference: any,
-  derefSchema: ISchemaForDeref,
+  derefSchema: { schema: OpenAPIObject; absPath: string },
 ): any {
   if (
     typeof mightHaveReference !== "object" ||

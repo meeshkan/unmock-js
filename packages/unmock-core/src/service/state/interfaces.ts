@@ -1,16 +1,15 @@
 import {
+  Dereferencer,
   HTTPMethod,
-  ISchemaForDeref,
   IStateInput,
   Operation,
+  Paths,
 } from "../interfaces";
 
 export interface IStateUpdate {
   stateInput: IStateInput;
-  /**
-   * Used to find operations and dereference any $refs they may have.
-   */
-  schemaInfo: ISchemaForDeref;
+  paths: Paths;
+  dereferencer: Dereferencer;
   serviceName: string;
   /**
    * Complements the endpoint given in IStateInput, by redirecting to the correct endpoint in Schema.

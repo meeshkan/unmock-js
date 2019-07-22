@@ -135,9 +135,8 @@ export const getOperations = ({
   stateInput,
   schemaEndpoint,
   serviceName,
-  schemaInfo,
+  paths,
 }: IStateUpdate): { operations: OperationsForStateUpdate; error?: string } => {
-  const paths = schemaInfo.schema.paths;
   const { method, endpoint } = stateInput;
   const isDefMethod = method === DEFAULT_STATE_HTTP_METHOD;
   // Short handle for returning a failed result

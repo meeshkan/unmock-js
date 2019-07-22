@@ -64,10 +64,7 @@ export interface IStateInputGenerator {
    * Generates a new state (copy) based on the given schema, so that
    * future processes can use it without modifying the original schema.
    */
-  gen: (
-    schema: Schema,
-    derefSchema: ISchemaForDeref,
-  ) => Record<string, Schema> | Schema;
+  gen: (schema: Schema) => Record<string, Schema> | Schema;
   /**
    * Returns top-level DSL, if it exists.
    */
@@ -79,10 +76,7 @@ export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u.gen !== undefined &&
   typeof u.gen === "function";
 
-export interface ISchemaForDeref {
-  schema: OpenAPIObject;
-  absPath: string;
-}
+export type Dereferencer = (obj: any) => any;
 
 export interface IStateInput {
   method: ExtendedHTTPMethod;
@@ -119,6 +113,11 @@ export interface IService {
    * Holds the absolute path where the service specification resides.
    */
   readonly absPath: string;
+
+  /**
+   * Used to dereference items in the schema when needed
+   */
+  readonly dereferencer: Dereferencer;
 
   /**
    * Whether the OAS has a defined "paths" object or not.

@@ -1,13 +1,11 @@
 import Ajv from "ajv";
 import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
 import {
-  ISchemaForDeref,
   isSchema,
   IStateInputGenerator,
   Schema,
   UnmockServiceState,
 } from "../interfaces";
-import { derefIfNeeded } from "../util";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
@@ -15,11 +13,8 @@ const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
 export default (state?: UnmockServiceState): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
   top: getTopLevelDSL(state || {}),
-  gen: (schema: Schema, derefSchema: ISchemaForDeref) =>
-    spreadStateFromService(
-      derefIfNeeded(schema, derefSchema),
-      filterTopLevelDSL(state || {}),
-    ),
+  gen: (schema: Schema) =>
+    spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
 
 export const textMW = (
@@ -28,8 +23,7 @@ export const textMW = (
 ): IStateInputGenerator => ({
   isEmpty: typeof state !== "string" || state.length === 0,
   top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
-  gen: (schema: Schema, derefSchema: ISchemaForDeref) =>
-    generateTextResponse(derefIfNeeded(schema, derefSchema), state),
+  gen: (schema: Schema) => generateTextResponse(schema, state),
 });
 
 const generateTextResponse = (schema: Schema, state: string | undefined) => {

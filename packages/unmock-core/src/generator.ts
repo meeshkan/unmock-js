@@ -14,6 +14,7 @@ import {
 import { stateStoreFactory } from "./service";
 import {
   codeToMedia,
+  Dereferencer,
   Header,
   IService,
   MatcherResponse,
@@ -21,11 +22,9 @@ import {
   Response,
   Responses,
   Schema,
-  ISchemaForDeref,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
-import { derefIfNeeded } from "./service/util";
 
 type Headers = Record<string, Header>;
 
@@ -72,7 +71,7 @@ const setupJSFUnmockProperties = () => {
 const getStateForOperation = (
   operation: Operation,
   state: codeToMedia | undefined,
-  derefSchema: ISchemaForDeref,
+  deref: Dereferencer,
 ):
   | {
       $code: string;
@@ -99,7 +98,7 @@ const getStateForOperation = (
   if (operationResponse === undefined) {
     return undefined;
   }
-  const resolvedResponse = derefIfNeeded(operationResponse, derefSchema);
+  const resolvedResponse = deref(operationResponse);
   const operationContent = resolvedResponse.content;
 
   const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
@@ -136,7 +135,7 @@ const tryCatch = (value: any, f: (value: any) => any) => {
 
 const chooseResponseFromOperation = (
   operation: Operation,
-  derefSchema: ISchemaForDeref,
+  deref: Dereferencer,
 ): {
   $code: string;
   template: Schema;
@@ -153,7 +152,7 @@ const chooseResponseFromOperation = (
     throw new Error("Not sure what went wrong");
   }
 
-  const deRefedResponse: Response = derefIfNeeded(response, derefSchema);
+  const deRefedResponse: Response = deref(response);
 
   const content = deRefedResponse.content;
   if (content === undefined) {
@@ -172,8 +171,8 @@ const chooseResponseFromOperation = (
 
   return {
     $code: chosenCode,
-    template: derefIfNeeded(schema, derefSchema),
-    headers: derefIfNeeded(deRefedResponse.headers, derefSchema),
+    template: deref(schema),
+    headers: deref(deRefedResponse.headers),
   };
 };
 
@@ -184,10 +183,9 @@ const generateMockFromTemplate = (
     return undefined;
   }
   const { operation, state, service } = matchedService;
-  const derefSchema = { schema: service.schema, absPath: service.absPath };
   const { template, $code, headers } =
-    getStateForOperation(operation, state, derefSchema) ||
-    chooseResponseFromOperation(operation, derefSchema);
+    getStateForOperation(operation, state, service.dereferencer) ||
+    chooseResponseFromOperation(operation, service.dereferencer);
 
   // At this point, we assume there are no references, and we only need to
   // handle x-unmock-* within the schemas, modify it according to these
