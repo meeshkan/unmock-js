@@ -60,12 +60,14 @@ const arrResponses: { responses: Responses } = {
     },
   },
 };
+const deref = (obj: any) => obj;
 
 describe("Tests getValidResponsesForOperationWithState", () => {
   it("with empty state", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
       defMiddleware(),
+      deref,
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toBeUndefined();
@@ -77,6 +79,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       defMiddleware({
         boom: 5,
       }),
+      deref,
     );
     expect(spreadState.error).toContain("Can't find definition for 'boom'");
   });
@@ -89,6 +92,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
         },
       },
       defMiddleware(),
+      deref,
     );
     expect(spreadState.error).toContain("No schema defined");
   });
@@ -100,6 +104,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
         $code: 200,
         tag: "foo",
       }),
+      deref,
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
@@ -115,6 +120,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
     const spreadState = getValidStatesForOperationWithState(
       arrResponses,
       defMiddleware({ $size: 5 }),
+      deref,
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({
@@ -133,6 +139,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       defMiddleware({
         $code: 404,
       }),
+      deref,
     );
     expect(spreadState.responses).toBeUndefined();
     expect(spreadState.error).toContain(
@@ -146,6 +153,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       defMiddleware({
         test: { id: 5 },
       }),
+      deref,
     );
     expect(spreadState.error).toBeUndefined();
     expect(spreadState.responses).toEqual({

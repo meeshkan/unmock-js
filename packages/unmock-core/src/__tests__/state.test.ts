@@ -86,8 +86,9 @@ const updateState = (
       newState,
     },
     serviceName: "foo",
-    schemaInfo: { schema: fullSchema, absPath: "" },
+    paths: fullSchema.paths,
     schemaEndpoint,
+    dereferencer: (obj: any) => obj,
   });
 
 const getState = (state: State, method: HTTPMethod, endpoint: string) =>
