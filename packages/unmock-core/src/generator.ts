@@ -195,6 +195,7 @@ const generateMockFromTemplate = (
     jsf.option("alwaysFakeOptionals", true);
   }
   // First iteration simply parses these and returns the updated schema
+  jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
   jsf.reset();
 
@@ -202,7 +203,7 @@ const generateMockFromTemplate = (
   const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
   jsf.option("useDefaultValue", true);
   const resHeaders = jsf.generate(normalizeHeaders(headers));
-  jsf.reset();
+  jsf.option("useDefaultValue", false);
 
   return {
     body,
