@@ -1,9 +1,17 @@
-import { HTTPMethod, IStateInput, Operation, Paths } from "../interfaces";
+import {
+  HTTPMethod,
+  ISchemaForDeref,
+  IStateInput,
+  Operation,
+} from "../interfaces";
 
 export interface IStateUpdate {
   stateInput: IStateInput;
+  /**
+   * Used to find operations and dereference any $refs they may have.
+   */
+  schemaInfo: ISchemaForDeref;
   serviceName: string;
-  paths: Paths;
   /**
    * Complements the endpoint given in IStateInput, by redirecting to the correct endpoint in Schema.
    * This happens when an endpoint consists of variables, for example.

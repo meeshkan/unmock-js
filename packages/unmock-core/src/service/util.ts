@@ -1,6 +1,51 @@
+import fs from "fs";
+import pointer from "json-pointer";
+import fspath from "path";
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { Parameter, Paths } from "./interfaces";
+import { ISchemaForDeref, Parameter, Paths } from "./interfaces";
+
+/**
+ * Simple dereferencing JSON schema $ref with JSON pointers or URIs.
+ * See https://json-schema.org/understanding-json-schema/structuring.html for more.
+ */
+export function derefIfNeeded(
+  mightHaveReference: any,
+  derefSchema: ISchemaForDeref,
+): any {
+  if (
+    typeof mightHaveReference !== "object" ||
+    Object.keys(mightHaveReference).length === 0
+  ) {
+    return mightHaveReference;
+  }
+  // DFS deref all items as needed
+  for (const childKey of Object.keys(mightHaveReference)) {
+    mightHaveReference[childKey] = derefIfNeeded(
+      mightHaveReference[childKey],
+      derefSchema,
+    );
+  }
+  const refValue = mightHaveReference.$ref;
+  if (refValue === undefined) {
+    return mightHaveReference;
+  }
+  // decide between local and path URI
+  const isLocal = refValue.startsWith("#");
+  const afterPound = refValue
+    .split("#")
+    .slice(1)
+    .join("#");
+
+  const schema = isLocal
+    ? derefSchema.schema
+    : fs.readFileSync(
+        fspath.join(derefSchema.absPath, refValue.split("#")[0]),
+        "utf8",
+      );
+  const ref = pointer.get(schema, afterPound);
+  return derefIfNeeded(ref, derefSchema);
+}
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];

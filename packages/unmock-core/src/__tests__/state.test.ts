@@ -7,6 +7,11 @@ import defMiddleware, { textMW } from "../service/state/middleware";
 import { State } from "../service/state/state";
 
 const fullSchema = {
+  openapi: "",
+  info: {
+    title: "",
+    version: "",
+  },
   paths: {
     "/test/{test_id}": {
       get: {
@@ -81,7 +86,7 @@ const updateState = (
       newState,
     },
     serviceName: "foo",
-    paths: fullSchema.paths,
+    schemaInfo: { schema: fullSchema, absPath: "" },
     schemaEndpoint,
   });
 

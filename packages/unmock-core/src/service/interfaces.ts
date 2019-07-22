@@ -64,7 +64,10 @@ export interface IStateInputGenerator {
    * Generates a new state (copy) based on the given schema, so that
    * future processes can use it without modifying the original schema.
    */
-  gen: (schema: Schema) => Record<string, Schema> | Schema;
+  gen: (
+    schema: Schema,
+    derefSchema: ISchemaForDeref,
+  ) => Record<string, Schema> | Schema;
   /**
    * Returns top-level DSL, if it exists.
    */
@@ -75,6 +78,11 @@ export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u.top !== undefined &&
   u.gen !== undefined &&
   typeof u.gen === "function";
+
+export interface ISchemaForDeref {
+  schema: OpenAPIObject;
+  absPath: string;
+}
 
 export interface IStateInput {
   method: ExtendedHTTPMethod;
@@ -93,7 +101,7 @@ export type mediaTypeToSchema = Record<string, Schema>;
 export type codeToMedia = Record<string, mediaTypeToSchema>;
 
 export type MatcherResponse =
-  | { operation: Operation; state: codeToMedia | undefined }
+  | { operation: Operation; state: codeToMedia | undefined; service: IService }
   | undefined;
 
 export interface IService {

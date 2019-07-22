@@ -49,6 +49,7 @@ export class Service implements IService {
     return {
       operation: maybeOp,
       state,
+      service: this,
     };
   }
 
@@ -74,7 +75,7 @@ export class Service implements IService {
       stateInput,
       serviceName: this.name,
       schemaEndpoint,
-      paths: this.schema.paths,
+      schemaInfo: { schema: this.schema, absPath: this.absPath },
     });
   }
 

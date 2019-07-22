@@ -4,7 +4,7 @@
 
 import {
   codeToMedia,
-  isReference,
+  ISchemaForDeref,
   IStateInputGenerator,
   MediaType,
   Operation,
@@ -13,6 +13,7 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
+import { derefIfNeeded } from "../util";
 
 type codeType = keyof Responses;
 
@@ -51,11 +52,15 @@ const validStatesForStateWithCode = (
   response: Reference | Response | undefined,
   state: IStateInputGenerator,
   code: number | string,
+  derefSchema: ISchemaForDeref,
 ): IValidState => {
+  const resolvedResponse: Response | undefined = derefIfNeeded(
+    response,
+    derefSchema,
+  );
   if (
-    response === undefined ||
-    isReference(response) ||
-    response.content === undefined
+    resolvedResponse === undefined ||
+    resolvedResponse.content === undefined
   ) {
     return {
       error: {
@@ -64,7 +69,11 @@ const validStatesForStateWithCode = (
       },
     };
   }
-  const stateMedia = getStateFromMedia(response.content, state);
+  const stateMedia = getStateFromMedia(
+    resolvedResponse.content,
+    state,
+    derefSchema,
+  );
   const error = chooseDeepestMissingParam(stateMedia.errors);
   return {
     responses: { [code]: stateMedia.responses },
@@ -81,6 +90,7 @@ const validStatesForStateWithCode = (
 const validStatesForStateWithoutCode = (
   operationResponses: Responses,
   state: IStateInputGenerator,
+  derefSchema: ISchemaForDeref,
 ): IValidState => {
   const relevantResponses: codeToMedia = {};
   let err: IMissingParam | undefined;
@@ -90,6 +100,7 @@ const validStatesForStateWithoutCode = (
       operationResponses[code as codeType],
       state,
       code,
+      derefSchema,
     );
     err = error === undefined ? err : chooseDeepestMissingParam([error], err);
 
@@ -125,6 +136,7 @@ const validStatesForStateWithoutCode = (
 export const getValidStatesForOperationWithState = (
   operation: Operation,
   state: IStateInputGenerator,
+  derefSchema: ISchemaForDeref,
 ): {
   responses: codeToMedia | undefined;
   error: string | undefined;
@@ -138,15 +150,17 @@ export const getValidStatesForOperationWithState = (
           resps[String(code) as codeType],
           state,
           code,
+          derefSchema,
         )
       : // Otherwise, iterate over all status codes and find the ones matching the given state
-        validStatesForStateWithoutCode(resps, state);
+        validStatesForStateWithoutCode(resps, state, derefSchema);
   return { responses, error: error === undefined ? error : error.msg };
 };
 
 const getStateFromMedia = (
   contentRecord: Record<string, MediaType>,
   state: IStateInputGenerator,
+  derefSchema: ISchemaForDeref,
 ): {
   responses: IResponsesFromContent;
   errors: IMissingParam[];
@@ -162,8 +176,7 @@ const getStateFromMedia = (
       });
       continue;
     }
-    // We assume '$ref' are already resolved at this stage
-    const spreadState = state.gen(content.schema as Schema);
+    const spreadState = state.gen(content.schema as Schema, derefSchema);
 
     const missingParam = DFSVerifyNoneAreNull(spreadState);
     if (missingParam !== undefined) {
