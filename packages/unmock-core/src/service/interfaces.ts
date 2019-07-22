@@ -86,7 +86,7 @@ export interface IStateInput {
 export interface IServiceInput {
   schema: OpenAPIObject;
   name: string;
-  absPath: string;
+  absPath?: string;
 }
 
 // maps from media types (e.g. "application/json") to schema

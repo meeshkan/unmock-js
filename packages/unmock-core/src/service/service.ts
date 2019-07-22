@@ -25,7 +25,7 @@ export class Service implements IService {
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
-    this.absPath = opts.absPath;
+    this.absPath = opts.absPath || process.cwd();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
