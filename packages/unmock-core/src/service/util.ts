@@ -34,6 +34,7 @@ export function derefIfNeeded({
       return mightHaveReference;
     }
     // decide between local and path URI
+    // TODO: Add dereferencing $id and URLs
     const isLocal = refValue.startsWith("#");
     const afterPound = refValue
       .split("#")
