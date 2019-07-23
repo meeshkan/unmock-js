@@ -1,5 +1,5 @@
 import { Response, Responses, Schema } from "../service/interfaces";
-import defMiddleware from "../service/state/middleware";
+import defMiddleware from "../service/state/transformers";
 import { getValidStatesForOperationWithState } from "../service/state/validator";
 
 const arraySchema: Schema = {

@@ -17,7 +17,7 @@ export default (state?: UnmockServiceState): IStateInputGenerator => ({
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
 });
 
-export const textMW = (
+export const textResponse = (
   state?: string,
   dsl?: ITopLevelDSL,
 ): IStateInputGenerator => ({

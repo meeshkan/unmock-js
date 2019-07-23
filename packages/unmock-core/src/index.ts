@@ -1,6 +1,6 @@
 import { IBackend, IUnmockOptions } from "./interfaces";
 import { UnmockOptions } from "./options";
-import * as mw from "./service/state/middleware";
+import * as trns from "./service/state/transformers";
 // top-level exports
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
@@ -17,4 +17,4 @@ export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => (
     throw new Error("Are you trying to run unmock in production?");
   };
 };
-export const middleware = mw;
+export const transformers = trns;
