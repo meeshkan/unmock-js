@@ -1,4 +1,5 @@
 import fs from "fs";
+import jsyaml from "js-yaml";
 import pointer from "json-pointer";
 import fspath from "path";
 import XRegExp from "xregexp";
@@ -41,11 +42,18 @@ export function derefIfNeeded({
 
     const resolvedSchema = isLocal
       ? schema
-      : fs.readFileSync(fspath.join(absPath, refValue.split("#")[0]), "utf8");
+      : loadSpec(fspath.join(absPath, refValue.split("#")[0]));
     const ref = pointer.get(resolvedSchema, afterPound);
     return selfDeref(ref) as T;
   };
 }
+
+const loadSpec = (path: string) => {
+  const content = fs.readFileSync(path, "utf8");
+  return fspath.extname(path).toLowerCase() === ".json"
+    ? JSON.parse(content)
+    : jsyaml.safeLoad(content);
+};
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];
