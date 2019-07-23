@@ -4,6 +4,7 @@ import {
   HTTPMethod,
   isRESTMethod,
   UnmockServiceState,
+  IStateInputGenerator,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
 export { ServiceParser } from "./parser";
@@ -73,6 +74,32 @@ const StateHandler = (prevServiceName?: string) => {
   };
 };
 
+type SetStateForAllPaths = (
+  state: IStateInputGenerator | UnmockServiceState,
+) => StateStoreType & SetStateForSpecificMethod;
+
+type SetStateForMatchingEndpoint = (
+  endpoint: string,
+  state: IStateInputGenerator | UnmockServiceState,
+) => StateStoreType & SetStateForSpecificMethod;
+
+type SetStateType = SetStateForAllPaths & SetStateForMatchingEndpoint;
+
+interface IResetState {
+  reset: () => void;
+}
+
+type SetStateForSpecificMethod = {
+  // All HTTP methods can set a state
+  [P in HTTPMethod]: SetStateType;
+} &
+  IResetState;
+
+type StateStoreType = {
+  // Has either `reset()` function or string signature with function call
+  [serviceName: string]: SetStateType & SetStateForSpecificMethod;
+} & IResetState;
+
 // Returns as any to allow for type-free DSL-like access to services and states
-export const stateStoreFactory = (serviceStore: ServiceStore): any =>
-  new Proxy(serviceStore, StateHandler());
+export const stateStoreFactory = (serviceStore: ServiceStore): StateStoreType =>
+  new Proxy(serviceStore, StateHandler()) as any;
