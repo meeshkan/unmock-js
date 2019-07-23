@@ -150,7 +150,7 @@ interface INestedState<T> {
   [key: string]: INestedState<T> | T;
 }
 
-interface IUnmockServiceState
+export interface IUnmockServiceState
   extends INestedState<
     IDSL | string | number | (() => string | number) | undefined | boolean
   > {}
