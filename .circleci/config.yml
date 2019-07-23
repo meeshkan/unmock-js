@@ -5,17 +5,55 @@
 version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:10.15.1
+
 jobs:
   build:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.15.1
-
-    working_directory: ~/repo
-
+    <<: *defaults
     steps:
       - checkout
       - run: npm ci
       - run: npm run test:ci
       - codecov/upload:
           file: coverage/*.json
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
+
+  publish:
+    <<: *defaults
+    steps:
+    - attach_workspace:
+        at: ~/repo
+    - run:
+        name: Authenticate with npm
+        command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
+    - run: npx lerna publish from-package --yes
+    - add_ssh_keys:
+        fingerprints:
+          - "34:32:ff:02:fe:1e:00:10:49:75:8e:d4:6c:2b:12:ca"
+    - run:
+        name: "Authenticate with GH"
+        command: git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
+    - run:
+        name: "Tag current release"
+        command: |
+          TAG=v`cat packages/unmock-core/package.json | grep version | awk 'BEGIN { FS = "\"" } { print $4 }'`
+          git tag -a $TAG
+          git push origin $TAG
+
+workflows:
+  version: 2
+  test-and-deploy:
+    jobs:
+      - build
+      - publish:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
