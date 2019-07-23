@@ -1,4 +1,4 @@
-import { dsl } from "../index";
+import { dsl } from "..";
 import { Schema } from "../service/interfaces";
 
 const schema: Schema = {

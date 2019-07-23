@@ -65,6 +65,7 @@ describe("Translates top level DSL to OAS", () => {
     it("Throws on invalid $times (wrong type) with STRICT_MODE", () => {
       DSL.STRICT_MODE = true;
       const translated = () =>
+        // @ts-ignore // uses incorrect type on purpose
         DSL.translateTopLevelToOAS({ $times: "a" }, responsesWithoutProperties);
       expect(translated).toThrow(
         "Can't set response $times with non-numeric value!",

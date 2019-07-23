@@ -1,4 +1,4 @@
-import { UnmockOptions } from "../options";
+import { UnmockOptions } from "..";
 
 describe("tests whitelist", () => {
   test("test default whitelist", () => {
