@@ -154,9 +154,10 @@ interface IUnmockServiceState
   extends INestedState<
     IDSL | string | number | (() => string | number) | undefined | boolean
   > {}
+
 /**
  * Defines how a state can look like without validation against
  * the actual service specification.
  * Validation can be done either in runtime or via IDE extensions.
  */
-export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL;
+export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
