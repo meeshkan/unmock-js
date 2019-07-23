@@ -13,4 +13,5 @@ class UnmockJSDOM extends CorePackage {
   }
 }
 
-export const unmock = new UnmockJSDOM(options, backend);
+const unmock = new UnmockJSDOM(options, backend);
+export default unmock;

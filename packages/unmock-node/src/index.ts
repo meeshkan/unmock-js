@@ -13,4 +13,5 @@ class UnmockNode extends CorePackage {
   }
 }
 
-export const unmock = new UnmockNode(options, backend);
+const unmock = new UnmockNode(options, backend);
+export default unmock;
