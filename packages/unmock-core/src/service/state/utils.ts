@@ -47,7 +47,7 @@ export const filterStatesByOperation = (
       return Object.assign(
         types,
         response === undefined ||
-          isReference(response) ||
+        isReference(response) || // Checked for typing purposes, there are no $refs in states.
           response.content === undefined
           ? { [code]: [] }
           : { [code]: Object.keys(response.content) },

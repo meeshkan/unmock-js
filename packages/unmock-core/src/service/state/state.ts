@@ -52,6 +52,7 @@ export class State {
       const stateResponses = getValidStatesForOperationWithState(
         op.operation,
         newState,
+        stateUpdate.dereferencer,
       );
       if (stateResponses.error === undefined) {
         debugLog(`Matched successfully for ${op.operation.operationId}`);

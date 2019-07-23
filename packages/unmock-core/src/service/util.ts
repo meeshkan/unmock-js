@@ -1,6 +1,60 @@
+import fs from "fs";
+import jsyaml from "js-yaml";
+import pointer from "json-pointer";
+import fspath from "path";
 import XRegExp from "xregexp";
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
-import { Parameter, Paths } from "./interfaces";
+import { OpenAPIObject, Parameter, Paths } from "./interfaces";
+
+/**
+ * Simple dereferencing JSON schema $ref with JSON pointers or URIs.
+ * See https://json-schema.org/understanding-json-schema/structuring.html for more.
+ */
+export function derefIfNeeded({
+  schema,
+  absPath,
+}: {
+  schema: OpenAPIObject;
+  absPath: string;
+}) {
+  return <T>(mightHaveReference: any): T => {
+    const selfDeref = derefIfNeeded({ schema, absPath });
+    if (
+      typeof mightHaveReference !== "object" ||
+      Object.keys(mightHaveReference).length === 0
+    ) {
+      return mightHaveReference;
+    }
+    // DFS deref all items as needed
+    for (const childKey of Object.keys(mightHaveReference)) {
+      mightHaveReference[childKey] = selfDeref(mightHaveReference[childKey]);
+    }
+    const refValue = mightHaveReference.$ref;
+    if (refValue === undefined) {
+      return mightHaveReference;
+    }
+    // decide between local and path URI
+    // TODO: Add dereferencing $id and URLs
+    const isLocal = refValue.startsWith("#");
+    const afterPound = refValue
+      .split("#")
+      .slice(1)
+      .join("#");
+
+    const resolvedSchema = isLocal
+      ? schema
+      : loadSpec(fspath.join(absPath, refValue.split("#")[0]));
+    const ref = pointer.get(resolvedSchema, afterPound);
+    return selfDeref(ref) as T;
+  };
+}
+
+const loadSpec = (path: string) => {
+  const content = fs.readFileSync(path, "utf8");
+  return fspath.extname(path).toLowerCase() === ".json"
+    ? JSON.parse(content)
+    : jsyaml.safeLoad(content);
+};
 
 export const getPathParametersFromPath = (path: string): string[] => {
   const pathParameters: string[] = [];

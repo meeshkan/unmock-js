@@ -1,11 +1,64 @@
+import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
 import XRegExp from "xregexp";
 import { Parameter } from "../service/interfaces";
 import {
   buildPathRegexStringFromParameters,
+  derefIfNeeded,
   getAtLevel,
   getPathParametersFromPath,
   getPathParametersFromSchema,
 } from "../service/util";
+
+describe("Tests deref", () => {
+  const absPath = path.join(__dirname, "__unmock__", "petstore");
+  const content = fs.readFileSync(path.join(absPath, "spec.yaml"), "utf8");
+  let schema: any;
+  beforeEach(() => (schema = yaml.safeLoad(content)));
+
+  it("Dereferences local file references", () => {
+    schema.components.schemas.Pets.items.$ref = `spec.yaml${schema.components.schemas.Pets.items.$ref}`;
+    const derefed = derefIfNeeded({ schema, absPath })(
+      schema.components.schemas.Pets,
+    );
+    expect(derefed).toEqual({
+      type: "array",
+      items: {
+        required: ["id", "name"],
+        properties: {
+          id: {
+            type: "integer",
+            format: "int64",
+          },
+          name: { type: "string" },
+          tag: { type: "string" },
+        },
+      },
+    });
+  });
+
+  it("Derefences internal references", () => {
+    const derefed = derefIfNeeded({ schema, absPath })(
+      schema.paths["/pets"].get.responses["200"].content["application/json"]
+        .schema,
+    );
+    expect(derefed).toEqual({
+      type: "array",
+      items: {
+        required: ["id", "name"],
+        properties: {
+          id: {
+            type: "integer",
+            format: "int64",
+          },
+          name: { type: "string" },
+          tag: { type: "string" },
+        },
+      },
+    });
+  });
+});
 
 describe("Tests getAtLevel", () => {
   const schema = {

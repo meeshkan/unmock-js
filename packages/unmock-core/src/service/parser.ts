@@ -1,7 +1,5 @@
 import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
-// @ts-ignore // missing type definitions
-import deref from "json-schema-deref-sync";
 import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
 import { Service } from "./service";
@@ -46,8 +44,9 @@ export class ServiceParser implements IServiceParser {
     const name = serviceDef.directoryName;
 
     return new Service({
+      absPath: serviceDef.absolutePath,
       name,
-      schema: deref(schema.right, { baseFolder: serviceDef.absolutePath }),
+      schema: schema.right,
     });
   }
 }

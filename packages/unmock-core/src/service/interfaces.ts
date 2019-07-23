@@ -76,6 +76,8 @@ export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u.gen !== undefined &&
   typeof u.gen === "function";
 
+export type Dereferencer = <T>(obj: any) => T;
+
 export interface IStateInput {
   method: ExtendedHTTPMethod;
   endpoint: string;
@@ -84,6 +86,7 @@ export interface IStateInput {
 export interface IServiceInput {
   schema: OpenAPIObject;
   name: string;
+  absPath?: string;
 }
 
 // maps from media types (e.g. "application/json") to schema
@@ -92,7 +95,7 @@ export type mediaTypeToSchema = Record<string, Schema>;
 export type codeToMedia = Record<string, mediaTypeToSchema>;
 
 export type MatcherResponse =
-  | { operation: Operation; state: codeToMedia | undefined }
+  | { operation: Operation; state: codeToMedia | undefined; service: IService }
   | undefined;
 
 export interface IService {
@@ -105,6 +108,16 @@ export interface IService {
    * Holds the OpenAPI Schema object (refered to as OAS).
    */
   readonly schema: OpenAPIObject;
+
+  /**
+   * Holds the absolute path where the service specification resides.
+   */
+  readonly absPath: string;
+
+  /**
+   * Used to dereference items in the schema when needed
+   */
+  readonly dereferencer: Dereferencer;
 
   /**
    * Whether the OAS has a defined "paths" object or not.

@@ -1,6 +1,7 @@
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
+  Dereferencer,
   HTTPMethod,
   IService,
   IServiceInput,
@@ -10,9 +11,12 @@ import {
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
+import { derefIfNeeded } from "./util";
 
 export class Service implements IService {
   public readonly name: string;
+  public readonly absPath: string;
+  public readonly dereferencer: Dereferencer;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
@@ -21,12 +25,15 @@ export class Service implements IService {
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
+    this.absPath = opts.absPath || process.cwd();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
       Object.keys(this.schema.paths).length > 0;
     this.matcher = new OASMatcher({ schema: this.schema });
     this.state = new State();
+    const deref = derefIfNeeded({ schema: this.schema, absPath: this.absPath });
+    this.dereferencer = <T>(objToDeref: any) => deref<T>(objToDeref);
   }
 
   get schema(): OpenAPIObject {
@@ -47,6 +54,7 @@ export class Service implements IService {
     return {
       operation: maybeOp,
       state,
+      service: this,
     };
   }
 
@@ -73,6 +81,7 @@ export class Service implements IService {
       serviceName: this.name,
       schemaEndpoint,
       paths: this.schema.paths,
+      dereferencer: this.dereferencer,
     });
   }
 
