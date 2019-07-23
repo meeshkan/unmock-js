@@ -87,7 +87,8 @@ type SetStateForAllPaths =
 type SetStateForMatchingEndpoint =
   /**
    * Sets the given state for the given endpoint (or matching endpoints if using a glob pattern).
-   * @param {string} endpoint Desired endpoint for the state. You may use single asterisks for pattern replacement.
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
    *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
    *            an asterisk may be used instead of {pet_id} or a specific id.
    * @param state An object setting the state or a DSL transformer used to set it.
