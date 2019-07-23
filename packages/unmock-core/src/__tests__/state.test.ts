@@ -3,8 +3,8 @@ import {
   HTTPMethod,
   IStateInputGenerator,
 } from "../service/interfaces";
-import defMiddleware, { textMW } from "../service/state/middleware";
 import { State } from "../service/state/state";
+import defMiddleware, { textResponse } from "../service/state/transformers";
 
 const fullSchema = {
   openapi: "",
@@ -272,7 +272,7 @@ describe("Test state management", () => {
 
   it("Handles textual state correctly", () => {
     const state = new State();
-    updateState(state, "any", "**", textMW("foobar"), "**");
+    updateState(state, "any", "**", textResponse("foobar"), "**");
     const stateResult = getState(state, "get", "/");
     expect(stateResult).toEqual({
       200: { "text/plain": { const: "foobar", type: "string" } },

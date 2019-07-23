@@ -1,7 +1,7 @@
 import { unmock, UnmockOptions } from "unmock-core";
 import NodeBackend from "./backend";
 import _WinstonLogger from "./logger/winston-logger";
-export { middleware } from "unmock-core";
+export { transformers } from "unmock-core";
 
 const backend = new NodeBackend();
 

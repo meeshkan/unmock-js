@@ -9,7 +9,7 @@ import {
   MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
-import defMiddleware from "./state/middleware";
+import defMiddleware from "./state/transformers";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};

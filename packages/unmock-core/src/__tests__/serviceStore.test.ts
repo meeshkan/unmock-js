@@ -1,5 +1,5 @@
-import { OpenAPIObject } from "loas3/dist/src/generated/full";
 import { stateStoreFactory } from "../service";
+import { OpenAPIObject } from "../service/interfaces";
 import { Service } from "../service/service";
 import { ServiceStore } from "../service/serviceStore";
 
