@@ -1,4 +1,4 @@
-import { IBackend, IUnmockOptions } from "./interfaces";
+import { IBackend, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { UnmockOptions } from "./options";
 import * as trns from "./service/state/transformers";
 // top-level exports
@@ -6,15 +6,30 @@ export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./generator";
 
-export const unmock = (baseOptions: UnmockOptions, backend: IBackend) => (
-  maybeOptions?: IUnmockOptions,
-): any => {
-  const options = baseOptions.reset(maybeOptions);
-  if (process.env.NODE_ENV !== "production" || options.useInProduction) {
-    return backend.initialize(options);
+export const dsl = trns;
+
+export abstract class CorePackage implements IUnmockPackage {
+  protected readonly backend: IBackend;
+  private readonly options: UnmockOptions;
+
+  constructor(baseOptions: UnmockOptions, backend: IBackend) {
+    this.options = baseOptions;
+    this.backend = backend;
   }
-  return () => {
-    throw new Error("Are you trying to run unmock in production?");
-  };
-};
-export const transformers = trns;
+
+  public on(maybeOptions?: IUnmockOptions) {
+    return this.backend.initialize(this.options.reset(maybeOptions));
+  }
+  public init(maybeOptions?: IUnmockOptions) {
+    this.on(maybeOptions);
+  }
+  public initialize(maybeOptions?: IUnmockOptions) {
+    this.on(maybeOptions);
+  }
+
+  public off() {
+    this.backend.reset();
+  }
+
+  public abstract states(): any;
+}

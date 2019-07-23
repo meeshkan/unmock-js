@@ -10,7 +10,9 @@ import {
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
 
-export default (state?: UnmockServiceState): IStateInputGenerator => ({
+export const objResponse = (
+  state?: UnmockServiceState,
+): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
   top: getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>

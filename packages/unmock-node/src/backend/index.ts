@@ -84,6 +84,9 @@ export default class NodeBackend implements IBackend {
    * @returns `states` object, with which one can modify states of various services.
    */
   public initialize(options: UnmockOptions): any {
+    if (process.env.NODE_ENV === "production" && !options.useInProduction) {
+      throw new Error("Are you trying to run unmock in production?");
+    }
     if (this.mitm !== undefined) {
       this.reset();
     }

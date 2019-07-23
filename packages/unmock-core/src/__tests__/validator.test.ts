@@ -1,5 +1,5 @@
 import { Response, Responses, Schema } from "../service/interfaces";
-import defMiddleware from "../service/state/transformers";
+import { objResponse } from "../service/state/transformers";
 import { getValidStatesForOperationWithState } from "../service/state/validator";
 
 const arraySchema: Schema = {
@@ -66,7 +66,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with empty state", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
-      defMiddleware(),
+      objResponse(),
       deref,
     );
     expect(spreadState.error).toBeUndefined();
@@ -76,7 +76,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("invalid parameter returns error", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
-      defMiddleware({
+      objResponse({
         boom: 5,
       }),
       deref,
@@ -91,7 +91,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
           200: { content: { "application/json": {} }, description: "foo" },
         },
       },
-      defMiddleware(),
+      objResponse(),
       deref,
     );
     expect(spreadState.error).toContain("No schema defined");
@@ -100,7 +100,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $code specified", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
-      defMiddleware({
+      objResponse({
         $code: 200,
         tag: "foo",
       }),
@@ -119,7 +119,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with $size in top-level specified", () => {
     const spreadState = getValidStatesForOperationWithState(
       arrResponses,
-      defMiddleware({ $size: 5 }),
+      objResponse({ $size: 5 }),
       deref,
     );
     expect(spreadState.error).toBeUndefined();
@@ -136,7 +136,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with missing $code specified", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
-      defMiddleware({
+      objResponse({
         $code: 404,
       }),
       deref,
@@ -150,7 +150,7 @@ describe("Tests getValidResponsesForOperationWithState", () => {
   it("with no $code specified", () => {
     const spreadState = getValidStatesForOperationWithState(
       op,
-      defMiddleware({
+      objResponse({
         test: { id: 5 },
       }),
       deref,

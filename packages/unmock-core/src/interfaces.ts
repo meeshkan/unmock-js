@@ -34,6 +34,14 @@ export interface IUnmockOptions {
   useInProduction?: boolean;
 }
 
+export interface IUnmockPackage {
+  on: (maybeOptions?: IUnmockOptions) => any;
+  init: (maybeOptions?: IUnmockOptions) => any;
+  initialize: (maybeOptions?: IUnmockOptions) => any;
+  off: () => void;
+  states: () => any;
+}
+
 /**
  * Analogous to `IncomingHttpHeaders` in @types/node.
  * Header names are expected to be _lowercased_.

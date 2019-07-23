@@ -1,6 +1,6 @@
 import axios from "axios";
 import path from "path";
-import { transformers, UnmockOptions } from "unmock-core";
+import { dsl, UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
@@ -70,7 +70,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct state when setting textual middleware", async () => {
-      states.petstore(transformers.textResponse("foo"));
+      states.petstore(dsl.textResponse("foo"));
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBe("foo");
@@ -78,7 +78,7 @@ describe("Node.js interceptor", () => {
 
     test("throws when setting textual middleware with DSL with non-existing status code", async () => {
       expect(() =>
-        states.petstore(transformers.textResponse("foo", { $code: 400 })),
+        states.petstore(dsl.textResponse("foo", { $code: 400 })),
       ).toThrow("status code '400'");
     });
   });
