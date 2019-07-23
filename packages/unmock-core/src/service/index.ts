@@ -109,11 +109,7 @@ interface IResetState {
   reset(): void;
 }
 
-type SetStateForSpecificMethod = {
-  // All HTTP methods can set a state
-  [P in HTTPMethod]: SetStateType;
-} &
-  IResetState;
+type SetStateForSpecificMethod = Record<HTTPMethod, SetStateType> & IResetState;
 
 type StateStoreType = {
   // Has either `reset()` function or string signature with function call
