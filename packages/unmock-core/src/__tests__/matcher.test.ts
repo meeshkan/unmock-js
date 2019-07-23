@@ -1,7 +1,7 @@
 import fs from "fs";
 import jsYaml from "js-yaml";
 import path from "path";
-import { ISerializedRequest } from "../interfaces";
+import { ISerializedRequest } from "..";
 import { OASMatcher } from "../service/matcher";
 
 const petStoreYamlString: string = fs.readFileSync(

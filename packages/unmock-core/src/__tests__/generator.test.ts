@@ -1,9 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { IServiceDefLoader } from "..";
-import { responseCreatorFactory } from "../generator";
-
-// const slackYamlString: string = fs.readFileSync(slackAbsPath, "utf-8");
+import { IServiceDefLoader, responseCreatorFactory } from "..";
 
 const serviceDefLoader: IServiceDefLoader = {
   load: () => Promise.all(serviceDefLoader.loadSync()),

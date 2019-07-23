@@ -5,7 +5,7 @@
     "compile": "tsc --build tsconfig.build.json",
     "compile:clean": "tsc --build tsconfig.build.json --clean",
     "watch": "tsc --build tsconfig.build.json --watch",
-    "release": "npm run clean && npm install && lerna publish --exact --force-publish=unmock-core --include-merged-tags",
+    "release": "npm run clean && npm install && lerna publish from-package --exact --force-publish=unmock-core --include-merged-tags",
     "postinstall": "lerna run prepare && npm run lint-ts && npm run compile",
     "format-check": "prettier-check '**/*.{js,ts}'",
     "format": "prettier '**/*.{js,ts}' --write",

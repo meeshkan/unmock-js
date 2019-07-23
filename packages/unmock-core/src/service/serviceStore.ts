@@ -9,7 +9,7 @@ import {
   MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
-import defMiddleware from "./state/transformers";
+import { objResponse } from "./state/transformers";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -75,7 +75,7 @@ export class ServiceStore {
     let stateGen: IStateInputGenerator;
     if (!isStateInputGenerator(state)) {
       // Given an object, set default generator for state
-      stateGen = defMiddleware(state as UnmockServiceState);
+      stateGen = objResponse(state as UnmockServiceState);
     } else {
       stateGen = state as IStateInputGenerator;
     }
