@@ -1,12 +1,11 @@
 import { IBackend, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { UnmockOptions } from "./options";
-import * as trns from "./service/state/transformers";
+import * as transformers from "./service/state/transformers";
 // top-level exports
 export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./generator";
-
-export const dsl = trns;
+export const dsl = transformers;
 
 export abstract class CorePackage implements IUnmockPackage {
   protected readonly backend: IBackend;
