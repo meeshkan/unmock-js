@@ -2,8 +2,9 @@
   "license": "MIT",
   "scripts": {
     "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
-    "compile": "tsc --build tsconfig.build.json",
+    "compile": "tsc --build tsconfig.build.json && npm run compile:tests",
     "compile:clean": "tsc --build tsconfig.build.json --clean",
+    "compile:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
     "watch": "tsc --build tsconfig.build.json --watch",
     "release": "npm run clean && npm install && lerna publish from-package --exact --force-publish=unmock-core --include-merged-tags",
     "postinstall": "lerna run prepare && npm run lint-ts && npm run compile",
