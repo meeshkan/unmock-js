@@ -10,7 +10,6 @@
     "format-check": "prettier-check '**/*.{js,ts}'",
     "format": "prettier '**/*.{js,ts}' --write",
     "lint": "prettier --check \"packages/**/*.ts\" ",
-    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json",
     "test": "jest --verbose",
     "test:clean": "jest --clearCache",
     "test:watch": "jest --verbose --watchAll",
