@@ -28,11 +28,9 @@ export class OASMatcher {
     reqPath: string,
     serverPathPrefix: string,
   ) {
-    const serverUrlWithoutTrailingSlash = serverPathPrefix.replace(/\/$/, "");
-    const regexToRemoveFromReqPath = new RegExp(
-      `^${serverUrlWithoutTrailingSlash}`,
-    );
-    return reqPath.replace(regexToRemoveFromReqPath, "");
+    const pathSuffix = serverPathPrefix.endsWith("/") ? "" : "/";
+    const serverPathRegex = new RegExp(`^${serverPathPrefix + pathSuffix}`);
+    return reqPath.replace(serverPathRegex, "/");
   }
 
   private static buildRegexpForPaths(
