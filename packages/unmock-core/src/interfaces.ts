@@ -17,13 +17,17 @@ export interface IRequestData {
   path?: string;
 }
 
+export interface WhiteList {
+  whitelist?: string[] | string;
+  useInProduction?: boolean;
+}
 export interface IResponseData {
   body?: string;
   headers?: any;
 }
 
 export interface IBackend {
-  initialize: (opts: UnmockOptions) => any;
+  initialize: (opts: UnmockOptions, logger: ILogger, whitelist: WhiteList) => any;
   reset: () => void;
 }
 

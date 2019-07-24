@@ -1,4 +1,4 @@
-import { IBackend, UnmockOptions } from "unmock-core";
+import { IBackend, ILogger, UnmockOptions, WhiteList } from "unmock-core";
 
 const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
 const XMLHttpRequestSetRequestHeader =
@@ -27,7 +27,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
-  public initialize(opts: UnmockOptions) {
+  public initialize(opts: UnmockOptions, logger: ILogger, whitelist: WhiteList) {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
@@ -38,7 +38,7 @@ export default class JSDomBackend implements IBackend {
       let data: Document | BodyInit | null = null;
       const ro = new URL(url);
       const finalHost = ro.host || ro.hostname;
-      if (opts.isWhitelisted(finalHost)) {
+      if (whitelist.isWhitelisted(finalHost)) {
         return XMLHttpRequestOpen.apply(this, [
           method,
           url,
@@ -49,7 +49,7 @@ export default class JSDomBackend implements IBackend {
       }
       const headerz: { [name: string]: string } = {};
       this.setRequestHeader = function(name: string, value: string) {
-        if (opts.isWhitelisted(finalHost)) {
+        if (whitelist.isWhitelisted(finalHost)) {
           return XMLHttpRequestSetRequestHeader.apply(this, [name, value]);
         }
         // store and pass onto request
@@ -58,9 +58,9 @@ export default class JSDomBackend implements IBackend {
       };
       const doEndReporting = (responseBody: string, responseHeaders: any) =>
         // TODO - actually report or do something with the request, or alternatively remove jsdom...
-        opts.logger.log(
+        logger.log(
           JSON.stringify({
-            opts,
+            whitelist,
             // tslint:disable-next-line: object-literal-sort-keys
             lang: "jsdom",
             ...(data ? { body: data.toString() } : {}),
@@ -79,7 +79,7 @@ export default class JSDomBackend implements IBackend {
         const onreadystatechange = request.onreadystatechange;
         request.onreadystatechange = (ev: Event) => {
           if (request.readyState === 4) {
-            if (!opts.isWhitelisted(finalHost)) {
+            if (!whitelist.isWhitelisted(finalHost)) {
               if (shouldEndReport) {
                 doEndReporting(
                   request.response,
@@ -94,7 +94,7 @@ export default class JSDomBackend implements IBackend {
         };
       };
       this.send = function(body?: Document | BodyInit | null): void {
-        if (opts.isWhitelisted(finalHost)) {
+        if (whitelist.isWhitelisted(finalHost)) {
           return XMLHttpRequestSend.apply(this, [body]);
         }
         if (body) {
