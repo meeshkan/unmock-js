@@ -9,7 +9,7 @@ import {
   MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
-import { objResponse } from "./state/transformers";
+import { objResponse, textResponse } from "./state/transformers";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -49,7 +49,7 @@ export class ServiceStore {
     serviceName: string;
     endpoint: string;
     method: ExtendedHTTPMethod;
-    state: IStateInputGenerator | UnmockServiceState | undefined;
+    state: IStateInputGenerator | UnmockServiceState | string | undefined;
   }) {
     /**
      * Verifies logical flow of inputs before dispatching the update to
@@ -75,7 +75,10 @@ export class ServiceStore {
     let stateGen: IStateInputGenerator;
     if (!isStateInputGenerator(state)) {
       // Given an object, set default generator for state
-      stateGen = objResponse(state as UnmockServiceState);
+      stateGen =
+        typeof state === "string"
+          ? textResponse(state)
+          : objResponse(state as UnmockServiceState);
     } else {
       stateGen = state as IStateInputGenerator;
     }
