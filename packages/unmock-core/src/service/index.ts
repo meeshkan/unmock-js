@@ -5,6 +5,7 @@ import {
   isRESTMethod,
   IStateInputGenerator,
   UnmockServiceState,
+  StateStoreType,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
 export { ServiceParser } from "./parser";
@@ -73,48 +74,6 @@ const StateHandler = (prevServiceName?: string) => {
     },
   };
 };
-
-type SetStateForAllPaths =
-  /**
-   * Sets the given state for all endpoints in the current service, for which the state can be applied.
-   * @param state An object setting the state or a DSL transformer used to set it.
-   * @throws If the given state cannot be applied to any endpoint.
-   */
-  (
-    state: IStateInputGenerator | UnmockServiceState,
-  ) => StateStoreType & SetStateForSpecificMethod;
-
-type SetStateForMatchingEndpoint =
-  /**
-   * Sets the given state for the given endpoint (or matching endpoints if using a glob pattern).
-   * @param {string} endpoint Desired endpoint for the state.
-   *   You may use single asterisks for single path item replacement.
-   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
-   *            an asterisk may be used instead of {pet_id} or a specific id.
-   * @param state An object setting the state or a DSL transformer used to set it.
-   * @throws If the state cannot be applied to the given endpoint.
-   */
-  (
-    endpoint: string,
-    state: IStateInputGenerator | UnmockServiceState,
-  ) => StateStoreType & SetStateForSpecificMethod;
-
-type SetStateType = SetStateForAllPaths & SetStateForMatchingEndpoint;
-
-interface IResetState {
-  /**
-   * Resets the state for the current service, or for the entire state store.
-   * You may not continue using the fluent API after this call.
-   */
-  reset(): void;
-}
-
-type SetStateForSpecificMethod = Record<HTTPMethod, SetStateType> & IResetState;
-
-type StateStoreType = {
-  // Has either `reset()` function or string signature with function call
-  [serviceName: string]: SetStateType & SetStateForSpecificMethod;
-} & IResetState;
 
 // Returns as any to allow for type-free DSL-like access to services and states
 export const stateStoreFactory = (serviceStore: ServiceStore): StateStoreType =>
