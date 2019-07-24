@@ -1,10 +1,10 @@
 import { escapeRegExp } from "lodash";
-import { ILogger, IUnmockOptions } from "./interfaces";
+import { IUnmockOptions } from "./interfaces";
 
 export class UnmockOptions implements IUnmockOptions {
   public useInProduction: boolean = false;
-  public logger: ILogger = { log: () => undefined }; // Default logger does nothing
-  public signature?: string;
+  // public logger: ILogger = { log: () => undefined }; // Default logger does nothing
+  // public signature?: string;
   public whitelist?: string[] | string;
   private regexWhitelist?: RegExp[];
 
@@ -18,9 +18,9 @@ export class UnmockOptions implements IUnmockOptions {
     if (options === undefined) {
       return this;
     }
-    const { logger, signature, whitelist, useInProduction } = options;
-    this.logger = logger || this.logger;
-    this.signature = signature || this.signature;
+    const { whitelist, useInProduction } = options;
+    // this.logger = logger || this.logger;
+    // this.signature = signature || this.signature;
     this.whitelist = whitelist ? whitelist : this.whitelist;
     this.regexWhitelist = this.whitelistToRegex(this.whitelist);
     this.useInProduction = useInProduction || this.useInProduction;

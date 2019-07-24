@@ -1,4 +1,4 @@
-import { IBackend, IUnmockOptions, IUnmockPackage } from "./interfaces";
+import { IBackend, ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { UnmockOptions } from "./options";
 import * as transformers from "./service/state/transformers";
 // top-level exports
@@ -17,7 +17,12 @@ export abstract class CorePackage implements IUnmockPackage {
   }
 
   public on(maybeOptions?: IUnmockOptions) {
-    return this.backend.initialize(this.options.reset(maybeOptions));
+    const defaultLogger: ILogger = {
+      log: (_: string) => {
+        /* */
+      },
+    };
+    return this.backend.initialize(this.options.reset(maybeOptions), defaultLogger);
   }
   public init(maybeOptions?: IUnmockOptions) {
     this.on(maybeOptions);
