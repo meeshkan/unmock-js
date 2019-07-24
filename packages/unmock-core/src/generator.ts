@@ -11,7 +11,7 @@ import {
   IServiceDef,
   IServiceDefLoader,
 } from "./interfaces";
-import { stateStoreFactory } from "./service";
+import { stateFacadeFactory } from "./service";
 import {
   codeToMedia,
   Dereferencer,
@@ -47,7 +47,7 @@ export function responseCreatorFactory({
     parser.parse(serviceDef),
   );
   const serviceStore = new ServiceStore(services);
-  const stateStore = stateStoreFactory(serviceStore);
+  const stateStore = stateFacadeFactory(serviceStore);
   return {
     stateStore,
     createResponse: (sreq: ISerializedRequest) =>

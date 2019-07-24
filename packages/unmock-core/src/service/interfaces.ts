@@ -150,13 +150,206 @@ interface INestedState<T> {
   [key: string]: INestedState<T> | T;
 }
 
-interface IUnmockServiceState
+export interface IUnmockServiceState
   extends INestedState<
     IDSL | string | number | (() => string | number) | undefined | boolean
   > {}
+
 /**
  * Defines how a state can look like without validation against
  * the actual service specification.
  * Validation can be done either in runtime or via IDE extensions.
  */
-export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL;
+export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
+
+// ##########################
+// Type definitions for the Proxy class used to wrap the State Store.
+// ##########################
+
+// Used to define the simplify the types used
+type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
+type StateInput = IStateInputGenerator | UnmockServiceState;
+
+// Used to incorporate the reset method when needed
+interface IResetState {
+  /**
+   * Resets the state for the current service, or for the entire state store.
+   * You may not continue using the fluent API after this call.
+   */
+  reset(): void;
+}
+
+// Manually sync'd with HTTPMethod: ["get", "head", "post", "put", "patch", "delete", "options", "trace"]
+type SetStateForSpecificMethod = {
+  /**
+   * Sets the given state for all GET endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any GET endpoint, or if no GET endpoints exist.
+   */
+  get(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given GET endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint, or if the endpoint does not specify a GET operation.
+   */
+  get(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all HEAD endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any HEAD endpoint, or if no HEAD endpoints exist.
+   */
+  head(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given HEAD endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint, or if the endpoint does not specify a HEAD operation.
+   */
+  head(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all POST endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any POST endpoint, or if no POST endpoints exist.
+   */
+  post(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given POST endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a POST operation.
+   */
+  post(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all PUT endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any PUT endpoint,
+   *         or if no PUT endpoints exist.
+   */
+  put(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given PUT endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a PUT operation.
+   */
+  put(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all PATCH endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any PATCH endpoint,
+   *         or if no PATCH endpoints exist.
+   */
+  patch(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given PATCH endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a PATCH operation.
+   */
+  patch(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all DELETE endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any DELETE endpoint, or if no DELETE endpoints exist.
+   */
+  delete(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given DELETE endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a DELETE operation.
+   */
+  delete(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all OPTIONS endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any OPTIONS endpoint, or if no OPTIONS endpoints exist.
+   */
+  options(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given OPTIONS endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a OPTIONS operation.
+   */
+  options(endpoint: string, state: StateInput): FluentStateStore;
+
+  /**
+   * Sets the given state for all TRACE endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any TRACE endpoint, or if no TRACE endpoints exist.
+   */
+  trace(state: StateInput): FluentStateStore;
+  /**
+   * Sets the given state for the given TRACE endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint,
+   *         or if the endpoint does not specify a TRACE operation.
+   */
+  trace(endpoint: string, state: StateInput): FluentStateStore;
+} & IResetState;
+
+// Used for service-general state setups
+type SetStateForAllPaths =
+  /**
+   * Sets the given state for all endpoints in the current service, for which the state can be applied.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the given state cannot be applied to any endpoint.
+   */
+  (state: StateInput) => FluentStateStore;
+
+type SetStateForMatchingEndpoint =
+  /**
+   * Sets the given state for the given endpoint (or matching endpoints if using a glob pattern).
+   * @param {string} endpoint Desired endpoint for the state.
+   *   You may use single asterisks for single path item replacement.
+   *   Example: If a service specified an endpoint '/pets/{pet_id}/name',
+   *            an asterisk may be used instead of {pet_id} or a specific id.
+   * @param state An object setting the state or a DSL transformer used to set it.
+   * @throws If the state cannot be applied to the given endpoint.
+   */
+  (endpoint: string, state: StateInput) => FluentStateStore;
+
+export type StateFacadeType = {
+  // Has either `reset()` function or string signature with function call
+  [serviceName: string]: SetStateForAllPaths &
+    SetStateForMatchingEndpoint &
+    SetStateForSpecificMethod;
+} & IResetState;
