@@ -1,5 +1,5 @@
-import { dsl } from "..";
 import { Schema } from "../service/interfaces";
+import { objResponse, textResponse } from "../service/state/transformers";
 
 const schema: Schema = {
   properties: {
@@ -34,7 +34,7 @@ const schema: Schema = {
 
 describe("Test text provider", () => {
   it("returns empty object for undefined state", () => {
-    const p = dsl.textResponse();
+    const p = textResponse();
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
@@ -42,7 +42,7 @@ describe("Test text provider", () => {
   });
 
   it("returns empty object for empty state", () => {
-    const p = dsl.textResponse("");
+    const p = textResponse("");
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
@@ -50,7 +50,7 @@ describe("Test text provider", () => {
   });
 
   it("returns empty object for empty schema", () => {
-    const p = dsl.textResponse("foo");
+    const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
@@ -58,14 +58,14 @@ describe("Test text provider", () => {
   });
 
   it("returns empty object for non-text schema", () => {
-    const p = dsl.textResponse("foo");
+    const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
     expect(p.gen({ type: "array", items: {} })).toEqual({});
   });
 
   it("returns correct state object for valid input", () => {
-    const p = dsl.textResponse("foo");
+    const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
     expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
@@ -73,7 +73,7 @@ describe("Test text provider", () => {
 
   it("top level DSL doesn't change response", () => {
     // @ts-ignore // invalid value on purpose
-    const p = dsl.textResponse("foo", { $code: 200, notDSL: "a" });
+    const p = textResponse("foo", { $code: 200, notDSL: "a" });
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({ $code: 200 }); // non DSL is filtered out
     expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
@@ -82,21 +82,21 @@ describe("Test text provider", () => {
 
 describe("Test default provider", () => {
   it("returns empty objects for undefined state", () => {
-    const p = dsl.objResponse();
+    const p = objResponse();
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     expect(p.gen({})).toEqual({});
   });
 
   it("returns empty objects for empty state", () => {
-    const p = dsl.objResponse({});
+    const p = objResponse({});
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     expect(p.gen({})).toEqual({});
   });
 
   it("filters out top level DSL from state", () => {
-    const p = dsl.objResponse({ $code: 200, foo: "bar" });
+    const p = objResponse({ $code: 200, foo: "bar" });
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({ $code: 200 });
     expect(p.gen({})).toEqual({}); // no schema to expand
@@ -111,16 +111,14 @@ describe("Test default provider", () => {
   });
 
   it("with empty path", () => {
-    const spreadState = dsl.objResponse({}).gen(schema);
+    const spreadState = objResponse({}).gen(schema);
     expect(spreadState).toEqual({}); // Empty state => empty spread state
   });
 
   it("with specific path", () => {
-    const spreadState = dsl
-      .objResponse({
-        test: { id: "a" },
-      })
-      .gen(schema);
+    const spreadState = objResponse({
+      test: { id: "a" },
+    }).gen(schema);
     expect(spreadState).toEqual({
       // Spreading from "test: { id : { ... " to also inlucde properties
       properties: {
@@ -134,13 +132,13 @@ describe("Test default provider", () => {
   });
 
   it("with vague path", () => {
-    const spreadState = dsl.objResponse({ id: 5 }).gen(schema);
+    const spreadState = objResponse({ id: 5 }).gen(schema);
     // no "id" in top-most level or immediately under properties\items
     expect(spreadState).toEqual({ id: null });
   });
 
   it("with missing parameters", () => {
-    const spreadState = dsl.objResponse({ ida: "a" }).gen(schema);
+    const spreadState = objResponse({ ida: "a" }).gen(schema);
     expect(spreadState).toEqual({ ida: null }); // Nothing to spread
   });
 });

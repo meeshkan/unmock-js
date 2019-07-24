@@ -1,6 +1,7 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage, dsl, UnmockOptions } from "unmock-core";
+import { CorePackage, UnmockOptions } from "unmock-core";
+import { dsl } from "../..";
 import NodeBackend from "../../backend";
 
 class StateTestPackage extends CorePackage {
@@ -77,11 +78,18 @@ describe("Node.js interceptor", () => {
       expect(response2.data.every((pet: any) => pet.id === -1)).toBeTruthy();
     });
 
-    test("gets correct state when setting textual middleware", async () => {
-      states.petstore(dsl.textResponse("foo"));
+    test("gets correct state when setting textual response", async () => {
+      states.petstore("foo");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBe("foo");
+    });
+
+    test("gets correct state when setting textual response with path", async () => {
+      states.petstore("/pets", "bar");
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("bar");
     });
 
     test("throws when setting textual middleware with DSL with non-existing status code", async () => {

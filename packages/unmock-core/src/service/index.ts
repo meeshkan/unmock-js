@@ -11,10 +11,13 @@ export { ServiceParser } from "./parser";
 
 const saveStateProxy = (store: ServiceStore, serviceName: string) => (
   method: ExtendedHTTPMethod = DEFAULT_STATE_HTTP_METHOD,
-) => (endpoint = DEFAULT_STATE_ENDPOINT, state: UnmockServiceState) => {
+) => (
+  endpoint = DEFAULT_STATE_ENDPOINT,
+  state: UnmockServiceState | undefined | string,
+) => {
   // Returns a function for the end user to update the state in,
   // while maintaining endpoints and methods.
-  if (typeof endpoint !== "string") {
+  if (state === undefined) {
     state = endpoint;
     endpoint = DEFAULT_STATE_ENDPOINT;
   }
