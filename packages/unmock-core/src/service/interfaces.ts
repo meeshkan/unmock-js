@@ -167,7 +167,7 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 // ##########################
 
 // Used to define the simplify the types used
-type FluentStateStore = StateStoreType & SetStateForSpecificMethod;
+type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
 type StateInput = IStateInputGenerator | UnmockServiceState;
 
 // Used to incorporate the reset method when needed
@@ -347,7 +347,7 @@ type SetStateForMatchingEndpoint =
    */
   (endpoint: string, state: StateInput) => FluentStateStore;
 
-export type StateStoreType = {
+export type StateFacadeType = {
   // Has either `reset()` function or string signature with function call
   [serviceName: string]: SetStateForAllPaths &
     SetStateForMatchingEndpoint &

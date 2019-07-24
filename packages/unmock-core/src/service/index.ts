@@ -3,7 +3,7 @@ import {
   ExtendedHTTPMethod,
   HTTPMethod,
   isRESTMethod,
-  StateStoreType,
+  StateFacadeType,
   UnmockServiceState,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
@@ -75,5 +75,6 @@ const StateHandler = (prevServiceName?: string) => {
 };
 
 // Returns as any to allow for type-free DSL-like access to services and states
-export const stateStoreFactory = (serviceStore: ServiceStore): StateStoreType =>
-  new Proxy(serviceStore, StateHandler()) as any;
+export const stateFacadeFactory = (
+  serviceStore: ServiceStore,
+): StateFacadeType => new Proxy(serviceStore, StateHandler()) as any;
