@@ -3,9 +3,8 @@ import {
   ExtendedHTTPMethod,
   HTTPMethod,
   isRESTMethod,
-  IStateInputGenerator,
-  UnmockServiceState,
   StateStoreType,
+  UnmockServiceState,
 } from "./interfaces";
 import { ServiceStore } from "./serviceStore";
 export { ServiceParser } from "./parser";
