@@ -31,9 +31,9 @@ describe("Tests generator", () => {
     const { stateStore } = responseCreatorFactory({
       serviceDefLoader,
     });
-    stateStore.slack(); // should pass
-    stateStore.petstore(); // should pass
-    expect(() => stateStore.github()).toThrow("service named 'github'"); // no github service
+    stateStore.slack({}); // should pass
+    stateStore.petstore({}); // should pass
+    expect(() => stateStore.github({})).toThrow("service named 'github'"); // no github service
   });
 
   it("sets a state for swagger api converted to openapi", () => {

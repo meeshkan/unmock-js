@@ -22,6 +22,7 @@ import {
   Response,
   Responses,
   Schema,
+  StateFacadeType,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
@@ -40,7 +41,7 @@ export function responseCreatorFactory({
   serviceDefLoader,
 }: {
   serviceDefLoader: IServiceDefLoader;
-}): { stateStore: any; createResponse: CreateResponse } {
+}): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const parser = new ServiceParser();
   const services: IService[] = serviceDefs.map(serviceDef =>
