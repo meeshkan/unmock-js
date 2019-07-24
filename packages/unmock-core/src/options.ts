@@ -1,5 +1,5 @@
 import { escapeRegExp } from "lodash";
-import { ILogger, IUnmockOptions } from "./interfaces";
+import { IUnmockOptions } from "./interfaces";
 
 export class UnmockOptions implements IUnmockOptions {
   public useInProduction: boolean = false;
