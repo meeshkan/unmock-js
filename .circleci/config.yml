@@ -64,7 +64,10 @@ jobs:
           - "34:32:ff:02:fe:1e:00:10:49:75:8e:d4:6c:2b:12:ca"
     - run:
         name: "Authenticate with GH"
-        command: git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
+        command: |
+          git config user.email "dev@meeshkan.com"
+          git config user.name "Meeshkan Dev Team"
+          git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
     - run:
         name: "Tag current release"
         command: |
