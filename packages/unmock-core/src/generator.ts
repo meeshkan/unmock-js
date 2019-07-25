@@ -208,10 +208,8 @@ const generateMockFromTemplate = (
 
   // Setup the unmock properties for jsf parsing
   setupJSFUnmockProperties();
-  if (template.required === undefined) {
-    // if `required` is not found, then generate everything
-    jsf.option("alwaysFakeOptionals", true);
-  }
+  // Always generate all fields for now
+  jsf.option("alwaysFakeOptionals", true);
   // First iteration simply parses these and returns the updated schema
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
