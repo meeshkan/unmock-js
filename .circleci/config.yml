@@ -30,6 +30,9 @@ jobs:
     - attach_workspace:
         at: ~/repo
     - run:
+        name: Verify version bumps and changelog update
+        command: /bin/bash ./.circleci/verify-master-changes.sh $CIRCLE_BRANCH
+    - run:
         name: Authenticate with npm
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - add_ssh_keys:
