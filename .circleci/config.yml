@@ -24,6 +24,33 @@ jobs:
           root: ~/repo
           paths: .
 
+  verify-before-publish:
+      <<: *defaults
+      steps:
+        - checkout
+        - run:
+            name: Install packages
+            command: |
+              sudo apt update
+              sudo apt install -y jq curl
+        - run:
+            name: Verify requirements for master branch PR
+            command: |
+              if [[ -z ${CIRCLE_PR_NUMBER} ]]; then
+                PR_NUMBER=`echo $CIRCLE_PULL_REQUEST | awk 'BEGIN { FS="/" } { print $NF }'`
+              else
+                PR_NUMBER=$CIRCLE_PR_NUMBER
+              fi
+
+              echo "PR number - ${PR_NUMBER}"
+              TRG_BRANCH=`curl https://api.github.com/repos/unmock/unmock-js/pulls/$PR_NUMBER | jq .base.ref | tr -d '"'`
+              echo "Target branch - ${TRG_BRANCH}"
+              if [[ "$TRG_BRANCH" == "master" ]]; then
+                /bin/bash ./.circleci/verify-master-changes.sh $CIRCLE_BRANCH
+              else
+                echo "Not merging to master branch, skipping test"
+              fi
+
   publish:
     <<: *defaults
     steps:
@@ -51,9 +78,11 @@ workflows:
   test-and-deploy:
     jobs:
       - build
+      - verify-before-publish
       - publish:
           requires:
             - build
+            - verify-before-publish
           filters:
             branches:
               only: master
