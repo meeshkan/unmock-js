@@ -10,14 +10,14 @@ if [[ $# -lt 1 ]]; then
 else
   BRANCH_CMP=$1
 fi
-PACKAGES_CHANGED=`git diff --name-only origin/master $BRANCH_CMP -- | grep package.json`
+PACKAGES_CHANGED=`git diff --name-only origin/master $BRANCH_CMP -- | grep package.json | grep packages`
 CHANGELOG_UPDATED=`git diff --name-only origin/master $BRANCH_CMP -- | grep changelog.md | wc -l`
 N_PACKAGES_CHANGED=`echo $PACKAGES_CHANGED | wc -w`
 N_PACKAGES=`ls packages | wc -w`
 
 echo "Verifying minimal requirements for master merge"
 echo "Verifying all package.json in monorepos were modified..."
-if [ $N_PACKAGES_CHANGED -lt $N_PACKAGES ]; then
+if [ $N_PACKAGES_CHANGED -ne $N_PACKAGES ]; then
   echo "package.json was not updated across our monorepo!"
   exit 1
 else
@@ -50,7 +50,7 @@ echo ""
 echo "Verifying version ($MAIN_VERSION) is synchronized across monorepo"
 for f in "lerna.json" "packages/unmock/package.json" "packages/unmock-cli/package.json" "packages/unmock-jsdom/package.json" "packages/unmock-node/package.json"; do
   CUR_VERSION="$(get_version_from_file $f)"
-  if [[ "$CUR_VERSION" != "$MAIN_VERSION" ]]; then
+  if [ "$CUR_VERSION" != "$MAIN_VERSION" ]; then
     echo "Found mismatched version '${CUR_VERSION}', declared in '${f}'"
     exit 1
   fi
@@ -60,9 +60,9 @@ echo ""
 
 
 # verify the new version appears in changelog
-VERSION_IN_CHANGELOG=`grep ${MAIN_VERSION} changelog.md`
+VERSION_IN_CHANGELOG=`grep ${MAIN_VERSION} changelog.md | wc -l`
 echo "Verifying ${MAIN_VERSION} appears in changelog.md"
-if [ $? -ne 0 ]; then
+if [ $VERSION_IN_CHANGELOG -eq 0 ]; then
   echo "The new version (${MAIN_VERSION}) does not appear in changelog.md!"
   exit 1
 else
