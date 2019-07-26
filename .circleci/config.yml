@@ -73,7 +73,7 @@ jobs:
         command: |
           TAG=v`cat packages/unmock-core/package.json | grep version | awk 'BEGIN { FS = "\"" } { print $4 }'`
           git tag -a $TAG -m $TAG
-          git push origin $TAG
+          # git push origin $TAG
     - run: npx lerna publish --from-package --yes
 
 workflows:
