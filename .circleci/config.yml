@@ -65,7 +65,7 @@ jobs:
     - run:
         name: "Authenticate with GH"
         command: |
-          git config --global url.https://github.com/.insteadOf git://github.com/
+          git remote set-url origin https://github.com/unmock/unmock-js.git
           git config user.email "dev@meeshkan.com"
           git config user.name "Meeshkan Dev Team"
           git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
