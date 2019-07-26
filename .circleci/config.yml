@@ -61,17 +61,21 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - add_ssh_keys:
         fingerprints:
-          - "34:32:ff:02:fe:1e:00:10:49:75:8e:d4:6c:2b:12:ca"
+          - "16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48"
     - run:
         name: "Authenticate with GH"
-        command: git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
+        command: |
+          git remote set-url origin https://github.com/unmock/unmock-js.git
+          git config user.email "dev@meeshkan.com"
+          git config user.name "Meeshkan Dev Team"
+          git config credential.helper "/bin/bash ./.circleci/git-credentials-helper.sh"
     - run:
         name: "Tag current release"
         command: |
           TAG=v`cat packages/unmock-core/package.json | grep version | awk 'BEGIN { FS = "\"" } { print $4 }'`
-          git tag -a $TAG
+          git tag -a $TAG -m $TAG
           git push origin $TAG
-    - run: npm run publish --yes
+    - run: npx lerna publish from-package --yes
 
 workflows:
   version: 2
