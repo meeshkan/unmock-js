@@ -61,7 +61,7 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - add_ssh_keys:
         fingerprints:
-          - "34:32:ff:02:fe:1e:00:10:49:75:8e:d4:6c:2b:12:ca"
+          - "SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8"
     - run:
         name: "Authenticate with GH"
         command: |
@@ -72,8 +72,8 @@ jobs:
         name: "Tag current release"
         command: |
           TAG=v`cat packages/unmock-core/package.json | grep version | awk 'BEGIN { FS = "\"" } { print $4 }'`
-          # git tag -a $TAG -m $TAG
-          # git push origin $TAG
+          git tag -a $TAG -m $TAG
+          git push origin $TAG
     - run: npx lerna publish --from-package --no-git-reset --yes
 
 workflows:
