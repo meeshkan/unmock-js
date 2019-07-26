@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.1.5 (2019-07-26)
+
+Fix:
+
+  - `dist/` directory was missing from the release because of a bug in the CI/CD pipeline [#107](https://github.com/unmock/unmock-js/pull/107)
+
 ## 0.1.4 (2019-07-25)
 
 Features:
