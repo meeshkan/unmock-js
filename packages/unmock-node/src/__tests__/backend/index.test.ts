@@ -50,5 +50,18 @@ describe("Node.js interceptor", () => {
       }
       throw new Error("Should not get here");
     });
+
+    test("respects cancellation", async () => {
+      const cancelTokenSource = axios.CancelToken.source();
+      setImmediate(() => cancelTokenSource.cancel());
+      try {
+        await axios("http://example.org", { cancelToken : cancelTokenSource.token} );
+      } catch (err) {
+        expect(axios.isCancel(err)).toBe(true);
+        return;
+      }
+      throw new Error("Was supposed to throw a cancellation error");
+    });
+
   });
 });
