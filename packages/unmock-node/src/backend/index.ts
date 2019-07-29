@@ -31,7 +31,10 @@ const respondFromSerializedResponse = (
 };
 
 const errorForMissingTemplate = (sreq: ISerializedRequest) => {
-  return `No matching template found`;
+  return `No matching template found for intercepted request. Please ensure that
+  1. You have defined a service for host ${sreq.protocol}://${sreq.host}
+  2. The service has a path matching "${sreq.method} ${sreq.path}"
+  `;
 };
 
 async function handleRequestAndResponse(
