@@ -45,7 +45,7 @@ describe("Node.js interceptor", () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toEqual(expect.stringContaining("No matching template"));
+        expect(err.message).toContain("No matching template");
         return;
       }
       throw new Error("Should not get here");
