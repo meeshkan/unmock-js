@@ -30,6 +30,10 @@ const respondFromSerializedResponse = (
   res.end(serializedResponse.body);
 };
 
+const errorForMissingTemplate = (sreq: ISerializedRequest) => {
+  return `No matching template found`;
+};
+
 async function handleRequestAndResponse(
   createResponse: CreateResponse,
   req: IncomingMessage,
@@ -44,9 +48,9 @@ async function handleRequestAndResponse(
     );
 
     if (serializedResponse === undefined) {
-      // TODO Handle this properly
       debugLog("No match found, emitting error");
-      clientRequest.emit("error", Error("No matching template found"));
+      const errMsg = errorForMissingTemplate(serializedRequest);
+      clientRequest.emit("error", Error(errMsg));
       return;
     }
     respondFromSerializedResponse(serializedResponse, res);
@@ -132,6 +136,7 @@ export default class NodeBackend implements IBackend {
     req: IncomingMessage,
     res: ServerResponse,
   ) {
+    debugLog("Handling incoming message...");
     const clientRequest = ClientRequestTracker.pop(req);
     handleRequestAndResponse(createResponse, req, res, clientRequest);
   }
