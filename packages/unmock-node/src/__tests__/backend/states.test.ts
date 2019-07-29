@@ -12,8 +12,8 @@ class StateTestPackage extends CorePackage {
 
 const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
 
-describe("Node.js interceptor", () => {
-  describe("with state requests in place", () => {
+describe("Setting state", () => {
+  describe("for petstore service", () => {
     let nodeInterceptor: NodeBackend;
     let unmock: CorePackage;
     let states: any;
@@ -97,5 +97,29 @@ describe("Node.js interceptor", () => {
         states.petstore(dsl.textResponse("foo", { $code: 400 })),
       ).toThrow("status code '400'");
     });
+  });
+
+  describe("for example.com service", () => {
+      let nodeInterceptor: NodeBackend;
+      let unmock: CorePackage;
+      let states: any;
+
+      beforeAll(() => {
+        nodeInterceptor = new NodeBackend({ servicesDirectory });
+        const unmockOptions = new UnmockOptions();
+        unmock = new StateTestPackage(unmockOptions, nodeInterceptor);
+        states = unmock.on();
+      });
+
+      afterAll(() => {
+        unmock.off();
+        states = undefined;
+      });
+
+      beforeEach(() => states.reset());
+
+      it("does not throw when trying to set response for type field", async () => {
+        states.example({ type: "image" });
+      });
   });
 });

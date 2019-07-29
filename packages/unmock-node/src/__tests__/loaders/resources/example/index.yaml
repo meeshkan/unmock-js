@@ -1,0 +1,6 @@
+servers:
+  - url: http://example.com
+
+paths:
+  /:
+    type: "image"
