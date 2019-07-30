@@ -2,6 +2,13 @@ import fs from "fs";
 import path from "path";
 import { IServiceDefLoader, responseCreatorFactory } from "..";
 
+const mockOptions = {
+  flaky: () => false,
+  isWhitelisted: (_: string) => false,
+  log: (_: string) => undefined,
+  useInProduction: () => false,
+};
+
 const serviceDefLoader: IServiceDefLoader = {
   load: () => Promise.all(serviceDefLoader.loadSync()),
   loadSync: () => {
@@ -30,6 +37,7 @@ describe("Tests generator", () => {
   it("loads all paths in __unmock__", () => {
     const { stateStore } = responseCreatorFactory({
       serviceDefLoader,
+      options: mockOptions,
     });
     stateStore.slack({}); // should pass
     stateStore.petstore({}); // should pass
@@ -39,6 +47,7 @@ describe("Tests generator", () => {
   it("sets a state for swagger api converted to openapi", () => {
     const { stateStore } = responseCreatorFactory({
       serviceDefLoader,
+      options: mockOptions,
     });
     stateStore.slack("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
 

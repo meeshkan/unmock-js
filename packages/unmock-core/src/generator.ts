@@ -10,6 +10,7 @@ import {
   ISerializedResponse,
   IServiceDef,
   IServiceDefLoader,
+  IUnmockOptions,
 } from "./interfaces";
 import { stateFacadeFactory } from "./service";
 import {
@@ -39,8 +40,10 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 
 export function responseCreatorFactory({
   serviceDefLoader,
+  options,
 }: {
   serviceDefLoader: IServiceDefLoader;
+  options: IUnmockOptions;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const parser = new ServiceParser();
@@ -52,7 +55,7 @@ export function responseCreatorFactory({
   return {
     stateStore,
     createResponse: (sreq: ISerializedRequest) =>
-      generateMockFromTemplate(serviceStore.match(sreq)),
+      generateMockFromTemplate(options, serviceStore.match(sreq)),
   };
 }
 
@@ -73,6 +76,7 @@ const getStateForOperation = (
   operation: Operation,
   state: codeToMedia | undefined,
   deref: Dereferencer,
+  genOptions: { isFlaky: boolean },
 ):
   | {
       $code: string;
@@ -88,11 +92,17 @@ const getStateForOperation = (
   const possibleResponseCodes = Object.keys(state).filter((code: string) =>
     operationCodes.includes(code),
   );
-  // if only one response code is set - use that one; otherwise draw at random
-  // TODO - do we want to set sensible defaults?
-  const statusCode = firstOrRandomOrUndefined(possibleResponseCodes);
+
+  const statusCode = chooseResponseCode(
+    possibleResponseCodes,
+    genOptions.isFlaky,
+  );
   if (statusCode === undefined) {
     return undefined;
+  } else if (Array.isArray(statusCode)) {
+    throw new Error(
+      `Too many 2XX responses to choose from in '${operation.description}'!\nTry flaky mode or set a status code`,
+    );
   }
 
   const operationResponse = responses[statusCode as keyof Responses];
@@ -109,7 +119,9 @@ const getStateForOperation = (
   const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
     operationContentKeys.includes(type),
   );
-  const mediaType = firstOrRandomOrUndefined(mediaTypes); // Ditto
+  // if only one media type is set - use that one; otherwise draw at random
+  // TODO - do we want to set sensible defaults?
+  const mediaType = firstOrRandomOrUndefined(mediaTypes);
   if (mediaType === undefined) {
     return undefined;
   }
@@ -138,19 +150,48 @@ const tryCatch = (value: any, f: (value: any) => any) => {
   }
 };
 
+const chooseResponseCode = (codes: string[], isFlaky: boolean) => {
+  if (isFlaky) {
+    return firstOrRandomOrUndefined(codes);
+  }
+  if (codes.indexOf("default") > -1) {
+    return "default";
+  }
+  const validCodes = codes.filter(
+    // tslint:disable-next-line: radix
+    (cd: string) => parseInt(cd) > 199 && parseInt(cd) < 300,
+  );
+  if (validCodes.length > 1) {
+    return validCodes;
+  }
+  return validCodes[0];
+};
+
 const chooseResponseFromOperation = (
   operation: Operation,
   deref: Dereferencer,
+  genOptions: { isFlaky: boolean },
 ): {
   $code: string;
   template: Schema;
   headers: Headers | undefined;
 } => {
   const responses = operation.responses;
-  const chosenCode = firstOrRandomOrUndefined(Object.keys(responses));
+  const codes = Object.keys(responses);
+  const chosenCode = chooseResponseCode(codes, genOptions.isFlaky);
   if (chosenCode === undefined) {
+    if (genOptions.isFlaky) {
+      throw new Error(
+        `Could not find any responses in operation '${operation.description}'`,
+      );
+    } else {
+      throw new Error(
+        `No valid default/2XX responses in '${operation.description}'`,
+      );
+    }
+  } else if (Array.isArray(chosenCode)) {
     throw new Error(
-      `Could not find any responses in operation '${operation.description}'`,
+      `Too many 2XX responses to choose from in '${operation.description}'!\nTry flaky mode or set a status code`,
     );
   }
 
@@ -192,6 +233,7 @@ const chooseResponseFromOperation = (
 };
 
 const generateMockFromTemplate = (
+  options: IUnmockOptions,
   matchedService: MatcherResponse,
 ): ISerializedResponse | undefined => {
   if (matchedService === undefined) {
@@ -199,8 +241,12 @@ const generateMockFromTemplate = (
   }
   const { operation, state, service } = matchedService;
   const { template, $code, headers } =
-    getStateForOperation(operation, state, service.dereferencer) ||
-    chooseResponseFromOperation(operation, service.dereferencer);
+    getStateForOperation(operation, state, service.dereferencer, {
+      isFlaky: options.flaky(),
+    }) ||
+    chooseResponseFromOperation(operation, service.dereferencer, {
+      isFlaky: options.flaky(),
+    });
 
   // At this point, we assume there are no references, and we only need to
   // handle x-unmock-* within the schemas, modify it according to these

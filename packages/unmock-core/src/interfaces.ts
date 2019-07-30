@@ -4,6 +4,12 @@ export interface ILogger {
   log(message: string): void;
 }
 
+export interface IUnmockOptions extends ILogger {
+  useInProduction(): boolean;
+  isWhitelisted(url: string): boolean;
+  flaky(): boolean;
+}
+
 export interface IMetaData {
   lang?: string;
 }
@@ -24,11 +30,6 @@ export interface IResponseData {
 export interface IBackend {
   initialize(options: IUnmockOptions): any;
   reset(): void;
-}
-
-export interface IUnmockOptions extends ILogger {
-  useInProduction: boolean;
-  isWhitelisted(url: string): boolean;
 }
 
 export interface IUnmockPackage {

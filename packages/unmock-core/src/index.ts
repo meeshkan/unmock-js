@@ -29,35 +29,27 @@ export abstract class CorePackage implements IUnmockPackage {
     "localhost",
   ];
   private regexWhitelist: RegExp[];
-  private useInProduction: boolean = false;
+  private activeInProduction: boolean = false;
+  private isFlaky: boolean = false;
 
   constructor(
     backend: IBackend,
     options?: {
       logger?: ILogger;
-      whitelist?: string[] | string;
-      useInProduction?: boolean;
     },
   ) {
-    this.whitelist =
-      options && options.whitelist
-        ? Array.isArray(options.whitelist)
-          ? options.whitelist
-          : [options.whitelist]
-        : this.whitelist;
     this.regexWhitelist = whitelistToRegex(this.whitelist);
-
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
-    this.useInProduction =
-      (options && options.useInProduction) || this.useInProduction;
   }
 
+  // Activation and deactivation methods
   public on() {
     return this.backend.initialize({
-      useInProduction: this.useInProduction,
+      useInProduction: () => this.activeInProduction,
       isWhitelisted: (url: string) => this.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
+      flaky: () => this.isFlaky,
     });
   }
   public init() {
@@ -71,6 +63,7 @@ export abstract class CorePackage implements IUnmockPackage {
     this.backend.reset();
   }
 
+  // Allowd Hosts methods
   public setAllowedHosts(urls: Array<string | RegExp> | string | RegExp): void {
     this.whitelist = Array.isArray(urls) ? urls : [urls];
     this.regexWhitelist = whitelistToRegex(this.whitelist);
@@ -90,6 +83,22 @@ export abstract class CorePackage implements IUnmockPackage {
   }
   public isWhitelisted(host: string) {
     return this.regexWhitelist.filter(wl => wl.test(host)).length > 0;
+  }
+
+  // Flaky mode methods
+  public flaky() {
+    this.isFlaky = true;
+  }
+  public nonFlaky() {
+    this.isFlaky = false;
+  }
+
+  // Use in production methods
+  public useInProduction() {
+    this.activeInProduction = true;
+  }
+  public useInDevelopment() {
+    this.activeInProduction = false;
   }
 
   public abstract states(): any;
