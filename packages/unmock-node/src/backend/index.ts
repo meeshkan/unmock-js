@@ -56,6 +56,7 @@ async function handleRequestAndResponse(
       clientRequest.emit("error", Error(errMsg));
       return;
     }
+    debugLog("Responding with response", JSON.stringify(serializedResponse));
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
     clientRequest.emit("error", Error(`unmock error: ${err.message}`));
