@@ -25,7 +25,7 @@ describe("tests allowedHosts", () => {
 
   test("with wildcard mid-string", () => {
     const pkg = new TestPackage(backend);
-    pkg.allowedHosts = ["12*.0.*.1"];
+    pkg.setAllowedHosts("12*.0.*.1");
     expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(true);
     expect(pkg.isWhitelisted("127.0..1")).toEqual(true);
     expect(pkg.isWhitelisted("127.0.1")).toEqual(false);
@@ -36,7 +36,7 @@ describe("tests allowedHosts", () => {
     const pkg = new TestPackage(backend);
     expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
     expect(pkg.isWhitelisted("127.0.2.1")).toEqual(false);
-    pkg.allowedHosts = ["*foo*bar*.com"];
+    pkg.setAllowedHosts(["*foo*bar*.com"]);
     expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(false);
     expect(pkg.isWhitelisted("127.0.0.1")).toEqual(false);
     expect(pkg.isWhitelisted("foobar.com")).toEqual(true);
@@ -47,7 +47,7 @@ describe("tests allowedHosts", () => {
     const pkg = new TestPackage(backend);
     expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
     expect(pkg.isWhitelisted("127.0.2.1")).toEqual(false);
-    pkg.allowedHosts = pkg.allowedHosts.concat(["*foo*bar*.com"]);
+    pkg.extendAllowedHosts("*foo*bar*.com");
     expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(false);
     expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
     expect(pkg.isWhitelisted("foobar.com")).toEqual(true);

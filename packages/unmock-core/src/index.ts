@@ -71,19 +71,24 @@ export abstract class CorePackage implements IUnmockPackage {
     this.backend.reset();
   }
 
-  public get allowedHosts() {
+  public setAllowedHosts(urls: Array<string | RegExp> | string | RegExp): void {
+    this.whitelist = Array.isArray(urls) ? urls : [urls];
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
+  }
+  public extendAllowedHosts(
+    urls: string | RegExp | Array<string | RegExp>,
+  ): void {
+    Array.isArray(urls)
+      ? this.whitelist.push(...urls)
+      : this.whitelist.push(urls);
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
+  }
+  public getAllowedHosts() {
     return this.whitelist.map((url: string | RegExp) =>
       url instanceof RegExp ? url.source : url,
     );
   }
-  public set allowedHosts(urls: Array<string | RegExp>) {
-    this.whitelist = urls;
-    this.regexWhitelist = whitelistToRegex(this.whitelist);
-  }
   public isWhitelisted(host: string) {
-    if (this.regexWhitelist === undefined) {
-      return false;
-    }
     return this.regexWhitelist.filter(wl => wl.test(host)).length > 0;
   }
 
