@@ -13,8 +13,8 @@ import {
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
+  IUnmockOptions,
   responseCreatorFactory,
-  UnmockOptions,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import { serializeRequest } from "../serialize";
@@ -90,7 +90,7 @@ export default class NodeBackend implements IBackend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: UnmockOptions): any {
+  public initialize(options: IUnmockOptions): any {
     if (process.env.NODE_ENV === "production" && !options.useInProduction) {
       throw new Error("Are you trying to run unmock in production?");
     }
@@ -145,15 +145,17 @@ export default class NodeBackend implements IBackend {
       debugLog("Intercepted request aborted");
     });
     const clientRequest = ClientRequestTracker.pop(req);
-    setImmediate(() => handleRequestAndResponse(createResponse, req, res, clientRequest));
+    setImmediate(() =>
+      handleRequestAndResponse(createResponse, req, res, clientRequest),
+    );
   }
 
   private mitmOnConnect(
-    unmockOptions: UnmockOptions,
+    { isWhitelisted }: IUnmockOptions,
     socket: IBypassableSocket,
     opts: RequestOptions,
   ) {
-    if (unmockOptions.isWhitelisted(opts.host || "")) {
+    if (isWhitelisted(opts.host || "")) {
       socket.bypass();
     }
   }

@@ -1,8 +1,7 @@
-import { UnmockOptions } from "./options";
 import { IService } from "./service/interfaces";
 
 export interface ILogger {
-  log: (message: string) => void;
+  log(message: string): void;
 }
 
 export interface IMetaData {
@@ -23,23 +22,23 @@ export interface IResponseData {
 }
 
 export interface IBackend {
-  initialize: (opts: UnmockOptions) => any;
-  reset: () => void;
+  initialize(options: IUnmockOptions): any;
+  reset(): void;
 }
 
-export interface IUnmockOptions {
-  logger?: ILogger;
-  signature?: string;
-  whitelist?: string[] | string;
-  useInProduction?: boolean;
+export interface IUnmockOptions extends ILogger {
+  useInProduction: boolean;
+  isWhitelisted(url: string): boolean;
 }
 
 export interface IUnmockPackage {
-  on: (maybeOptions?: IUnmockOptions) => any;
-  init: (maybeOptions?: IUnmockOptions) => any;
-  initialize: (maybeOptions?: IUnmockOptions) => any;
-  off: () => void;
-  states: () => any;
+  allowedHosts: Array<string | RegExp>;
+  on(): any;
+  init(): any;
+  initialize(): any;
+  off(): void;
+  isWhitelisted(url: string): boolean;
+  states(): any;
 }
 
 /**
