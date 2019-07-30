@@ -2,12 +2,19 @@ import debug from "debug";
 import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
 import loas3 from "loas3";
-import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
+import { IServiceDef, IServiceDefFile } from "../interfaces";
 import { Service } from "./service";
 
 const debugLog = debug("unmock:service-parser");
 
+/**
+ * Static class for parsing service definitions.
+ */
 export abstract class ServiceParser {
+  /**
+   * Parse service definition into a service.
+   * @param serviceDef Service definition.
+   */
   public static parse(serviceDef: IServiceDef): Service {
     const serviceFiles = serviceDef.serviceFiles;
 

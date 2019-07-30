@@ -1,5 +1,3 @@
-import { UnmockOptions } from "./options";
-
 export interface ILogger {
   log(message: string): void;
 }
