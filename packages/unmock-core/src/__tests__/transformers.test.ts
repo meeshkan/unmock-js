@@ -38,7 +38,7 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({});
+    expect(p.gen()).toEqual({ "text/plain": null });
   });
 
   it("returns empty object for empty state", () => {
@@ -46,7 +46,7 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({});
+    expect(p.gen()).toEqual({ "text/plain": null });
   });
 
   it("returns empty object for empty schema", () => {
@@ -54,14 +54,14 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({});
+    expect(p.gen()).toEqual({ "text/plain": null });
   });
 
   it("returns empty object for non-text schema", () => {
     const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
-    expect(p.gen({ type: "array", items: {} })).toEqual({});
+    expect(p.gen({ type: "array", items: {} })).toEqual({ "text/plain": null });
   });
 
   it("returns correct state object for valid input", () => {

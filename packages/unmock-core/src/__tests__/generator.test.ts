@@ -55,4 +55,23 @@ describe("Tests generator", () => {
       stateStore.slack("/bots.info", { bot: { app_id: "A123456789" } }),
     ).toThrow("type is incorrect"); // Does not match the specified pattern
   });
+
+  it("in non-flaky mode", () => {
+    const { createResponse } = responseCreatorFactory({
+      serviceDefLoader,
+      options: mockOptions,
+    });
+    // host: string;
+    // method: string;
+    // path: string;
+    // protocol: "http" | "https";
+    for (let i = 0; i < 50; i++) {
+      createResponse({
+        host: "petstore.swagger.io",
+        method: "POST",
+        path: "v1/pets",
+        protocol: "http",
+      });
+    }
+  });
 });

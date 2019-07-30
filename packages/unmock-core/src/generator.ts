@@ -72,6 +72,23 @@ const setupJSFUnmockProperties = () => {
   // Handle post-generation references, etc?
 };
 
+const chooseResponseCode = (codes: string[], isFlaky: boolean) => {
+  if (isFlaky) {
+    return firstOrRandomOrUndefined(codes);
+  }
+  if (codes.length === 1) {
+    return codes[0];
+  }
+  const validCodes = codes.filter(
+    // tslint:disable-next-line: radix
+    (cd: string) => parseInt(cd) > 199 && parseInt(cd) < 300,
+  );
+  if (validCodes.length > 1) {
+    return validCodes;
+  }
+  return validCodes[0];
+};
+
 const getStateForOperation = (
   operation: Operation,
   state: codeToMedia | undefined,
@@ -92,16 +109,24 @@ const getStateForOperation = (
   const possibleResponseCodes = Object.keys(state).filter((code: string) =>
     operationCodes.includes(code),
   );
+  if (possibleResponseCodes.length === 0) {
+    return undefined;
+  }
 
   const statusCode = chooseResponseCode(
     possibleResponseCodes,
     genOptions.isFlaky,
   );
   if (statusCode === undefined) {
-    return undefined;
+    // We get here if there are no 2XX responses, but there is still more than 1 possible response code
+    throw new Error(
+      `Too many matching response codes to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
+    );
   } else if (Array.isArray(statusCode)) {
     throw new Error(
-      `Too many 2XX responses to choose from in '${operation.description}'!\nTry flaky mode or set a status code`,
+      `Too many 2XX responses to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
   }
 
@@ -150,20 +175,6 @@ const tryCatch = (value: any, f: (value: any) => any) => {
   }
 };
 
-const chooseResponseCode = (codes: string[], isFlaky: boolean) => {
-  if (isFlaky) {
-    return firstOrRandomOrUndefined(codes);
-  }
-  const validCodes = codes.filter(
-    // tslint:disable-next-line: radix
-    (cd: string) => parseInt(cd) > 199 && parseInt(cd) < 300,
-  );
-  if (validCodes.length > 1) {
-    return validCodes;
-  }
-  return validCodes[0];
-};
-
 const chooseResponseFromOperation = (
   operation: Operation,
   deref: Dereferencer,
@@ -186,7 +197,8 @@ const chooseResponseFromOperation = (
     }
   } else if (Array.isArray(chosenCode)) {
     throw new Error(
-      `Too many 2XX responses to choose from in '${operation.description}'!\nTry flaky mode or set a status code`,
+      `Too many 2XX responses to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
   }
 
@@ -242,7 +254,6 @@ const generateMockFromTemplate = (
     chooseResponseFromOperation(operation, service.dereferencer, {
       isFlaky: options.flaky(),
     });
-
   // Setup the unmock properties for jsf parsing of x-unmock-*
   setupJSFUnmockProperties();
   // Always generate all fields for now

@@ -58,10 +58,24 @@ export const filterStatesByOperation = (
   // Filter each state by status code and media type present in Operation
   const filtered = states.reduce(
     (stateAcc: codeToMedia[], state: codeToMedia) => {
+      // for every non-matching code, we use the default argument
       const relCodesInState = Object.keys(state).filter((code: string) =>
         statusCodes.includes(code),
       );
       if (relCodesInState.length === 0) {
+        if (Object.keys(state).length > 0) {
+          // Some error codes are not expressed explictily, so we use 'default' instead
+          stateAcc.push(
+            filterByMediaType(
+              ["default"],
+              Object.keys(state).reduce((obj: codeToMedia, code) => {
+                obj.default = { ...obj.default, ...state[code] };
+                return obj;
+              }, {}),
+              mediaTypes,
+            ),
+          );
+        }
         // None match - we can safely ignore this state
         return stateAcc;
       }
