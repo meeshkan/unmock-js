@@ -1,6 +1,5 @@
 import axios from "axios";
 import path from "path";
-import { UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
@@ -11,8 +10,11 @@ describe("Node.js interceptor", () => {
 
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
-      const unmockOptions = new UnmockOptions();
-      nodeInterceptor.initialize(unmockOptions);
+      nodeInterceptor.initialize({
+        isWhitelisted: (_: string) => false,
+        useInProduction: false,
+        log: (_: string) => undefined,
+      });
     });
 
     afterAll(() => {
