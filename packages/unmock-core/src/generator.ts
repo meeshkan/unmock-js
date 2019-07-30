@@ -248,11 +248,7 @@ const generateMockFromTemplate = (
       isFlaky: options.flaky(),
     });
 
-  // At this point, we assume there are no references, and we only need to
-  // handle x-unmock-* within the schemas, modify it according to these
-  // properties + the state -> we can work with jsf out of the box
-
-  // Setup the unmock properties for jsf parsing
+  // Setup the unmock properties for jsf parsing of x-unmock-*
   setupJSFUnmockProperties();
   // Always generate all fields for now
   jsf.option("alwaysFakeOptionals", true);
