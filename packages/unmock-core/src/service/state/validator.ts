@@ -135,10 +135,13 @@ export const getValidStatesForOperationWithState = (
 } => {
   const resps = operation.responses;
   const code = state.top.$code;
+  // If $code is defined, we fetch the response even if no other state was set
+  // If $code is not found, use the default response - "the default MAY be used as a
+  //    default response object for all HTTP codes that are not covered individually by the specification"
+  // (see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responsesObject)
   const { responses, error } =
     code !== undefined
-      ? // If $code is defined, we fetch the response even if no other state was set
-        validStatesForStateWithCode(
+      ? validStatesForStateWithCode(
           resps[String(code) as codeType] || resps.default,
           state,
           code,
