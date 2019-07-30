@@ -1,4 +1,4 @@
-import { IService } from "./service/interfaces";
+import { HTTPMethod, IService } from "./service/interfaces";
 
 export interface ILogger {
   log(message: string): void;
@@ -64,7 +64,7 @@ export interface ISerializedRequest {
   body?: string;
   headers?: IIncomingHeaders;
   host: string;
-  method: string;
+  method: HTTPMethod;
   path: string;
   protocol: "http" | "https";
 }
