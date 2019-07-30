@@ -1,4 +1,4 @@
-import { IService } from "./service/interfaces";
+import { UnmockOptions } from "./options";
 
 export interface ILogger {
   log(message: string): void;
@@ -130,8 +130,4 @@ export interface IServiceDef {
    * All the files defining the service.
    */
   serviceFiles: IServiceDefFile[];
-}
-
-export interface IServiceParser {
-  parse(serviceDef: IServiceDef): IService;
 }

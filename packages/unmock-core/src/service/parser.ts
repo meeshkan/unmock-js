@@ -7,10 +7,8 @@ import { Service } from "./service";
 
 const debugLog = debug("unmock:service-parser");
 
-export class ServiceParser implements IServiceParser {
-  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
-
-  public parse(serviceDef: IServiceDef): Service {
+export abstract class ServiceParser {
+  public static parse(serviceDef: IServiceDef): Service {
     const serviceFiles = serviceDef.serviceFiles;
 
     const matchingFiles = serviceFiles.filter(
@@ -56,4 +54,5 @@ export class ServiceParser implements IServiceParser {
       schema: schema.right,
     });
   }
+  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
 }

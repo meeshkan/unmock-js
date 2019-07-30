@@ -8,7 +8,6 @@ const petStoreYamlString: string = fs.readFileSync(absPath, "utf-8");
 
 describe("Service parser", () => {
   it("creates a service from petstore yaml", () => {
-    const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
       absolutePath: absPath,
       directoryName: "petstore",
@@ -19,7 +18,7 @@ describe("Service parser", () => {
         },
       ],
     };
-    const service = serviceParser.parse(serviceDef);
+    const service = ServiceParser.parse(serviceDef);
     expect(service).toBeDefined();
     expect(service.name).toBe("petstore");
     expect(service.schema).toHaveProperty("openapi");
@@ -28,7 +27,6 @@ describe("Service parser", () => {
   });
 
   it("fails for json files", () => {
-    const serviceParser = new ServiceParser();
     const serviceDef: IServiceDef = {
       absolutePath: absPath,
       directoryName: "petstore",
@@ -39,6 +37,6 @@ describe("Service parser", () => {
         },
       ],
     };
-    expect(() => serviceParser.parse(serviceDef)).toThrow(/Cannot find known/);
+    expect(() => ServiceParser.parse(serviceDef)).toThrow(/Cannot find known/);
   });
 });
