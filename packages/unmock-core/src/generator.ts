@@ -43,9 +43,8 @@ export function responseCreatorFactory({
   serviceDefLoader: IServiceDefLoader;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-  const parser = new ServiceParser();
   const services: IService[] = serviceDefs.map(serviceDef =>
-    parser.parse(serviceDef),
+    ServiceParser.parse(serviceDef),
   );
   const serviceStore = new ServiceStore(services);
   const stateStore = stateFacadeFactory(serviceStore);
