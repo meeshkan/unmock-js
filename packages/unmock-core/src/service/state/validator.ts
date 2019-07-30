@@ -139,7 +139,7 @@ export const getValidStatesForOperationWithState = (
     code !== undefined
       ? // If $code is defined, we fetch the response even if no other state was set
         validStatesForStateWithCode(
-          resps[String(code) as codeType],
+          resps[String(code) as codeType] || resps.default,
           state,
           code,
           deref,
