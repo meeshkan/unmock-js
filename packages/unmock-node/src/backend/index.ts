@@ -141,7 +141,7 @@ export default class NodeBackend implements IBackend {
   ) {
     debugLog("Handling incoming message...");
     req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
-    req.on("aborted", () => {
+    req.on("abort", () => {
       debugLog("Intercepted request aborted");
     });
     const clientRequest = ClientRequestTracker.pop(req);
