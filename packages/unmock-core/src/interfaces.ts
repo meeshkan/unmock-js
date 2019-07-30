@@ -32,7 +32,7 @@ export interface IUnmockOptions extends ILogger {
 }
 
 export interface IUnmockPackage {
-  whitelist: Array<string | RegExp>;
+  allowedHosts: Array<string | RegExp>;
   on(): any;
   init(): any;
   initialize(): any;

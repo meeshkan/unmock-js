@@ -23,7 +23,7 @@ const whitelistToRegex = (whitelist?: Array<string | RegExp>): RegExp[] =>
 export abstract class CorePackage implements IUnmockPackage {
   protected readonly backend: IBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-  private whitelistAsStrings: Array<string | RegExp> = [
+  private whitelist: Array<string | RegExp> = [
     "127.0.0.1",
     "127.0.0.0",
     "localhost",
@@ -39,13 +39,13 @@ export abstract class CorePackage implements IUnmockPackage {
       useInProduction?: boolean;
     },
   ) {
-    this.whitelistAsStrings =
+    this.whitelist =
       options && options.whitelist
         ? Array.isArray(options.whitelist)
           ? options.whitelist
           : [options.whitelist]
-        : this.whitelistAsStrings;
-    this.regexWhitelist = whitelistToRegex(this.whitelistAsStrings);
+        : this.whitelist;
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
 
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
@@ -71,14 +71,14 @@ export abstract class CorePackage implements IUnmockPackage {
     this.backend.reset();
   }
 
-  public get whitelist() {
-    return this.whitelistAsStrings.map((url: string | RegExp) =>
+  public get allowedHosts() {
+    return this.whitelist.map((url: string | RegExp) =>
       url instanceof RegExp ? url.source : url,
     );
   }
-  public set whitelist(urls: Array<string | RegExp>) {
-    this.whitelistAsStrings = urls;
-    this.regexWhitelist = whitelistToRegex(this.whitelistAsStrings);
+  public set allowedHosts(urls: Array<string | RegExp>) {
+    this.whitelist = urls;
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
   }
   public isWhitelisted(host: string) {
     if (this.regexWhitelist === undefined) {
