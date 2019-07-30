@@ -140,8 +140,12 @@ export default class NodeBackend implements IBackend {
     res: ServerResponse,
   ) {
     debugLog("Handling incoming message...");
+    req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
+    req.on("abort", () => {
+      debugLog("Intercepted request aborted");
+    });
     const clientRequest = ClientRequestTracker.pop(req);
-    handleRequestAndResponse(createResponse, req, res, clientRequest);
+    setImmediate(() => handleRequestAndResponse(createResponse, req, res, clientRequest));
   }
 
   private mitmOnConnect(
