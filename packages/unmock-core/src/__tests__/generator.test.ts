@@ -61,17 +61,34 @@ describe("Tests generator", () => {
       serviceDefLoader,
       options: mockOptions,
     });
-    // host: string;
-    // method: string;
-    // path: string;
-    // protocol: "http" | "https";
     for (let i = 0; i < 50; i++) {
-      createResponse({
-        host: "petstore.swagger.io",
-        method: "POST",
-        path: "v1/pets",
-        protocol: "http",
-      });
+      expect(
+        createResponse({
+          host: "petstore.swagger.io",
+          method: "post",
+          path: "/v1/pets",
+          protocol: "http",
+        }).statusCode,
+      ).toEqual(201);
     }
+  });
+
+  it("in flaky mode", () => {
+    const { createResponse } = responseCreatorFactory({
+      serviceDefLoader,
+      options: { ...mockOptions, flaky: () => true },
+    });
+    const counters: { [code: number]: number } = { 200: 0, 201: 0 };
+    for (let i = 0; i < 100; i++) {
+      const code: number = createResponse({
+        host: "petstore.swagger.io",
+        method: "post",
+        path: "/v1/pets",
+        protocol: "http",
+      }).statusCode;
+      counters[code] += 1;
+    }
+    expect(counters[200]).toBeGreaterThan(0);
+    expect(counters[201]).toBeGreaterThan(0);
   });
 });
