@@ -1,13 +1,21 @@
+import debug from "debug";
 import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
 import loas3 from "loas3";
-import { IServiceDef, IServiceDefFile, IServiceParser } from "../interfaces";
+import { IServiceDef, IServiceDefFile } from "../interfaces";
 import { Service } from "./service";
 
-export class ServiceParser implements IServiceParser {
-  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
+const debugLog = debug("unmock:service-parser");
 
-  public parse(serviceDef: IServiceDef): Service {
+/**
+ * Static class for parsing service definitions.
+ */
+export abstract class ServiceParser {
+  /**
+   * Parse service definition into a service.
+   * @param serviceDef Service definition.
+   */
+  public static parse(serviceDef: IServiceDef): Service {
     const serviceFiles = serviceDef.serviceFiles;
 
     const matchingFiles = serviceFiles.filter(
@@ -23,7 +31,11 @@ export class ServiceParser implements IServiceParser {
       );
     }
 
+    debugLog(`Found ${matchingFiles.length} service specifications for folder ${serviceDef.directoryName}`);
+
     const serviceFile = matchingFiles[0];
+
+    debugLog(`Parsing service specification ${serviceFile.basename}`);
 
     const contents: string =
       serviceFile.contents instanceof Buffer
@@ -49,4 +61,5 @@ export class ServiceParser implements IServiceParser {
       schema: schema.right,
     });
   }
+  private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;
 }
