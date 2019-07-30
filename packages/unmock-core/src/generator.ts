@@ -181,7 +181,7 @@ const chooseResponseFromOperation = (
   genOptions: { isFlaky: boolean },
 ): {
   $code: string;
-  template: Schema;
+  template: Schema | undefined;
   headers: Headers | undefined;
 } => {
   const responses = operation.responses;
@@ -215,9 +215,11 @@ const chooseResponseFromOperation = (
 
   const content = deRefedResponse.content;
   if (content === undefined) {
-    throw new Error(
-      `Chosen response (${JSON.stringify(content)}) does not have any content!`,
-    );
+    return {
+      $code: chosenCode,
+      template: undefined,
+      headers: deref(deRefedResponse.headers),
+    };
   }
 
   const chosenMediaType = firstOrRandomOrUndefined(Object.keys(content));
