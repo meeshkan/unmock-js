@@ -154,9 +154,6 @@ const chooseResponseCode = (codes: string[], isFlaky: boolean) => {
   if (isFlaky) {
     return firstOrRandomOrUndefined(codes);
   }
-  if (codes.indexOf("default") > -1) {
-    return "default";
-  }
   const validCodes = codes.filter(
     // tslint:disable-next-line: radix
     (cd: string) => parseInt(cd) > 199 && parseInt(cd) < 300,
@@ -185,9 +182,7 @@ const chooseResponseFromOperation = (
         `Could not find any responses in operation '${operation.description}'`,
       );
     } else {
-      throw new Error(
-        `No valid default/2XX responses in '${operation.description}'`,
-      );
+      throw new Error(`No valid 2XX responses in '${operation.description}'`);
     }
   } else if (Array.isArray(chosenCode)) {
     throw new Error(
