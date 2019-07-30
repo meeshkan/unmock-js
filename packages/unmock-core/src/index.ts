@@ -23,7 +23,7 @@ const whitelistToRegex = (whitelist?: Array<string | RegExp>): RegExp[] =>
 export abstract class CorePackage implements IUnmockPackage {
   protected readonly backend: IBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-  private whitelistAsStrings: string[] = [
+  private whitelistAsStrings: Array<string | RegExp> = [
     "127.0.0.1",
     "127.0.0.0",
     "localhost",
@@ -72,9 +72,11 @@ export abstract class CorePackage implements IUnmockPackage {
   }
 
   public get whitelist() {
-    return this.whitelistAsStrings;
+    return this.whitelistAsStrings.map((url: string | RegExp) =>
+      url instanceof RegExp ? url.source : url,
+    );
   }
-  public set whitelist(urls: string[]) {
+  public set whitelist(urls: Array<string | RegExp>) {
     this.whitelistAsStrings = urls;
     this.regexWhitelist = whitelistToRegex(this.whitelistAsStrings);
   }
