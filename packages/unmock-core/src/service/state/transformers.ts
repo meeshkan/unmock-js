@@ -6,6 +6,7 @@ import {
   Schema,
   UnmockServiceState,
 } from "../interfaces";
+import { anyFn } from "./utils";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
@@ -118,7 +119,7 @@ const spreadStateFromService = (
 const NESTED_SCHEMA_ITEMS = ["properties", "items", "additionalProperties"];
 
 const hasNestedItems = (obj: any) =>
-  NESTED_SCHEMA_ITEMS.some((key: string) => obj[key] !== undefined);
+  anyFn(NESTED_SCHEMA_ITEMS, (key: string) => obj[key] !== undefined);
 
 const isConcreteValue = (obj: any) =>
   ["string", "number", "boolean"].includes(typeof obj);

@@ -9,7 +9,7 @@ import {
   Operation,
 } from "../interfaces";
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
-import { filterStatesByOperation, getOperations } from "./utils";
+import { anyFn, filterStatesByOperation, getOperations } from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -45,7 +45,7 @@ export class State {
       return;
     }
     debugLog(
-      `Found following operations: ${JSON.stringify(
+      `Found the following operations: ${JSON.stringify(
         ops.operations,
         undefined,
         1,
@@ -53,7 +53,8 @@ export class State {
     );
 
     let errorMsg: string | undefined;
-    const opsResult = ops.operations.some((op: IOperationForStateUpdate) => {
+    const opsResult = anyFn(ops.operations, (op: IOperationForStateUpdate) => {
+      debugLog(`Testing against ${JSON.stringify(op.operation)}`);
       // For each operation, verify the new state applies and save in `this.state`
       const stateResponses = getValidStatesForOperationWithState(
         op.operation,
@@ -61,7 +62,7 @@ export class State {
         stateUpdate.dereferencer,
       );
       if (stateResponses.error === undefined) {
-        debugLog(`Matched successfully for ${op.operation.operationId}`);
+        debugLog(`Matched successfully for ${JSON.stringify(op.operation)}`);
         const augmentedResponses = DSL.translateTopLevelToOAS(
           newState.top,
           stateResponses.responses,

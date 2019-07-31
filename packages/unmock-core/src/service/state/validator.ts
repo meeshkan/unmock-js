@@ -13,6 +13,7 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
+import { anyFn } from "./utils";
 
 type codeType = keyof Responses;
 
@@ -107,7 +108,6 @@ const validStatesForStateWithoutCode = (
           : acc,
       {},
     );
-
     if (Object.keys(filteredStateMedia).length > 0) {
       relevantResponses[code] = filteredStateMedia;
     }
@@ -161,7 +161,7 @@ const getStateFromMedia = (
 } => {
   const errors: IMissingParam[] = [];
   const relevantResponses: IResponsesFromContent = {};
-  const success = Object.keys(contentRecord).some((contentType: string) => {
+  const success = anyFn(Object.keys(contentRecord), (contentType: string) => {
     const content = contentRecord[contentType];
     if (content === undefined || content.schema === undefined) {
       errors.push({
