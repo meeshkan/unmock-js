@@ -92,7 +92,7 @@ export default class NodeBackend implements IBackend {
    * @returns `states` object, with which one can modify states of various services.
    */
   public initialize(options: IUnmockOptions): any {
-    if (process.env.NODE_ENV === "production" && !options.useInProduction) {
+    if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
     if (this.mitm !== undefined) {
@@ -112,6 +112,7 @@ export default class NodeBackend implements IBackend {
       servicesDir: this.config.servicesDirectory,
     });
     const { stateStore, createResponse } = responseCreatorFactory({
+      options,
       serviceDefLoader,
     });
 

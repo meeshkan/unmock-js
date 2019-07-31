@@ -2,6 +2,12 @@ export interface ILogger {
   log(message: string): void;
 }
 
+export interface IUnmockOptions extends ILogger {
+  useInProduction(): boolean;
+  isWhitelisted(url: string): boolean;
+  flaky(): boolean;
+}
+
 export interface IMetaData {
   lang?: string;
 }
@@ -23,19 +29,19 @@ export interface IBackend {
   initialize(options: IUnmockOptions): any;
   reset(): void;
 }
-
-export interface IUnmockOptions extends ILogger {
-  useInProduction: boolean;
+export interface IAllowedHosts {
+  get(): string[];
+  set(urls: Array<string | RegExp> | string | RegExp): void;
+  add(urls: Array<string | RegExp> | string | RegExp): void;
   isWhitelisted(url: string): boolean;
 }
 
 export interface IUnmockPackage {
-  allowedHosts: Array<string | RegExp>;
+  allowedHosts: IAllowedHosts;
   on(): any;
   init(): any;
   initialize(): any;
   off(): void;
-  isWhitelisted(url: string): boolean;
   states(): any;
 }
 

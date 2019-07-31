@@ -28,9 +28,12 @@ export const textResponse = (
   gen: (schema: Schema) => generateTextResponse(schema, state),
 });
 
-const generateTextResponse = (schema: Schema, state: string | undefined) => {
+const generateTextResponse = (
+  schema: Schema,
+  state: string | undefined,
+): Record<string, any> => {
   if (state === undefined || schema === undefined || schema.type !== "string") {
-    return {};
+    return { "text/plain": null }; // null is used to indicate failure
   }
   return { ...schema, const: state };
 };

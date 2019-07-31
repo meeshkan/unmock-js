@@ -10,6 +10,7 @@ import {
   ISerializedResponse,
   IServiceDef,
   IServiceDefLoader,
+  IUnmockOptions,
 } from "./interfaces";
 import { stateFacadeFactory } from "./service";
 import {
@@ -39,8 +40,10 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 
 export function responseCreatorFactory({
   serviceDefLoader,
+  options,
 }: {
   serviceDefLoader: IServiceDefLoader;
+  options: IUnmockOptions;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const services: IService[] = serviceDefs.map(serviceDef =>
@@ -51,7 +54,7 @@ export function responseCreatorFactory({
   return {
     stateStore,
     createResponse: (sreq: ISerializedRequest) =>
-      generateMockFromTemplate(serviceStore.match(sreq)),
+      generateMockFromTemplate(options, serviceStore.match(sreq)),
   };
 }
 
@@ -68,10 +71,25 @@ const setupJSFUnmockProperties = () => {
   // Handle post-generation references, etc?
 };
 
+const chooseResponseCode = (codes: string[]) => {
+  if (codes.length === 1) {
+    return codes[0];
+  }
+  const validCodes = codes.filter(
+    // tslint:disable-next-line: radix
+    (cd: string) => parseInt(cd) > 199 && parseInt(cd) < 300,
+  );
+  if (validCodes.length > 1) {
+    return validCodes;
+  }
+  return validCodes[0];
+};
+
 const getStateForOperation = (
   operation: Operation,
   state: codeToMedia | undefined,
   deref: Dereferencer,
+  genOptions: { isFlaky: boolean },
 ):
   | {
       $code: string;
@@ -87,11 +105,24 @@ const getStateForOperation = (
   const possibleResponseCodes = Object.keys(state).filter((code: string) =>
     operationCodes.includes(code),
   );
-  // if only one response code is set - use that one; otherwise draw at random
-  // TODO - do we want to set sensible defaults?
-  const statusCode = firstOrRandomOrUndefined(possibleResponseCodes);
-  if (statusCode === undefined) {
+  if (possibleResponseCodes.length === 0) {
     return undefined;
+  }
+
+  const statusCode = genOptions.isFlaky
+    ? firstOrRandomOrUndefined(possibleResponseCodes)
+    : chooseResponseCode(possibleResponseCodes);
+  if (statusCode === undefined) {
+    // We get here if there are no 2XX responses, but there is still more than 1 possible response code
+    throw new Error(
+      `Too many matching response codes to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
+    );
+  } else if (Array.isArray(statusCode)) {
+    throw new Error(
+      `Too many 2XX responses to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
+    );
   }
 
   const operationResponse = responses[statusCode as keyof Responses];
@@ -108,7 +139,9 @@ const getStateForOperation = (
   const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
     operationContentKeys.includes(type),
   );
-  const mediaType = firstOrRandomOrUndefined(mediaTypes); // Ditto
+  // if only one media type is set - use that one; otherwise draw at random
+  // TODO - do we want to set sensible defaults?
+  const mediaType = firstOrRandomOrUndefined(mediaTypes);
   if (mediaType === undefined) {
     return undefined;
   }
@@ -140,16 +173,29 @@ const tryCatch = (value: any, f: (value: any) => any) => {
 const chooseResponseFromOperation = (
   operation: Operation,
   deref: Dereferencer,
+  genOptions: { isFlaky: boolean },
 ): {
   $code: string;
-  template: Schema;
+  template: Schema | undefined;
   headers: Headers | undefined;
 } => {
   const responses = operation.responses;
-  const chosenCode = firstOrRandomOrUndefined(Object.keys(responses));
+  const codes = Object.keys(responses);
+  const chosenCode = genOptions.isFlaky
+    ? firstOrRandomOrUndefined(codes)
+    : chooseResponseCode(codes);
   if (chosenCode === undefined) {
+    if (genOptions.isFlaky) {
+      throw new Error(
+        `Could not find any responses in operation '${operation.description}'`,
+      );
+    } else {
+      throw new Error(`No valid 2XX responses in '${operation.description}'`);
+    }
+  } else if (Array.isArray(chosenCode)) {
     throw new Error(
-      `Could not find any responses in operation '${operation.description}'`,
+      `Too many 2XX responses to choose from in '${operation.description}'!\n` +
+        `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
   }
 
@@ -166,9 +212,11 @@ const chooseResponseFromOperation = (
 
   const content = deRefedResponse.content;
   if (content === undefined) {
-    throw new Error(
-      `Chosen response (${JSON.stringify(content)}) does not have any content!`,
-    );
+    return {
+      $code: chosenCode,
+      template: undefined,
+      headers: deref(deRefedResponse.headers),
+    };
   }
 
   const chosenMediaType = firstOrRandomOrUndefined(Object.keys(content));
@@ -191,6 +239,7 @@ const chooseResponseFromOperation = (
 };
 
 const generateMockFromTemplate = (
+  options: IUnmockOptions,
   matchedService: MatcherResponse,
 ): ISerializedResponse | undefined => {
   if (matchedService === undefined) {
@@ -198,14 +247,13 @@ const generateMockFromTemplate = (
   }
   const { operation, state, service } = matchedService;
   const { template, $code, headers } =
-    getStateForOperation(operation, state, service.dereferencer) ||
-    chooseResponseFromOperation(operation, service.dereferencer);
-
-  // At this point, we assume there are no references, and we only need to
-  // handle x-unmock-* within the schemas, modify it according to these
-  // properties + the state -> we can work with jsf out of the box
-
-  // Setup the unmock properties for jsf parsing
+    getStateForOperation(operation, state, service.dereferencer, {
+      isFlaky: options.flaky(),
+    }) ||
+    chooseResponseFromOperation(operation, service.dereferencer, {
+      isFlaky: options.flaky(),
+    });
+  // Setup the unmock properties for jsf parsing of x-unmock-*
   setupJSFUnmockProperties();
   // Always generate all fields for now
   jsf.option("alwaysFakeOptionals", true);

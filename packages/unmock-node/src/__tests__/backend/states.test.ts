@@ -91,10 +91,10 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("bar");
     });
 
-    test("throws when setting textual middleware with DSL with non-existing status code", async () => {
-      expect(() =>
-        states.petstore(dsl.textResponse("foo", { $code: 400 })),
-      ).toThrow("status code '400'");
+    test("uses default response when setting textual response with DSL with non-existing status code", async () => {
+      states.petstore(dsl.textResponse("foo", { $code: 400 }));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toBe("foo");
     });
   });
 });

@@ -66,10 +66,9 @@ const validStatesForStateWithCode = (
     };
   }
   const stateMedia = getStateFromMedia(resolvedResponse.content, state, deref);
-  const error = chooseDeepestMissingParam(stateMedia.errors);
   return {
     responses: { [code]: stateMedia.responses },
-    error,
+    error: stateMedia.error,
   };
 };
 
@@ -135,11 +134,14 @@ export const getValidStatesForOperationWithState = (
 } => {
   const resps = operation.responses;
   const code = state.top.$code;
+  // If $code is defined, we fetch the response even if no other state was set
+  // If $code is not found, use the default response - "the default MAY be used as a
+  //    default response object for all HTTP codes that are not covered individually by the specification"
+  // (see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responsesObject)
   const { responses, error } =
     code !== undefined
-      ? // If $code is defined, we fetch the response even if no other state was set
-        validStatesForStateWithCode(
-          resps[String(code) as codeType],
+      ? validStatesForStateWithCode(
+          resps[String(code) as codeType] || resps.default,
           state,
           code,
           deref,
@@ -155,29 +157,34 @@ const getStateFromMedia = (
   deref: Dereferencer,
 ): {
   responses: IResponsesFromContent;
-  errors: IMissingParam[];
+  error?: IMissingParam;
 } => {
   const errors: IMissingParam[] = [];
   const relevantResponses: IResponsesFromContent = {};
-  for (const contentType of Object.keys(contentRecord)) {
+  const success = Object.keys(contentRecord).some((contentType: string) => {
     const content = contentRecord[contentType];
     if (content === undefined || content.schema === undefined) {
       errors.push({
         msg: `No schema defined in '${JSON.stringify(content)}'!`,
         nestedLevel: -1,
       });
-      continue;
+      return false;
     }
-    const spreadState = state.gen(deref<Schema>(content.schema) as Schema);
+    const spreadState = state.gen(deref<Schema>(content.schema));
 
     const missingParam = DFSVerifyNoneAreNull(spreadState);
+
     if (missingParam !== undefined) {
       errors.push(missingParam);
-    } else {
-      relevantResponses[contentType] = spreadState;
+      return false;
     }
-  }
-  return { responses: relevantResponses, errors };
+    relevantResponses[contentType] = spreadState;
+    return true;
+  });
+  return {
+    responses: relevantResponses,
+    error: success ? undefined : chooseDeepestMissingParam(errors),
+  };
 };
 
 /**
@@ -192,6 +199,9 @@ const DFSVerifyNoneAreNull = (
   obj: any,
   nestedLevel: number = 0,
 ): IMissingParam | undefined => {
+  if (obj === undefined) {
+    return undefined;
+  }
   for (const key of Object.keys(obj)) {
     if (obj[key] === null) {
       return {
