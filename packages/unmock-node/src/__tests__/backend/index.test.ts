@@ -2,7 +2,7 @@ import axios from "axios";
 import path from "path";
 import NodeBackend from "../../backend";
 
-const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
+const servicesDirectory = path.join(__dirname, "..", "resources");
 
 describe("Node.js interceptor", () => {
   describe("with petstore in place", () => {
