@@ -39,6 +39,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
     post:
       summary: Create a pet
       operationId: createPets
@@ -53,6 +56,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
   /pets/{petId}:
     get:
       summary: Info for a specific pet
@@ -79,6 +85,9 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
 components:
   schemas:
     Pet:
@@ -107,3 +116,5 @@ components:
           format: int32
         message:
           type: string
+    TextError:
+      type: string
