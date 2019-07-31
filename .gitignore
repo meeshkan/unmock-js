@@ -6,3 +6,4 @@ tsconfig.tsbuildinfo
 .vscode
 coverage
 .DS_Store
+unmock.log
