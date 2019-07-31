@@ -71,10 +71,7 @@ const setupJSFUnmockProperties = () => {
   // Handle post-generation references, etc?
 };
 
-const chooseResponseCode = (codes: string[], isFlaky: boolean) => {
-  if (isFlaky) {
-    return firstOrRandomOrUndefined(codes);
-  }
+const chooseResponseCode = (codes: string[]) => {
   if (codes.length === 1) {
     return codes[0];
   }
@@ -112,10 +109,9 @@ const getStateForOperation = (
     return undefined;
   }
 
-  const statusCode = chooseResponseCode(
-    possibleResponseCodes,
-    genOptions.isFlaky,
-  );
+  const statusCode = genOptions.isFlaky
+    ? firstOrRandomOrUndefined(possibleResponseCodes)
+    : chooseResponseCode(possibleResponseCodes);
   if (statusCode === undefined) {
     // We get here if there are no 2XX responses, but there is still more than 1 possible response code
     throw new Error(
@@ -185,7 +181,9 @@ const chooseResponseFromOperation = (
 } => {
   const responses = operation.responses;
   const codes = Object.keys(responses);
-  const chosenCode = chooseResponseCode(codes, genOptions.isFlaky);
+  const chosenCode = genOptions.isFlaky
+    ? firstOrRandomOrUndefined(codes)
+    : chooseResponseCode(codes);
   if (chosenCode === undefined) {
     if (genOptions.isFlaky) {
       throw new Error(
