@@ -168,7 +168,7 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 
 // Used to define the simplify the types used
 type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
-type StateInput = IStateInputGenerator | UnmockServiceState;
+type StateInput = IStateInputGenerator | UnmockServiceState | string;
 
 // Used to incorporate the reset method when needed
 interface IResetState {
