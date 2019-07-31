@@ -13,23 +13,9 @@ Testing library for mocking external services in Node.js.
 
 To get started, visit [unmock.io](https://unmock.io).
 
-**Table of Contents**
-
-<!-- toc -->
-
-- [unmock-node](#unmock-node)
-  - [How does it work?](#how-does-it-work)
-  - [Install](#install)
-    - [Node version support](#node-version-support)
-  - [Usage](#usage)
-  - [Contributing](#contributing)
-  - [License](#license)
-
-<!-- tocstop -->
-
 ## How does it work?
 
-Unmock-node uses [node-mitm](https://github.com/moll/node-mitm) library to capture outgoing HTTP calls, injecting JIT or persisted mocks of hundreds of APIs.
+Unmock-node uses [node-mitm](https://github.com/moll/node-mitm) library to capture outgoing HTTP calls and serves back mock data from services as explained in the [docs](https://unmock.io).
 
 ## Install
 
