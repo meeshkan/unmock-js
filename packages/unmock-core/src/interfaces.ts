@@ -1,3 +1,5 @@
+import { AllowedHosts } from "./settings/allowedHosts";
+
 export interface ILogger {
   log(message: string): void;
 }
@@ -29,15 +31,9 @@ export interface IBackend {
   initialize(options: IUnmockOptions): any;
   reset(): void;
 }
-export interface IAllowedHosts {
-  get(): string[];
-  set(urls: Array<string | RegExp> | string | RegExp): void;
-  add(urls: Array<string | RegExp> | string | RegExp): void;
-  isWhitelisted(url: string): boolean;
-}
 
 export interface IUnmockPackage {
-  allowedHosts: IAllowedHosts;
+  allowedHosts: AllowedHosts;
   on(): any;
   init(): any;
   initialize(): any;
