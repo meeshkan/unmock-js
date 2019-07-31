@@ -13,6 +13,7 @@
     "lint": "npm run lint-ts",
     "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jsdom/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json",
     "test": "jest --verbose",
+    "test:debug": "DEBUG=unmock* jest --verbose",
     "test:clean": "jest --clearCache",
     "test:watch": "jest --verbose --watchAll",
     "testonly": "npm test",
