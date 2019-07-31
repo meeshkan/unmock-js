@@ -25,7 +25,6 @@ export default class FSLogger implements ILogger {
       fs.mkdirSync(absPath, { recursive: true });
       this.targetFile = path.join(absPath, filename);
     }
-    console.log(this.targetFile);
 
     // create the file or empty the file if it exists and is too big
     if (
