@@ -44,7 +44,13 @@ export class State {
       // No state given, no changes to make
       return;
     }
-    debugLog(`Found follow operations: ${ops.operations}`);
+    debugLog(
+      `Found following operations: ${JSON.stringify(
+        ops.operations,
+        undefined,
+        1,
+      )}`,
+    );
 
     let errorMsg: string | undefined;
     const opsResult = ops.operations.some((op: IOperationForStateUpdate) => {
