@@ -2,7 +2,7 @@ import path from "path";
 import { IServiceDef } from "unmock-core";
 import { FsServiceDefLoader } from "../../loaders/fs-service-def-loader";
 
-const RESOURCES_DIR = path.join(__dirname, "resources");
+const RESOURCES_DIR = path.join(__dirname, "..", "resources");
 
 describe("File system service def loader", () => {
   it("loads serviceDefs from existing directory", () => {
@@ -10,16 +10,18 @@ describe("File system service def loader", () => {
       servicesDir: RESOURCES_DIR,
     });
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-    expect(serviceDefs).toHaveLength(1);
-    const serviceDef = serviceDefs[0];
-    expect(serviceDef.directoryName).toBe("petstore");
+    expect(serviceDefs).toHaveLength(2);
+    expect(serviceDefs.map((def: IServiceDef) => def.directoryName)).toEqual([
+      "petstore",
+      "slack",
+    ]);
   });
   it("loads serviceDefs from existing directory asynchronously", async () => {
     const serviceDefLoader = new FsServiceDefLoader({
       servicesDir: RESOURCES_DIR,
     });
     const serviceDefs: IServiceDef[] = await serviceDefLoader.load();
-    expect(serviceDefs).toHaveLength(1);
+    expect(serviceDefs).toHaveLength(2);
     const serviceDef = serviceDefs[0];
     expect(serviceDef.directoryName).toBe("petstore");
   });
