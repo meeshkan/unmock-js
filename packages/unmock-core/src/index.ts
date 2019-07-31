@@ -1,10 +1,18 @@
 import { escapeRegExp } from "lodash";
-import { IBackend, ILogger, IUnmockPackage } from "./interfaces";
+import {
+  IAllowedHosts,
+  IBackend,
+  ILogger,
+  IUnmockPackage,
+  IUnmockOptions,
+} from "./interfaces";
 import * as transformers from "./service/state/transformers";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
 export const dsl = transformers;
+
+// tslint:disable: max-classes-per-file
 
 const whitelistToRegex = (whitelist?: Array<string | RegExp>): RegExp[] =>
   whitelist === undefined
@@ -20,17 +28,62 @@ const whitelistToRegex = (whitelist?: Array<string | RegExp>): RegExp[] =>
             ),
       );
 
+interface IBooleanSetting {
+  on(): void;
+  off(): void;
+  get(): boolean;
+}
+
+class BooleanSetting implements IBooleanSetting {
+  constructor(private value = false) {}
+  public on() {
+    this.value = true;
+  }
+  public off() {
+    this.value = false;
+  }
+  public get() {
+    return this.value;
+  }
+}
+
+class AllowedHosts implements IAllowedHosts {
+  constructor(
+    private whitelist: Array<string | RegExp> = [
+      "127.0.0.1",
+      "127.0.0.0",
+      "localhost",
+    ],
+    private regexWhitelist = whitelistToRegex(whitelist),
+  ) {}
+
+  public set(urls: Array<string | RegExp> | string | RegExp): void {
+    this.whitelist = Array.isArray(urls) ? urls : [urls];
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
+  }
+  public add(urls: string | RegExp | Array<string | RegExp>): void {
+    Array.isArray(urls)
+      ? this.whitelist.push(...urls)
+      : this.whitelist.push(urls);
+    this.regexWhitelist = whitelistToRegex(this.whitelist);
+  }
+  public get() {
+    return this.whitelist.map((url: string | RegExp) =>
+      url instanceof RegExp ? url.source : url,
+    );
+  }
+  public isWhitelisted(host: string) {
+    return this.regexWhitelist.filter(wl => wl.test(host)).length > 0;
+  }
+}
+
 export abstract class CorePackage implements IUnmockPackage {
+  public allowedHosts: IAllowedHosts;
+  public flaky: IBooleanSetting;
+  public useInProduction: IBooleanSetting;
+
   protected readonly backend: IBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-  private whitelist: Array<string | RegExp> = [
-    "127.0.0.1",
-    "127.0.0.0",
-    "localhost",
-  ];
-  private regexWhitelist: RegExp[];
-  private activeInProduction: boolean = false;
-  private isFlaky: boolean = false;
 
   constructor(
     backend: IBackend,
@@ -38,19 +91,22 @@ export abstract class CorePackage implements IUnmockPackage {
       logger?: ILogger;
     },
   ) {
-    this.regexWhitelist = whitelistToRegex(this.whitelist);
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
+
+    this.allowedHosts = new AllowedHosts();
+    this.flaky = new BooleanSetting();
+    this.useInProduction = new BooleanSetting();
   }
 
-  // Activation and deactivation methods
   public on() {
-    return this.backend.initialize({
-      useInProduction: () => this.activeInProduction,
-      isWhitelisted: (url: string) => this.isWhitelisted(url),
+    const opts: IUnmockOptions = {
+      useInProduction: () => this.useInProduction.get(),
+      isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
-      flaky: () => this.isFlaky,
-    });
+      flaky: () => this.flaky.get(),
+    };
+    return this.backend.initialize(opts);
   }
   public init() {
     this.on();
@@ -61,44 +117,6 @@ export abstract class CorePackage implements IUnmockPackage {
 
   public off() {
     this.backend.reset();
-  }
-
-  // Allowd Hosts methods
-  public setAllowedHosts(urls: Array<string | RegExp> | string | RegExp): void {
-    this.whitelist = Array.isArray(urls) ? urls : [urls];
-    this.regexWhitelist = whitelistToRegex(this.whitelist);
-  }
-  public extendAllowedHosts(
-    urls: string | RegExp | Array<string | RegExp>,
-  ): void {
-    Array.isArray(urls)
-      ? this.whitelist.push(...urls)
-      : this.whitelist.push(urls);
-    this.regexWhitelist = whitelistToRegex(this.whitelist);
-  }
-  public getAllowedHosts() {
-    return this.whitelist.map((url: string | RegExp) =>
-      url instanceof RegExp ? url.source : url,
-    );
-  }
-  public isWhitelisted(host: string) {
-    return this.regexWhitelist.filter(wl => wl.test(host)).length > 0;
-  }
-
-  // Flaky mode methods
-  public flaky() {
-    this.isFlaky = true;
-  }
-  public nonFlaky() {
-    this.isFlaky = false;
-  }
-
-  // Use in production methods
-  public useInProduction() {
-    this.activeInProduction = true;
-  }
-  public useInDevelopment() {
-    this.activeInProduction = false;
   }
 
   public abstract states(): any;

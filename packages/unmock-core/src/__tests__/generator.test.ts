@@ -62,14 +62,17 @@ describe("Tests generator", () => {
       options: mockOptions,
     });
     for (let i = 0; i < 50; i++) {
-      expect(
-        createResponse({
-          host: "petstore.swagger.io",
-          method: "post",
-          path: "/v1/pets",
-          protocol: "http",
-        }).statusCode,
-      ).toEqual(201);
+      const resp = createResponse({
+        host: "petstore.swagger.io",
+        method: "post",
+        path: "/v1/pets",
+        protocol: "http",
+      });
+      expect(resp).toBeDefined();
+      if (resp !== undefined) {
+        // Only used for type-checking...
+        expect(resp.statusCode).toEqual(201);
+      }
     }
   });
 
@@ -80,13 +83,18 @@ describe("Tests generator", () => {
     });
     const counters: { [code: number]: number } = { 200: 0, 201: 0 };
     for (let i = 0; i < 100; i++) {
-      const code: number = createResponse({
+      const resp = createResponse({
         host: "petstore.swagger.io",
         method: "post",
         path: "/v1/pets",
         protocol: "http",
-      }).statusCode;
-      counters[code] += 1;
+      });
+      expect(resp).toBeDefined();
+      if (resp !== undefined) {
+        // Only used for type-checking...
+        const code: number = resp.statusCode;
+        counters[code] += 1;
+      }
     }
     expect(counters[200]).toBeGreaterThan(0);
     expect(counters[201]).toBeGreaterThan(0);

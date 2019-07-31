@@ -16,41 +16,48 @@ class TestBackend implements IBackend {
 }
 const backend = new TestBackend();
 
-describe("tests allowedHosts", () => {
-  test("defaults work as expected", () => {
-    const pkg = new TestPackage(backend);
-    expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
-    expect(pkg.isWhitelisted("127.0.2.1")).toEqual(false);
-  });
+describe("Tests core package", () => {
+  describe("tests allowedHosts", () => {
+    let pkg: TestPackage;
+    beforeEach(() => {
+      pkg = new TestPackage(backend);
+    });
 
-  test("with wildcard mid-string", () => {
-    const pkg = new TestPackage(backend);
-    pkg.setAllowedHosts("12*.0.*.1");
-    expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(true);
-    expect(pkg.isWhitelisted("127.0..1")).toEqual(true);
-    expect(pkg.isWhitelisted("127.0.1")).toEqual(false);
-    expect(pkg.isWhitelisted("12.5.0.1.2.3.4.1")).toEqual(true);
-  });
+    test("defaults work as expected", () => {
+      expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.2.1")).toEqual(false);
+    });
 
-  test("modified post-initialization", () => {
-    const pkg = new TestPackage(backend);
-    expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
-    expect(pkg.isWhitelisted("127.0.2.1")).toEqual(false);
-    pkg.setAllowedHosts(["*foo*bar*.com"]);
-    expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(false);
-    expect(pkg.isWhitelisted("127.0.0.1")).toEqual(false);
-    expect(pkg.isWhitelisted("foobar.com")).toEqual(true);
-    expect(pkg.isWhitelisted("https://foo.bar.com")).toEqual(true);
-  });
+    test("with wildcard mid-string", () => {
+      pkg.allowedHosts.set("12*.0.*.1");
+      expect(pkg.allowedHosts.isWhitelisted("127.0.foobar.1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("127.0..1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.1")).toEqual(false);
+      expect(pkg.allowedHosts.isWhitelisted("12.5.0.1.2.3.4.1")).toEqual(true);
+    });
 
-  test("concatenated", () => {
-    const pkg = new TestPackage(backend);
-    expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
-    expect(pkg.isWhitelisted("127.0.2.1")).toEqual(false);
-    pkg.extendAllowedHosts("*foo*bar*.com");
-    expect(pkg.isWhitelisted("127.0.foobar.1")).toEqual(false);
-    expect(pkg.isWhitelisted("127.0.0.1")).toEqual(true);
-    expect(pkg.isWhitelisted("foobar.com")).toEqual(true);
-    expect(pkg.isWhitelisted("https://foo.bar.com")).toEqual(true);
+    test("modified post-initialization", () => {
+      expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.2.1")).toEqual(false);
+      pkg.allowedHosts.set(["*foo*bar*.com"]);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.foobar.1")).toEqual(false);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(false);
+      expect(pkg.allowedHosts.isWhitelisted("foobar.com")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("https://foo.bar.com")).toEqual(
+        true,
+      );
+    });
+
+    test("concatenated", () => {
+      expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.2.1")).toEqual(false);
+      pkg.allowedHosts.add("*foo*bar*.com");
+      expect(pkg.allowedHosts.isWhitelisted("127.0.foobar.1")).toEqual(false);
+      expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("foobar.com")).toEqual(true);
+      expect(pkg.allowedHosts.isWhitelisted("https://foo.bar.com")).toEqual(
+        true,
+      );
+    });
   });
 });

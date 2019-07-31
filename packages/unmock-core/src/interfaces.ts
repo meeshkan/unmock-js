@@ -29,16 +29,19 @@ export interface IBackend {
   initialize(options: IUnmockOptions): any;
   reset(): void;
 }
+export interface IAllowedHosts {
+  get(): string[];
+  set(urls: Array<string | RegExp> | string | RegExp): void;
+  add(urls: Array<string | RegExp> | string | RegExp): void;
+  isWhitelisted(url: string): boolean;
+}
 
 export interface IUnmockPackage {
-  getAllowedHosts(): string[];
-  setAllowedHosts(urls: Array<string | RegExp> | string | RegExp): void;
-  extendAllowedHosts(urls: Array<string | RegExp> | string | RegExp): void;
+  allowedHosts: IAllowedHosts;
   on(): any;
   init(): any;
   initialize(): any;
   off(): void;
-  isWhitelisted(url: string): boolean;
   states(): any;
 }
 
