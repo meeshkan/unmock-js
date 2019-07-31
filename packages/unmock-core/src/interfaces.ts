@@ -10,23 +10,6 @@ export interface IUnmockOptions extends ILogger {
   flaky(): boolean;
 }
 
-export interface IMetaData {
-  lang?: string;
-}
-
-export interface IRequestData {
-  body?: string;
-  headers?: any;
-  host?: string;
-  method?: string;
-  path?: string;
-}
-
-export interface IResponseData {
-  body?: string;
-  headers?: any;
-}
-
 export interface IBackend {
   initialize(options: IUnmockOptions): any;
   reset(): void;
@@ -66,29 +49,15 @@ export interface ISerializedRequest {
   protocol: "http" | "https";
 }
 
-export type IMockRequest = {
-  [P in keyof ISerializedRequest]?: ISerializedRequest[P] | RegExp;
-};
-
 export interface ISerializedResponse {
   body?: string;
   headers?: IOutgoingHeaders;
   statusCode: number;
 }
 
-export interface IMock {
-  request: IMockRequest;
-  response: ISerializedResponse;
-}
-
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
-
-// Used to load a service specification from a serialized request
-// Returns an object (parsed from specification)
-export type RequestToSpec = (sreq: ISerializedRequest) => any;
-export type GeneratedMock = any;
 
 export interface IServiceDefLoader {
   /**
