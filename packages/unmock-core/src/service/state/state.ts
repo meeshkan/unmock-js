@@ -9,7 +9,7 @@ import {
   Operation,
 } from "../interfaces";
 import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
-import { anyFn, filterStatesByOperation, getOperations } from "./utils";
+import { filterStatesByOperation, getOperations } from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -53,7 +53,8 @@ export class State {
     );
 
     let errorMsg: string | undefined;
-    const opsResult = anyFn(ops.operations, (op: IOperationForStateUpdate) => {
+    let opsResult = false;
+    ops.operations.forEach((op: IOperationForStateUpdate) => {
       debugLog(`Testing against ${JSON.stringify(op.operation)}`);
       // For each operation, verify the new state applies and save in `this.state`
       const stateResponses = getValidStatesForOperationWithState(
@@ -68,14 +69,14 @@ export class State {
           stateResponses.responses,
         );
         this.updateStateInternal(endpoint, method, augmentedResponses);
-        return true;
+        opsResult = true;
+        return;
       }
       // failed path
       debugLog(
         `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
       );
       errorMsg = stateResponses.error;
-      return false;
     });
 
     if (opsResult === false) {

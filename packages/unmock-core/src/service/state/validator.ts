@@ -14,7 +14,6 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import { anyFn } from "./utils";
 
 const debugLog = debug("unmock:state:validator");
 
@@ -191,7 +190,8 @@ const getStateFromMedia = (
   );
   const errors: IMissingParam[] = [];
   const relevantResponses: IResponsesFromContent = {};
-  const success = anyFn(Object.keys(contentRecord), (contentType: string) => {
+  let success = false;
+  Object.keys(contentRecord).forEach((contentType: string) => {
     const content = contentRecord[contentType];
     if (content === undefined || content.schema === undefined) {
       debugLog(`getStateFromMedia: No schema defined in ${contentType}`);
@@ -199,7 +199,7 @@ const getStateFromMedia = (
         msg: `No schema defined in '${JSON.stringify(content)}'!`,
         nestedLevel: -1,
       });
-      return false;
+      return;
     }
     const spreadState = state.gen(deref<Schema>(content.schema));
 
@@ -215,11 +215,11 @@ const getStateFromMedia = (
           `${contentType} is invalid - ${spreadState}`,
       );
       errors.push(missingParam);
-      return false;
+      return;
     }
     debugLog(`getStateFromMedia: Spread state is valid for ${contentType}`);
     relevantResponses[contentType] = spreadState;
-    return true;
+    success = true;
   });
   return {
     responses: relevantResponses,

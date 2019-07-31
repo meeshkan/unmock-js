@@ -27,22 +27,6 @@ interface ICodesToMediaTypes {
 const debugLog = debug("unmock:state:utils");
 
 /**
- * Works like array.some(), except it exhauses all array elements before returning.
- * @param arr
- * @param callbackfn
- */
-export const anyFn = <T>(
-  arr: T[],
-  callbackfn: (value: T, index: number, array: T[]) => boolean,
-): boolean => {
-  return arr.reduce(
-    (acc: boolean, elem: T, index: number, array: T[]) =>
-      callbackfn(elem, index, array) || acc,
-    false,
-  );
-};
-
-/**
  * Given a list of possibly relevent `states` (each being a mapping from
  * a status code, to a mediatype, to the state itself), and an `operation`,
  * filter and return only those states that are relevant for the request Operation.
