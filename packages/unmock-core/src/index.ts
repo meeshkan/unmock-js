@@ -3,8 +3,8 @@ import {
   IAllowedHosts,
   IBackend,
   ILogger,
-  IUnmockPackage,
   IUnmockOptions,
+  IUnmockPackage,
 } from "./interfaces";
 import * as transformers from "./service/state/transformers";
 // top-level exports
@@ -13,6 +13,7 @@ export * from "./generator";
 export const dsl = transformers;
 
 // tslint:disable: max-classes-per-file
+// Classes in this file to avoid unnecessary imports/exports
 
 const whitelistToRegex = (whitelist?: Array<string | RegExp>): RegExp[] =>
   whitelist === undefined
