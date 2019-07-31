@@ -17,7 +17,7 @@ import {
   responseCreatorFactory,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
-import FSLogger from "../logger/filesystem-logger";
+import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
 import ClientRequestTracker from "./client-request-tracker";
 

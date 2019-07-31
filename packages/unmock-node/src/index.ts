@@ -1,6 +1,6 @@
 import { CorePackage } from "unmock-core";
 import NodeBackend from "./backend";
-import _WinstonLogger from "./logger/winston-logger";
+import _WinstonLogger from "./loggers/winston-logger";
 export { dsl } from "unmock-core";
 
 const backend = new NodeBackend();
