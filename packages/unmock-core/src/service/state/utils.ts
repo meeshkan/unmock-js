@@ -38,6 +38,11 @@ export const filterStatesByOperation = (
   states: codeToMedia[],
   operation: Operation,
 ): codeToMedia => {
+  debugLog(
+    `filterStatesByOperation: Filtering which states from ${JSON.stringify(
+      states,
+    )} are valid for ${JSON.stringify(operation)}`,
+  );
   const opResponses = operation.responses;
   const statusCodes = Object.keys(opResponses);
   // Types of 'MediaType' keys that are present in given Operation
@@ -54,6 +59,11 @@ export const filterStatesByOperation = (
       );
     },
     {},
+  );
+  debugLog(
+    `filterStatesByOperation: acceptable media types from operation: ${JSON.stringify(
+      mediaTypes,
+    )}`,
   );
   // Filter each state by status code and media type present in Operation
   const filtered = states.reduce(
@@ -84,16 +94,22 @@ export const filterStatesByOperation = (
     },
     [],
   );
+  debugLog(
+    `filterStatesByOperation: Matching state after filtering status codes and media types: ${JSON.stringify(
+      filtered,
+    )}`,
+  );
   // Spread out for each status code and each media type
-  return spreadNestedCodeToMedia(filtered);
+  return flattenCodeToMediaBySpreading(filtered);
 };
 
-const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
+const flattenCodeToMediaBySpreading = (nested: codeToMedia[]) => {
+  debugLog(`flattenCodeToMediaBySpreading: Flattening ${nested}...`);
   const spreaded: codeToMedia = {};
   for (const state of nested) {
     for (const code of Object.keys(state)) {
       const resp: Record<string, Schema> = state[code as codeKey] as any;
-      for (const mediaType of Object.keys(state[code])) {
+      for (const mediaType of Object.keys(resp)) {
         const content = resp[mediaType];
         if (content !== undefined) {
           const spreadSchema = {
@@ -111,16 +127,34 @@ const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
   return spreaded;
 };
 
+/**
+ * Attempts to match all media types from `allowedMediaTypes` with the `stateObj`.
+ * Assumption is that all codes in`statusCodes` appear in `allowedMediaTypes`.
+ * @param statusCodes
+ * @param stateObj
+ * @param allowedMediaTypes
+ */
 const filterByMediaType = (
   statusCodes: string[],
   stateObj: codeToMedia,
   allowedMediaTypes: ICodesToMediaTypes,
 ) => {
+  debugLog(
+    `filterByMediaType: Attempting to match media types from ${JSON.stringify(
+      allowedMediaTypes,
+    )} with ${JSON.stringify(stateObj)}`,
+  );
   const stateCodeToMedia: codeToMedia = {};
   for (const code of statusCodes) {
+    debugLog(`filterByMediaType: Filtering for status code ${code}`);
     const codeSchema = stateObj[code];
     const validMediaTypes = Object.keys(codeSchema).filter(
       (mediaType: string) => allowedMediaTypes[code].includes(mediaType),
+    );
+    debugLog(
+      `filterByMediaType: Valid media types for state and operation: ${JSON.stringify(
+        validMediaTypes,
+      )}`,
     );
     if (validMediaTypes.length === 0) {
       continue;
@@ -162,7 +196,9 @@ export const getOperations = ({
   });
 
   if (endpoint !== DEFAULT_STATE_ENDPOINT) {
-    debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
+    debugLog(
+      `getOperations: Fetching operations for specific endpoint '${endpoint}'...`,
+    );
     const pathItem = paths[schemaEndpoint];
     if (pathItem === undefined) {
       return err(`endpoint '${endpoint}'`);
@@ -170,7 +206,7 @@ export const getOperations = ({
 
     if (isDefMethod) {
       // Specific endpoint, all methods
-      debugLog(`Fetching operations for any REST method...`);
+      debugLog(`getOperations: Fetching operations for any REST method...`);
       const ops = getOperationsFromPathItem(pathItem, endpoint);
       return ops === undefined
         ? err(`any operations under '${endpoint}'`)
@@ -178,7 +214,9 @@ export const getOperations = ({
     }
 
     // Specific endpoint, specific method
-    debugLog(`Fetching operations for REST method '${method}'...`);
+    debugLog(
+      `getOperations: Fetching operations for REST method '${method}'...`,
+    );
     const op = pathItem[method as HTTPMethod];
     return op === undefined
       ? err(`response for '${method} ${endpoint}'`)
@@ -207,6 +245,11 @@ const getOperationsByMethod = (
   method: ExtendedHTTPMethod,
   paths: Paths,
 ): OperationsForStateUpdate | undefined => {
+  debugLog(
+    `getOperationsByMethod: Extracting all ${method} operations from ${JSON.stringify(
+      paths,
+    )}`,
+  );
   const anyMethod = method === DEFAULT_STATE_HTTP_METHOD;
   const filterFn = anyMethod
     ? (pathItemKey: string) => isRESTMethod(pathItemKey)
@@ -228,6 +271,7 @@ const getOperationsByMethod = (
     [],
   );
   if (operations.length === 0) {
+    debugLog(`getOperationsByMethod: No matching operations found`);
     return undefined;
   }
   return operations;
@@ -237,6 +281,11 @@ const getOperationsFromPathItem = (
   pathItem: PathItem,
   endpoint: string,
 ): OperationsForStateUpdate | undefined => {
+  debugLog(
+    `getOperationsFromPathItem: Extracting all operations from ${JSON.stringify(
+      pathItem,
+    )}`,
+  );
   const operations: OperationsForStateUpdate = [];
   for (const key of Object.keys(pathItem)) {
     if (isRESTMethod(key)) {
@@ -248,6 +297,7 @@ const getOperationsFromPathItem = (
     }
   }
   if (operations.length === 0) {
+    debugLog(`getOperationsFromPathItem: no operations found`);
     return undefined;
   }
   return operations;

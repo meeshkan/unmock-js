@@ -43,19 +43,16 @@ describe("Tests generator", () => {
     stateStore.petstore({}); // should pass
     expect(() => stateStore.github({})).toThrow("service named 'github'"); // no github service
   });
-
   it("sets a state for swagger api converted to openapi", () => {
     const { stateStore } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
     stateStore.slack("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
-
     expect(() =>
       stateStore.slack("/bots.info", { bot: { app_id: "A123456789" } }),
     ).toThrow("type is incorrect"); // Does not match the specified pattern
   });
-
   it("in non-flaky mode", () => {
     const { createResponse } = responseCreatorFactory({
       serviceDefLoader,
@@ -75,7 +72,6 @@ describe("Tests generator", () => {
       }
     }
   });
-
   it("in flaky mode", () => {
     const { createResponse } = responseCreatorFactory({
       serviceDefLoader,
@@ -98,5 +94,36 @@ describe("Tests generator", () => {
     }
     expect(counters[200]).toBeGreaterThan(0);
     expect(counters[201]).toBeGreaterThan(0);
+  });
+
+  it("Generates correct response from differing status codes", () => {
+    const { stateStore, createResponse } = responseCreatorFactory({
+      serviceDefLoader,
+      options: mockOptions,
+    });
+    stateStore.filestackApi("/prefetch", "prefetch");
+    let resp = createResponse({
+      host: "cloud.filestackapi.com",
+      method: "options",
+      path: "/prefetch",
+      protocol: "https",
+    });
+    expect(resp).toBeDefined();
+    if (resp !== undefined) {
+      expect(resp.statusCode).toEqual(204);
+      expect(resp.body).toEqual('"prefetch"');
+    }
+
+    resp = createResponse({
+      host: "cloud.filestackapi.com",
+      method: "get",
+      path: "/prefetch",
+      protocol: "https",
+    });
+    expect(resp).toBeDefined();
+    if (resp !== undefined) {
+      expect(resp.statusCode).toEqual(200);
+      expect(resp.body).toEqual('"prefetch"');
+    }
   });
 });

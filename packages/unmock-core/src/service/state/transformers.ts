@@ -1,4 +1,5 @@
 import Ajv from "ajv";
+import debug from "debug";
 import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
 import {
   isSchema,
@@ -9,6 +10,8 @@ import {
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
+
+const debugLog = debug("unmock:state:transformers");
 
 export const objResponse = (
   state?: UnmockServiceState,
@@ -32,6 +35,9 @@ const generateTextResponse = (
   schema: Schema,
   state: string | undefined,
 ): Record<string, any> => {
+  debugLog(
+    `generateTextResponse: Verifying ${schema} can contain a simple string`,
+  );
   if (state === undefined || schema === undefined || schema.type !== "string") {
     return { "text/plain": null }; // null is used to indicate failure
   }
@@ -57,14 +63,23 @@ const spreadStateFromService = (
   serviceSchema: any,
   statePath: any,
 ): { [pathKey: string]: any | null } => {
+  debugLog(
+    `spreadStateFromService: Looking to match ${statePath} in ${serviceSchema}`,
+  );
   let matches: { [key: string]: any } = {};
 
   for (const key of Object.keys(statePath)) {
+    debugLog(
+      `spreadStateFromService: traversing the given state, looking to match ${key}`,
+    );
     const scm = serviceSchema[key];
     const stateValue = statePath[key];
 
     if (scm === undefined) {
       if (hasNestedItems(serviceSchema)) {
+        debugLog(
+          `spreadStateFromService: No ${key} in schema, traversing nested items instead`,
+        );
         // Option 1: current schema has no matching key, but contains indirection (items/properties, etc)
         // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
         const translated = DSL.translateDSLToOAS(statePath, serviceSchema);
@@ -79,6 +94,11 @@ const spreadStateFromService = (
       }
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
+        debugLog(
+          `spreadStateFromService: Found ${key} in schema, validating ${stateValue} against ${JSON.stringify(
+            scm,
+          )}, using null if types mismatch`,
+        );
         // Option 2: Current scheme has matching key, and the state specifies a non-object (or schema). Validate schema.
         // TODO do we want to throw for invalid types?
         const spread = {
@@ -89,6 +109,11 @@ const spreadStateFromService = (
         };
         matches = { ...matches, ...spread };
       } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
+        debugLog(
+          `spreadStateFromService: Found ${key} in schema, traversing ${JSON.stringify(
+            scm,
+          )} and ${JSON.stringify(stateValue)}`,
+        );
         // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
         // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
         const translated = DSL.translateDSLToOAS(stateValue, scm);
@@ -100,6 +125,10 @@ const spreadStateFromService = (
           ...oneLevelOfIndirectNestedness(scm, statePath, spread),
         };
       } else {
+        debugLog(
+          `spreadStateFromService: Found ${key} in schema, but more ` +
+            `traversal is needed and not possible -> missing value found`,
+        );
         // Option 4: Current schema has matching key, but state specifies an object and schema has final value
         matches[key] = null;
       }
@@ -111,6 +140,11 @@ const spreadStateFromService = (
       );
     }
   }
+  debugLog(
+    `spreadStateFromService: Results for this iteration: ${JSON.stringify(
+      matches,
+    )}`,
+  );
   return matches;
 };
 
