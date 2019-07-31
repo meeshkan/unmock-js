@@ -22,8 +22,10 @@ describe("File system service def loader", () => {
     });
     const serviceDefs: IServiceDef[] = await serviceDefLoader.load();
     expect(serviceDefs).toHaveLength(2);
-    const serviceDef = serviceDefs[0];
-    expect(serviceDef.directoryName).toBe("petstore");
+    expect(serviceDefs.map((def: IServiceDef) => def.directoryName)).toEqual([
+      "petstore",
+      "slack",
+    ]);
   });
 
   it("throws for a non-existing directory", () => {
