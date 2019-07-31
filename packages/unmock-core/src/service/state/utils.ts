@@ -143,6 +143,13 @@ const flattenCodeToMediaBySpreading = (nested: codeToMedia[]) => {
   return spreaded;
 };
 
+/**
+ * Attempts to match all media types from `allowedMediaTypes` with the `stateObj`.
+ * Assumption is that all codes in`statusCodes` appear in `allowedMediaTypes`.
+ * @param statusCodes
+ * @param stateObj
+ * @param allowedMediaTypes
+ */
 const filterByMediaType = (
   statusCodes: string[],
   stateObj: codeToMedia,
