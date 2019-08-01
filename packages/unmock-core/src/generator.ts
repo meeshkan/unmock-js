@@ -61,6 +61,7 @@ export function responseCreatorFactory({
       setupJSFUnmockProperties(req);
       const res = generateMockFromTemplate(options, serviceStore.match(req));
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+      jsf.reset(); // removes unmock-properties
       return res;
     },
   };
@@ -269,7 +270,6 @@ const generateMockFromTemplate = (
   jsf.option("alwaysFakeOptionals", true);
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
-  jsf.reset();
 
   const body = JSON.stringify(resolvedTemplate);
   jsf.option("useDefaultValue", true);
