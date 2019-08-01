@@ -1,11 +1,27 @@
 import fs from "fs";
+import yaml from "js-yaml";
 import path from "path";
-import { ILogger } from "unmock-core";
+import {
+  IListener,
+  ISerializedRequest,
+  ISerializedResponse,
+} from "unmock-core";
 
 const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB
 
-export default class FSLogger implements ILogger {
+export default class FSLogger implements IListener {
+  private static toIndentedYaml(input: any) {
+    return yaml
+      .dump(input.body ? { ...input, body: JSON.parse(input.body) } : input)
+      .split("\n")
+      .map(
+        (line: string) =>
+          `\t${line.replace("!<tag:yaml.org,2002:js/undefined> ''", "")}`,
+      )
+      .join("\n");
+  }
   private targetFile: string;
+
   constructor({
     directory = "./",
     filename = "unmock.log",
@@ -37,7 +53,22 @@ export default class FSLogger implements ILogger {
       );
     }
   }
-  public log(message: string) {
-    fs.appendFileSync(this.targetFile, message);
+
+  public notify({
+    req,
+    res,
+  }: {
+    req: ISerializedRequest;
+    res?: ISerializedResponse;
+  }) {
+    fs.appendFileSync(
+      this.targetFile,
+      `[${new Date().toISOString()}]:\n\n` +
+        `Intercepted request:\n${FSLogger.toIndentedYaml(req)}\n\n\n` +
+        (res
+          ? `Generated response:\n${FSLogger.toIndentedYaml(res)}`
+          : "No matching response") +
+        `\n\n=============================================\n\n`,
+    );
   }
 }
