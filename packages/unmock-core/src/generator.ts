@@ -41,9 +41,11 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 
 export function responseCreatorFactory({
   serviceDefLoader,
+  listeners = [],
   options,
 }: {
   serviceDefLoader: IServiceDefLoader;
+  listeners: IListener[];
   options: IUnmockOptions;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
@@ -56,9 +58,7 @@ export function responseCreatorFactory({
     stateStore,
     createResponse: (req: ISerializedRequest) => {
       const res = generateMockFromTemplate(options, serviceStore.match(req));
-      options
-        .listeners()
-        .forEach((listener: IListener) => listener.notify({ req, res }));
+      listeners.forEach((listener: IListener) => listener.notify({ req, res }));
       return res;
     },
   };

@@ -113,7 +113,7 @@ export default class NodeBackend implements IBackend {
       servicesDir: this.config.servicesDirectory,
     });
     const { stateStore, createResponse } = responseCreatorFactory({
-      logger: new FSLogger({ directory: this.config.servicesDirectory }),
+      listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
       options,
       serviceDefLoader,
     });
