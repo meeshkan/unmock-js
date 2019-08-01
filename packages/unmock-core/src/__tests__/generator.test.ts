@@ -43,6 +43,7 @@ describe("Tests generator", () => {
     stateStore.petstore({}); // should pass
     expect(() => stateStore.github({})).toThrow("service named 'github'"); // no github service
   });
+
   it("sets a state for swagger api converted to openapi", () => {
     const { stateStore } = responseCreatorFactory({
       serviceDefLoader,
@@ -53,6 +54,7 @@ describe("Tests generator", () => {
       stateStore.slack("/bots.info", { bot: { app_id: "A123456789" } }),
     ).toThrow("type is incorrect"); // Does not match the specified pattern
   });
+
   it("in non-flaky mode", () => {
     const { createResponse } = responseCreatorFactory({
       serviceDefLoader,
@@ -72,6 +74,7 @@ describe("Tests generator", () => {
       }
     }
   });
+
   it("in flaky mode", () => {
     const { createResponse } = responseCreatorFactory({
       serviceDefLoader,
@@ -124,6 +127,44 @@ describe("Tests generator", () => {
     if (resp !== undefined) {
       expect(resp.statusCode).toEqual(200);
       expect(resp.body).toEqual('"prefetch"');
+    }
+  });
+
+  it("Sets a state with a function and generates accordingly", () => {
+    const { stateStore, createResponse } = responseCreatorFactory({
+      serviceDefLoader,
+      options: mockOptions,
+    });
+    // TODO: need to re-verify $size across all options
+    // stateStore.petstore.get("/pets", { id: () => "foo", $size: 5, $code: 200 });
+    stateStore.petstore({ id: () => "foo" });
+    let resp = createResponse({
+      host: "petstore.swagger.io",
+      method: "get",
+      path: "/v1/pets",
+      protocol: "http",
+    });
+    expect(resp).toBeDefined();
+    if (resp && resp.body !== undefined) {
+      JSON.parse(resp.body).forEach((pet: any) =>
+        expect(pet.id).toEqual("foo"),
+      );
+    } else {
+      throw new Error("Response body was undefined?");
+    }
+
+    stateStore.petstore({ id: () => 1 });
+    resp = createResponse({
+      host: "petstore.swagger.io",
+      method: "get",
+      path: "/v1/pets",
+      protocol: "http",
+    });
+    expect(resp).toBeDefined();
+    if (resp && resp.body !== undefined) {
+      JSON.parse(resp.body).forEach((pet: any) => expect(pet.id).toEqual(1));
+    } else {
+      throw new Error("Response body was undefined?");
     }
   });
 });

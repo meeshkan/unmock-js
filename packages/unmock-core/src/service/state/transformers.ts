@@ -105,6 +105,8 @@ const spreadStateFromService = (
           [key]:
             isSchema(scm) && ajv.validate(scm, stateValue)
               ? { ...scm, const: stateValue }
+              : typeof stateValue === "function"
+              ? { ...scm, "x-unmock-function": stateValue }
               : null,
         };
         matches = { ...matches, ...spread };
@@ -155,7 +157,7 @@ const hasNestedItems = (obj: any) =>
   NESTED_SCHEMA_ITEMS.some((key: string) => obj[key] !== undefined);
 
 const isConcreteValue = (obj: any) =>
-  ["string", "number", "boolean"].includes(typeof obj);
+  ["string", "number", "boolean", "function"].includes(typeof obj);
 
 const isNonEmptyObject = (obj: any) =>
   typeof obj === "object" && Object.keys(obj).length > 0;

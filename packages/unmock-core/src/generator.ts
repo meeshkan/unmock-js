@@ -57,6 +57,8 @@ export function responseCreatorFactory({
   return {
     stateStore,
     createResponse: (req: ISerializedRequest) => {
+      // Setup the unmock properties for jsf parsing of x-unmock-*
+      setupJSFUnmockProperties(req);
       const res = generateMockFromTemplate(options, serviceStore.match(req));
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
       return res;
@@ -73,8 +75,25 @@ const normalizeHeaders = (headers: Headers | undefined): Headers | undefined =>
         {},
       );
 
-const setupJSFUnmockProperties = () => {
-  // Handle post-generation references, etc?
+const toJSONSchemaType = (input: any) =>
+  Array.isArray(input)
+    ? "array"
+    : input === null || input === undefined
+    ? "null"
+    : typeof input;
+
+const setupJSFUnmockProperties = (sreq: ISerializedRequest) => {
+  // Handle post-generation references, etc
+  jsf.define(
+    "unmock-function",
+    (fn: (req: ISerializedRequest) => any, schema: any) => {
+      const res = fn(sreq);
+      // Override the type/format specifications
+      delete schema.format;
+      schema.type = toJSONSchemaType(res);
+      return res;
+    },
+  );
 };
 
 const chooseResponseCode = (codes: string[]) => {
@@ -162,20 +181,6 @@ const getStateForOperation = (
   };
 };
 
-/**
- * Provides a work-around with for functions that may fail with a default value.
- * Attemps to return `f(value)`. If an error is thrown, returns `value`.
- * @param value
- * @param f
- */
-const tryCatch = (value: any, f: (value: any) => any) => {
-  try {
-    return f(value);
-  } catch {
-    return value;
-  }
-};
-
 const chooseResponseFromOperation = (
   operation: Operation,
   deref: Dereferencer,
@@ -259,17 +264,14 @@ const generateMockFromTemplate = (
     chooseResponseFromOperation(operation, service.dereferencer, {
       isFlaky: options.flaky(),
     });
-  // Setup the unmock properties for jsf parsing of x-unmock-*
-  setupJSFUnmockProperties();
+
   // Always generate all fields for now
   jsf.option("alwaysFakeOptionals", true);
-  // First iteration simply parses these and returns the updated schema
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
   jsf.reset();
 
-  // After one-pass resolving we might have new parameters to resolve.
-  const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
+  const body = JSON.stringify(resolvedTemplate);
   jsf.option("useDefaultValue", true);
   const resHeaders = jsf.generate(normalizeHeaders(headers));
   jsf.option("useDefaultValue", false);
