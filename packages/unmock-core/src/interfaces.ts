@@ -4,6 +4,16 @@ export interface ILogger {
   log(message: string): void;
 }
 
+export interface IListener {
+  notify({
+    req,
+    res,
+  }: {
+    req: ISerializedRequest;
+    res?: ISerializedResponse;
+  }): void;
+}
+
 export interface IUnmockOptions extends ILogger {
   useInProduction(): boolean;
   isWhitelisted(url: string): boolean;

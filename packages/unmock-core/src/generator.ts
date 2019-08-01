@@ -1,13 +1,12 @@
 /**
  * Implements the logic for generating a response from a service file
  */
-import yaml from "js-yaml";
 // @ts-ignore // json-schema-faker doesn't have typed definitions?
 import jsf from "json-schema-faker";
 import { defaultsDeep } from "lodash";
 import {
   CreateResponse,
-  ILogger,
+  IListener,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
@@ -42,11 +41,11 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 
 export function responseCreatorFactory({
   serviceDefLoader,
-  logger,
+  listeners = [],
   options,
 }: {
   serviceDefLoader: IServiceDefLoader;
-  logger?: ILogger;
+  listeners?: IListener[];
   options: IUnmockOptions;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
@@ -55,32 +54,12 @@ export function responseCreatorFactory({
   );
   const serviceStore = new ServiceStore(services);
   const stateStore = stateFacadeFactory(serviceStore);
-  const toIndentedYaml = (
-    input: any, // Adds one more indentation to each line
-  ) =>
-    yaml
-      .dump(input.body ? { ...input, body: JSON.parse(input.body) } : input)
-      .split("\n")
-      .map(
-        (line: string) =>
-          `\t${line.replace("!<tag:yaml.org,2002:js/undefined> ''", "")}`,
-      )
-      .join("\n");
   return {
     stateStore,
-    createResponse: (sreq: ISerializedRequest) => {
-      const resp = generateMockFromTemplate(options, serviceStore.match(sreq));
-      if (logger) {
-        logger.log(
-          `[${new Date().toISOString()}]:\n\n` +
-            `Intercepted request:\n${toIndentedYaml(sreq)}\n\n\n` +
-            (resp
-              ? `Generated response:\n${toIndentedYaml(resp)}`
-              : "No matching response") +
-            `\n\n=============================================\n\n`,
-        );
-      }
-      return resp;
+    createResponse: (req: ISerializedRequest) => {
+      const res = generateMockFromTemplate(options, serviceStore.match(req));
+      listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+      return res;
     },
   };
 }
