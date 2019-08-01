@@ -6,6 +6,7 @@ import {
   ISerializedRequest,
   ISerializedResponse,
 } from "unmock-core";
+import { resolveServicesDirectory } from "../utils";
 
 const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB
 
@@ -23,24 +24,14 @@ export default class FSLogger implements IListener {
   private targetFile: string;
 
   constructor({
-    directory = "./",
+    directory,
     filename = "unmock.log",
   }: {
     directory?: string;
     filename?: string;
   }) {
-    if (fs.existsSync(directory)) {
-      this.targetFile = path.resolve(path.join(directory, filename));
-    } else {
-      const absPath = path.resolve(
-        path.join(
-          process.env.UNMOCK_SERVICES_DIRECTORY || process.cwd(),
-          directory,
-        ),
-      );
-      fs.mkdirSync(absPath, { recursive: true });
-      this.targetFile = path.join(absPath, filename);
-    }
+    const absPath = resolveServicesDirectory(directory);
+    this.targetFile = path.join(absPath, filename);
 
     // create the file or empty the file if it exists and is too big
     if (
