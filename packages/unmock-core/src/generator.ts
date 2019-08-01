@@ -45,7 +45,7 @@ export function responseCreatorFactory({
   options,
 }: {
   serviceDefLoader: IServiceDefLoader;
-  listeners: IListener[];
+  listeners?: IListener[];
   options: IUnmockOptions;
 }): { stateStore: StateFacadeType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();

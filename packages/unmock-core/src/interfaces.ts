@@ -18,7 +18,6 @@ export interface IUnmockOptions extends ILogger {
   useInProduction(): boolean;
   isWhitelisted(url: string): boolean;
   flaky(): boolean;
-  listeners(): IListener[];
 }
 
 export interface IBackend {
