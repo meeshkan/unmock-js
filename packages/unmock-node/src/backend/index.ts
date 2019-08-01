@@ -17,6 +17,7 @@ import {
   responseCreatorFactory,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
+import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
 import ClientRequestTracker from "./client-request-tracker";
 
@@ -112,6 +113,7 @@ export default class NodeBackend implements IBackend {
       servicesDir: this.config.servicesDirectory,
     });
     const { stateStore, createResponse } = responseCreatorFactory({
+      logger: new FSLogger({ directory: this.config.servicesDirectory }),
       options,
       serviceDefLoader,
     });
