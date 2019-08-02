@@ -8,6 +8,7 @@ import {
   Schema,
   UnmockServiceState,
 } from "../interfaces";
+import { IValidationError } from "./interfaces";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
@@ -24,15 +25,27 @@ const genBuilder = (
   }
 };
 
+export const TEXT_RESPONSE_ERROR =
+  "Can't set text response for non-string schemas";
+
 export const objResponse = (
   state?: UnmockServiceState,
 ): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
   top: getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>
-    genBuilder(() =>
-      spreadStateFromService(schema, filterTopLevelDSL(state || {})),
-    ),
+    genBuilder(() => {
+      const spread = spreadStateFromService(
+        schema,
+        filterTopLevelDSL(state || {}),
+      );
+      const missingParam = DFSVerifyNoneAreNull(spread);
+      if (missingParam !== undefined) {
+        throw new Error(missingParam.msg);
+      }
+      return spread;
+    }),
+  state,
 });
 
 export const functionResponse = (
@@ -49,6 +62,7 @@ export const functionResponse = (
             responseFunction(req, schema),
         } as any),
     ),
+  state: responseFunction.toString(),
 });
 
 export const textResponse = (
@@ -59,6 +73,7 @@ export const textResponse = (
   top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
   gen: (schema: Schema) =>
     genBuilder(() => generateTextResponse(schema, state)),
+  state,
 });
 
 const generateTextResponse = (
@@ -69,7 +84,7 @@ const generateTextResponse = (
     `generateTextResponse: Verifying ${schema} can contain a simple string`,
   );
   if (state === undefined || schema === undefined || schema.type !== "string") {
-    return { "text/plain": null }; // null is used to indicate failure
+    throw new Error(TEXT_RESPONSE_ERROR);
   }
   return { ...schema, const: state };
 };
@@ -94,7 +109,9 @@ const spreadStateFromService = (
   statePath: any,
 ): { [pathKey: string]: any | null } => {
   debugLog(
-    `spreadStateFromService: Looking to match ${statePath} in ${serviceSchema}`,
+    `spreadStateFromService: Looking to match ${JSON.stringify(
+      statePath,
+    )} in ${JSON.stringify(serviceSchema)}`,
   );
   let matches: { [key: string]: any } = {};
 
@@ -110,7 +127,7 @@ const spreadStateFromService = (
         debugLog(
           `spreadStateFromService: No ${key} in schema, traversing nested items instead`,
         );
-        // Option 1: current schema has no matching key, but contains indirection (items/properties, etc)
+        // Option 1a: current schema has no matching key, but contains indirection (items/properties, etc)
         // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
         const translated = DSL.translateDSLToOAS(statePath, serviceSchema);
         const spread = {
@@ -121,6 +138,9 @@ const spreadStateFromService = (
           spread[key] = null;
         }
         matches = { ...matches, ...spread };
+      } else {
+        // Option 1b: no matching key and no traversal to go through - the key is missing
+        matches[key] = null;
       }
     } else if (scm !== undefined) {
       if (isConcreteValue(stateValue)) {
@@ -168,7 +188,7 @@ const spreadStateFromService = (
       throw new Error(
         `${statePath[key]} (object '${JSON.stringify(
           statePath,
-        )}' with key '${key}') is not an object, string, number or boolean!`,
+        )}' with key '${key}') is not an object, string, number, boolean or function!`,
       );
     }
   }
@@ -202,11 +222,43 @@ const oneLevelOfIndirectNestedness = (
       const maybeContents = spreadStateFromService(schema[key], path);
       if (
         maybeContents !== undefined &&
-        Object.keys(maybeContents).length > 0
+        Object.keys(maybeContents).length > 0 &&
+        Object.keys(maybeContents).every(
+          (k: string) => maybeContents[k] !== null,
+        )
       ) {
         internalObj[key] = maybeContents;
       }
     }
   }
   return internalObj;
+};
+
+/**
+ * Recursively iterates over given `obj` and verifies all values are
+ * properly defined.
+ * @param obj Object to iterate over
+ * @param prevPath (Used internaly) tracked the path to the key that might
+ *                 be undefined.
+ * @return An IMissingParam if some missing parameter is found, or undefined if no parameters are missing.
+ */
+const DFSVerifyNoneAreNull = (
+  obj: any,
+  nestedLevel: number = 0,
+): IValidationError | undefined => {
+  if (obj === undefined) {
+    return undefined;
+  }
+  for (const key of Object.keys(obj)) {
+    if (obj[key] === null) {
+      return {
+        msg: `Can't find definition for '${key}', or its type is incorrect`,
+        nestedLevel,
+      };
+    }
+    if (typeof obj[key] === "object") {
+      return DFSVerifyNoneAreNull(obj[key], nestedLevel + 1);
+    }
+  }
+  return undefined;
 };

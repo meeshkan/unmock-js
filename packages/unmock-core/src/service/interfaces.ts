@@ -71,6 +71,10 @@ export interface IStateInputGenerator {
    * Returns top-level DSL, if it exists.
    */
   top: ITopLevelDSL;
+  /**
+   * For debugging purposes, to retrieve the state used to instantiate the generator
+   */
+  readonly state: any;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u !== undefined &&
