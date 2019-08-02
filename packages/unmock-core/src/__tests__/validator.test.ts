@@ -81,6 +81,8 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       }),
       deref,
     );
+    expect(spreadState.error).toBeDefined();
+    // @ts-ignore // will throw above if it's undefined...
     expect(spreadState.error.msg).toContain("Can't find definition for 'boom'");
   });
 
@@ -94,6 +96,8 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       objResponse(),
       deref,
     );
+    expect(spreadState.error).toBeDefined();
+    // @ts-ignore // will throw above if it's undefined...
     expect(spreadState.error.msg).toContain("No schema defined");
   });
 
@@ -142,6 +146,8 @@ describe("Tests getValidResponsesForOperationWithState", () => {
       deref,
     );
     expect(spreadState.responses).toBeUndefined();
+    expect(spreadState.error).toBeDefined();
+    // @ts-ignore // will throw above if it's undefined...
     expect(spreadState.error.msg).toContain(
       "Can't find response for given status code '404'!",
     );

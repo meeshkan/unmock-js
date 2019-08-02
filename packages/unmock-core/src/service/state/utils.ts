@@ -20,8 +20,8 @@ import {
 } from "../interfaces";
 import {
   IStateUpdate,
-  OperationsForStateUpdate,
   IValidationError,
+  OperationsForStateUpdate,
 } from "./interfaces";
 
 type codeKey = keyof Responses;

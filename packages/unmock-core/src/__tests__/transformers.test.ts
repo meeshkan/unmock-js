@@ -111,7 +111,7 @@ describe("Test object provider", () => {
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({ $code: 200 });
     expect(p.gen({}).spreadState).toEqual({});
-    expect(p.gen().error).toContain("'foo'"); // no schema to expand
+    expect(p.gen({}).error).toContain("'foo'"); // no schema to expand
     expect(p.gen({ properties: { foo: { type: "string" } } })).toEqual({
       spreadState: {
         properties: {
