@@ -135,9 +135,7 @@ describe("Tests generator", () => {
       serviceDefLoader,
       options: mockOptions,
     });
-    // TODO: need to re-verify $size across all options
-    // stateStore.petstore.get("/pets", { id: () => "foo", $size: 5, $code: 200 });
-    stateStore.petstore({ id: () => "foo" });
+    stateStore.petstore({ id: () => "foo", $size: 5, $code: 200 });
     let resp = createResponse({
       host: "petstore.swagger.io",
       method: "get",

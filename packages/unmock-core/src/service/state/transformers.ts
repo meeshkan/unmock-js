@@ -14,13 +14,25 @@ const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
 
 const debugLog = debug("unmock:state:transformers");
 
+const genBuilder = (
+  fn: () => Record<string, Schema>,
+): { spreadState: Record<string, Schema>; error?: string } => {
+  try {
+    return { spreadState: fn() };
+  } catch (err) {
+    return { spreadState: {}, error: err.message };
+  }
+};
+
 export const objResponse = (
   state?: UnmockServiceState,
 ): IStateInputGenerator => ({
   isEmpty: state === undefined || Object.keys(state).length === 0,
   top: getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>
-    spreadStateFromService(schema, filterTopLevelDSL(state || {})),
+    genBuilder(() =>
+      spreadStateFromService(schema, filterTopLevelDSL(state || {})),
+    ),
 });
 
 export const functionResponse = (
@@ -30,10 +42,13 @@ export const functionResponse = (
   isEmpty: responseFunction === undefined,
   top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
   gen: (schema: Schema) =>
-    ({
-      "x-unmock-function": (req: ISerializedRequest) =>
-        responseFunction(req, schema),
-    } as any),
+    genBuilder(
+      () =>
+        ({
+          "x-unmock-function": (req: ISerializedRequest) =>
+            responseFunction(req, schema),
+        } as any),
+    ),
 });
 
 export const textResponse = (
@@ -42,7 +57,8 @@ export const textResponse = (
 ): IStateInputGenerator => ({
   isEmpty: typeof state !== "string" || state.length === 0,
   top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
-  gen: (schema: Schema) => generateTextResponse(schema, state),
+  gen: (schema: Schema) =>
+    genBuilder(() => generateTextResponse(schema, state)),
 });
 
 const generateTextResponse = (

@@ -191,7 +191,7 @@ const getStateFromMedia = (
   const errors: IMissingParam[] = [];
   const relevantResponses: IResponsesFromContent = {};
   let success = false;
-  Object.keys(contentRecord).forEach((contentType: string) => {
+  for (const contentType of Object.keys(contentRecord)) {
     const content = contentRecord[contentType];
     if (content === undefined || content.schema === undefined) {
       debugLog(`getStateFromMedia: No schema defined in ${contentType}`);
@@ -199,9 +199,13 @@ const getStateFromMedia = (
         msg: `No schema defined in '${JSON.stringify(content)}'!`,
         nestedLevel: -1,
       });
-      return;
+      continue;
     }
-    const spreadState = state.gen(deref<Schema>(content.schema));
+    const { spreadState, error } = state.gen(deref<Schema>(content.schema));
+    if (error !== undefined) {
+      errors.push({ msg: error, nestedLevel: 0 });
+      continue;
+    }
 
     debugLog(
       `getStateFromMedia: Copied matching state, verifying all state elements exist (not null)`,
@@ -215,12 +219,12 @@ const getStateFromMedia = (
           `${contentType} is invalid - ${spreadState}`,
       );
       errors.push(missingParam);
-      return;
+      continue;
     }
     debugLog(`getStateFromMedia: Spread state is valid for ${contentType}`);
     relevantResponses[contentType] = spreadState;
     success = true;
-  });
+  }
   return {
     responses: relevantResponses,
     error: success ? undefined : chooseDeepestMissingParam(errors),
