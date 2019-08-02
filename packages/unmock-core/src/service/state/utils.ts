@@ -3,6 +3,7 @@ import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
+import { DSLKeys } from "../dsl/interfaces";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -17,7 +18,11 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
+import {
+  IStateUpdate,
+  IValidationError,
+  OperationsForStateUpdate,
+} from "./interfaces";
 
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {
@@ -44,7 +49,6 @@ export const filterStatesByOperation = (
     )} are valid for ${JSON.stringify(operation)}`,
   );
   const opResponses = operation.responses;
-  const statusCodes = Object.keys(opResponses);
   // Types of 'MediaType' keys that are present in given Operation
   const mediaTypes: ICodesToMediaTypes = Object.keys(opResponses).reduce(
     (types: ICodesToMediaTypes, code: string) => {
@@ -66,37 +70,14 @@ export const filterStatesByOperation = (
     )}`,
   );
   // Filter each state by status code and media type present in Operation
-  const filtered = states.reduce(
-    (stateAcc: codeToMedia[], state: codeToMedia) => {
-      // for every non-matching code, we use the default argument
-      const relCodesInState = Object.keys(state).filter((code: string) =>
-        statusCodes.includes(code),
-      );
-      if (relCodesInState.length === 0) {
-        if (Object.keys(state).length > 0) {
-          // Some error codes are not expressed explictily, so we use 'default' instead
-          stateAcc.push(
-            filterByMediaType(
-              ["default"],
-              Object.keys(state).reduce((obj: codeToMedia, code) => {
-                obj.default = { ...obj.default, ...state[code] };
-                return obj;
-              }, {}),
-              mediaTypes,
-            ),
-          );
-        }
-        // None match - we can safely ignore this state
-        return stateAcc;
-      }
-      stateAcc.push(filterByMediaType(relCodesInState, state, mediaTypes));
-      return stateAcc;
-    },
-    [],
+  const filtered = states.map((state: codeToMedia) =>
+    filterByMediaType(state, mediaTypes),
   );
   debugLog(
     `filterStatesByOperation: Matching state after filtering status codes and media types: ${JSON.stringify(
       filtered,
+      (_: string, value: any) =>
+        typeof value === "function" ? `Function()` : value,
     )}`,
   );
   // Spread out for each status code and each media type
@@ -129,13 +110,10 @@ const flattenCodeToMediaBySpreading = (nested: codeToMedia[]) => {
 
 /**
  * Attempts to match all media types from `allowedMediaTypes` with the `stateObj`.
- * Assumption is that all codes in`statusCodes` appear in `allowedMediaTypes`.
- * @param statusCodes
  * @param stateObj
  * @param allowedMediaTypes
  */
 const filterByMediaType = (
-  statusCodes: string[],
   stateObj: codeToMedia,
   allowedMediaTypes: ICodesToMediaTypes,
 ) => {
@@ -145,22 +123,29 @@ const filterByMediaType = (
     )} with ${JSON.stringify(stateObj)}`,
   );
   const stateCodeToMedia: codeToMedia = {};
-  for (const code of statusCodes) {
+  for (const code of Object.keys(stateObj)) {
     debugLog(`filterByMediaType: Filtering for status code ${code}`);
     const codeSchema = stateObj[code];
-    const validMediaTypes = Object.keys(codeSchema).filter(
-      (mediaType: string) => allowedMediaTypes[code].includes(mediaType),
-    );
+    const matchMediaTypes = (key: string) =>
+      allowedMediaTypes[key] === undefined
+        ? []
+        : Object.keys(codeSchema).filter((mediaType: string) =>
+            allowedMediaTypes[key].includes(mediaType),
+          );
+    const validMediaTypes = matchMediaTypes(code);
+    // if we couldn't find based on code, attempt to match against 'default'
+    const extendedValidMediaTypes =
+      validMediaTypes.length > 0 ? validMediaTypes : matchMediaTypes("default");
     debugLog(
       `filterByMediaType: Valid media types for state and operation: ${JSON.stringify(
-        validMediaTypes,
+        extendedValidMediaTypes,
       )}`,
     );
-    if (validMediaTypes.length === 0) {
+    if (extendedValidMediaTypes.length === 0) {
       continue;
     }
     // some are valid, add them to the list
-    stateCodeToMedia[code] = validMediaTypes.reduce(
+    stateCodeToMedia[code] = extendedValidMediaTypes.reduce(
       (filteredCodeToMedia: mediaTypeToSchema, mediaType: string) =>
         Object.assign(filteredCodeToMedia, {
           [mediaType]: codeSchema[mediaType],
@@ -301,4 +286,25 @@ const getOperationsFromPathItem = (
     return undefined;
   }
   return operations;
+};
+
+const stringHasDSLKeys = (input: string) =>
+  DSLKeys.some((key: string) => input.includes(key));
+
+export const chooseBestMatchingError = (
+  firstError: IValidationError,
+  secondError?: IValidationError,
+) => {
+  if (secondError === undefined) {
+    return firstError;
+  }
+  const firstHasDSL = stringHasDSLKeys(firstError.msg);
+  const secondHasDSL = stringHasDSLKeys(secondError.msg);
+  return firstHasDSL && !secondHasDSL
+    ? firstError
+    : secondHasDSL && !firstHasDSL
+    ? secondError
+    : firstError.nestedLevel < secondError.nestedLevel
+    ? secondError
+    : firstError;
 };

@@ -64,11 +64,17 @@ export interface IStateInputGenerator {
    * Generates a new state (copy) based on the given schema, so that
    * future processes can use it without modifying the original schema.
    */
-  gen: (schema: Schema) => Record<string, Schema> | Schema;
+  gen: (
+    schema: Schema,
+  ) => { spreadState: Record<string, Schema> | Schema; error?: string };
   /**
    * Returns top-level DSL, if it exists.
    */
   top: ITopLevelDSL;
+  /**
+   * For debugging purposes, to retrieve the state used to instantiate the generator
+   */
+  readonly state: any;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u !== undefined &&

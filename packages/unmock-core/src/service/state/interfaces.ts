@@ -24,3 +24,8 @@ export interface IOperationForStateUpdate {
   operation: Operation;
 }
 export type OperationsForStateUpdate = IOperationForStateUpdate[];
+
+export interface IValidationError {
+  msg: string;
+  nestedLevel: number;
+}

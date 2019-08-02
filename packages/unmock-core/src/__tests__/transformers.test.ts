@@ -1,5 +1,9 @@
 import { Schema } from "../service/interfaces";
-import { objResponse, textResponse } from "../service/state/transformers";
+import {
+  objResponse,
+  textResponse,
+  TEXT_RESPONSE_ERROR,
+} from "../service/state/transformers";
 
 const schema: Schema = {
   properties: {
@@ -38,7 +42,7 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({ "text/plain": null });
+    expect(p.gen()).toEqual({ spreadState: {}, error: TEXT_RESPONSE_ERROR });
   });
 
   it("returns empty object for empty state", () => {
@@ -46,7 +50,7 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({ "text/plain": null });
+    expect(p.gen()).toEqual({ spreadState: {}, error: TEXT_RESPONSE_ERROR });
   });
 
   it("returns empty object for empty schema", () => {
@@ -54,21 +58,26 @@ describe("Test text provider", () => {
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
     // @ts-ignore // deliberately checking with empty input
-    expect(p.gen()).toEqual({ "text/plain": null });
+    expect(p.gen()).toEqual({ spreadState: {}, error: TEXT_RESPONSE_ERROR });
   });
 
   it("returns empty object for non-text schema", () => {
     const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
-    expect(p.gen({ type: "array", items: {} })).toEqual({ "text/plain": null });
+    expect(p.gen({ type: "array", items: {} })).toEqual({
+      spreadState: {},
+      error: TEXT_RESPONSE_ERROR,
+    });
   });
 
   it("returns correct state object for valid input", () => {
     const p = textResponse("foo");
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({});
-    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+    expect(p.gen({ type: "string" })).toEqual({
+      spreadState: { type: "string", const: "foo" },
+    });
   });
 
   it("top level DSL doesn't change response", () => {
@@ -76,35 +85,40 @@ describe("Test text provider", () => {
     const p = textResponse("foo", { $code: 200, notDSL: "a" });
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({ $code: 200 }); // non DSL is filtered out
-    expect(p.gen({ type: "string" })).toEqual({ type: "string", const: "foo" });
+    expect(p.gen({ type: "string" })).toEqual({
+      spreadState: { type: "string", const: "foo" },
+    });
   });
 });
 
-describe("Test default provider", () => {
+describe("Test object provider", () => {
   it("returns empty objects for undefined state", () => {
     const p = objResponse();
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
-    expect(p.gen({})).toEqual({});
+    expect(p.gen({})).toEqual({ spreadState: {} });
   });
 
   it("returns empty objects for empty state", () => {
     const p = objResponse({});
     expect(p.isEmpty).toBeTruthy();
     expect(p.top).toEqual({});
-    expect(p.gen({})).toEqual({});
+    expect(p.gen({})).toEqual({ spreadState: {} });
   });
 
   it("filters out top level DSL from state", () => {
     const p = objResponse({ $code: 200, foo: "bar" });
     expect(p.isEmpty).toBeFalsy();
     expect(p.top).toEqual({ $code: 200 });
-    expect(p.gen({})).toEqual({}); // no schema to expand
+    expect(p.gen({}).spreadState).toEqual({});
+    expect(p.gen({}).error).toContain("'foo'"); // no schema to expand
     expect(p.gen({ properties: { foo: { type: "string" } } })).toEqual({
-      properties: {
-        foo: {
-          type: "string",
-          const: "bar",
+      spreadState: {
+        properties: {
+          foo: {
+            type: "string",
+            const: "bar",
+          },
         },
       },
     });
@@ -112,33 +126,27 @@ describe("Test default provider", () => {
 
   it("with empty path", () => {
     const spreadState = objResponse({}).gen(schema);
-    expect(spreadState).toEqual({}); // Empty state => empty spread state
+    expect(spreadState).toEqual({ spreadState: {} }); // Empty state => empty spread state
   });
 
   it("with specific path", () => {
     const spreadState = objResponse({
       test: { id: "a" },
     }).gen(schema);
-    expect(spreadState).toEqual({
-      // Spreading from "test: { id : { ... " to also inlucde properties
-      properties: {
-        test: {
-          properties: {
-            id: null, // Will be removed due to wrong type
-          },
-        },
-      },
-    });
+    expect(spreadState.spreadState).toEqual({});
+    expect(spreadState.error).toContain("'id'");
   });
 
   it("with vague path", () => {
     const spreadState = objResponse({ id: 5 }).gen(schema);
     // no "id" in top-most level or immediately under properties\items
-    expect(spreadState).toEqual({ id: null });
+    expect(spreadState.spreadState).toEqual({});
+    expect(spreadState.error).toContain("'id'");
   });
 
   it("with missing parameters", () => {
     const spreadState = objResponse({ ida: "a" }).gen(schema);
-    expect(spreadState).toEqual({ ida: null }); // Nothing to spread
+    expect(spreadState.spreadState).toEqual({});
+    expect(spreadState.error).toContain("'ida'");
   });
 });

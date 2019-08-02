@@ -93,8 +93,34 @@ describe("Node.js interceptor", () => {
 
     test("uses default response when setting textual response with DSL with non-existing status code", async () => {
       states.petstore(dsl.textResponse("foo", { $code: 400 }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 400 response");
+      } catch (err) {
+        expect(err.response.status).toBe(400);
+        expect(err.response.data).toBe("foo");
+      }
+    });
+
+    test("sets an entire response from function", async () => {
+      states.petstore(() => "baz");
       const response = await axios("http://petstore.swagger.io/v1/pets");
-      expect(response.data).toBe("foo");
+      expect(response.data).toBe("baz");
+    });
+
+    test("sets an entire response from function with DSL", async () => {
+      states.petstore(dsl.functionResponse(() => "baz", { $code: 404 }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 404 response");
+      } catch (err) {
+        expect(err.response.status).toBe(404);
+        expect(err.response.data).toBe("baz");
+      }
+    });
+
+    test("fails setting an array size for non-array elements", async () => {
+      expect(() => states.petstore({ id: { $size: 5 } })).toThrow("$size");
     });
   });
 });

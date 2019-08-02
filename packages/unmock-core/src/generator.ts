@@ -57,8 +57,11 @@ export function responseCreatorFactory({
   return {
     stateStore,
     createResponse: (req: ISerializedRequest) => {
+      // Setup the unmock properties for jsf parsing of x-unmock-*
+      setupJSFUnmockProperties(req);
       const res = generateMockFromTemplate(options, serviceStore.match(req));
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+      jsf.reset(); // removes unmock-properties
       return res;
     },
   };
@@ -73,8 +76,25 @@ const normalizeHeaders = (headers: Headers | undefined): Headers | undefined =>
         {},
       );
 
-const setupJSFUnmockProperties = () => {
-  // Handle post-generation references, etc?
+const toJSONSchemaType = (input: any) =>
+  Array.isArray(input)
+    ? "array"
+    : input === null || input === undefined
+    ? "null"
+    : typeof input;
+
+const setupJSFUnmockProperties = (sreq: ISerializedRequest) => {
+  // Handle post-generation references, etc
+  jsf.define(
+    "unmock-function",
+    (fn: (req: ISerializedRequest) => any, schema: any) => {
+      const res = fn(sreq);
+      // Override the type/format specifications
+      delete schema.format;
+      schema.type = toJSONSchemaType(res);
+      return res;
+    },
+  );
 };
 
 const chooseResponseCode = (codes: string[]) => {
@@ -108,30 +128,45 @@ const getStateForOperation = (
   if (state === undefined || Object.keys(state).length === 0) {
     return undefined;
   }
-  const possibleResponseCodes = Object.keys(state).filter((code: string) =>
+  const stateCodes = Object.keys(state);
+  const possibleResponseCodes = stateCodes.filter((code: string) =>
     operationCodes.includes(code),
   );
+
+  let operationStatusCode: string | string[] | undefined;
+  let stateStatusCode: string | string[] | undefined;
   if (possibleResponseCodes.length === 0) {
-    return undefined;
+    if (operationCodes.indexOf("default") === -1) {
+      // No 1-to-1 correspondence and no default to substitute -> can't use this state
+      return undefined;
+    }
+    operationStatusCode = "default";
+    stateStatusCode = genOptions.isFlaky
+      ? firstOrRandomOrUndefined(stateCodes)
+      : chooseResponseCode(stateCodes);
+  } else {
+    stateStatusCode = operationStatusCode = genOptions.isFlaky
+      ? firstOrRandomOrUndefined(possibleResponseCodes)
+      : chooseResponseCode(possibleResponseCodes);
   }
 
-  const statusCode = genOptions.isFlaky
-    ? firstOrRandomOrUndefined(possibleResponseCodes)
-    : chooseResponseCode(possibleResponseCodes);
-  if (statusCode === undefined) {
+  if (operationStatusCode === undefined || stateStatusCode === undefined) {
     // We get here if there are no 2XX responses, but there is still more than 1 possible response code
     throw new Error(
       `Too many matching response codes to choose from in '${operation.description}'!\n` +
         `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
-  } else if (Array.isArray(statusCode)) {
+  } else if (
+    Array.isArray(operationStatusCode) ||
+    Array.isArray(stateStatusCode)
+  ) {
     throw new Error(
       `Too many 2XX responses to choose from in '${operation.description}'!\n` +
         `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
   }
 
-  const operationResponse = responses[statusCode as keyof Responses];
+  const operationResponse = responses[operationStatusCode as keyof Responses];
   if (operationResponse === undefined) {
     return undefined;
   }
@@ -142,8 +177,8 @@ const getStateForOperation = (
   }
   const operationContentKeys = Object.keys(operationContent);
 
-  const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
-    operationContentKeys.includes(type),
+  const mediaTypes = Object.keys(state[stateStatusCode]).filter(
+    (type: string) => operationContentKeys.includes(type),
   );
   // if only one media type is set - use that one; otherwise draw at random
   // TODO - do we want to set sensible defaults?
@@ -153,27 +188,13 @@ const getStateForOperation = (
   }
 
   // Filter the state so it matches the schema
-  const requestedState = state[statusCode][mediaType];
+  const requestedState = state[stateStatusCode][mediaType];
   const matchedOperation = operationContent[mediaType].schema;
   return {
-    $code: statusCode,
+    $code: stateStatusCode,
     template: defaultsDeep(requestedState, matchedOperation),
     headers: deref<Record<string, Header>>(resolvedResponse.headers),
   };
-};
-
-/**
- * Provides a work-around with for functions that may fail with a default value.
- * Attemps to return `f(value)`. If an error is thrown, returns `value`.
- * @param value
- * @param f
- */
-const tryCatch = (value: any, f: (value: any) => any) => {
-  try {
-    return f(value);
-  } catch {
-    return value;
-  }
 };
 
 const chooseResponseFromOperation = (
@@ -259,17 +280,13 @@ const generateMockFromTemplate = (
     chooseResponseFromOperation(operation, service.dereferencer, {
       isFlaky: options.flaky(),
     });
-  // Setup the unmock properties for jsf parsing of x-unmock-*
-  setupJSFUnmockProperties();
+
   // Always generate all fields for now
   jsf.option("alwaysFakeOptionals", true);
-  // First iteration simply parses these and returns the updated schema
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
-  jsf.reset();
 
-  // After one-pass resolving we might have new parameters to resolve.
-  const body = JSON.stringify(tryCatch(resolvedTemplate, jsf.generate));
+  const body = JSON.stringify(resolvedTemplate);
   jsf.option("useDefaultValue", true);
   const resHeaders = jsf.generate(normalizeHeaders(headers));
   jsf.option("useDefaultValue", false);
