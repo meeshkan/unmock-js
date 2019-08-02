@@ -118,5 +118,9 @@ describe("Node.js interceptor", () => {
         expect(err.response.data).toBe("baz");
       }
     });
+
+    test("fails setting an array size for non-array elements", async () => {
+      expect(() => states.petstore({ id: { $size: 5 } })).toThrow("$size");
+    });
   });
 });
