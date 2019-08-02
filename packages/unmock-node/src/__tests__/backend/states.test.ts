@@ -96,5 +96,12 @@ describe("Node.js interceptor", () => {
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("foo");
     });
+
+    test("correctly sets error status code", async () => {
+      states.petstore({ $code: 500 });
+      await expect(axios("http://petstore.swagger.io/v1/pets")).rejects.toThrow(
+        expect.any(Error), // Match better
+      );
+    });
   });
 });
