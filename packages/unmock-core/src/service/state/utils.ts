@@ -3,6 +3,7 @@ import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
+import { DSLKeys } from "../dsl/interfaces";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -17,7 +18,11 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
+import {
+  IStateUpdate,
+  OperationsForStateUpdate,
+  IValidationError,
+} from "./interfaces";
 
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {
@@ -281,4 +286,25 @@ const getOperationsFromPathItem = (
     return undefined;
   }
   return operations;
+};
+
+const stringHasDSLKeys = (input: string) =>
+  DSLKeys.some((key: string) => input.includes(key));
+
+export const chooseBestMatchingError = (
+  firstError: IValidationError,
+  secondError?: IValidationError,
+) => {
+  if (secondError === undefined) {
+    return firstError;
+  }
+  const firstHasDSL = stringHasDSLKeys(firstError.msg);
+  const secondHasDSL = stringHasDSLKeys(secondError.msg);
+  return firstHasDSL && !secondHasDSL
+    ? firstError
+    : secondHasDSL && !firstHasDSL
+    ? secondError
+    : firstError.nestedLevel < secondError.nestedLevel
+    ? secondError
+    : firstError;
 };

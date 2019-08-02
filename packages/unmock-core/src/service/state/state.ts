@@ -8,8 +8,12 @@ import {
   HTTPMethod,
   Operation,
 } from "../interfaces";
-import { IOperationForStateUpdate, IStateUpdate } from "./interfaces";
-import { filterStatesByOperation, getOperations } from "./utils";
+import { IStateUpdate, IValidationError } from "./interfaces";
+import {
+  chooseBestMatchingError,
+  filterStatesByOperation,
+  getOperations,
+} from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -52,9 +56,9 @@ export class State {
       )}`,
     );
 
-    let errorMsg: string | undefined;
+    let error: IValidationError | undefined;
     let opsResult = false;
-    ops.operations.forEach((op: IOperationForStateUpdate) => {
+    for (const op of ops.operations) {
       debugLog(`Testing against ${JSON.stringify(op.operation)}`);
       // For each operation, verify the new state applies and save in `this.state`
       const stateResponses = getValidStatesForOperationWithState(
@@ -62,26 +66,32 @@ export class State {
         newState,
         stateUpdate.dereferencer,
       );
-      if (stateResponses.error === undefined) {
-        debugLog(`Matched successfully for ${JSON.stringify(op.operation)}`);
-        const augmentedResponses = DSL.translateTopLevelToOAS(
-          newState.top,
-          stateResponses.responses,
+      if (stateResponses.error !== undefined) {
+        // failed path
+        debugLog(
+          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error.msg}`,
         );
-        this.updateStateInternal(endpoint, method, augmentedResponses);
-        opsResult = true;
-        return;
+        error = chooseBestMatchingError(stateResponses.error, error);
+        continue;
       }
-      // failed path
-      debugLog(
-        `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error}`,
+      debugLog(`Matched successfully for ${JSON.stringify(op.operation)}`);
+      const augmentedResponses = DSL.translateTopLevelToOAS(
+        newState.top,
+        stateResponses.responses,
       );
-      errorMsg = stateResponses.error;
-    });
+      this.updateStateInternal(endpoint, method, augmentedResponses);
+      opsResult = true;
+    }
 
     if (opsResult === false) {
       // all paths had an error - can't operate properly
-      throw new Error(errorMsg);
+      throw new Error(
+        error
+          ? error.msg
+          : `Unexpected error while setting state - ${JSON.stringify(
+              newState.state,
+            )}`,
+      );
     }
   }
 
