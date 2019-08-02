@@ -128,30 +128,45 @@ const getStateForOperation = (
   if (state === undefined || Object.keys(state).length === 0) {
     return undefined;
   }
-  const possibleResponseCodes = Object.keys(state).filter((code: string) =>
+  const stateCodes = Object.keys(state);
+  const possibleResponseCodes = stateCodes.filter((code: string) =>
     operationCodes.includes(code),
   );
+
+  let operationStatusCode: string | string[] | undefined;
+  let stateStatusCode: string | string[] | undefined;
   if (possibleResponseCodes.length === 0) {
-    return undefined;
+    if (operationCodes.indexOf("default") === -1) {
+      // No 1-to-1 correspondence and no default to substitute -> can't use this state
+      return undefined;
+    }
+    operationStatusCode = "default";
+    stateStatusCode = genOptions.isFlaky
+      ? firstOrRandomOrUndefined(stateCodes)
+      : chooseResponseCode(stateCodes);
+  } else {
+    stateStatusCode = operationStatusCode = genOptions.isFlaky
+      ? firstOrRandomOrUndefined(possibleResponseCodes)
+      : chooseResponseCode(possibleResponseCodes);
   }
 
-  const statusCode = genOptions.isFlaky
-    ? firstOrRandomOrUndefined(possibleResponseCodes)
-    : chooseResponseCode(possibleResponseCodes);
-  if (statusCode === undefined) {
+  if (operationStatusCode === undefined || stateStatusCode === undefined) {
     // We get here if there are no 2XX responses, but there is still more than 1 possible response code
     throw new Error(
       `Too many matching response codes to choose from in '${operation.description}'!\n` +
         `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
-  } else if (Array.isArray(statusCode)) {
+  } else if (
+    Array.isArray(operationStatusCode) ||
+    Array.isArray(stateStatusCode)
+  ) {
     throw new Error(
       `Too many 2XX responses to choose from in '${operation.description}'!\n` +
         `Try flaky mode (\`unmock.flaky()\`) or explictly set a status code (\`{ $code: N }\`)`,
     );
   }
 
-  const operationResponse = responses[statusCode as keyof Responses];
+  const operationResponse = responses[operationStatusCode as keyof Responses];
   if (operationResponse === undefined) {
     return undefined;
   }
@@ -162,8 +177,8 @@ const getStateForOperation = (
   }
   const operationContentKeys = Object.keys(operationContent);
 
-  const mediaTypes = Object.keys(state[statusCode]).filter((type: string) =>
-    operationContentKeys.includes(type),
+  const mediaTypes = Object.keys(state[stateStatusCode]).filter(
+    (type: string) => operationContentKeys.includes(type),
   );
   // if only one media type is set - use that one; otherwise draw at random
   // TODO - do we want to set sensible defaults?
@@ -173,10 +188,10 @@ const getStateForOperation = (
   }
 
   // Filter the state so it matches the schema
-  const requestedState = state[statusCode][mediaType];
+  const requestedState = state[stateStatusCode][mediaType];
   const matchedOperation = operationContent[mediaType].schema;
   return {
-    $code: statusCode,
+    $code: stateStatusCode,
     template: defaultsDeep(requestedState, matchedOperation),
     headers: deref<Record<string, Header>>(resolvedResponse.headers),
   };
