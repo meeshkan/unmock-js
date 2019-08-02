@@ -1,5 +1,6 @@
 import Ajv from "ajv";
 import debug from "debug";
+import { ISerializedRequest } from "../../interfaces";
 import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
 import {
   isSchema,
@@ -20,6 +21,19 @@ export const objResponse = (
   top: getTopLevelDSL(state || {}),
   gen: (schema: Schema) =>
     spreadStateFromService(schema, filterTopLevelDSL(state || {})),
+});
+
+export const functionResponse = (
+  responseFunction: (sreq: ISerializedRequest, scm?: Schema) => any,
+  dsl?: ITopLevelDSL,
+): IStateInputGenerator => ({
+  isEmpty: responseFunction === undefined,
+  top: getTopLevelDSL((dsl || {}) as UnmockServiceState),
+  gen: (schema: Schema) =>
+    ({
+      "x-unmock-function": (req: ISerializedRequest) =>
+        responseFunction(req, schema),
+    } as any),
 });
 
 export const textResponse = (
