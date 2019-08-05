@@ -109,6 +109,9 @@ describe("Node.js interceptor", () => {
     });
 
     test("should set an entire response from function returning string with path", async () => {
+      // Maybe the correct way to do this would be
+      // states.petstore("/pets", () => "baz"),
+      // but if that's required (removing base path) then this should not pass the input validation?
       states.petstore("/v1/pets", () => "baz");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("baz");
