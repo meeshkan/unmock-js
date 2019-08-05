@@ -76,18 +76,15 @@ function extractVars(
   };
 }
 
-const deserializeBodyIfJson = (
-  headers: IIncomingHeaders,
-  body: string,
-): string | undefined | object => {
-  const contentType = headers[CONTENT_TYPE_KEY];
-  if (!(contentType && contentType.includes(MIME_JSON_TYPE))) {
-    return body;
-  }
+const hasContentTypeJson = (headers: IIncomingHeaders) =>
+  headers[CONTENT_TYPE_KEY] !== undefined &&
+  headers[CONTENT_TYPE_KEY]!.includes(MIME_JSON_TYPE);
+
+const safelyParseJson = (body: string): string | object => {
   try {
     return JSON.parse(body);
   } catch (err) {
-    debugLog(`Failed parsing application/json body: ${body}`);
+    debugLog(`Failed parsing body: ${body}`);
     return body;
   }
 };
@@ -107,7 +104,9 @@ export const serializeRequest = async (
   const body = await BodySerializer.fromIncoming(interceptedRequest);
 
   const deserializedBody =
-    body !== undefined ? deserializeBodyIfJson(headers, body) : undefined;
+    body === undefined || !hasContentTypeJson(headers)
+      ? body
+      : safelyParseJson(body);
 
   const serializedRequest: ISerializedRequest = {
     body: deserializedBody,
