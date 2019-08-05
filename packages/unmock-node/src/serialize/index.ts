@@ -26,11 +26,11 @@ class BodySerializer extends readable.Transform {
     return serializer.body;
   }
 
-  private body: string = "";
+  private body?: string;
 
   // TODO Encoding
   public _transform(chunk: Buffer, _: string, done: () => void) {
-    this.body += chunk.toString();
+    this.body = (this.body || "") + chunk.toString();
     this.push(chunk);
     done();
   }

@@ -21,7 +21,7 @@ describe("Request serializer", () => {
       expect(serializedRequest.method.toLowerCase()).toBe("get");
       expect(serializedRequest.path).toBe("/");
       expect(serializedRequest.protocol).toBe("http");
-      expect(serializedRequest.body).toBe("");
+      expect(serializedRequest.body).toBeUndefined();
       done();
     });
     http.get(`http://${testHost}`);
