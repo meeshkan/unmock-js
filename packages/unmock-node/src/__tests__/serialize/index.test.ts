@@ -62,7 +62,7 @@ describe("Request serializer", () => {
       const serializedRequest = await serializeRequest(req);
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("post");
-      expect(serializedRequest.body).toBe(`{"message":"${message}"}`);
+      expect(serializedRequest.body).toEqual({ message });
       expect(serializedRequest.protocol).toBe("https");
       const requestHeaders = serializedRequest.headers;
       if (requestHeaders === undefined) {
