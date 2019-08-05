@@ -44,6 +44,14 @@ describe("Node.js interceptor", () => {
       }
     });
 
+    test("should get successful response for post request", async () => {
+      const response = await axios.post(
+        "http://petstore.swagger.io/v1/pets",
+        {},
+      );
+      expect(response.data).toBe("");
+    });
+
     test("emits an error for unknown url", async () => {
       try {
         await axios("http://example.org");

@@ -21,7 +21,7 @@ describe("Request serializer", () => {
       expect(serializedRequest.method.toLowerCase()).toBe("get");
       expect(serializedRequest.path).toBe("/");
       expect(serializedRequest.protocol).toBe("http");
-      expect(serializedRequest.body).toBe("");
+      expect(serializedRequest.body).toBeUndefined();
       done();
     });
     http.get(`http://${testHost}`);
@@ -62,7 +62,7 @@ describe("Request serializer", () => {
       const serializedRequest = await serializeRequest(req);
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("post");
-      expect(serializedRequest.body).toBe(`{"message":"${message}"}`);
+      expect(serializedRequest.body).toEqual({ message });
       expect(serializedRequest.protocol).toBe("https");
       const requestHeaders = serializedRequest.headers;
       if (requestHeaders === undefined) {
