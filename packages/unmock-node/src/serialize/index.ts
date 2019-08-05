@@ -1,3 +1,4 @@
+import debug from "debug";
 import * as http from "http";
 import * as readable from "readable-stream";
 import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
@@ -12,6 +13,11 @@ import _JSONDeserializer from "./deserializer/json";
 import _CompositeSerializer from "./serializer/composite";
 import _FormSerializer from "./serializer/form";
 import _JSONSerializer from "./serializer/json";
+
+const CONTENT_TYPE_KEY = "content-type";
+const MIME_JSON_TYPE = "application/json";
+
+const debugLog = debug("unmock:node:serializer");
 
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {
@@ -70,6 +76,22 @@ function extractVars(
   };
 }
 
+const deserializeBodyIfJson = (
+  headers: IIncomingHeaders,
+  body: string,
+): string | undefined | object => {
+  const contentType = headers[CONTENT_TYPE_KEY];
+  if (!(contentType && contentType.includes(MIME_JSON_TYPE))) {
+    return body;
+  }
+  try {
+    return JSON.parse(body);
+  } catch (err) {
+    debugLog(`Failed parsing application/json body: ${body}`);
+    return body;
+  }
+};
+
 /**
  * Serialize an incoming request, collecting the body.
  * @param interceptedRequest Incoming request
@@ -84,8 +106,11 @@ export const serializeRequest = async (
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
 
+  const deserializedBody =
+    body !== undefined ? deserializeBodyIfJson(headers, body) : undefined;
+
   const serializedRequest: ISerializedRequest = {
-    body,
+    body: deserializedBody,
     headers,
     host,
     method,

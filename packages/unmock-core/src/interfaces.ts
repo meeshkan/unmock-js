@@ -51,7 +51,7 @@ export interface IOutgoingHeaders {
 }
 
 export interface ISerializedRequest {
-  body?: string;
+  body?: string | object;
   headers?: IIncomingHeaders;
   host: string;
   method: string;
