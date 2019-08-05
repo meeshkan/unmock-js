@@ -3,7 +3,7 @@ import {
   Operation,
   PathItem,
   Schema,
-} from "loas3/dist/src/generated/full";
+} from "loas3/dist/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
@@ -23,7 +23,7 @@ export {
   Reference,
   Response,
   Responses,
-} from "loas3/dist/src/generated/full";
+} from "loas3/dist/generated/full";
 
 const RESTMethodTypes = [
   "get",
