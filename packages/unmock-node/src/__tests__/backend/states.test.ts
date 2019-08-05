@@ -114,6 +114,12 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("baz");
     });
 
+    test("should set an entire response from function returning string with any path", async () => {
+      states.petstore("**", () => "baz");
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toBe("baz");
+    });
+
     test("sets an entire response from function with DSL", async () => {
       states.petstore(dsl.functionResponse(() => "baz", { $code: 404 }));
       try {
