@@ -11,9 +11,11 @@ import { resolveServicesDirectory } from "../utils";
 const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB
 
 export default class FSLogger implements IListener {
-  private static toIndentedYaml(input: any) {
+  private static toIndentedYaml(
+    input: ISerializedRequest | ISerializedResponse,
+  ) {
     return yaml
-      .dump(input.body ? { ...input, body: JSON.parse(input.body) } : input)
+      .dump(input)
       .split("\n")
       .map(
         (line: string) =>
