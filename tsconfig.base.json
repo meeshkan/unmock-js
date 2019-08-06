@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "noEmit": true,
+    // "noEmit": true,
+    "emitDeclarationOnly": true,
     "target": "esnext",
     "module": "commonjs",
     "moduleResolution": "node",
@@ -17,7 +18,7 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es6", "dom"],
+    // "lib": ["es6", "dom"],
     "baseUrl": ".",
     "paths": {
       "*" : ["types/*"]
