@@ -51,6 +51,10 @@ Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRI
 Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 By participating in this project you agree to abide by its terms.
 
+## Development
+
+- See [publish.md](./publish.md) for instructions how to make a new release
+
 ## License
 
 [MIT](LICENSE)
