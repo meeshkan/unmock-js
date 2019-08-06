@@ -6,7 +6,7 @@
 
 1. Bump the version with lerna *without publishing git tags*: 
 
-    `yarn lerna version --no-git-tag-version`.
+    `npx lerna version --no-git-tag-version`.
     
     You will be prompted for new version.
 
