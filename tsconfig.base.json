@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    // "noEmit": true,
+    // "noEmit": false,
     "emitDeclarationOnly": true,
     "target": "esnext",
     "module": "commonjs",
