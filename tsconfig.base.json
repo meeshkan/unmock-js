@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2016",
+    "noEmit": true,
+    "target": "esnext",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
