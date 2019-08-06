@@ -3,6 +3,7 @@ import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
+import { DSLKeys } from "../dsl/interfaces";
 import {
   codeToMedia,
   ExtendedHTTPMethod,
@@ -17,7 +18,11 @@ import {
   Responses,
   Schema,
 } from "../interfaces";
-import { IStateUpdate, OperationsForStateUpdate } from "./interfaces";
+import {
+  IStateUpdate,
+  IValidationError,
+  OperationsForStateUpdate,
+} from "./interfaces";
 
 type codeKey = keyof Responses;
 interface ICodesToMediaTypes {
@@ -38,8 +43,12 @@ export const filterStatesByOperation = (
   states: codeToMedia[],
   operation: Operation,
 ): codeToMedia => {
+  debugLog(
+    `filterStatesByOperation: Filtering which states from ${JSON.stringify(
+      states,
+    )} are valid for ${JSON.stringify(operation)}`,
+  );
   const opResponses = operation.responses;
-  const statusCodes = Object.keys(opResponses);
   // Types of 'MediaType' keys that are present in given Operation
   const mediaTypes: ICodesToMediaTypes = Object.keys(opResponses).reduce(
     (types: ICodesToMediaTypes, code: string) => {
@@ -55,31 +64,33 @@ export const filterStatesByOperation = (
     },
     {},
   );
+  debugLog(
+    `filterStatesByOperation: acceptable media types from operation: ${JSON.stringify(
+      mediaTypes,
+    )}`,
+  );
   // Filter each state by status code and media type present in Operation
-  const filtered = states.reduce(
-    (stateAcc: codeToMedia[], state: codeToMedia) => {
-      const relCodesInState = Object.keys(state).filter((code: string) =>
-        statusCodes.includes(code),
-      );
-      if (relCodesInState.length === 0) {
-        // None match - we can safely ignore this state
-        return stateAcc;
-      }
-      stateAcc.push(filterByMediaType(relCodesInState, state, mediaTypes));
-      return stateAcc;
-    },
-    [],
+  const filtered = states.map((state: codeToMedia) =>
+    filterByMediaType(state, mediaTypes),
+  );
+  debugLog(
+    `filterStatesByOperation: Matching state after filtering status codes and media types: ${JSON.stringify(
+      filtered,
+      (_: string, value: any) =>
+        typeof value === "function" ? `Function()` : value,
+    )}`,
   );
   // Spread out for each status code and each media type
-  return spreadNestedCodeToMedia(filtered);
+  return flattenCodeToMediaBySpreading(filtered);
 };
 
-const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
+const flattenCodeToMediaBySpreading = (nested: codeToMedia[]) => {
+  debugLog(`flattenCodeToMediaBySpreading: Flattening ${nested}...`);
   const spreaded: codeToMedia = {};
   for (const state of nested) {
     for (const code of Object.keys(state)) {
       const resp: Record<string, Schema> = state[code as codeKey] as any;
-      for (const mediaType of Object.keys(state[code])) {
+      for (const mediaType of Object.keys(resp)) {
         const content = resp[mediaType];
         if (content !== undefined) {
           const spreadSchema = {
@@ -97,22 +108,44 @@ const spreadNestedCodeToMedia = (nested: codeToMedia[]) => {
   return spreaded;
 };
 
+/**
+ * Attempts to match all media types from `allowedMediaTypes` with the `stateObj`.
+ * @param stateObj
+ * @param allowedMediaTypes
+ */
 const filterByMediaType = (
-  statusCodes: string[],
   stateObj: codeToMedia,
   allowedMediaTypes: ICodesToMediaTypes,
 ) => {
+  debugLog(
+    `filterByMediaType: Attempting to match media types from ${JSON.stringify(
+      allowedMediaTypes,
+    )} with ${JSON.stringify(stateObj)}`,
+  );
   const stateCodeToMedia: codeToMedia = {};
-  for (const code of statusCodes) {
+  for (const code of Object.keys(stateObj)) {
+    debugLog(`filterByMediaType: Filtering for status code ${code}`);
     const codeSchema = stateObj[code];
-    const validMediaTypes = Object.keys(codeSchema).filter(
-      (mediaType: string) => allowedMediaTypes[code].includes(mediaType),
+    const matchMediaTypes = (key: string) =>
+      allowedMediaTypes[key] === undefined
+        ? []
+        : Object.keys(codeSchema).filter((mediaType: string) =>
+            allowedMediaTypes[key].includes(mediaType),
+          );
+    const validMediaTypes = matchMediaTypes(code);
+    // if we couldn't find based on code, attempt to match against 'default'
+    const extendedValidMediaTypes =
+      validMediaTypes.length > 0 ? validMediaTypes : matchMediaTypes("default");
+    debugLog(
+      `filterByMediaType: Valid media types for state and operation: ${JSON.stringify(
+        extendedValidMediaTypes,
+      )}`,
     );
-    if (validMediaTypes.length === 0) {
+    if (extendedValidMediaTypes.length === 0) {
       continue;
     }
     // some are valid, add them to the list
-    stateCodeToMedia[code] = validMediaTypes.reduce(
+    stateCodeToMedia[code] = extendedValidMediaTypes.reduce(
       (filteredCodeToMedia: mediaTypeToSchema, mediaType: string) =>
         Object.assign(filteredCodeToMedia, {
           [mediaType]: codeSchema[mediaType],
@@ -148,7 +181,9 @@ export const getOperations = ({
   });
 
   if (endpoint !== DEFAULT_STATE_ENDPOINT) {
-    debugLog(`Fetching operations for specific endpoint '${endpoint}'...`);
+    debugLog(
+      `getOperations: Fetching operations for specific endpoint '${endpoint}'...`,
+    );
     const pathItem = paths[schemaEndpoint];
     if (pathItem === undefined) {
       return err(`endpoint '${endpoint}'`);
@@ -156,7 +191,7 @@ export const getOperations = ({
 
     if (isDefMethod) {
       // Specific endpoint, all methods
-      debugLog(`Fetching operations for any REST method...`);
+      debugLog(`getOperations: Fetching operations for any REST method...`);
       const ops = getOperationsFromPathItem(pathItem, endpoint);
       return ops === undefined
         ? err(`any operations under '${endpoint}'`)
@@ -164,7 +199,9 @@ export const getOperations = ({
     }
 
     // Specific endpoint, specific method
-    debugLog(`Fetching operations for REST method '${method}'...`);
+    debugLog(
+      `getOperations: Fetching operations for REST method '${method}'...`,
+    );
     const op = pathItem[method as HTTPMethod];
     return op === undefined
       ? err(`response for '${method} ${endpoint}'`)
@@ -193,6 +230,11 @@ const getOperationsByMethod = (
   method: ExtendedHTTPMethod,
   paths: Paths,
 ): OperationsForStateUpdate | undefined => {
+  debugLog(
+    `getOperationsByMethod: Extracting all ${method} operations from ${JSON.stringify(
+      paths,
+    )}`,
+  );
   const anyMethod = method === DEFAULT_STATE_HTTP_METHOD;
   const filterFn = anyMethod
     ? (pathItemKey: string) => isRESTMethod(pathItemKey)
@@ -214,6 +256,7 @@ const getOperationsByMethod = (
     [],
   );
   if (operations.length === 0) {
+    debugLog(`getOperationsByMethod: No matching operations found`);
     return undefined;
   }
   return operations;
@@ -223,6 +266,11 @@ const getOperationsFromPathItem = (
   pathItem: PathItem,
   endpoint: string,
 ): OperationsForStateUpdate | undefined => {
+  debugLog(
+    `getOperationsFromPathItem: Extracting all operations from ${JSON.stringify(
+      pathItem,
+    )}`,
+  );
   const operations: OperationsForStateUpdate = [];
   for (const key of Object.keys(pathItem)) {
     if (isRESTMethod(key)) {
@@ -234,7 +282,29 @@ const getOperationsFromPathItem = (
     }
   }
   if (operations.length === 0) {
+    debugLog(`getOperationsFromPathItem: no operations found`);
     return undefined;
   }
   return operations;
+};
+
+const stringHasDSLKeys = (input: string) =>
+  DSLKeys.some((key: string) => input.includes(key));
+
+export const chooseBestMatchingError = (
+  firstError: IValidationError,
+  secondError?: IValidationError,
+) => {
+  if (secondError === undefined) {
+    return firstError;
+  }
+  const firstHasDSL = stringHasDSLKeys(firstError.msg);
+  const secondHasDSL = stringHasDSLKeys(secondError.msg);
+  return firstHasDSL && !secondHasDSL
+    ? firstError
+    : secondHasDSL && !firstHasDSL
+    ? secondError
+    : firstError.nestedLevel < secondError.nestedLevel
+    ? secondError
+    : firstError;
 };

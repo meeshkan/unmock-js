@@ -1,5 +1,18 @@
 # CHANGELOG.md
 
+## 0.1.6 (2019-08-06)
+
+Features:
+
+  - Add `allowedHosts` object to `unmock` to add new allowed hosts
+  - Add flaky mode with `unmock.flaky.on()`
+  - Add better error messages when no matching operation is found from the specification
+  - Allow changing service state with functions taking the request as an argument
+
+Fixes:
+
+  - Fix bugs in loas3 in handling references
+
 ## 0.1.5 (2019-07-26)
 
 Fix:

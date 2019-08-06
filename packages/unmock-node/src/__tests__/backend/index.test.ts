@@ -1,9 +1,8 @@
 import axios from "axios";
 import path from "path";
-import { UnmockOptions } from "unmock-core";
 import NodeBackend from "../../backend";
 
-const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
+const servicesDirectory = path.join(__dirname, "..", "resources");
 
 describe("Node.js interceptor", () => {
   describe("with petstore in place", () => {
@@ -11,8 +10,12 @@ describe("Node.js interceptor", () => {
 
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
-      const unmockOptions = new UnmockOptions();
-      nodeInterceptor.initialize(unmockOptions);
+      nodeInterceptor.initialize({
+        flaky: () => false,
+        isWhitelisted: (_: string) => false,
+        log: (_: string) => undefined,
+        useInProduction: () => false,
+      });
     });
 
     afterAll(() => {
@@ -41,14 +44,36 @@ describe("Node.js interceptor", () => {
       }
     });
 
+    test("should get successful response for post request", async () => {
+      const response = await axios.post(
+        "http://petstore.swagger.io/v1/pets",
+        {},
+      );
+      expect(response.data).toBe("");
+    });
+
     test("emits an error for unknown url", async () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toBe("No matching template found");
+        expect(err.message).toContain("No matching template");
         return;
       }
       throw new Error("Should not get here");
+    });
+
+    test("respects cancellation", async () => {
+      const cancelTokenSource = axios.CancelToken.source();
+      setImmediate(() => cancelTokenSource.cancel());
+      try {
+        await axios("http://example.org", {
+          cancelToken: cancelTokenSource.token,
+        });
+      } catch (err) {
+        expect(axios.isCancel(err)).toBe(true);
+        return;
+      }
+      throw new Error("Was supposed to throw a cancellation error");
     });
   });
 });

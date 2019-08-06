@@ -1,29 +1,51 @@
-import { IBackend, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import { UnmockOptions } from "./options";
+import {
+  IBackend,
+  ILogger,
+  IUnmockOptions,
+  IUnmockPackage,
+} from "./interfaces";
 import * as transformers from "./service/state/transformers";
+import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
-export { UnmockOptions } from "./options";
 export * from "./interfaces";
 export * from "./generator";
 export const dsl = transformers;
 
 export abstract class CorePackage implements IUnmockPackage {
+  public allowedHosts: AllowedHosts;
+  public flaky: BooleanSetting;
+  public useInProduction: BooleanSetting;
   protected readonly backend: IBackend;
-  private readonly options: UnmockOptions;
+  private logger: ILogger = { log: () => undefined }; // Default logger does nothing
 
-  constructor(baseOptions: UnmockOptions, backend: IBackend) {
-    this.options = baseOptions;
+  constructor(
+    backend: IBackend,
+    options?: {
+      logger?: ILogger;
+    },
+  ) {
     this.backend = backend;
+    this.logger = (options && options.logger) || this.logger;
+
+    this.allowedHosts = new AllowedHosts();
+    this.flaky = new BooleanSetting();
+    this.useInProduction = new BooleanSetting();
   }
 
-  public on(maybeOptions?: IUnmockOptions) {
-    return this.backend.initialize(this.options.reset(maybeOptions));
+  public on() {
+    const opts: IUnmockOptions = {
+      useInProduction: () => this.useInProduction.get(),
+      isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
+      log: (message: string) => this.logger.log(message),
+      flaky: () => this.flaky.get(),
+    };
+    return this.backend.initialize(opts);
   }
-  public init(maybeOptions?: IUnmockOptions) {
-    this.on(maybeOptions);
+  public init() {
+    this.on();
   }
-  public initialize(maybeOptions?: IUnmockOptions) {
-    this.on(maybeOptions);
+  public initialize() {
+    this.on();
   }
 
   public off() {

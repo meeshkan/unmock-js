@@ -13,10 +13,11 @@ import {
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
+  IUnmockOptions,
   responseCreatorFactory,
-  UnmockOptions,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
+import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
 import ClientRequestTracker from "./client-request-tracker";
 
@@ -28,6 +29,13 @@ const respondFromSerializedResponse = (
 ) => {
   res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
   res.end(serializedResponse.body);
+};
+
+const errorForMissingTemplate = (sreq: ISerializedRequest) => {
+  return `No matching template found for intercepted request. Please ensure that
+  1. You have defined a service for host ${sreq.protocol}://${sreq.host}
+  2. The service has a path matching "${sreq.method} ${sreq.path}"
+  `;
 };
 
 async function handleRequestAndResponse(
@@ -44,11 +52,12 @@ async function handleRequestAndResponse(
     );
 
     if (serializedResponse === undefined) {
-      // TODO Handle this properly
       debugLog("No match found, emitting error");
-      clientRequest.emit("error", Error("No matching template found"));
+      const errMsg = errorForMissingTemplate(serializedRequest);
+      clientRequest.emit("error", Error(errMsg));
       return;
     }
+    debugLog("Responding with response", JSON.stringify(serializedResponse));
     respondFromSerializedResponse(serializedResponse, res);
   } catch (err) {
     clientRequest.emit("error", Error(`unmock error: ${err.message}`));
@@ -83,8 +92,8 @@ export default class NodeBackend implements IBackend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: UnmockOptions): any {
-    if (process.env.NODE_ENV === "production" && !options.useInProduction) {
+  public initialize(options: IUnmockOptions): any {
+    if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
     if (this.mitm !== undefined) {
@@ -104,6 +113,8 @@ export default class NodeBackend implements IBackend {
       servicesDir: this.config.servicesDirectory,
     });
     const { stateStore, createResponse } = responseCreatorFactory({
+      listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
+      options,
       serviceDefLoader,
     });
 
@@ -132,16 +143,23 @@ export default class NodeBackend implements IBackend {
     req: IncomingMessage,
     res: ServerResponse,
   ) {
+    debugLog("Handling incoming message...");
+    req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
+    req.on("abort", () => {
+      debugLog("Intercepted request aborted");
+    });
     const clientRequest = ClientRequestTracker.pop(req);
-    handleRequestAndResponse(createResponse, req, res, clientRequest);
+    setImmediate(() =>
+      handleRequestAndResponse(createResponse, req, res, clientRequest),
+    );
   }
 
   private mitmOnConnect(
-    unmockOptions: UnmockOptions,
+    { isWhitelisted }: IUnmockOptions,
     socket: IBypassableSocket,
     opts: RequestOptions,
   ) {
-    if (unmockOptions.isWhitelisted(opts.host || "")) {
+    if (isWhitelisted(opts.host || "")) {
       socket.bypass();
     }
   }

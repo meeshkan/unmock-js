@@ -1,45 +1,37 @@
-import { UnmockOptions } from "./options";
-import { IService } from "./service/interfaces";
+import { AllowedHosts } from "./settings/allowedHosts";
 
 export interface ILogger {
-  log: (message: string) => void;
+  log(message: string): void;
 }
 
-export interface IMetaData {
-  lang?: string;
+export interface IListener {
+  notify({
+    req,
+    res,
+  }: {
+    req: ISerializedRequest;
+    res?: ISerializedResponse;
+  }): void;
 }
 
-export interface IRequestData {
-  body?: string;
-  headers?: any;
-  host?: string;
-  method?: string;
-  path?: string;
-}
-
-export interface IResponseData {
-  body?: string;
-  headers?: any;
+export interface IUnmockOptions extends ILogger {
+  useInProduction(): boolean;
+  isWhitelisted(url: string): boolean;
+  flaky(): boolean;
 }
 
 export interface IBackend {
-  initialize: (opts: UnmockOptions) => any;
-  reset: () => void;
-}
-
-export interface IUnmockOptions {
-  logger?: ILogger;
-  signature?: string;
-  whitelist?: string[] | string;
-  useInProduction?: boolean;
+  initialize(options: IUnmockOptions): any;
+  reset(): void;
 }
 
 export interface IUnmockPackage {
-  on: (maybeOptions?: IUnmockOptions) => any;
-  init: (maybeOptions?: IUnmockOptions) => any;
-  initialize: (maybeOptions?: IUnmockOptions) => any;
-  off: () => void;
-  states: () => any;
+  allowedHosts: AllowedHosts;
+  on(): any;
+  init(): any;
+  initialize(): any;
+  off(): void;
+  states(): any;
 }
 
 /**
@@ -59,7 +51,7 @@ export interface IOutgoingHeaders {
 }
 
 export interface ISerializedRequest {
-  body?: string;
+  body?: string | object;
   headers?: IIncomingHeaders;
   host: string;
   method: string;
@@ -67,29 +59,15 @@ export interface ISerializedRequest {
   protocol: "http" | "https";
 }
 
-export type IMockRequest = {
-  [P in keyof ISerializedRequest]?: ISerializedRequest[P] | RegExp;
-};
-
 export interface ISerializedResponse {
   body?: string;
   headers?: IOutgoingHeaders;
   statusCode: number;
 }
 
-export interface IMock {
-  request: IMockRequest;
-  response: ISerializedResponse;
-}
-
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
-
-// Used to load a service specification from a serialized request
-// Returns an object (parsed from specification)
-export type RequestToSpec = (sreq: ISerializedRequest) => any;
-export type GeneratedMock = any;
 
 export interface IServiceDefLoader {
   /**
@@ -131,8 +109,4 @@ export interface IServiceDef {
    * All the files defining the service.
    */
   serviceFiles: IServiceDefFile[];
-}
-
-export interface IServiceParser {
-  parse(serviceDef: IServiceDef): IService;
 }

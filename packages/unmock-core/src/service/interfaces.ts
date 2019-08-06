@@ -3,7 +3,7 @@ import {
   Operation,
   PathItem,
   Schema,
-} from "loas3/dist/src/generated/full";
+} from "loas3/dist/generated/full";
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
@@ -23,7 +23,7 @@ export {
   Reference,
   Response,
   Responses,
-} from "loas3/dist/src/generated/full";
+} from "loas3/dist/generated/full";
 
 const RESTMethodTypes = [
   "get",
@@ -64,11 +64,17 @@ export interface IStateInputGenerator {
    * Generates a new state (copy) based on the given schema, so that
    * future processes can use it without modifying the original schema.
    */
-  gen: (schema: Schema) => Record<string, Schema> | Schema;
+  gen: (
+    schema: Schema,
+  ) => { spreadState: Record<string, Schema> | Schema; error?: string };
   /**
    * Returns top-level DSL, if it exists.
    */
   top: ITopLevelDSL;
+  /**
+   * For debugging purposes, to retrieve the state used to instantiate the generator
+   */
+  readonly state: any;
 }
 export const isStateInputGenerator = (u: any): u is IStateInputGenerator =>
   u !== undefined &&
@@ -168,7 +174,7 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 
 // Used to define the simplify the types used
 type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
-type StateInput = IStateInputGenerator | UnmockServiceState;
+type StateInput = IStateInputGenerator | UnmockServiceState | string;
 
 // Used to incorporate the reset method when needed
 interface IResetState {

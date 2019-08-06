@@ -1,6 +1,6 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage, UnmockOptions } from "unmock-core";
+import { CorePackage } from "unmock-core";
 import { dsl } from "../..";
 import NodeBackend from "../../backend";
 
@@ -10,18 +10,17 @@ class StateTestPackage extends CorePackage {
   }
 }
 
-const servicesDirectory = path.join(__dirname, "..", "loaders", "resources");
+const servicesDirectory = path.join(__dirname, "..", "resources");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
     let nodeInterceptor: NodeBackend;
-    let unmock: CorePackage;
+    let unmock: StateTestPackage;
     let states: any;
 
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
-      const unmockOptions = new UnmockOptions();
-      unmock = new StateTestPackage(unmockOptions, nodeInterceptor);
+      unmock = new StateTestPackage(nodeInterceptor);
       states = unmock.on();
     });
 
@@ -92,10 +91,36 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("bar");
     });
 
-    test("throws when setting textual middleware with DSL with non-existing status code", async () => {
-      expect(() =>
-        states.petstore(dsl.textResponse("foo", { $code: 400 })),
-      ).toThrow("status code '400'");
+    test("uses default response when setting textual response with DSL with non-existing status code", async () => {
+      states.petstore(dsl.textResponse("foo", { $code: 400 }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 400 response");
+      } catch (err) {
+        expect(err.response.status).toBe(400);
+        expect(err.response.data).toBe("foo");
+      }
+    });
+
+    test("sets an entire response from function", async () => {
+      states.petstore(() => "baz");
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toBe("baz");
+    });
+
+    test("sets an entire response from function with DSL", async () => {
+      states.petstore(dsl.functionResponse(() => "baz", { $code: 404 }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 404 response");
+      } catch (err) {
+        expect(err.response.status).toBe(404);
+        expect(err.response.data).toBe("baz");
+      }
+    });
+
+    test("fails setting an array size for non-array elements", async () => {
+      expect(() => states.petstore({ id: { $size: 5 } })).toThrow("$size");
     });
   });
 });

@@ -1,10 +1,7 @@
-import { CorePackage, UnmockOptions } from "unmock-core";
+import { CorePackage } from "unmock-core";
 import JSDomBackend from "./backend";
 import BrowserLogger from "./logger/browser-logger";
 
-export const options = new UnmockOptions({
-  logger: new BrowserLogger(),
-});
 const backend = new JSDomBackend();
 
 class UnmockJSDOM extends CorePackage {
@@ -13,5 +10,8 @@ class UnmockJSDOM extends CorePackage {
   }
 }
 
-const unmock = new UnmockJSDOM(options, backend);
+const unmock = new UnmockJSDOM(backend, {
+  logger: new BrowserLogger(),
+});
+
 export default unmock;

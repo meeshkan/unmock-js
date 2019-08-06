@@ -1,3 +1,4 @@
+import debug from "debug";
 import * as http from "http";
 import * as readable from "readable-stream";
 import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
@@ -13,6 +14,11 @@ import _CompositeSerializer from "./serializer/composite";
 import _FormSerializer from "./serializer/form";
 import _JSONSerializer from "./serializer/json";
 
+const CONTENT_TYPE_KEY = "content-type";
+const MIME_JSON_TYPE = "application/json";
+
+const debugLog = debug("unmock:node:serializer");
+
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {
     const serializer = new BodySerializer();
@@ -20,11 +26,11 @@ class BodySerializer extends readable.Transform {
     return serializer.body;
   }
 
-  private body: string = "";
+  private body?: string;
 
   // TODO Encoding
   public _transform(chunk: Buffer, _: string, done: () => void) {
-    this.body += chunk.toString();
+    this.body = (this.body || "") + chunk.toString();
     this.push(chunk);
     done();
   }
@@ -70,6 +76,19 @@ function extractVars(
   };
 }
 
+const hasContentTypeJson = (headers: IIncomingHeaders) =>
+  headers[CONTENT_TYPE_KEY] !== undefined &&
+  headers[CONTENT_TYPE_KEY]!.includes(MIME_JSON_TYPE);
+
+const safelyParseJson = (body: string): string | object => {
+  try {
+    return JSON.parse(body);
+  } catch (err) {
+    debugLog(`Failed parsing body: ${body}`);
+    return body;
+  }
+};
+
 /**
  * Serialize an incoming request, collecting the body.
  * @param interceptedRequest Incoming request
@@ -84,8 +103,13 @@ export const serializeRequest = async (
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
 
+  const deserializedBody =
+    body === undefined || !hasContentTypeJson(headers)
+      ? body
+      : safelyParseJson(body);
+
   const serializedRequest: ISerializedRequest = {
-    body,
+    body: deserializedBody,
     headers,
     host,
     method,

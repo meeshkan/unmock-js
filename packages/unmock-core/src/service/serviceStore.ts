@@ -9,7 +9,11 @@ import {
   MatcherResponse,
   UnmockServiceState,
 } from "./interfaces";
-import { objResponse, textResponse } from "./state/transformers";
+import {
+  functionResponse,
+  objResponse,
+  textResponse,
+} from "./state/transformers";
 
 export class ServiceStore {
   private readonly serviceMapping: IServiceMapping = {};
@@ -72,16 +76,14 @@ export class ServiceStore {
         }'!`,
       );
     }
-    let stateGen: IStateInputGenerator;
-    if (!isStateInputGenerator(state)) {
-      // Given an object, set default generator for state
-      stateGen =
-        typeof state === "string"
-          ? textResponse(state)
-          : objResponse(state as UnmockServiceState);
-    } else {
-      stateGen = state as IStateInputGenerator;
-    }
+    // Given an object, set default generator for state
+    const stateGen = isStateInputGenerator(state)
+      ? state
+      : typeof state === "string"
+      ? textResponse(state)
+      : typeof state === "function"
+      ? functionResponse(state)
+      : objResponse(state);
 
     this.serviceMapping[serviceName].updateState({
       endpoint,

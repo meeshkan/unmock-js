@@ -278,4 +278,11 @@ describe("Test state management", () => {
       200: { "text/plain": { const: "foobar", type: "string" } },
     });
   });
+
+  it("Fails setting $size to a specific non-array item", () => {
+    const state = new State();
+    expect(() =>
+      updateState(state, "any", "**", objResponse({ foo: { $size: 5 } }), "**"),
+    ).toThrow("$size");
+  });
 });

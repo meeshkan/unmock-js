@@ -30,39 +30,18 @@ paths:
               schema:
                 type: string
           content:
-            application/json:
+            application/json:    
               schema:
-                type: array
-                items:
-                  required:
-                  - id
-                  - name
-                  properties:
-                    id:
-                      type: integer
-                      format: int64
-                    name:
-                      type: string
-                    tag:
-                      type: string
-                x-unmock-size: 4
+                $ref: "#/components/schemas/Pets"
         default:
           description: unexpected error
           content:
-            text/plain:
-              schema:
-                type: string
             application/json:
               schema:
-                required:
-                  - code
-                  - message
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                  message:
-                    type: string
+                $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
     post:
       summary: Create a pet
       operationId: createPets
@@ -76,15 +55,10 @@ paths:
           content:
             application/json:
               schema:
-                required:
-                  - code
-                  - message
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                  message:
-                    type: string
+                $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
   /pets/{petId}:
     get:
       summary: Info for a specific pet
@@ -104,30 +78,43 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  required:
-                  - id
-                  - name
-                  properties:
-                    id:
-                      type: integer
-                      format: int64
-                    name:
-                      type: string
-                    tag:
-                      type: string
+                $ref: "#/components/schemas/Pets"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                required:
-                  - code
-                  - message
-                properties:
-                  code:
-                    type: integer
-                    format: int32
-                  message:
-                    type: string
+                $ref: "#/components/schemas/Error"
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/TextError"
+components:
+  schemas:
+    Pet:
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        tag:
+          type: string
+    Pets:
+      type: array
+      items:
+        $ref: "#/components/schemas/Pet"
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    TextError:
+      type: string

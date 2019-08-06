@@ -61,7 +61,7 @@ jobs:
         command: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/repo/.npmrc
     - add_ssh_keys:
         fingerprints:
-          - "16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48"
+          - "34:32:ff:02:fe:1e:00:10:49:75:8e:d4:6c:2b:12:ca"
     - run:
         name: "Authenticate with GH"
         command: |
@@ -84,6 +84,7 @@ workflows:
       - build
       - verify-before-publish
       - publish:
+          context: unmock-publish-nodejs
           requires:
             - build
             - verify-before-publish
