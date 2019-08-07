@@ -20,7 +20,7 @@
     "test:watch": "jest --verbose --watchAll",
     "testonly": "npm test",
     "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
-    "coverage": "npm test",
+    "coverage": "npm test -- --coverage",
     "coverage:upload": "codecov",
     "version": "lerna version --no-git-tag-version",
     "unmock": "node packages/unmock-cli/dist/index.js"

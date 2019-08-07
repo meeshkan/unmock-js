@@ -12,6 +12,6 @@ module.exports = {
   },
   clearMocks: true,
   transformIgnorePatterns: [
-      "/node_modules/(?!loas3|istanbul-lib-source-maps)",
+      "/node_modules/(?!loas3)",
   ]
 };
