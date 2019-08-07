@@ -2,10 +2,10 @@
   "license": "MIT",
   "scripts": {
     "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
-    "build": "npm run build:types:clean && npm run build:js",
+    "build": "npm run build:types:clean && npm run check:types:tests && npm run build:types && npm run build:js",
     "build:types": "tsc --build tsconfig.build.json",
     "build:types:clean": "tsc --build tsconfig.build.json --clean",
-    "build:types:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
+    "check:types:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
     "build:js": "lerna exec --parallel 'babel src --out-dir dist --source-maps --extensions .ts,.tsx --config-file ../../babel.config.js --no-comments'",
     "watch": "tsc --build tsconfig.build.json --watch",
     "release": "npm run clean && npm install && lerna publish from-package --exact --force-publish=unmock-core --include-merged-tags",
