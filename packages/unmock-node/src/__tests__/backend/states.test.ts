@@ -1,6 +1,6 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage } from "unmock-core";
+import { CorePackage, States } from "unmock-core";
 import { dsl, Request } from "../../..";
 
 import NodeBackend from "../../backend";
@@ -17,7 +17,7 @@ describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
     let nodeInterceptor: NodeBackend;
     let unmock: StateTestPackage;
-    let states: any;
+    let states: States;
 
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
@@ -27,7 +27,6 @@ describe("Node.js interceptor", () => {
 
     afterAll(() => {
       unmock.off();
-      states = undefined;
     });
 
     beforeEach(() => states.reset());

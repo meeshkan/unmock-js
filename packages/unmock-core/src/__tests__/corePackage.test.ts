@@ -2,7 +2,7 @@ import { CorePackage, IBackend } from "..";
 
 class TestPackage extends CorePackage {
   public states() {
-    return;
+    return undefined;
   }
 }
 // tslint:disable-next-line: max-classes-per-file
