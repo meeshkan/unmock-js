@@ -166,7 +166,6 @@ export interface IUnmockServiceState
  * the actual service specification.
  * Validation can be done either in runtime or via IDE extensions.
  */
-type FunctionInput = (req: ISerializedRequest) => any;
 export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 
 // ##########################
@@ -175,6 +174,8 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 
 // Used to define the simplify the types used
 type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
+// Used to define the response from intercepted request
+type FunctionInput = (req: ISerializedRequest) => any;
 type StateInput = IStateInputGenerator | UnmockServiceState | string | FunctionInput;
 
 // Used to incorporate the reset method when needed
