@@ -1,4 +1,5 @@
 import debug from "debug";
+import url from "url";
 import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
 import { OASMethodKey, OpenAPIObject, PathItem } from "./interfaces";
@@ -164,13 +165,22 @@ export class OASMatcher {
       return { matches: false };
     }
     for (const server of servers) {
-      const serverUrl = new URL(server.url);
-      const protocol = serverUrl.protocol.replace(":", "");
+      const serverUrl = url.parse(server.url);
+      if (serverUrl === undefined) {
+        continue;
+      }
+      if (serverUrl.protocol === undefined || !(/^https?:$/.test(serverUrl.protocol))) {
+        throw new Error(`Unknown protocol: ${serverUrl.protocol}`);
+      }
+      const protocol = serverUrl.protocol ? serverUrl.protocol.replace(":", "") : "http";
 
       debugLog(
         `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
           `vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
       );
+      if (serverUrl.pathname === undefined) {
+        throw new Error("Got undefined pathname");
+      }
       if (
         protocol === sreq.protocol &&
         serverUrl.hostname === sreq.host &&
