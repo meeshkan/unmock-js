@@ -8,6 +8,8 @@ module.exports = {
         "@babel/typescript"
     ],
     "plugins": [
+        ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
+        "@babel/plugin-transform-strict-mode",
         "@babel/proposal-class-properties",
         "@babel/proposal-object-rest-spread"
     ]
