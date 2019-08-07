@@ -1,4 +1,5 @@
 import debug from "debug";
+import url from "url";
 import XRegExp from "xregexp";
 import { ISerializedRequest } from "../interfaces";
 import { OASMethodKey, OpenAPIObject, PathItem } from "./interfaces";
@@ -120,11 +121,17 @@ export class OASMatcher {
     if (servers !== undefined && servers.length > 0) {
       // Try and normalize the requested path...
       for (const server of servers) {
-        const serverUrl = new URL(server.url);
-        if (reqPath.startsWith(serverUrl.pathname)) {
+        const serverUrl = url.parse(server.url);
+        if (serverUrl.pathname === undefined) {
+          // This should not happen if the URL makes sense
+          // For example, should be "/" for "https://google.com"
+          throw Error(`Got undefined pathname for server URL: ${server.url}`);
+        }
+        const serverPathname = serverUrl.pathname;
+        if (reqPath.startsWith(serverPathname)) {
           reqPath = OASMatcher.normalizeRequestPathToServerPath(
             reqPath,
-            serverUrl.pathname,
+            serverPathname,
           );
           break;
         }
@@ -164,13 +171,19 @@ export class OASMatcher {
       return { matches: false };
     }
     for (const server of servers) {
-      const serverUrl = new URL(server.url);
+      const serverUrl = url.parse(server.url);
+      if (serverUrl.protocol === undefined || !(/^https?:$/.test(serverUrl.protocol))) {
+        throw new Error(`Unknown protocol: ${serverUrl.protocol}`);
+      }
       const protocol = serverUrl.protocol.replace(":", "");
 
       debugLog(
         `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
           `vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
       );
+      if (serverUrl.pathname === undefined) {
+        throw new Error("Got undefined pathname");
+      }
       if (
         protocol === sreq.protocol &&
         serverUrl.hostname === sreq.host &&
