@@ -2,7 +2,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
-    "build": "npm run build:types:clean && npm run build:types:tests && npm run build:types && npm run build:js",
+    "build": "npm run build:types:clean && npm run build:js",
     "build:types": "tsc --build tsconfig.build.json",
     "build:types:clean": "tsc --build tsconfig.build.json --clean",
     "build:types:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",

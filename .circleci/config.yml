@@ -9,14 +9,14 @@ orbs:
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:8.12.0
+    - image: circleci/node:6.10.0
 
 jobs:
   build:
     <<: *defaults
     steps:
       - checkout
-      - run: npm ci
+      - run: npm i
       - run: npm run test:ci
       # - codecov/upload:
       #    file: coverage/*.json
