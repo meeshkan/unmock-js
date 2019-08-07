@@ -1,4 +1,3 @@
-require("@babel/polyfill");
 const { defaults } = require("jest-config");
 
 module.exports = {

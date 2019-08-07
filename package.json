@@ -85,6 +85,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.4.4",
+    "core-js": "^3.1.4",
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
