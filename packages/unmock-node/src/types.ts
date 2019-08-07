@@ -1,4 +1,5 @@
 // Types and aliases exported from unmock-node
-import { ISerializedRequest } from "unmock-core";
-
-export type Request = ISerializedRequest;
+export {
+    ISerializedRequest as Request,
+    States,
+} from "unmock-core";
