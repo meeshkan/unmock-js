@@ -122,13 +122,11 @@ export class OASMatcher {
       // Try and normalize the requested path...
       for (const server of servers) {
         const serverUrl = url.parse(server.url);
-        if (serverUrl.pathname === undefined) {
-          throw Error("Got undefined pathname");
-        }
-        if (reqPath.startsWith(serverUrl.pathname)) {
+        const serverPathname = serverUrl.pathname || "/";
+        if (reqPath.startsWith(serverPathname)) {
           reqPath = OASMatcher.normalizeRequestPathToServerPath(
             reqPath,
-            serverUrl.pathname,
+            serverPathname,
           );
           break;
         }
