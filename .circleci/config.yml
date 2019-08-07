@@ -9,7 +9,7 @@ orbs:
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: circleci/node:10.15.1
+    - image: circleci/node:8.12.0
 
 jobs:
   build:
