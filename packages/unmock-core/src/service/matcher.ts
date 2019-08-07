@@ -121,7 +121,10 @@ export class OASMatcher {
     if (servers !== undefined && servers.length > 0) {
       // Try and normalize the requested path...
       for (const server of servers) {
-        const serverUrl = new URL(server.url);
+        const serverUrl = url.parse(server.url);
+        if (serverUrl.pathname === undefined) {
+          throw Error("Got undefined pathname");
+        }
         if (reqPath.startsWith(serverUrl.pathname)) {
           reqPath = OASMatcher.normalizeRequestPathToServerPath(
             reqPath,
@@ -172,7 +175,7 @@ export class OASMatcher {
       if (serverUrl.protocol === undefined || !(/^https?:$/.test(serverUrl.protocol))) {
         throw new Error(`Unknown protocol: ${serverUrl.protocol}`);
       }
-      const protocol = serverUrl.protocol ? serverUrl.protocol.replace(":", "") : "http";
+      const protocol = serverUrl.protocol.replace(":", "");
 
       debugLog(
         `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
