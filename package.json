@@ -2,7 +2,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
-    "build": "npm run build:types:clean && npm run build:types:tests && npm run build:types && npm run build:js",
+    "build": "npm run build:types:clean && npm run build:js",
     "build:types": "tsc --build tsconfig.build.json",
     "build:types:clean": "tsc --build tsconfig.build.json --clean",
     "build:types:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
@@ -20,7 +20,7 @@
     "test:watch": "jest --verbose --watchAll",
     "testonly": "npm test",
     "test:ci": "npm run coverage -- --ci --maxWorkers=2  --reporters=default --reporters=jest-junit",
-    "coverage": "npm test -- --coverage",
+    "coverage": "npm test",
     "coverage:upload": "codecov",
     "version": "lerna version --no-git-tag-version",
     "unmock": "node packages/unmock-cli/dist/index.js"
@@ -71,7 +71,6 @@
     "prettier": "^1.18.2",
     "prettier-check": "^2.0.0",
     "supertest": "^4.0.2",
-    "ts-jest": "^24.0.2",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.4.4"
@@ -85,6 +84,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "core-js": "^3.1.4",
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
