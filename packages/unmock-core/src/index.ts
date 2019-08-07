@@ -9,6 +9,9 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
+
+export { StateFacadeType as States } from "./service/interfaces";
+
 export const dsl = transformers;
 
 export abstract class CorePackage implements IUnmockPackage {

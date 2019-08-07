@@ -1,7 +1,8 @@
 import axios from "axios";
 import path from "path";
 import { CorePackage } from "unmock-core";
-import { dsl } from "../..";
+import { dsl, Request } from "../../..";
+
 import NodeBackend from "../../backend";
 
 class StateTestPackage extends CorePackage {
@@ -106,6 +107,12 @@ describe("Node.js interceptor", () => {
       states.petstore(() => "baz");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("baz");
+    });
+
+    test("sets an entire response from with request object", async () => {
+      states.petstore((req: Request) => req.host);
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toBe("petstore.swagger.io");
     });
 
     test("sets an entire response from function with DSL", async () => {
