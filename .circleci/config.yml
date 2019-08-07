@@ -18,8 +18,8 @@ jobs:
       - checkout
       - run: npm ci
       - run: npm run test:ci
-      # - codecov/upload:
-      #    file: coverage/*.json
+      - codecov/upload:
+          file: coverage/*.json
       - persist_to_workspace:
           root: ~/repo
           paths: .
