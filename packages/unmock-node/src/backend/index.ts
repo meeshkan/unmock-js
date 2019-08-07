@@ -15,6 +15,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
   responseCreatorFactory,
+  States,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
@@ -77,7 +78,7 @@ interface IBypassableSocket extends net.Socket {
 export default class NodeBackend implements IBackend {
   private readonly config: INodeBackendOptions;
   private mitm: any;
-  private stateStore: any = undefined;
+  private stateStore?: States = undefined;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
