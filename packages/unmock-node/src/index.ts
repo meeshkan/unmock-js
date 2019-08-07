@@ -1,7 +1,9 @@
-import { CorePackage } from "unmock-core";
+import { CorePackage, ISerializedRequest } from "unmock-core";
 import NodeBackend from "./backend";
 import _WinstonLogger from "./loggers/winston-logger";
 export { dsl } from "unmock-core";
+
+export type Request = ISerializedRequest;
 
 const backend = new NodeBackend();
 
