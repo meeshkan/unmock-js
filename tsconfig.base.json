@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "composite": true,
-    // "noEmit": false,
     "emitDeclarationOnly": true,
     "target": "esnext",
     "module": "commonjs",
@@ -18,7 +17,6 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    // "lib": ["es6", "dom"],
     "baseUrl": ".",
     "paths": {
       "*" : ["types/*"]
