@@ -1,11 +1,11 @@
-import { CorePackage, States } from "unmock-core";
+import { CorePackage } from "unmock-core";
 import JSDomBackend from "./backend";
 import BrowserLogger from "./logger/browser-logger";
 
 const backend = new JSDomBackend();
 
 class UnmockJSDOM extends CorePackage {
-  public states(): States {
+  public states(): never {
     throw new Error("Unmock JSDOM does not implement state management yet!");
   }
 }
