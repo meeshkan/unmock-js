@@ -13,5 +13,9 @@ module.exports = {
   clearMocks: true,
   transformIgnorePatterns: [
       "/node_modules/(?!loas3)",
+  ],
+  collectCoverageFrom: [
+    "**/packages/*/**/*.ts",
+    "!**/node_modules/**",
   ]
 };
