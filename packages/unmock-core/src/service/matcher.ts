@@ -122,7 +122,12 @@ export class OASMatcher {
       // Try and normalize the requested path...
       for (const server of servers) {
         const serverUrl = url.parse(server.url);
-        const serverPathname = serverUrl.pathname || "/";
+        if (serverUrl.pathname === undefined) {
+          // This should not happen if the URL makes sense
+          // For example, should be "/" for "https://google.com"
+          throw Error(`Got undefined pathname for server URL: ${server.url}`);
+        }
+        const serverPathname = serverUrl.pathname;
         if (reqPath.startsWith(serverPathname)) {
           reqPath = OASMatcher.normalizeRequestPathToServerPath(
             reqPath,
@@ -167,9 +172,6 @@ export class OASMatcher {
     }
     for (const server of servers) {
       const serverUrl = url.parse(server.url);
-      if (serverUrl === undefined) {
-        continue;
-      }
       if (serverUrl.protocol === undefined || !(/^https?:$/.test(serverUrl.protocol))) {
         throw new Error(`Unknown protocol: ${serverUrl.protocol}`);
       }
