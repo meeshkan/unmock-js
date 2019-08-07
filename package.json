@@ -84,6 +84,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.4.4",
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
