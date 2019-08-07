@@ -1,4 +1,4 @@
-const unmockRequireDefault = require("../").default;  // tslint:disable-line:no-var-requires
+const unmockRequire = require("../");  // tslint:disable-line:no-var-requires
 const dslRequire = require("../").dsl;  // tslint:disable-line:no-var-requires
 import unmockDefaultImport from "../";
 import { dsl } from "../";
@@ -6,8 +6,8 @@ import { dsl } from "../";
 describe("Imports", () => {
     describe("with require", () => {
         it("should have expected properties for unmock", () => {
-            expect(unmockRequireDefault).toBeDefined();
-            expect(unmockRequireDefault).toHaveProperty("on");
+            expect(unmockRequire).toBeDefined();
+            expect(unmockRequire).toHaveProperty("on");
         });
         it("should have expected properties for dsl object", () => {
             expect(dslRequire).toBeDefined();

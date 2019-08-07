@@ -1,7 +1,6 @@
-import { CorePackage } from "unmock-core";
+import { CorePackage, dsl } from "unmock-core";
 import NodeBackend from "./backend";
 import _WinstonLogger from "./loggers/winston-logger";
-export { dsl } from "unmock-core";
 
 const backend = new NodeBackend();
 
@@ -12,4 +11,8 @@ class UnmockNode extends CorePackage {
 }
 
 const unmock = new UnmockNode(backend, { logger: new _WinstonLogger() });
-export default unmock;
+
+module.exports = exports = unmock;
+
+exports.dsl = dsl;
+exports.default = unmock;
