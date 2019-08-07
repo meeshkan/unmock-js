@@ -12,6 +12,6 @@ module.exports = {
   },
   clearMocks: true,
   transformIgnorePatterns: [
-      "/node_modules/",
+      "/node_modules/(?!loas3)",
   ]
 };
