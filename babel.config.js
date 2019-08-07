@@ -8,8 +8,6 @@ module.exports = {
         }],
         "@babel/typescript"
     ],
-    // https://github.com/babel/babel/issues/8731
-    ignore: [/[\/\\]core-js/, /@babel[\/\\]runtime/],
     "plugins": [
         ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true }],
         "@babel/plugin-transform-strict-mode",
