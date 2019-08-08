@@ -46,10 +46,10 @@ export abstract class CorePackage implements IUnmockPackage {
     return this.backend.initialize(opts);
   }
   public init() {
-    this.on();
+    return this.on();
   }
   public initialize() {
-    this.on();
+    return this.on();
   }
 
   public off() {
