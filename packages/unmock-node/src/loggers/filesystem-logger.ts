@@ -8,7 +8,7 @@ import {
 } from "unmock-core";
 import { resolveServicesDirectory } from "../utils";
 
-const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB
+const fileSizeLimitOnInit = 5 * (1024 * 1024); // 5 MB
 
 export default class FSLogger implements IListener {
   private static toIndentedYaml(
