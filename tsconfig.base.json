@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2016",
+    "emitDeclarationOnly": true,
+    "target": "esnext",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -16,7 +17,6 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["es6", "dom"],
     "baseUrl": ".",
     "paths": {
       "*" : ["types/*"]
