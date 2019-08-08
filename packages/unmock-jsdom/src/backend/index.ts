@@ -27,7 +27,7 @@ const parseResponseHeaders = (headerStr: string) => {
 export default class JSDomBackend implements IBackend {
   // TODO: won't work if open is not called first, as this sets everything else
   // is there a possible scenario where open is not called first
-  public initialize(opts: IUnmockOptions) {
+  public initialize(opts: IUnmockOptions): any {
     XMLHttpRequest.prototype.open = function(
       method: string,
       url: string,
