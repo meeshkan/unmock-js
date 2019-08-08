@@ -1,3 +1,4 @@
+import { States } from ".";
 import { AllowedHosts } from "./settings/allowedHosts";
 
 export interface ILogger {
@@ -21,17 +22,17 @@ export interface IUnmockOptions extends ILogger {
 }
 
 export interface IBackend {
-  initialize(options: IUnmockOptions): any;
+  initialize(options: IUnmockOptions): States;
   reset(): void;
 }
 
 export interface IUnmockPackage {
   allowedHosts: AllowedHosts;
-  on(): any;
-  init(): any;
-  initialize(): any;
+  on(): States;
+  init(): States;
+  initialize(): States;
   off(): void;
-  states(): any;
+  states(): States | undefined;
 }
 
 /**
