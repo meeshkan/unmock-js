@@ -1,5 +1,16 @@
 # CHANGELOG.md
 
+## 0.1.7 (2019-08-07)
+
+Features:
+
+  - Export types `Request` and `States`
+  - Add typing to `states` object
+
+Fixes:
+
+  - Fix issue in Node<10 where `URL` was used without it being available
+
 ## 0.1.6 (2019-08-06)
 
 Features:

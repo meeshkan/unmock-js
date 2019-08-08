@@ -9,6 +9,10 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
+import { StateFacadeType } from "./service/interfaces";
+
+export type States = StateFacadeType;
+
 export const dsl = transformers;
 
 export abstract class CorePackage implements IUnmockPackage {
@@ -42,15 +46,15 @@ export abstract class CorePackage implements IUnmockPackage {
     return this.backend.initialize(opts);
   }
   public init() {
-    this.on();
+    return this.on();
   }
   public initialize() {
-    this.on();
+    return this.on();
   }
 
   public off() {
     this.backend.reset();
   }
 
-  public abstract states(): any;
+  public abstract states(): States | undefined;
 }
