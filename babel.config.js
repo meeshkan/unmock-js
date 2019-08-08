@@ -4,12 +4,12 @@ module.exports = {
         {
             targets: { node: 6 },
             useBuiltIns: "usage",
-            corejs: 3
+            corejs: 3,
+            modules: "cjs"
         }],
         "@babel/typescript"
     ],
     "plugins": [
-        ["@babel/plugin-transform-modules-commonjs", { allowTopLevelThis: true, strict: false }],
         "@babel/proposal-class-properties",
         "@babel/proposal-object-rest-spread"
     ]
