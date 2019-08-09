@@ -1,5 +1,5 @@
 import { Writable } from "stream";
-import { CustomConsole } from "../console";
+import unmockConsole, { CustomConsole } from "../console";
 
 class ArrayWritable extends Writable {
   public readonly written: string[] = [];
@@ -30,7 +30,12 @@ describe("Custom console", () => {
     expect(stdout.written.length).toBe(1);
     expect(stdout.written[0]).toContain(logMessage);
     expect(stdout.written[0]).not.toEqual(logMessage); // Some formatting was done
-    expect(stdout.written[0]).toContain("  "); // Added indentation
+    expect(stdout.written[0].startsWith("  ")).toBe(true); // Added indentation
+  });
+
+  // For testing console output
+  it.skip("writes instructions to real console", () => {
+    unmockConsole.instruct(logMessage);
   });
 
   it("writes regular logs without formatting", () => {
