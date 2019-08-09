@@ -22,7 +22,7 @@
     "json-pointer": "^0.6.0",
     "json-schema-deref-sync": "^0.10.1",
     "json-schema-faker": "^0.5.0-rc17",
-    "loas3": "^0.1.0",
+    "loas3": "^0.1.1",
     "lodash": "^4.17.14",
     "minimatch": "^3.0.4",
     "querystring": "^0.2.0",
