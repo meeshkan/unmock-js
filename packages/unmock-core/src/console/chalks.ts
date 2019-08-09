@@ -4,9 +4,10 @@ import { LogType } from "./types";
 const error = chalk.bold.red;
 const instruct = chalk.bold.magenta;
 
-export const Chalks: {
-  [key in LogType]: Chalk & { supportsColor: ColorSupport };
-} = {
+export const Chalks: Record<
+  LogType,
+  Chalk & { supportsColor: ColorSupport }
+> = {
   error,
   instruct,
 };
