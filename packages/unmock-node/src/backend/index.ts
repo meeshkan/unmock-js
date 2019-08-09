@@ -37,20 +37,20 @@ const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   const serverUrl = `${sreq.protocol}://${sreq.host}`;
   return `No matching template found for intercepted request. Please ensure that
 
-    1. You have defined a service for host ${serverUrl}
-    2. The service has a path matching "${sreq.method} ${sreq.path}"
+  1. You have defined a service for host ${serverUrl}
+  2. The service has a path matching "${sreq.method} ${sreq.path}"
 
-    For example, add the following to your service:
+  For example, add the following to your service:
 
-    servers:
-      - url: ${sreq.protocol}://${sreq.host}
-    paths:
-      ${sreq.path}:
-        ${sreq.method.toLowerCase()}:
-          // OpenAPI operation object
-          responses:
-            200:
-              ...
+  servers:
+    - url: ${sreq.protocol}://${sreq.host}
+  paths:
+    ${sreq.path}:
+      ${sreq.method.toLowerCase()}:
+        // OpenAPI operation object
+        responses:
+          200:
+            ...
   `;
 };
 

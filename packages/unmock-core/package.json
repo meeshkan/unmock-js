@@ -15,8 +15,10 @@
   "dependencies": {
     "ajv": "^6.10.0",
     "axios": "^0.18.0",
+    "boxen": "^4.1.0",
     "chalk": "^2.4.2",
     "debug": "^4.1.1",
+    "indent-string": "^4.0.0",
     "js-yaml": "^3.13.1",
     "json-pointer": "^0.6.0",
     "json-schema-deref-sync": "^0.10.1",
