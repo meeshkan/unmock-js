@@ -21,6 +21,7 @@ import {
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
+import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
 
 const debugLog = debug("unmock:node");
@@ -125,10 +126,18 @@ export default class NodeBackend implements IBackend {
       this.mitmOnConnect(options, socket, opts),
     );
 
+    // Resolve where services can live
+    const unmockDirectories = this.config.servicesDirectory
+      ? [this.config.servicesDirectory]
+      : resolveUnmockDirectories();
+
+    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
+
     // Prepare the request-response mapping by bootstrapping all dependencies here
     const serviceDefLoader = new FsServiceDefLoader({
-      servicesDir: this.config.servicesDirectory,
+      unmockDirectories,
     });
+
     const { stateStore, createResponse } = responseCreatorFactory({
       listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
       options,

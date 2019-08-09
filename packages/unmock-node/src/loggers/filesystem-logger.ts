@@ -6,7 +6,7 @@ import {
   ISerializedRequest,
   ISerializedResponse,
 } from "unmock-core";
-import { resolveServicesDirectory } from "../utils";
+import { resolveUnmockRootDirectory } from "../utils";
 
 const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB
 
@@ -23,7 +23,8 @@ export default class FSLogger implements IListener {
       )
       .join("\n");
   }
-  private targetFile: string;
+  private readonly enabled: boolean;
+  private targetFile?: string;
 
   constructor({
     directory,
@@ -32,7 +33,15 @@ export default class FSLogger implements IListener {
     directory?: string;
     filename?: string;
   }) {
-    const absPath = resolveServicesDirectory(directory);
+    const absPath = directory || resolveUnmockRootDirectory();
+
+    if (!(fs.existsSync(absPath) && fs.statSync(absPath).isDirectory())) {
+      this.enabled = false;
+      return;
+    }
+
+    this.enabled = true;
+
     this.targetFile = path.join(absPath, filename);
 
     // create the file or empty the file if it exists and is too big
@@ -54,8 +63,11 @@ export default class FSLogger implements IListener {
     req: ISerializedRequest;
     res?: ISerializedResponse;
   }) {
+    if (!this.enabled) {
+      return;
+    }
     fs.appendFileSync(
-      this.targetFile,
+      this.targetFile!,
       `[${new Date().toISOString()}]:\n\n` +
         `Intercepted request:\n${FSLogger.toIndentedYaml(req)}\n\n\n` +
         (res
