@@ -6,7 +6,7 @@
     "build:types": "tsc --build tsconfig.build.json",
     "build:types:clean": "tsc --build tsconfig.build.json --clean",
     "check:types:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
-    "build:js": "lerna exec --parallel 'babel src --ignore 'src/**/__tests__' --out-dir dist --source-maps --extensions .ts,.tsx --config-file ../../babel.config.js --no-comments --verbose'",
+    "build:js": "lerna exec --parallel \"babel src --ignore 'src/**/__tests__' --out-dir dist --source-maps --extensions .ts,.tsx --config-file ../../babel.config.js --no-comments --verbose\"",
     "watch": "tsc --build tsconfig.build.json --watch",
     "release": "npm run clean && npm install && lerna publish from-package --exact --force-publish=unmock-core --include-merged-tags",
     "postinstall": "lerna run prepare && npm run lint-ts && npm run build",
