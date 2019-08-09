@@ -1,11 +1,11 @@
 import debug from "debug";
 import fs from "fs";
+import { flatMap } from "lodash";
 import path from "path";
 import { IServiceDef, IServiceDefLoader } from "unmock-core";
-import { resolveServicesDirectory } from "../utils";
 
 export interface IFsServiceDefLoaderOptions {
-  servicesDir?: string;
+  servicesDirectories: string[];
 }
 
 const debugLog = debug("unmock:fs-service-def-loader");
@@ -39,10 +39,33 @@ export class FsServiceDefLoader implements IServiceDefLoader {
     };
   }
 
-  private readonly servicesDirectory: string;
+  public static loadSyncDirectory(servicesDirectory: string) {
+    debugLog(`Reading services from ${servicesDirectory}`);
+    if (
+      !(
+        fs.existsSync(servicesDirectory) &&
+        fs.statSync(servicesDirectory).isDirectory()
+      )
+    ) {
+      throw new Error(`Directory ${servicesDirectory} does not exist.`);
+    }
+    const individualServiceDirectory = fs
+      .readdirSync(servicesDirectory)
+      .map((f: string) => path.join(servicesDirectory, f))
+      .filter((f: string) => fs.statSync(f).isDirectory());
+    debugLog(
+      `Found ${individualServiceDirectory.length} services in ${servicesDirectory}`,
+    );
+    const serviceDefs = individualServiceDirectory.map((dir: string) =>
+      FsServiceDefLoader.readServiceDirectory(dir),
+    );
+    return serviceDefs;
+  }
+
+  private readonly servicesDirectories: string[];
 
   public constructor(options: IFsServiceDefLoaderOptions) {
-    this.servicesDirectory = resolveServicesDirectory(options.servicesDir);
+    this.servicesDirectories = options.servicesDirectories;
   }
 
   public async load(): Promise<IServiceDef[]> {
@@ -50,17 +73,8 @@ export class FsServiceDefLoader implements IServiceDefLoader {
   }
 
   public loadSync(): IServiceDef[] {
-    const servicesDirectory: string = this.servicesDirectory;
-    const serviceDirectories = fs
-      .readdirSync(servicesDirectory)
-      .map((f: string) => path.join(servicesDirectory, f))
-      .filter((f: string) => fs.statSync(f).isDirectory());
-
-    debugLog(`Found ${serviceDirectories.length} service directories`);
-
-    const serviceDefs = serviceDirectories.map((dir: string) =>
-      FsServiceDefLoader.readServiceDirectory(dir),
+    return flatMap(this.servicesDirectories, (directory: string) =>
+      FsServiceDefLoader.loadSyncDirectory(directory),
     );
-    return serviceDefs;
   }
 }
