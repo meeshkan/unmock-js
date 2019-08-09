@@ -1,5 +1,5 @@
 import { Writable } from "stream";
-import { CustomConsole } from "../console";
+import { CustomConsole, Colors } from "../console";
 
 class ArrayWritable extends Writable {
   public readonly written: string[] = [];
@@ -22,19 +22,23 @@ const getConsole = () => {
 
 describe("Custom console", () => {
   const logMessage = "Log message";
-  it("writes instructions", () => {
+  it("writes instructions with formatting", () => {
     const { stdout, customConsole } = getConsole();
+
     customConsole.instruct(logMessage);
+
     expect(stdout.written.length).toBe(1);
     expect(stdout.written[0]).toContain(logMessage);
-    expect(stdout.written[0]).not.toEqual(logMessage); // Formatting was done
+    expect(stdout.written[0]).not.toEqual(logMessage); // Some formatting was done
+    expect(stdout.written[0]).toContain("  "); // Added indentation
   });
 
-  it("writes logs", () => {
+  it("writes regular logs without formatting", () => {
     const { stdout, customConsole } = getConsole();
 
     customConsole.log("Log message");
+
     expect(stdout.written.length).toBe(1);
-    expect(stdout.written[0]).toBe("Log message");
+    expect(stdout.written[0]).toMatch(new RegExp(`^${logMessage}`));
   });
 });

@@ -8,17 +8,4 @@ export interface ILogEntry {
   type: LogType;
 }
 
-export type LogType =
-  | "assert"
-  // | "count"
-  | "debug"
-  // | "dir"
-  // | "dirxml"
-  | "error"
-  // | "group"
-  // | "groupCollapsed"
-  | "info"
-  | "log"
-  // | "time"
-  | "warn"
-  | "instruct";
+export type LogType = "error" | "instruct";
