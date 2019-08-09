@@ -30,11 +30,11 @@ describe("Custom console", () => {
     expect(stdout.written.length).toBe(1);
     expect(stdout.written[0]).toContain(logMessage);
     expect(stdout.written[0]).not.toEqual(logMessage); // Some formatting was done
-    expect(stdout.written[0]).toContain("  "); // Added indentation
+    expect(stdout.written[0].startsWith("  ")).toBe(true); // Added indentation
   });
 
   // For testing console output
-  it("writes instructions to real console", () => {
+  it.skip("writes instructions to real console", () => {
     unmockConsole.instruct(logMessage);
   });
 
