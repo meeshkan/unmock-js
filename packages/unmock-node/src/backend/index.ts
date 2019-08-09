@@ -10,13 +10,13 @@ import Mitm from "mitm";
 import net from "net";
 import {
   CreateResponse,
-  customConsole,
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
   IUnmockOptions,
   responseCreatorFactory,
   States,
+  UnmockConsole,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
@@ -70,8 +70,8 @@ async function handleRequestAndResponse(
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
-      customConsole.instruct(errMsg);
-      clientRequest.emit("error", Error(errMsg));
+      const formatted = UnmockConsole.format("instruct", errMsg);
+      clientRequest.emit("error", Error(formatted));
       return;
     }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
