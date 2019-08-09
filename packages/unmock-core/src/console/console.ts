@@ -1,6 +1,6 @@
 import { Console } from "console";
 import { format } from "util";
-import { Colors } from "./colors";
+import { Chalks } from "./chalks";
 import { LogMessage, LogType } from "./types";
 
 type Format = (type: LogType, message: LogMessage) => string;
@@ -12,7 +12,7 @@ function clearLine(stream: NodeJS.WritableStream & { isTTY?: boolean }) {
 }
 
 const formatLogType: Format = (type: LogType, message: LogMessage) => {
-  return Colors[type](message);
+  return Chalks[type](message);
 };
 
 export class CustomConsole extends Console {
