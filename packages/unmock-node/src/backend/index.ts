@@ -10,6 +10,7 @@ import Mitm from "mitm";
 import net from "net";
 import {
   CreateResponse,
+  customConsole,
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
@@ -33,9 +34,23 @@ const respondFromSerializedResponse = (
 };
 
 const errorForMissingTemplate = (sreq: ISerializedRequest) => {
+  const serverUrl = `${sreq.protocol}://${sreq.host}`;
   return `No matching template found for intercepted request. Please ensure that
-  1. You have defined a service for host ${sreq.protocol}://${sreq.host}
-  2. The service has a path matching "${sreq.method} ${sreq.path}"
+
+    1. You have defined a service for host ${serverUrl}
+    2. The service has a path matching "${sreq.method} ${sreq.path}"
+
+    For example, add the following to your service:
+
+    servers:
+      - url: ${sreq.protocol}://${sreq.host}
+    paths:
+      ${sreq.path}:
+        ${sreq.method.toLowerCase()}:
+          // OpenAPI operation object
+          responses:
+            200:
+              ...
   `;
 };
 
@@ -55,6 +70,7 @@ async function handleRequestAndResponse(
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
+      customConsole.instruct(errMsg);
       clientRequest.emit("error", Error(errMsg));
       return;
     }
