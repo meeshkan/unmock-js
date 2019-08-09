@@ -23,7 +23,8 @@ export default class FSLogger implements IListener {
       )
       .join("\n");
   }
-  private targetFile: string;
+  private readonly enabled: boolean;
+  private targetFile?: string;
 
   constructor({
     directory,
@@ -33,6 +34,14 @@ export default class FSLogger implements IListener {
     filename?: string;
   }) {
     const absPath = directory || resolveUnmockRootDirectory();
+
+    if (!(fs.existsSync(absPath) && fs.statSync(absPath).isDirectory())) {
+      this.enabled = false;
+      return;
+    }
+
+    this.enabled = true;
+
     this.targetFile = path.join(absPath, filename);
 
     // create the file or empty the file if it exists and is too big
@@ -54,8 +63,11 @@ export default class FSLogger implements IListener {
     req: ISerializedRequest;
     res?: ISerializedResponse;
   }) {
+    if (!this.enabled) {
+      return;
+    }
     fs.appendFileSync(
-      this.targetFile,
+      this.targetFile!,
       `[${new Date().toISOString()}]:\n\n` +
         `Intercepted request:\n${FSLogger.toIndentedYaml(req)}\n\n\n` +
         (res
