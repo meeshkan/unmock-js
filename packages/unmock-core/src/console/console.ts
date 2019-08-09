@@ -1,12 +1,15 @@
 import boxen, { Options as BoxenOptions } from "boxen";
 import { Console } from "console";
-import indentString from "indent-string";
 import { flow } from "lodash/fp";
 import { format } from "util";
 import { Chalks } from "./chalks";
 import { LogMessage, LogType } from "./types";
 
 type Format = (type: LogType, message: LogMessage) => string;
+
+const indentRegex = /^(?!\s*$)/gm;
+const indentString = (s: string, count: number) =>
+  s.replace(indentRegex, " ".repeat(count));
 
 function clearLine(stream: NodeJS.WritableStream & { isTTY?: boolean }) {
   if (stream.isTTY) {
@@ -53,11 +56,11 @@ export class CustomConsole extends Console {
 
   private logMessage(type: LogType, message: string) {
     clearLine(this.stdout);
-    super.log(indentString(formatLogType(type, message)), this.nIndent);
+    super.log(indentString(formatLogType(type, message), this.nIndent));
   }
 
   private logError(type: LogType, message: string) {
     clearLine(this.stderr);
-    super.error(indentString(formatLogType(type, message)), this.nIndent);
+    super.error(indentString(formatLogType(type, message), this.nIndent));
   }
 }
