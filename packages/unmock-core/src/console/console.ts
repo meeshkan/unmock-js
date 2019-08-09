@@ -37,6 +37,10 @@ const formatLogType: Format = (type: LogType, message: LogMessage): string =>
   )(message);
 
 export class CustomConsole extends Console {
+  public static format(type: LogType, message: string): string {
+    return formatLogType(type, message);
+  }
+
   private readonly stdout: NodeJS.WritableStream;
   private readonly stderr: NodeJS.WritableStream;
   private readonly nIndent = 2;
@@ -56,11 +60,13 @@ export class CustomConsole extends Console {
 
   private logMessage(type: LogType, message: string) {
     clearLine(this.stdout);
-    super.log(indentString(formatLogType(type, message), this.nIndent));
+    super.log(indentString(CustomConsole.format(type, message), this.nIndent));
   }
 
   private logError(type: LogType, message: string) {
     clearLine(this.stderr);
-    super.error(indentString(formatLogType(type, message), this.nIndent));
+    super.error(
+      indentString(CustomConsole.format(type, message), this.nIndent),
+    );
   }
 }
