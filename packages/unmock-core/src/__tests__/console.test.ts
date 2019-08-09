@@ -1,5 +1,5 @@
 import { Writable } from "stream";
-import { CustomConsole, Colors } from "../console";
+import { CustomConsole } from "../console";
 
 class ArrayWritable extends Writable {
   public readonly written: string[] = [];

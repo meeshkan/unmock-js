@@ -12,10 +12,7 @@ function clearLine(stream: NodeJS.WritableStream & { isTTY?: boolean }) {
 }
 
 const formatLogType: Format = (type: LogType, message: LogMessage) => {
-  if (type in Colors) {
-    return Colors[type](message);
-  }
-  return message;
+  return Colors[type](message);
 };
 
 export class CustomConsole extends Console {
