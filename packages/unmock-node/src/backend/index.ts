@@ -135,7 +135,7 @@ export default class NodeBackend implements IBackend {
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
     const serviceDefLoader = new FsServiceDefLoader({
-      servicesDirectories: unmockDirectories,
+      unmockDirectories,
     });
 
     const { stateStore, createResponse } = responseCreatorFactory({

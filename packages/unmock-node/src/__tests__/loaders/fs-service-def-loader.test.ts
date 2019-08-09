@@ -7,7 +7,7 @@ const RESOURCES_DIR = path.join(__dirname, "..", "resources");
 describe("File system service def loader", () => {
   it("loads serviceDefs from existing directory", () => {
     const serviceDefLoader = new FsServiceDefLoader({
-      servicesDirectories: [RESOURCES_DIR],
+      unmockDirectories: [RESOURCES_DIR],
     });
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     expect(serviceDefs).toHaveLength(2);
@@ -18,7 +18,7 @@ describe("File system service def loader", () => {
   });
   it("loads serviceDefs from existing directory asynchronously", async () => {
     const serviceDefLoader = new FsServiceDefLoader({
-      servicesDirectories: [RESOURCES_DIR],
+      unmockDirectories: [RESOURCES_DIR],
     });
     const serviceDefs: IServiceDef[] = await serviceDefLoader.load();
     expect(serviceDefs).toHaveLength(2);
@@ -31,7 +31,7 @@ describe("File system service def loader", () => {
   it("throws for a non-existing directory", () => {
     expect(() =>
       new FsServiceDefLoader({
-        servicesDirectories: ["DEFINITELY_DOES_NOT_EXIST_I_HOPE"],
+        unmockDirectories: ["DEFINITELY_DOES_NOT_EXIST_I_HOPE"],
       }).loadSync(),
     ).toThrow(/does not exist/);
   });
