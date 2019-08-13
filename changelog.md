@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.1.9 (2019-08-13)
+
+Fixes:
+
+  - Add missing core-js dependency to packages
+
 ## 0.1.8 (2019-08-12)
 
 Features:
