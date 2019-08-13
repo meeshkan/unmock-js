@@ -1,7 +1,8 @@
 import debug from "debug";
 import * as http from "http";
+// @types/readable-stream not compatible with @types/node@8?
+// @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
-// import * as readable from "readable-stream";
 import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
 import url from "url";
 
