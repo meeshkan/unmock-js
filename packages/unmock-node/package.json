@@ -13,7 +13,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "@babel/runtime": "^7.5.5",
     "@babel/runtime-corejs3": "^7.5.5",
     "app-root-path": "^2.2.1",
     "debug": "^4.1.1",
