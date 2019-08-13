@@ -1,6 +1,7 @@
 import debug from "debug";
 import * as http from "http";
-import * as readable from "readable-stream";
+const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
+// import * as readable from "readable-stream";
 import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
 import url from "url";
 
