@@ -1,5 +1,5 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "name": "unmock-jsdom",
   "displayName": "unmock-jsdom",
   "main": "dist/index.js",
@@ -13,6 +13,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "core-js": "^3.2.1",
     "js-yaml": "^3.13.1",
     "unmock-core": "file:../unmock-core"
   }
