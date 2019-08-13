@@ -15,7 +15,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "core-js": "^3.2.1",
+    "@babel/runtime": "^7.5.5",
     "unmock-cli": "file:../unmock-cli"
   }
 }
