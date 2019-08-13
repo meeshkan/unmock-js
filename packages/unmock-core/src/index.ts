@@ -9,8 +9,12 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
-import { StateFacadeType } from "./service/interfaces";
+export {
+  default as unmockConsole,
+  CustomConsole as UnmockConsole,
+} from "./console";
 
+import { StateFacadeType } from "./service/interfaces";
 export type States = StateFacadeType;
 
 export const dsl = transformers;

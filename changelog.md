@@ -1,5 +1,13 @@
 # CHANGELOG.md
 
+## 0.1.8 (2019-08-12)
+
+Features:
+
+  - Package compilation with Babel to support Node.js >= 6
+  - Better formatting for error messages
+  - Read services from `node_modules/@unmock` in addition to `__unmock__`
+
 ## 0.1.7 (2019-08-07)
 
 Features:

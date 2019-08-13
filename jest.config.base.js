@@ -11,8 +11,14 @@ module.exports = {
     "^(unmock|unmock-cli|unmock-core|unmock-jsdom|unmock-node)(?:/dist)?((?:/.*)|$)":
       "<rootDir>/../../packages/$1/src$2"
   },
-  setupFilesAfterEnv: ["<rootDir>/../../jest.setup.js"],
   clearMocks: true,
+  transformIgnorePatterns: [
+      "/node_modules/(?!loas3)",
+  ],
+  collectCoverageFrom: [
+    "**/packages/*/src/**/*.ts",
+    "!**/node_modules/**",
+  ],
   globals: {
     "ts-jest": {
       tsConfig: "<rootDir>/src/__tests__/tsconfig.json",

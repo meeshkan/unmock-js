@@ -1,5 +1,5 @@
 {
-  "version": "0.1.7",
+  "version": "0.1.8",
   "name": "unmock-core",
   "displayName": "unmock-core",
   "main": "dist/index.js",
@@ -15,12 +15,14 @@
   "dependencies": {
     "ajv": "^6.10.0",
     "axios": "^0.18.0",
+    "boxen": "3.2.0",
+    "chalk": "^2.4.2",
     "debug": "^4.1.1",
     "js-yaml": "^3.13.1",
     "json-pointer": "^0.6.0",
     "json-schema-deref-sync": "^0.10.1",
     "json-schema-faker": "^0.5.0-rc17",
-    "loas3": "^0.1.0",
+    "loas3": "^0.1.1",
     "lodash": "^4.17.14",
     "minimatch": "^3.0.4",
     "querystring": "^0.2.0",

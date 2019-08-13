@@ -16,10 +16,12 @@ import {
   IUnmockOptions,
   responseCreatorFactory,
   States,
+  UnmockConsole,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
+import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
 
 const debugLog = debug("unmock:node");
@@ -33,9 +35,23 @@ const respondFromSerializedResponse = (
 };
 
 const errorForMissingTemplate = (sreq: ISerializedRequest) => {
+  const serverUrl = `${sreq.protocol}://${sreq.host}`;
   return `No matching template found for intercepted request. Please ensure that
-  1. You have defined a service for host ${sreq.protocol}://${sreq.host}
+
+  1. You have defined a service for host ${serverUrl}
   2. The service has a path matching "${sreq.method} ${sreq.path}"
+
+  For example, add the following to your service:
+
+  servers:
+    - url: ${sreq.protocol}://${sreq.host}
+  paths:
+    ${sreq.path}:
+      ${sreq.method.toLowerCase()}:
+        // OpenAPI operation object
+        responses:
+          200:
+            ...
   `;
 };
 
@@ -55,7 +71,8 @@ async function handleRequestAndResponse(
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
-      clientRequest.emit("error", Error(errMsg));
+      const formatted = UnmockConsole.format("instruct", errMsg);
+      clientRequest.emit("error", Error(formatted));
       return;
     }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
@@ -109,10 +126,18 @@ export default class NodeBackend implements IBackend {
       this.mitmOnConnect(options, socket, opts),
     );
 
+    // Resolve where services can live
+    const unmockDirectories = this.config.servicesDirectory
+      ? [this.config.servicesDirectory]
+      : resolveUnmockDirectories();
+
+    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
+
     // Prepare the request-response mapping by bootstrapping all dependencies here
     const serviceDefLoader = new FsServiceDefLoader({
-      servicesDir: this.config.servicesDirectory,
+      unmockDirectories,
     });
+
     const { stateStore, createResponse } = responseCreatorFactory({
       listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
       options,

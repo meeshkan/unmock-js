@@ -1,11 +1,11 @@
 import debug from "debug";
 import fs from "fs";
+import { flatMap } from "lodash";
 import path from "path";
 import { IServiceDef, IServiceDefLoader } from "unmock-core";
-import { resolveServicesDirectory } from "../utils";
 
 export interface IFsServiceDefLoaderOptions {
-  servicesDir?: string;
+  unmockDirectories: string[];
 }
 
 const debugLog = debug("unmock:fs-service-def-loader");
@@ -39,10 +39,33 @@ export class FsServiceDefLoader implements IServiceDefLoader {
     };
   }
 
-  private readonly servicesDirectory: string;
+  public static loadSyncUnmockDirectory(unmockDirectory: string) {
+    if (
+      !(
+        fs.existsSync(unmockDirectory) &&
+        fs.statSync(unmockDirectory).isDirectory()
+      )
+    ) {
+      throw new Error(`Directory ${unmockDirectory} does not exist.`);
+    }
+    debugLog(`Reading services from ${unmockDirectory}`);
+    const serviceDirectories = fs
+      .readdirSync(unmockDirectory)
+      .map((f: string) => path.join(unmockDirectory, f))
+      .filter((f: string) => fs.statSync(f).isDirectory());
+    debugLog(
+      `Found ${serviceDirectories.length} services in ${unmockDirectory}`,
+    );
+    const serviceDefs = serviceDirectories.map((dir: string) =>
+      FsServiceDefLoader.readServiceDirectory(dir),
+    );
+    return serviceDefs;
+  }
+
+  private readonly unmockDirectories: string[];
 
   public constructor(options: IFsServiceDefLoaderOptions) {
-    this.servicesDirectory = resolveServicesDirectory(options.servicesDir);
+    this.unmockDirectories = options.unmockDirectories;
   }
 
   public async load(): Promise<IServiceDef[]> {
@@ -50,17 +73,8 @@ export class FsServiceDefLoader implements IServiceDefLoader {
   }
 
   public loadSync(): IServiceDef[] {
-    const servicesDirectory: string = this.servicesDirectory;
-    const serviceDirectories = fs
-      .readdirSync(servicesDirectory)
-      .map((f: string) => path.join(servicesDirectory, f))
-      .filter((f: string) => fs.statSync(f).isDirectory());
-
-    debugLog(`Found ${serviceDirectories.length} service directories`);
-
-    const serviceDefs = serviceDirectories.map((dir: string) =>
-      FsServiceDefLoader.readServiceDirectory(dir),
+    return flatMap(this.unmockDirectories, (directory: string) =>
+      FsServiceDefLoader.loadSyncUnmockDirectory(directory),
     );
-    return serviceDefs;
   }
 }
