@@ -1,5 +1,5 @@
 {
-  "version": "0.1.9",
+  "version": "0.1.10",
   "name": "unmock",
   "displayName": "unmock",
   "license": "MIT",
@@ -15,7 +15,6 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "core-js": "^3.2.1",
     "unmock-cli": "file:../unmock-cli"
   }
 }

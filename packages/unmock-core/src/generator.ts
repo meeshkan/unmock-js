@@ -1,8 +1,8 @@
 /**
  * Implements the logic for generating a response from a service file
  */
-// @ts-ignore // json-schema-faker doesn't have typed definitions?
-import jsf from "json-schema-faker";
+// Try fixing broken imports in Node <= 8 by using require instead of default import
+const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
 import {
   CreateResponse,

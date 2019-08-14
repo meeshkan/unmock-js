@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "emitDeclarationOnly": true,
-    "target": "esnext",
+    "emitDeclarationOnly": false,
+    "noEmit": false,
+    "target": "es2015",
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
@@ -20,6 +21,8 @@
     "baseUrl": ".",
     "paths": {
       "*" : ["types/*"]
-    }
-  }
+    },
+    "lib": ["dom", "es2015"]
+  },
+  "exclude": ["node_modules"]
 }
