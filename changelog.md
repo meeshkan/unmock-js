@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.1.10 (2019-08-14)
+
+Fixes:
+
+  - Remove polyfills polluting global scope
+
 ## 0.1.9 (2019-08-13)
 
 Fixes:
