@@ -16,6 +16,7 @@ export interface ITopLevelDSL {
    */
   $code?: number;
   $times?: number;
+  [DSLKey: string]: any;
 }
 
 /**
@@ -49,3 +50,5 @@ export type Actor = (
   originalSchema: mediaTypeToSchema,
   mediaType: string,
 ) => Schema;
+export type Translator = (state: any, schema: Schema) => any;
+export type TopTranslator = (value: any) => any;

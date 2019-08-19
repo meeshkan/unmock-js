@@ -3,12 +3,8 @@ import { cloneDeep, defaultsDeep } from "lodash";
 import { codeToMedia, mediaTypeToSchema, Schema } from "../interfaces";
 import { actors } from "./actors";
 import { ITopLevelDSL } from "./interfaces";
-import { translate$size, translate$times } from "./translators";
-import {
-  hasUnmockProperty,
-  injectUnmockProperty,
-  throwOnErrorIfStrict,
-} from "./utils";
+import { topTranslators, translators } from "./translators";
+import { hasUnmockProperty, injectUnmockProperty } from "./utils";
 
 const debugLog = debug("unmock:dsl");
 
@@ -32,16 +28,20 @@ export abstract class DSL {
    * @param schema
    * @returns A translated list of arguments.
    */
-  public static translateDSLToOAS(state: any, schema: Schema): any {
-    let translated: { [OASKey: string]: string | number | boolean } = {};
-    if (state.$size !== undefined) {
-      throwOnErrorIfStrict(() => {
-        translated = { ...translated, ...translate$size(state, schema) };
-        delete state.$size;
-      });
-    }
-    return translated;
+  public static replaceDSLWithOAS(state: any, schema: Schema): any {
+    return Object.entries(translators).reduce((obj, [property, fn]) => {
+      if (state[property] !== undefined) {
+        const translated = fn(state, schema);
+        const result = { ...obj, ...translated };
+        if (translated !== undefined) {
+          delete state[property];
+        }
+        return result;
+      }
+      return obj;
+    }, {});
   }
+
   /**
    * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
@@ -58,12 +58,11 @@ export abstract class DSL {
     }
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
-    if (top.$times !== undefined) {
-      throwOnErrorIfStrict(() => {
-        const translated = translate$times(top.$times);
-        injectUnmockProperty(responses, translated);
-      });
-    }
+    Object.keys(topTranslators)
+      .filter(dslKey => top[dslKey] !== undefined)
+      .map(dslKey => topTranslators[dslKey](top[dslKey]))
+      .filter(translation => translation !== undefined)
+      .forEach(translation => injectUnmockProperty(responses, translation));
     return responses;
   }
 

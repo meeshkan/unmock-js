@@ -32,13 +32,14 @@ export const filterTopLevelDSL = (state: UnmockServiceState) => {
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
 };
 
-export const throwOnErrorIfStrict = (fn: () => void) => {
+export const throwOnErrorIfStrict = (fn: () => any) => {
   try {
-    fn();
+    return fn();
   } catch (e) {
     if (DSL.STRICT_MODE) {
       throw e;
     }
+    return undefined;
   }
 };
 
