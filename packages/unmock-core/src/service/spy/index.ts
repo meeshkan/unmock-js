@@ -7,6 +7,11 @@ export type RequestResponseSpy = SinonSpy<
   ISerializedResponse
 >;
 
+interface IRequestResponsePair {
+  req: ISerializedRequest;
+  res: ISerializedResponse;
+}
+
 export interface IRecorder {
   /**
    * Keep track of calls, added via the `notify` method
@@ -14,10 +19,8 @@ export interface IRecorder {
   spy: RequestResponseSpy;
   /**
    * Add new call to the spy object
-   * @param req Request
-   * @param res Response
    */
-  record(req: ISerializedRequest, res: ISerializedResponse): void;
+  record(pair: IRequestResponsePair): void;
   reset(): void;
 }
 
@@ -51,15 +54,21 @@ export class RecorderHelper<TArg = any, TReturnValue = any> {
  */
 class CallRecorder<TArg = any, TReturnValue = any> {
   // tslint:disable-line
-  public readonly record: (targ: TArg, tret: TReturnValue) => void;
+  public readonly record: ({
+    req,
+    res,
+  }: {
+    req: TArg;
+    res: TReturnValue;
+  }) => void;
   public readonly reset: () => void;
   public readonly spy: SinonSpy<[TArg], TReturnValue>;
   private readonly recorderHelper: RecorderHelper<TArg, TReturnValue>;
   constructor() {
     this.recorderHelper = new RecorderHelper<TArg, TReturnValue>();
     this.spy = sinonSpy(this.recorderHelper, "record");
-    this.record = (targ: TArg, tret: TReturnValue) => {
-      this.recorderHelper.notify(targ, tret);
+    this.record = ({ req, res }: { req: TArg; res: TReturnValue }) => {
+      this.recorderHelper.notify(req, res);
     };
     this.reset = () => {
       this.spy.resetHistory();

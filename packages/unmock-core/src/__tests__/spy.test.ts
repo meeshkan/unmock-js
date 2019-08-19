@@ -21,7 +21,7 @@ describe("Creating a spy", () => {
   });
   it("should record calls made via notify", () => {
     const spyable: IRecorder = createCallRecorder();
-    spyable.record(fakeRequest, fakeResponse);
+    spyable.record({ req: fakeRequest, res: fakeResponse });
     assert.calledOnce(spyable.spy);
     assert.calledWithExactly(spyable.spy, fakeRequest);
     expect(spyable.spy.firstCall.returnValue).toEqual(fakeResponse);
@@ -30,7 +30,7 @@ describe("Creating a spy", () => {
     const spyable: IRecorder = createCallRecorder();
     const attached = { a: 1 };
     const objWithSpy = Object.assign(attached, spyable);
-    objWithSpy.record(fakeRequest, fakeResponse);
+    objWithSpy.record({ req: fakeRequest, res: fakeResponse });
     assert.calledOnce(objWithSpy.spy);
     assert.calledWithExactly(objWithSpy.spy, fakeRequest);
     expect(objWithSpy.spy.firstCall.returnValue).toEqual(fakeResponse);
