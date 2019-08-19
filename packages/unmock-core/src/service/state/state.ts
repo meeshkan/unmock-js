@@ -152,9 +152,10 @@ export class State {
 
     // Filter all the states that do not match the operation schema
     const filteredStates = filterStatesByOperation(states, operation);
-    const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
+    const { parsed, newState } = DSL.actTopLevelFromOAS(filteredStates);
+    console.log(newState);
     // TODO: After parsing, do we want to see if we need to remove items from the current state?
-    return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
+    return Object.keys(parsed).length > 0 ? parsed : undefined;
   }
 
   public reset() {

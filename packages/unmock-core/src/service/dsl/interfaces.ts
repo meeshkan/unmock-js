@@ -47,8 +47,7 @@ export interface IUnmockProperty {
  */
 
 export type Actor = (
-  originalSchema: mediaTypeToSchema,
-  mediaType: string,
-) => Schema;
+  originalSchema: Schema,
+) => { parsed: Schema; newState: Schema | undefined };
 export type Translator = (state: any, schema: Schema) => any;
 export type TopTranslator = (value: any) => any;
