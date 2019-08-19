@@ -1,18 +1,18 @@
 import { SinonSpy, spy as sinonSpy } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
-// import { IService } from "../interfaces";
+import { IService } from "../interfaces";
 
 export type RequestResponseSpy = SinonSpy<
   [ISerializedRequest],
   ISerializedResponse
 >;
 
-interface ISpyable {
+export interface ISpyable {
   spy: RequestResponseSpy;
   notify(req: ISerializedRequest, res: ISerializedResponse): void;
 }
 
-export class SpyContainer {
+class SpyContainer {
   public readonly spy: RequestResponseSpy;
   private response?: ISerializedResponse;
   constructor() {
@@ -21,20 +21,20 @@ export class SpyContainer {
   }
 
   public notify(sreq: ISerializedRequest, sres: ISerializedResponse) {
+    // Ugly hack to predefine what the spied function should return
     this.response = sres;
     this.gen(sreq);
     this.response = undefined;
   }
 
-  protected gen(_: ISerializedRequest): ISerializedResponse {
+  private gen(_: ISerializedRequest): ISerializedResponse {
     return this.response!;
   }
 }
 
-export const get = (): ISpyable => new SpyContainer();
+export const createRequestResponseSpy = (): ISpyable => new SpyContainer();
 
-export const attach = <T>(service: T): T & ISpyable => {
-  const spyObj2 = new SpyContainer();
-  // const fakeObj = new FakeSpied();
-  return Object.assign(service, spyObj2);
+export const attach = (service: IService): IService & ISpyable => {
+  const spyable = new SpyContainer();
+  return Object.assign(service, spyable);
 };

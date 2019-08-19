@@ -1,6 +1,6 @@
 import { assert } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
-import { get } from "../service/spy";
+import { createRequestResponseSpy, ISpyable } from "../service/spy";
 
 const fakeRequest: ISerializedRequest = {
   method: "GET",
@@ -16,11 +16,11 @@ const fakeResponse: ISerializedResponse = {
 
 describe("Creating a spy", () => {
   it("should not be called after creation", () => {
-    const testObj = get();
+    const testObj: ISpyable = createRequestResponseSpy();
     assert.notCalled(testObj.spy);
   });
-  it("should record calls", () => {
-    const testObj = get();
+  it("should record calls made via notify", () => {
+    const testObj: ISpyable = createRequestResponseSpy();
     testObj.notify(fakeRequest, fakeResponse);
     assert.calledOnce(testObj.spy);
     assert.calledWithExactly(testObj.spy, fakeRequest);
