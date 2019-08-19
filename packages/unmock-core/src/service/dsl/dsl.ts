@@ -22,24 +22,26 @@ export abstract class DSL {
   public static STRICT_MODE = true;
 
   /**
-   * Translated DSL instructions in `state` to OAS, based on `schema`.
-   * Modifies `state` in-place by removing the relevant DSL instructions.
+   * Translates DSL instructions in `state` to OAS, based on `schema`.
    * @param state
    * @param schema
-   * @returns A translated list of arguments.
+   * @returns An object with the translations and a cleaned state without translation-specific keywords
    */
-  public static replaceDSLWithOAS(state: any, schema: Schema): any {
-    return Object.entries(translators).reduce((obj, [property, fn]) => {
-      if (state[property] !== undefined) {
-        const translated = fn(state, schema);
-        const result = { ...obj, ...translated };
-        if (translated !== undefined) {
-          delete state[property];
-        }
-        return result;
-      }
-      return obj;
-    }, {});
+  public static translateDSLToOAS(
+    state: any,
+    schema: Schema,
+  ): { translated: any; cleaned: any } {
+    return Object.entries(translators).reduce(
+      ({ translated, cleaned }, [property, fn]) => {
+        const { [property]: maybeUsed, ...rest } = cleaned;
+        const newTranslation =
+          maybeUsed !== undefined ? fn(cleaned, schema) : undefined;
+        return newTranslation !== undefined
+          ? { translated: newTranslation, cleaned: rest }
+          : { translated, cleaned };
+      },
+      { translated: {}, cleaned: state },
+    );
   }
 
   /**

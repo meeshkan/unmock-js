@@ -129,9 +129,12 @@ const spreadStateFromService = (
         );
         // Option 1a: current schema has no matching key, but contains indirection (items/properties, etc)
         // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
-        const translated = DSL.replaceDSLWithOAS(statePath, serviceSchema);
+        const { translated, cleaned } = DSL.translateDSLToOAS(
+          statePath,
+          serviceSchema,
+        );
         const spread = {
-          ...oneLevelOfIndirectNestedness(serviceSchema, statePath),
+          ...oneLevelOfIndirectNestedness(serviceSchema, cleaned),
           ...translated,
         };
         if (Object.keys(spread).length === 0) {
@@ -168,9 +171,9 @@ const spreadStateFromService = (
         );
         // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
         // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
-        const translated = DSL.replaceDSLWithOAS(stateValue, scm);
+        const { translated, cleaned } = DSL.translateDSLToOAS(stateValue, scm);
         const spread = {
-          [key]: { ...spreadStateFromService(scm, stateValue), ...translated },
+          [key]: { ...spreadStateFromService(scm, cleaned), ...translated },
         };
         matches = {
           ...matches,

@@ -107,7 +107,10 @@ describe("Translates top level DSL to OAS", () => {
 
 describe("Translates non-top level DSL to OAS", () => {
   it("Returns empty translation for empty state", () => {
-    expect(DSL.replaceDSLWithOAS({}, {})).toEqual({});
+    expect(DSL.replaceDSLWithOAS({}, {})).toEqual({
+      translated: {},
+      cleaned: {},
+    });
   });
 
   describe("Translates $size correctly", () => {
@@ -130,22 +133,25 @@ describe("Translates non-top level DSL to OAS", () => {
       DSL.STRICT_MODE = false;
       // Test with non-numeric
       const state: { $size: any } = { $size: "a" };
-      let translated = DSL.replaceDSLWithOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: "a" });
+      let result = DSL.replaceDSLWithOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: "a" });
+      expect(state).toEqual({ $size: "a" }); // should not be changed
 
       // Test with non-positive input
       state.$size = -1;
-      translated = DSL.replaceDSLWithOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: -1 });
+      result = DSL.replaceDSLWithOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: -1 });
+      expect(state).toEqual({ $size: -1 }); // should not be changed
 
       // Test with non-array input
       state.$size = 5;
       arraySchema.type = "object";
-      translated = DSL.replaceDSLWithOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: 5 });
+      result = DSL.replaceDSLWithOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: 5 });
+      expect(state).toEqual({ $size: 5 }); // should not be changed
     });
 
     it("Throws with non-numeric input in strict mode", () => {
@@ -172,9 +178,10 @@ describe("Translates non-top level DSL to OAS", () => {
 
     it("Translates $size correctly", () => {
       const state = { $size: 3, id: 5 };
-      const translated = DSL.replaceDSLWithOAS(state, arraySchema);
-      expect(state).toEqual({ id: 5 }); // $size element should be removed
-      expect(translated).toEqual({ maxItems: 3, minItems: 3 });
+      const result = DSL.replaceDSLWithOAS(state, arraySchema);
+      expect(state).toEqual({ $size: 3, id: 5 }); // state should not be changed
+      expect(result.translated).toEqual({ maxItems: 3, minItems: 3 });
+      expect(result.cleaned).toEqual({ id: 5 }); // $size element should be removed
     });
   });
 });
