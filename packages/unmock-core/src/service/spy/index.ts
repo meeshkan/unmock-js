@@ -47,28 +47,19 @@ export class NotifiableSpyable<TArg = any, TReturnValue = any> {
 
 class SpyContainer<TArg = any, TReturnValue = any> {
   // tslint:disable-line
-  // @ts-ignore
-  public notify: (targ: TArg, tret: TReturnValue) => void;
-  // @ts-ignore
-  public reset: () => void;
+  public readonly notify: (targ: TArg, tret: TReturnValue) => void;
+  public readonly reset: () => void;
   public readonly spy: SinonSpy<[TArg], TReturnValue>;
-  private readonly notifyableSpyable: NotifiableSpyable<TArg, TReturnValue>;
+  private readonly notifiableSpyable: NotifiableSpyable<TArg, TReturnValue>;
   constructor() {
-    // @ts-ignore
-    this.notifyableSpyable = new NotifiableSpyable<TArg, TReturnValue>();
-    this.spy = sinonSpy(this.notifyableSpyable, "spiedFn");
-    Object.defineProperty(this, "notify", {
-      value: (targ: TArg, tret: TReturnValue) => {
-        this.notifyableSpyable.notify(targ, tret);
-      },
-      enumerable: true,
-    });
-    Object.defineProperty(this, "reset", {
-      value: () => {
-        return this.spy.resetHistory();
-      },
-      enumerable: true,
-    });
+    this.notifiableSpyable = new NotifiableSpyable<TArg, TReturnValue>();
+    this.spy = sinonSpy(this.notifiableSpyable, "spiedFn");
+    this.notify = (targ: TArg, tret: TReturnValue) => {
+      this.notifiableSpyable.notify(targ, tret);
+    };
+    this.reset = () => {
+      this.spy.resetHistory();
+    };
   }
 }
 
