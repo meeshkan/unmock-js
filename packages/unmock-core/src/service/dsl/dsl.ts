@@ -73,23 +73,19 @@ export abstract class DSL {
    * @param states
    */
   public static actTopLevelFromOAS(states: codeToMedia): codeToMedia {
-    const copy: codeToMedia = {};
-    for (const code of Object.keys(states)) {
-      copy[code] = Object.keys(states[code]).reduce(
+    const act = (mToS: mediaTypeToSchema) =>
+      Object.keys(mToS).reduce(
         (obj, mediaType) => ({
           ...obj,
-          [mediaType]: actOnSchema(states[code], mediaType),
+          [mediaType]: actOnSchema(mToS, mediaType),
         }),
         {},
       );
-      if (Object.keys(copy[code]).length === 0) {
-        debugLog(
-          `Entire response is empty, removing '${code}' from copied response`,
-        );
-        delete copy[code];
-      }
-    }
-    return copy;
+
+    return Object.keys(states).reduce(
+      (obj, code) => ({ ...obj, [code]: act(states[code]) }),
+      {},
+    );
   }
 }
 
