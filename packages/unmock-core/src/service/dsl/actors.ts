@@ -1,5 +1,4 @@
 import debug from "debug";
-import { cloneDeep } from "lodash";
 import { mediaTypeToSchema } from "../interfaces";
 import { SCHEMA_TIMES } from "./constants";
 import { Actor, Props } from "./interfaces";
@@ -41,9 +40,9 @@ const actOn$times: Actor = (
     delete originalSchema[mediaType];
     return {};
   }
-  const copy = cloneDeep(originalSchema[mediaType]);
-  delete (copy.properties as Props)[SCHEMA_TIMES];
-  return copy;
+  const { properties, ...rest } = originalSchema[mediaType];
+  const { [SCHEMA_TIMES]: _, ...restProperties } = properties as Props;
+  return { properties: restProperties, ...rest };
 };
 
 export const actors: { [propertyName: string]: Actor } = {
