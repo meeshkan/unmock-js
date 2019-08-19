@@ -7,7 +7,7 @@ export type RequestResponseSpy = SinonSpy<
   ISerializedResponse
 >;
 
-export interface ISpyable {
+export interface IRecorder {
   /**
    * Keep track of calls, added via the `notify` method
    */
@@ -17,26 +17,31 @@ export interface ISpyable {
    * @param req Request
    * @param res Response
    */
-  notify(req: ISerializedRequest, res: ISerializedResponse): void;
+  record(req: ISerializedRequest, res: ISerializedResponse): void;
   reset(): void;
 }
 
-export type RequestResponseSpyNotifier = SpyContainer<
+export type RequestResponseSpyNotifier = CallRecorder<
   ISerializedRequest,
   ISerializedResponse
 >;
 
-export class NotifiableSpyable<TArg = any, TReturnValue = any> {
+/**
+ * Helper class whose `notify(arg, ret)` calls `record` with argument `arg`
+ * with predefined response `ret`. This is useful when you want to "spy" on `record`
+ * with predefined request-response pairs.
+ */
+export class RecorderHelper<TArg = any, TReturnValue = any> {
   private returnValue?: TReturnValue;
 
   public notify(targs: TArg, tret: TReturnValue) {
     // Ugly hack to predefine what the spied function should return
     this.returnValue = tret;
-    this.spiedFn(targs);
+    this.record(targs);
     this.returnValue = undefined;
   }
 
-  public spiedFn(_: TArg): TReturnValue {
+  public record(_: TArg): TReturnValue {
     return this.returnValue!;
   }
 }
@@ -44,18 +49,17 @@ export class NotifiableSpyable<TArg = any, TReturnValue = any> {
 /**
  * Container for adding spy calls with `notify` method.
  */
-
-class SpyContainer<TArg = any, TReturnValue = any> {
+class CallRecorder<TArg = any, TReturnValue = any> {
   // tslint:disable-line
-  public readonly notify: (targ: TArg, tret: TReturnValue) => void;
+  public readonly record: (targ: TArg, tret: TReturnValue) => void;
   public readonly reset: () => void;
   public readonly spy: SinonSpy<[TArg], TReturnValue>;
-  private readonly notifiableSpyable: NotifiableSpyable<TArg, TReturnValue>;
+  private readonly recorderHelper: RecorderHelper<TArg, TReturnValue>;
   constructor() {
-    this.notifiableSpyable = new NotifiableSpyable<TArg, TReturnValue>();
-    this.spy = sinonSpy(this.notifiableSpyable, "spiedFn");
-    this.notify = (targ: TArg, tret: TReturnValue) => {
-      this.notifiableSpyable.notify(targ, tret);
+    this.recorderHelper = new RecorderHelper<TArg, TReturnValue>();
+    this.spy = sinonSpy(this.recorderHelper, "record");
+    this.record = (targ: TArg, tret: TReturnValue) => {
+      this.recorderHelper.notify(targ, tret);
     };
     this.reset = () => {
       this.spy.resetHistory();
@@ -63,11 +67,11 @@ class SpyContainer<TArg = any, TReturnValue = any> {
   }
 }
 
-export const createRequestResponseSpy = (): ISpyable =>
-  new SpyContainer<ISerializedRequest, ISerializedResponse>();
+export const createCallRecorder = (): IRecorder =>
+  new CallRecorder<ISerializedRequest, ISerializedResponse>();
 
-export const attach = (service: IService): IService & ISpyable => {
-  const spyable = new SpyContainer();
+export const attachToService = (service: IService): IService & IRecorder => {
+  const spyable = createCallRecorder();
   return Object.assign(service, spyable);
 };
 /*

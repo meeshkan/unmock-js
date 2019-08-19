@@ -1,6 +1,6 @@
 import { assert } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
-import { createRequestResponseSpy, ISpyable } from "../service/spy";
+import { createCallRecorder, IRecorder } from "../service/spy";
 
 const fakeRequest: ISerializedRequest = {
   method: "GET",
@@ -16,21 +16,21 @@ const fakeResponse: ISerializedResponse = {
 
 describe("Creating a spy", () => {
   it("should not be called after creation", () => {
-    const spyable: ISpyable = createRequestResponseSpy();
+    const spyable: IRecorder = createCallRecorder();
     assert.notCalled(spyable.spy);
   });
   it("should record calls made via notify", () => {
-    const spyable: ISpyable = createRequestResponseSpy();
-    spyable.notify(fakeRequest, fakeResponse);
+    const spyable: IRecorder = createCallRecorder();
+    spyable.record(fakeRequest, fakeResponse);
     assert.calledOnce(spyable.spy);
     assert.calledWithExactly(spyable.spy, fakeRequest);
     expect(spyable.spy.firstCall.returnValue).toEqual(fakeResponse);
   });
   it("should be attachable to another object", () => {
-    const spyable: ISpyable = createRequestResponseSpy();
+    const spyable: IRecorder = createCallRecorder();
     const attached = { a: 1 };
     const objWithSpy = Object.assign(attached, spyable);
-    objWithSpy.notify(fakeRequest, fakeResponse);
+    objWithSpy.record(fakeRequest, fakeResponse);
     assert.calledOnce(objWithSpy.spy);
     assert.calledWithExactly(objWithSpy.spy, fakeRequest);
     expect(objWithSpy.spy.firstCall.returnValue).toEqual(fakeResponse);
