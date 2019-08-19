@@ -176,7 +176,11 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
 // Used to define the response from intercepted request
 type FunctionInput = (req: ISerializedRequest) => any;
-type StateInput = IStateInputGenerator | UnmockServiceState | string | FunctionInput;
+type StateInput =
+  | IStateInputGenerator
+  | UnmockServiceState
+  | string
+  | FunctionInput;
 
 // Used to incorporate the reset method when needed
 interface IResetState {
