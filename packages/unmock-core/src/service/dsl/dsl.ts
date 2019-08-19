@@ -1,8 +1,7 @@
 import debug from "debug";
-import { cloneDeep } from "lodash";
-import { codeToMedia, Schema } from "../interfaces";
-import { actOn$times } from "./actors";
-import { SCHEMA_TIMES } from "./constants";
+import { cloneDeep, defaultsDeep } from "lodash";
+import { codeToMedia, mediaTypeToSchema, Schema } from "../interfaces";
+import { actors } from "./actors";
 import { ITopLevelDSL } from "./interfaces";
 import { translate$size, translate$times } from "./translators";
 import {
@@ -77,24 +76,13 @@ export abstract class DSL {
   public static actTopLevelFromOAS(states: codeToMedia): codeToMedia {
     const copy: codeToMedia = {};
     for (const code of Object.keys(states)) {
-      copy[code] = {};
-      for (const mediaType of Object.keys(states[code])) {
-        copy[code][mediaType] = cloneDeep(states[code][mediaType]);
-        const schema = copy[code][mediaType];
-        if (schema.properties === undefined) {
-          continue;
-        }
-        if (hasUnmockProperty(schema, SCHEMA_TIMES)) {
-          actOn$times(copy[code], states[code], mediaType);
-        }
-        if (Object.keys(schema.properties).length === 0) {
-          debugLog(
-            `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
-          );
-          delete schema.properties;
-          // The returned `properties` might now be empty, representing an empty response.
-        }
-      }
+      copy[code] = Object.keys(states[code]).reduce(
+        (obj, mediaType) => ({
+          ...obj,
+          [mediaType]: actOnSchema(states[code], mediaType),
+        }),
+        {},
+      );
       if (Object.keys(copy[code]).length === 0) {
         debugLog(
           `Entire response is empty, removing '${code}' from copied response`,
@@ -105,3 +93,28 @@ export abstract class DSL {
     return copy;
   }
 }
+
+const actOnSchema = (
+  schema: mediaTypeToSchema,
+  mediaType: string,
+): Record<string, Schema> => {
+  const [trg, ...rest] = Object.entries(actors).map(([property, fn]) =>
+    hasUnmockProperty(schema[mediaType], property)
+      ? fn(schema, mediaType)
+      : cloneDeep(schema[mediaType]),
+  );
+  const result = defaultsDeep(trg, rest);
+
+  const maybeProperties = result.properties;
+  if (
+    maybeProperties !== undefined &&
+    Object.keys(maybeProperties).length === 0
+  ) {
+    debugLog(
+      `schema.properties is now empty, removing 'properties' from copied response '${mediaType}'`,
+    );
+    delete result.properties;
+  }
+
+  return result;
+};

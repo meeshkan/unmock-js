@@ -1,25 +1,29 @@
 import debug from "debug";
+import { cloneDeep } from "lodash";
 import { mediaTypeToSchema } from "../interfaces";
 import { SCHEMA_TIMES } from "./constants";
-import { Props } from "./interfaces";
+import { Actor, Props } from "./interfaces";
 
 const debugLog = debug("unmock:dsl:actors");
 
 /*
- * Actors (actOn$X) are found here. They modify the behaviour/schemas according to specific DSL instructions.
+ * Actors (actOn$X) are found here.
+ * They modify the behaviour/schemas according to specific DSL instructions.
+ * They all use the Actor type.
  */
 
 /**
- * Acts on the $times argument in top level DSL by synchronizing and modifying the copied and original schemas.
+ * Acts on the $times argument in top level DSL by MODIFYING the original
+ * schema as needed and returning a relevant copy.
+ *
  * The value of $times is decreased by 1 and removed from the copied schema.
  * If the new value is less than 0 (i.e. this state has expired),
- * the content is removed from **both** the copied and original schemas.
- * @param copiedSchema
+ * the content is **removed** from the original schema, and the returned object is empty.
+ *
  * @param originalSchema
  * @param mediaType
  */
-export const actOn$times = (
-  copiedSchema: mediaTypeToSchema,
+const actOn$times: Actor = (
   originalSchema: mediaTypeToSchema,
   mediaType: string,
 ) => {
@@ -28,13 +32,20 @@ export const actOn$times = (
     SCHEMA_TIMES
   ];
   origTimes.default -= 1;
-  // delete value in copy (for clean return)
-  delete (copiedSchema[mediaType].properties as Props)[SCHEMA_TIMES];
   if (origTimes.default < 0) {
     debugLog(
-      `$times has expired for '${mediaType}', removing state in both copied and original`,
+      `$times has expired for '${JSON.stringify(
+        originalSchema,
+      )}', removing state in original schema`,
     );
-    delete copiedSchema[mediaType];
-    delete originalSchema[mediaType]; // TODO this doesn't actually update the State's internal dictionary
+    delete originalSchema[mediaType];
+    return {};
   }
+  const copy = cloneDeep(originalSchema[mediaType]);
+  delete (copy.properties as Props)[SCHEMA_TIMES];
+  return copy;
+};
+
+export const actors: { [propertyName: string]: Actor } = {
+  [SCHEMA_TIMES]: actOn$times,
 };

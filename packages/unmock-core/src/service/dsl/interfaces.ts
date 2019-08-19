@@ -1,4 +1,4 @@
-import { Schema } from "../interfaces";
+import { mediaTypeToSchema, Schema } from "../interfaces";
 
 /**
  * DSL related parameters that can only be found at the top level
@@ -40,3 +40,12 @@ export interface IUnmockProperty {
     default: any;
   };
 }
+
+/**
+ * Stuff for general DSL submodule
+ */
+
+export type Actor = (
+  originalSchema: mediaTypeToSchema,
+  mediaType: string,
+) => Schema;
