@@ -12,33 +12,32 @@ import { IUnmockProperty, TopLevelDSLKeys } from "./interfaces";
 
 const debugLog = debug("unmock:dsl:utils");
 
-export const getTopLevelDSL = (state: UnmockServiceState) => {
-  return Object.keys(state)
+export const getTopLevelDSL = (state: UnmockServiceState) =>
+  Object.keys(state)
     .filter(
       (key: string) =>
         TopLevelDSLKeys[key] !== undefined &&
         TopLevelDSLKeys[key] === typeof state[key],
     )
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
-};
 
-export const filterTopLevelDSL = (state: UnmockServiceState) => {
-  return Object.keys(state)
+export const filterTopLevelDSL = (state: UnmockServiceState) =>
+  Object.keys(state)
     .filter(
       (key: string) =>
         TopLevelDSLKeys[key] === undefined ||
         TopLevelDSLKeys[key] !== typeof state[key],
     )
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
-};
 
-export const throwOnErrorIfStrict = (fn: () => void) => {
+export const throwOnErrorIfStrict = (fn: () => any) => {
   try {
-    fn();
+    return fn();
   } catch (e) {
     if (DSL.STRICT_MODE) {
       throw e;
     }
+    return undefined;
   }
 };
 

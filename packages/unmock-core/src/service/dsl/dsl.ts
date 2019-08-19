@@ -1,15 +1,10 @@
 import debug from "debug";
-import { cloneDeep } from "lodash";
-import { codeToMedia, Schema } from "../interfaces";
-import { actOn$times } from "./actors";
-import { SCHEMA_TIMES } from "./constants";
+import { cloneDeep, defaultsDeep } from "lodash";
+import { codeToMedia, mediaTypeToSchema, Schema } from "../interfaces";
+import { actors } from "./actors";
 import { ITopLevelDSL } from "./interfaces";
-import { translate$size, translate$times } from "./translators";
-import {
-  hasUnmockProperty,
-  injectUnmockProperty,
-  throwOnErrorIfStrict,
-} from "./utils";
+import { topTranslators, translators } from "./translators";
+import { hasUnmockProperty, injectUnmockProperty } from "./utils";
 
 const debugLog = debug("unmock:dsl");
 
@@ -33,16 +28,20 @@ export abstract class DSL {
    * @param schema
    * @returns A translated list of arguments.
    */
-  public static translateDSLToOAS(state: any, schema: Schema): any {
-    let translated: { [OASKey: string]: string | number | boolean } = {};
-    if (state.$size !== undefined) {
-      throwOnErrorIfStrict(() => {
-        translated = { ...translated, ...translate$size(state, schema) };
-        delete state.$size;
-      });
-    }
-    return translated;
+  public static replaceDSLWithOAS(state: any, schema: Schema): any {
+    return Object.entries(translators).reduce((obj, [property, fn]) => {
+      if (state[property] !== undefined) {
+        const translated = fn(state, schema);
+        const result = { ...obj, ...translated };
+        if (translated !== undefined) {
+          delete state[property];
+        }
+        return result;
+      }
+      return obj;
+    }, {});
   }
+
   /**
    * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
@@ -59,12 +58,21 @@ export abstract class DSL {
     }
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
-    if (top.$times !== undefined) {
-      throwOnErrorIfStrict(() => {
-        const translated = translate$times(top.$times);
-        injectUnmockProperty(responses, translated);
-      });
-    }
+    Object.keys(topTranslators)
+      .filter(
+        dslKey => top[dslKey] !== undefined /* only valid top-level DSL keys */,
+      )
+      .map(
+        dslKey => topTranslators[dslKey](top[dslKey]) /* get the translation */,
+      )
+      .filter(
+        translation =>
+          translation !== undefined /* no undefined translations */,
+      )
+      .forEach(
+        translation =>
+          injectUnmockProperty(responses, translation) /* add to responses */,
+      );
     return responses;
   }
 
@@ -75,33 +83,43 @@ export abstract class DSL {
    * @param states
    */
   public static actTopLevelFromOAS(states: codeToMedia): codeToMedia {
-    const copy: codeToMedia = {};
-    for (const code of Object.keys(states)) {
-      copy[code] = {};
-      for (const mediaType of Object.keys(states[code])) {
-        copy[code][mediaType] = cloneDeep(states[code][mediaType]);
-        const schema = copy[code][mediaType];
-        if (schema.properties === undefined) {
-          continue;
-        }
-        if (hasUnmockProperty(schema, SCHEMA_TIMES)) {
-          actOn$times(copy[code], states[code], mediaType);
-        }
-        if (Object.keys(schema.properties).length === 0) {
-          debugLog(
-            `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
-          );
-          delete schema.properties;
-          // The returned `properties` might now be empty, representing an empty response.
-        }
-      }
-      if (Object.keys(copy[code]).length === 0) {
-        debugLog(
-          `Entire response is empty, removing '${code}' from copied response`,
-        );
-        delete copy[code];
-      }
-    }
-    return copy;
+    const act = (mToS: mediaTypeToSchema) =>
+      Object.keys(mToS).reduce(
+        (obj, mediaType) => ({
+          ...obj,
+          [mediaType]: actOnSchema(mToS, mediaType),
+        }),
+        {},
+      );
+
+    return Object.keys(states).reduce(
+      (obj, code) => ({ ...obj, [code]: act(states[code]) }),
+      {},
+    );
   }
 }
+
+const actOnSchema = (
+  schema: mediaTypeToSchema,
+  mediaType: string,
+): Record<string, Schema> => {
+  const [trg, ...rest] = Object.entries(actors).map(([property, fn]) =>
+    hasUnmockProperty(schema[mediaType], property)
+      ? fn(schema, mediaType)
+      : cloneDeep(schema[mediaType]),
+  );
+  const result = defaultsDeep(trg, rest);
+
+  const maybeProperties = result.properties;
+  if (
+    maybeProperties !== undefined &&
+    Object.keys(maybeProperties).length === 0
+  ) {
+    debugLog(
+      `schema.properties is now empty, removing 'properties' from copied response '${mediaType}'`,
+    );
+    delete result.properties;
+  }
+
+  return result;
+};

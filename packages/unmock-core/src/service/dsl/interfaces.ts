@@ -1,4 +1,4 @@
-import { Schema } from "../interfaces";
+import { mediaTypeToSchema, Schema } from "../interfaces";
 
 /**
  * DSL related parameters that can only be found at the top level
@@ -16,6 +16,7 @@ export interface ITopLevelDSL {
    */
   $code?: number;
   $times?: number;
+  [DSLKey: string]: any;
 }
 
 /**
@@ -40,3 +41,14 @@ export interface IUnmockProperty {
     default: any;
   };
 }
+
+/**
+ * Stuff for general DSL submodule
+ */
+
+export type Actor = (
+  originalSchema: mediaTypeToSchema,
+  mediaType: string,
+) => Schema;
+export type Translator = (state: any, schema: Schema) => any;
+export type TopTranslator = (value: any) => any;
