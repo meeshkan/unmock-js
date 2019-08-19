@@ -26,16 +26,8 @@ export type RequestResponseSpyNotifier = SpyContainer<
   ISerializedResponse
 >;
 
-/**
- * Container for adding spy calls with `notify` method.
- */
-class SpyContainer<TArg = any, TReturnValue = any> {
-  public readonly spy: SinonSpy<[TArg], TReturnValue>;
+export class NotifiableSpyable<TArg = any, TReturnValue = any> {
   private returnValue?: TReturnValue;
-  constructor() {
-    // @ts-ignore
-    this.spy = sinonSpy(this, "spiedFn");
-  }
 
   public notify(targs: TArg, tret: TReturnValue) {
     // Ugly hack to predefine what the spied function should return
@@ -44,12 +36,39 @@ class SpyContainer<TArg = any, TReturnValue = any> {
     this.returnValue = undefined;
   }
 
-  public reset(): void {
-    this.spy.resetHistory();
-  }
-
-  private spiedFn(_: TArg): TReturnValue {
+  public spiedFn(_: TArg): TReturnValue {
     return this.returnValue!;
+  }
+}
+
+/**
+ * Container for adding spy calls with `notify` method.
+ */
+
+class SpyContainer<TArg = any, TReturnValue = any> {
+  // tslint:disable-line
+  // @ts-ignore
+  public notify: (targ: TArg, tret: TReturnValue) => void;
+  // @ts-ignore
+  public reset: () => void;
+  public readonly spy: SinonSpy<[TArg], TReturnValue>;
+  private readonly notifyableSpyable: NotifiableSpyable<TArg, TReturnValue>;
+  constructor() {
+    // @ts-ignore
+    this.notifyableSpyable = new NotifiableSpyable<TArg, TReturnValue>();
+    this.spy = sinonSpy(this.notifyableSpyable, "spiedFn");
+    Object.defineProperty(this, "notify", {
+      value: (targ: TArg, tret: TReturnValue) => {
+        this.notifyableSpyable.notify(targ, tret);
+      },
+      enumerable: true,
+    });
+    Object.defineProperty(this, "reset", {
+      value: () => {
+        return this.spy.resetHistory();
+      },
+      enumerable: true,
+    });
   }
 }
 
