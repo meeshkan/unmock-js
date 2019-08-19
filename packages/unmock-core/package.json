@@ -33,7 +33,6 @@
   "devDependencies": {
     "@types/debug": "^4.1.4",
     "@types/json-pointer": "^1.0.30",
-    "@types/sinon": "^7.0.13",
     "@types/xregexp": "^3.0.30"
   }
 }
