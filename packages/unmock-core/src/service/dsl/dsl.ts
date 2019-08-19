@@ -59,10 +59,20 @@ export abstract class DSL {
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
     Object.keys(topTranslators)
-      .filter(dslKey => top[dslKey] !== undefined)
-      .map(dslKey => topTranslators[dslKey](top[dslKey]))
-      .filter(translation => translation !== undefined)
-      .forEach(translation => injectUnmockProperty(responses, translation));
+      .filter(
+        dslKey => top[dslKey] !== undefined /* only valid top-level DSL keys */,
+      )
+      .map(
+        dslKey => topTranslators[dslKey](top[dslKey]) /* get the translation */,
+      )
+      .filter(
+        translation =>
+          translation !== undefined /* no undefined translations */,
+      )
+      .forEach(
+        translation =>
+          injectUnmockProperty(responses, translation) /* add to responses */,
+      );
     return responses;
   }
 
