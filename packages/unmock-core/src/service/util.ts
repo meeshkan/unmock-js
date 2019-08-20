@@ -26,12 +26,18 @@ export function derefIfNeeded({
       return mightHaveReference;
     }
     // DFS deref all items as needed
-    for (const childKey of Object.keys(mightHaveReference)) {
-      mightHaveReference[childKey] = selfDeref(mightHaveReference[childKey]);
-    }
-    const refValue = mightHaveReference.$ref;
+    const noReferences = Array.isArray(mightHaveReference)
+      ? mightHaveReference.map(element => selfDeref(element))
+      : Object.keys(mightHaveReference).reduce(
+          (obj, childKey) => ({
+            ...obj,
+            [childKey]: selfDeref(mightHaveReference[childKey]),
+          }),
+          mightHaveReference,
+        );
+    const refValue = noReferences.$ref; // There would be no '$ref' in arrays ofc
     if (refValue === undefined) {
-      return mightHaveReference;
+      return noReferences;
     }
     // decide between local and path URI
     // TODO: Add dereferencing $id and URLs
