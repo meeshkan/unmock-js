@@ -29,44 +29,33 @@ export type RequestResponseSpyNotifier = CallTracker<
 >;
 
 /**
- * Helper class whose `notify(arg, ret)` calls `track` with argument `arg`
- * with predefined response `ret`. This is useful when you want to "spy" on `track`
- * with predefined request-response pairs.
- */
-export class SpyHelper<TArg = any, TReturnValue = any> {
-  private returnValue?: TReturnValue;
-
-  public notify(targs: TArg, tret: TReturnValue) {
-    // Ugly hack to predefine what the spied function should return
-    this.returnValue = tret;
-    this.track(targs);
-    this.returnValue = undefined;
-  }
-
-  public track(_: TArg): TReturnValue {
-    return this.returnValue!;
-  }
-}
-
-/**
  * Container for tracking spy calls via `track` method,
  * calls are exposed via `spy` property.
  */
 class CallTracker<TArg = any, TReturnValue = any> {
   // tslint:disable-line:max-classes-per-file
   public readonly spy: SinonSpy<[TArg], TReturnValue>;
-  private readonly recorderHelper: SpyHelper<TArg, TReturnValue>;
+  private returnValue?: TReturnValue;
   constructor() {
-    this.recorderHelper = new SpyHelper<TArg, TReturnValue>();
-    this.spy = sinonSpy(this.recorderHelper, "track");
+    this.spy = sinonSpy(this.spyFn.bind(this));
   }
 
   public track({ req, res }: { req: TArg; res: TReturnValue }): void {
-    this.recorderHelper.notify(req, res);
+    // Hack to predefine what the spied function should return
+    this.returnValue = res;
+    this.spy(req);
+    this.returnValue = undefined;
   }
 
   public reset(): void {
     this.spy.resetHistory();
+  }
+
+  private spyFn(_: TArg): TReturnValue {
+    if (typeof this.returnValue === "undefined") {
+      throw Error("Undefined return value");
+    }
+    return this.returnValue;
   }
 }
 
