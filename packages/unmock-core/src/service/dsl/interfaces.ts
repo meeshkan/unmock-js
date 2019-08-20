@@ -1,4 +1,4 @@
-import { mediaTypeToSchema, Schema } from "../interfaces";
+import { Schema } from "../interfaces";
 
 /**
  * DSL related parameters that can only be found at the top level

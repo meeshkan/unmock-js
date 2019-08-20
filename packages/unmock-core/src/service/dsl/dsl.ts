@@ -4,7 +4,7 @@ import { codeToMedia, mediaTypeToSchema, Schema } from "../interfaces";
 import { actWithAllActors } from "./actors";
 import { ITopLevelDSL } from "./interfaces";
 import { topTranslators, translators } from "./translators";
-import { hasUnmockProperty, injectUnmockProperty } from "./utils";
+import { injectUnmockProperty } from "./utils";
 
 const debugLog = debug("unmock:dsl");
 
