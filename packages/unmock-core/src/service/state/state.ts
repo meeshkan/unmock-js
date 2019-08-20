@@ -115,45 +115,40 @@ export class State {
   ): codeToMedia | undefined {
     debugLog(`Filtering all saved states that match '${endpoint}'...`);
 
-    const matchingEndpointKeys = Object.keys(this.state).filter(
-      (sKey: string) => minimatch(endpoint, sKey, { nocase: true }),
-    );
-    if (matchingEndpointKeys.length === 0) {
+    const mostRelevantEndpoint = Object.keys(this.state)
+      .filter(
+        (sKey: string) =>
+          minimatch(endpoint, sKey, { nocase: true }) &&
+          (this.state[sKey][method] !== undefined ||
+            this.state[sKey][DEFAULT_STATE_HTTP_METHOD] !== undefined),
+      )
+      .sort((a: string, b: string) => {
+        // sort endpoints by location of asterisks and frequency
+        // (done to choose most relevant endpoint with state). Results is e.g:
+        // (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
+        const nA = a.split("*");
+        const nB = b.split("*");
+        return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*"))
+          ? -1
+          : 1;
+      })[0];
+    if (mostRelevantEndpoint === undefined) {
       debugLog(`No states match '${endpoint}'`);
       return undefined;
     }
-    // sort endpoints by location of asterisks and frequency
-    // (done to spread and overwrite as needed). Results is e.g:
-    // (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
-    matchingEndpointKeys.sort((a: string, b: string) => {
-      const nA = a.split("*");
-      const nB = b.split("*");
-      return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? 1 : -1;
-    });
 
-    debugLog(
-      `Found following endpoints as matches for '${matchingEndpointKeys}: ${JSON.stringify(
-        matchingEndpointKeys,
-      )}`,
-    );
+    debugLog(`Most relevant endpoint is ${mostRelevantEndpoint}`);
 
-    // From the above, sorted methods, get all states that match either DEFAULT_STATE_HTTP_METHOD
-    // or the given method. Push the DEFAULT_STATE one before to maintain order.
-    const states: codeToMedia[] = [];
-    for (const key of matchingEndpointKeys) {
-      const methodToStatus = this.state[key];
-      if (methodToStatus[DEFAULT_STATE_HTTP_METHOD] !== undefined) {
-        states.push(methodToStatus[DEFAULT_STATE_HTTP_METHOD]);
-      }
-      if (methodToStatus[method] !== undefined) {
-        states.push(methodToStatus[method]);
-      }
-    }
+    // From the chosen endpoint, check if the given method exists, if not, choose the DEFAULT METHOD state.
+    const relevantState =
+      this.state[mostRelevantEndpoint][method] !== undefined
+        ? this.state[mostRelevantEndpoint][method]
+        : this.state[mostRelevantEndpoint][DEFAULT_STATE_HTTP_METHOD];
 
     // Filter all the states that do not match the operation schema
-    const filteredStates = filterStatesByOperation(states, operation);
-    const { parsed, newState } = DSL.actTopLevelFromOAS(filteredStates);
-    console.log(newState);
+    // const filteredStates = filterStatesByOperation(states, operation);
+    const { parsed, newState } = DSL.actTopLevelFromOAS(relevantState);
+    console.log(newState, mostRelevantEndpoint);
     // TODO: After parsing, do we want to see if we need to remove items from the current state?
     return Object.keys(parsed).length > 0 ? parsed : undefined;
   }
