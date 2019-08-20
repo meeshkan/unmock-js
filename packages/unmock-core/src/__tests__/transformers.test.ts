@@ -1,8 +1,8 @@
 import { Schema } from "../service/interfaces";
 import {
   objResponse,
-  textResponse,
   TEXT_RESPONSE_ERROR,
+  textResponse,
 } from "../service/state/transformers";
 
 const schema: Schema = {
@@ -132,6 +132,7 @@ describe("Test object provider", () => {
   it("with undefined or null values", () => {
     // What does it mean to have undefined/null as value?
     [undefined, null].forEach(val => {
+      // @ts-ignore - yes it's not allowed by type, we still want to verify the logic
       const res = objResponse({ test: val }).gen(schema);
       expect(res.error).toContain("undefined or null");
       expect(res.spreadState).toEqual({});

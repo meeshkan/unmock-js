@@ -104,9 +104,9 @@ const matchWhenMissingKey = (schema: any, state: any, key: string) => {
   debugLog(`matchWhenMissingKey: traversing nested items for ${key}`);
   // Option 1b: current schema has no matching key, but contains indirection (items/properties, etc)
   // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
-  const translated = DSL.replaceDSLWithOAS(state, schema);
+  const { translated, cleaned } = DSL.translateDSLToOAS(state, schema);
   const spread = {
-    ...oneLevelOfIndirectNestedness(schema, state),
+    ...oneLevelOfIndirectNestedness(schema, cleaned),
     ...translated,
   };
   if (Object.keys(spread).length === 0) {
@@ -161,10 +161,10 @@ const matchWithNonConcreteValue = (schema: any, state: any, key: string) => {
   );
   // Option 4: Current scheme has matching key, state specifies an object - traverse schema and indirection
   // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
-  const translated = DSL.replaceDSLWithOAS(stateValue, schema);
+  const { translated, cleaned } = DSL.translateDSLToOAS(stateValue, schema);
   const spread = {
     [key]: {
-      ...spreadStateFromService(schema, stateValue),
+      ...spreadStateFromService(schema, cleaned),
       ...translated,
     },
   };

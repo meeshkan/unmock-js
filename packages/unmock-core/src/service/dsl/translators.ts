@@ -28,7 +28,11 @@ const translate$times: TopTranslator = (times: any) => {
  */
 const translate$size: Translator = (state: any, schema: Schema): any => {
   // assumes state.$size exists
-  if (schema.type === undefined || schema.type !== "array") {
+  if (
+    schema.type === undefined ||
+    schema.type !== "array" ||
+    schema.items === undefined
+  ) {
     throw new Error("Can't set '$size' for non-array elements!");
   }
   if (typeof state.$size !== "number") {
