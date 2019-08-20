@@ -1,7 +1,8 @@
 import debug from "debug";
-import { mediaTypeToSchema } from "../interfaces";
+import { Schema } from "../interfaces";
 import { SCHEMA_TIMES } from "./constants";
 import { Actor, Props } from "./interfaces";
+import { hasUnmockProperty } from "./utils";
 
 const debugLog = debug("unmock:dsl:actors");
 
@@ -19,32 +20,63 @@ const debugLog = debug("unmock:dsl:actors");
  * If the new value is less than 0 (i.e. this state has expired),
  * the content is **removed** from the original schema, and the returned object is empty.
  *
- * @param originalSchema
+ * @param origState
  * @param mediaType
  */
-const actOn$times: Actor = (
-  originalSchema: mediaTypeToSchema,
-  mediaType: string,
-) => {
-  // update the default value
-  const origTimes = (originalSchema[mediaType].properties as Props)[
-    SCHEMA_TIMES
-  ];
-  origTimes.default -= 1;
-  if (origTimes.default < 0) {
-    debugLog(
-      `$times has expired for '${JSON.stringify(
-        originalSchema,
-      )}', removing state in original schema`,
-    );
-    delete originalSchema[mediaType];
-    return {};
-  }
-  const { properties, ...rest } = originalSchema[mediaType];
-  const { [SCHEMA_TIMES]: _, ...restProperties } = properties as Props;
-  return { properties: restProperties, ...rest };
+const actOn$times: Actor = (origState: Schema) => {
+  const origTimes = (origState.properties as Props)[SCHEMA_TIMES];
+  const newTimes = origTimes.default - 1;
+  const newState =
+    newTimes > 0
+      ? // Build a copy of the new state (with decremented $times) if still needed
+        {
+          ...origState,
+          properties: {
+            ...origState.properties,
+            [SCHEMA_TIMES]: { ...origTimes, default: newTimes },
+          },
+        }
+      : undefined;
+
+  debugLog(
+    `new state for ${JSON.stringify(origState)} is '${JSON.stringify(
+      newState,
+    )}'`,
+  );
+
+  const { properties, ...rest } = origState;
+  const { [SCHEMA_TIMES]: unused, ...restProperties } = properties as Props;
+  return {
+    parsed:
+      Object.keys(restProperties).length > 0
+        ? { properties: restProperties, ...rest }
+        : { ...rest },
+    newState,
+  };
 };
 
 export const actors: { [propertyName: string]: Actor } = {
   [SCHEMA_TIMES]: actOn$times,
 };
+
+export const actWithAllActors = (schema: Schema) =>
+  Object.entries(actors).reduce(
+    (
+      {
+        newState,
+        parsed,
+      }: { newState: Array<Schema | undefined>; parsed: Schema[] },
+      [property, fn],
+    ) => {
+      if (hasUnmockProperty(schema, property)) {
+        const result = fn(schema);
+        return {
+          newState: newState.concat(result.newState),
+          parsed: parsed.concat(result.parsed),
+        };
+      }
+
+      return { newState, parsed: parsed.concat(schema) };
+    },
+    { newState: [], parsed: [] },
+  );
