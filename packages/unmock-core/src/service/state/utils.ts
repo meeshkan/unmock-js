@@ -291,7 +291,7 @@ const getOperationsFromPathItem = (
 const stringHasDSLKeys = (input: string) =>
   DSLKeys.some((key: string) => input.includes(key));
 
-export const chooseBestMatchingError = (
+const chooseBestMatchingError = (
   firstError: IValidationError,
   secondError?: IValidationError,
 ) => {

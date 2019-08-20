@@ -8,9 +8,9 @@ import {
   HTTPMethod,
   Operation,
 } from "../interfaces";
-import { IStateUpdate, IValidationError } from "./interfaces";
+import { IStateUpdate } from "./interfaces";
 import {
-  chooseBestMatchingError,
+  chooseErrorFromList,
   filterStatesByOperation,
   getOperations,
 } from "./utils";
@@ -36,8 +36,7 @@ export class State {
    * and the result is used to verify the contents of `stateInput`.
    */
   public update(stateUpdate: IStateUpdate) {
-    const { stateInput } = stateUpdate;
-    const { endpoint, method, newState } = stateInput;
+    const { endpoint, method, newState } = stateUpdate.stateInput;
     debugLog(`Fetching operations for '${method} ${endpoint}'...`);
     const ops = getOperations(stateUpdate);
     if (ops.error !== undefined) {
@@ -56,35 +55,17 @@ export class State {
       )}`,
     );
 
-    let error: IValidationError | undefined;
-    let opsResult = false;
-    for (const op of ops.operations) {
-      debugLog(`Testing against ${JSON.stringify(op.operation)}`);
-      // For each operation, verify the new state applies and save in `this.state`
-      const stateResponses = getValidStatesForOperationWithState(
+    const mapped = ops.operations.map(op =>
+      getValidStatesForOperationWithState(
         op.operation,
         newState,
         stateUpdate.dereferencer,
-      );
-      if (stateResponses.error !== undefined) {
-        // failed path
-        debugLog(
-          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error.msg}`,
-        );
-        error = chooseBestMatchingError(stateResponses.error, error);
-        continue;
-      }
-      debugLog(`Matched successfully for ${JSON.stringify(op.operation)}`);
-      const augmentedResponses = DSL.translateTopLevelToOAS(
-        newState.top,
-        stateResponses.responses,
-      );
-      this.updateStateInternal(endpoint, method, augmentedResponses);
-      opsResult = true;
-    }
+      ),
+    );
 
-    if (opsResult === false) {
-      // all paths had an error - can't operate properly
+    const failed = mapped.every(resp => resp.error !== undefined);
+    if (failed) {
+      const error = chooseErrorFromList(mapped.map(resp => resp.error));
       throw new Error(
         error
           ? error.msg
@@ -93,6 +74,11 @@ export class State {
             )}`,
       );
     }
+
+    mapped
+      .filter(resp => resp.error === undefined)
+      .map(resp => DSL.translateTopLevelToOAS(newState.top, resp.responses))
+      .forEach(aug => this.updateStateInternal(endpoint, method, aug));
   }
 
   /**
