@@ -25,20 +25,16 @@ export class ServiceStore {
   }
 
   public match(sreq: ISerializedRequest): MatcherResponse {
-    for (const service of Object.values(this.serviceMapping)) {
-      const matchResponse = service.match(sreq);
-      if (matchResponse !== undefined) {
-        return matchResponse;
-      }
-    }
-    return undefined;
+    return Object.values(this.serviceMapping)
+      .map(service => service.match(sreq))
+      .filter(res => res !== undefined)[0];
   }
 
   public resetState(serviceName: string | undefined) {
     if (serviceName === undefined) {
-      for (const service of Object.values(this.serviceMapping)) {
-        service.resetState();
-      }
+      Object.values(this.serviceMapping).forEach(service =>
+        service.resetState(),
+      );
     } else if (this.serviceMapping[serviceName] !== undefined) {
       this.serviceMapping[serviceName].resetState();
     }
