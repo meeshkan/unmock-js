@@ -1,6 +1,5 @@
 import { SinonSpy, spy as sinonSpy } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
-import { IService } from "../interfaces";
 
 export type RequestResponseSpy = SinonSpy<
   [ISerializedRequest],
@@ -12,7 +11,7 @@ interface IRequestResponsePair {
   res: ISerializedResponse;
 }
 
-export interface IRecorder {
+export interface ICallTracker {
   /**
    * Keep track of calls, added via the `notify` method
    */
@@ -20,80 +19,56 @@ export interface IRecorder {
   /**
    * Add new call to the spy object
    */
-  record(pair: IRequestResponsePair): void;
+  track(pair: IRequestResponsePair): void;
   reset(): void;
 }
 
-export type RequestResponseSpyNotifier = CallRecorder<
+export type RequestResponseSpyNotifier = CallTracker<
   ISerializedRequest,
   ISerializedResponse
 >;
 
 /**
- * Helper class whose `notify(arg, ret)` calls `record` with argument `arg`
- * with predefined response `ret`. This is useful when you want to "spy" on `record`
+ * Helper class whose `notify(arg, ret)` calls `track` with argument `arg`
+ * with predefined response `ret`. This is useful when you want to "spy" on `track`
  * with predefined request-response pairs.
  */
-export class RecorderHelper<TArg = any, TReturnValue = any> {
+export class SpyHelper<TArg = any, TReturnValue = any> {
   private returnValue?: TReturnValue;
 
   public notify(targs: TArg, tret: TReturnValue) {
     // Ugly hack to predefine what the spied function should return
     this.returnValue = tret;
-    this.record(targs);
+    this.track(targs);
     this.returnValue = undefined;
   }
 
-  public record(_: TArg): TReturnValue {
+  public track(_: TArg): TReturnValue {
     return this.returnValue!;
   }
 }
 
 /**
- * Container for adding spy calls with `notify` method.
+ * Container for tracking spy calls via `track` method,
+ * calls are exposed via `spy` property.
  */
-class CallRecorder<TArg = any, TReturnValue = any> {
-  // tslint:disable-line
-  public readonly record: ({
-    req,
-    res,
-  }: {
-    req: TArg;
-    res: TReturnValue;
-  }) => void;
-  public readonly reset: () => void;
+class CallTracker<TArg = any, TReturnValue = any> {
+  // tslint:disable-line:max-classes-per-file
   public readonly spy: SinonSpy<[TArg], TReturnValue>;
-  private readonly recorderHelper: RecorderHelper<TArg, TReturnValue>;
+  private readonly recorderHelper: SpyHelper<TArg, TReturnValue>;
   constructor() {
-    this.recorderHelper = new RecorderHelper<TArg, TReturnValue>();
-    this.spy = sinonSpy(this.recorderHelper, "record");
-    this.record = ({ req, res }: { req: TArg; res: TReturnValue }) => {
-      this.recorderHelper.notify(req, res);
-    };
-    this.reset = () => {
-      this.spy.resetHistory();
-    };
+    this.recorderHelper = new SpyHelper<TArg, TReturnValue>();
+    this.spy = sinonSpy(this.recorderHelper, "track");
+  }
+
+  public track({ req, res }: { req: TArg; res: TReturnValue }): void {
+    this.recorderHelper.notify(req, res);
+  }
+
+  public reset(): void {
+    this.spy.resetHistory();
   }
 }
 
-export const createCallRecorder = (): IRecorder =>
-  new CallRecorder<ISerializedRequest, ISerializedResponse>();
-
-export const attachToService = (service: IService): IService & IRecorder => {
-  const spyable = createCallRecorder();
-  return Object.assign(service, spyable);
-};
-/*
-export interface Service {
-  spy: Spy;
-  state: State;
-  generate(req: Request): Response;
-}
- */
-
-/* type ServiceCore = {
-  generate(sreq: ISerializedRequest): ISerializedResponse;
-};
-
-export type Service = ServiceCore & Pick<ISpyable, "spy" | "reset">;
- */
+export const createCallRecorder = (): ICallTracker =>
+  new CallTracker<ISerializedRequest, ISerializedResponse>();
