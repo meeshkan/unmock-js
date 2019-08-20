@@ -1,6 +1,6 @@
 import { assert } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
-import { createCallRecorder, ICallTracker } from "../service/spy";
+import { createCallTracker, ICallTracker } from "../service/spy";
 
 const fakeRequest: ISerializedRequest = {
   method: "GET",
@@ -16,11 +16,11 @@ const fakeResponse: ISerializedResponse = {
 
 describe("Creating a spy", () => {
   it("should not be called after creation", () => {
-    const spyable: ICallTracker = createCallRecorder();
-    assert.notCalled(spyable.spy);
+    const callTracker: ICallTracker = createCallTracker();
+    assert.notCalled(callTracker.spy);
   });
   it("should record calls made via notify", () => {
-    const callTracker: ICallTracker = createCallRecorder();
+    const callTracker: ICallTracker = createCallTracker();
     callTracker.track({ req: fakeRequest, res: fakeResponse });
     assert.calledOnce(callTracker.spy);
     assert.calledWithExactly(callTracker.spy, fakeRequest);

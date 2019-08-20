@@ -59,5 +59,5 @@ class CallTracker<TArg = any, TReturnValue = any> {
   }
 }
 
-export const createCallRecorder = (): ICallTracker =>
+export const createCallTracker = (): ICallTracker =>
   new CallTracker<ISerializedRequest, ISerializedResponse>();
