@@ -1,7 +1,7 @@
 import axios from "axios";
 import path from "path";
 import { CorePackage, States } from "unmock-core";
-import { dsl, Request } from "../../..";
+import { dsl, UnmockRequest } from "../../..";
 
 import NodeBackend from "../../backend";
 
@@ -109,7 +109,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("sets an entire response from with request object", async () => {
-      states.petstore((req: Request) => req.host);
+      states.petstore((req: UnmockRequest) => req.host);
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("petstore.swagger.io");
     });
