@@ -15,7 +15,7 @@ import {
   Schema,
 } from "../interfaces";
 import { IValidationError } from "./interfaces";
-import { chooseBestMatchingError } from "./utils";
+import { chooseErrorFromList } from "./utils";
 
 const debugLog = debug("unmock:state:validator");
 
@@ -124,48 +124,43 @@ const validStatesForStateWithoutCode = (
       state,
     )} with ${JSON.stringify(operationResponses)}`,
   );
-  const relevantResponses: codeToMedia = {};
-  let err: IValidationError | undefined;
 
-  for (const code of Object.keys(operationResponses)) {
+  const mapped = Object.keys(operationResponses).map(code => {
     debugLog(
       `validStatesForStateWithoutCode: Testing against status code ${code}`,
     );
-    const { responses, error } = validStatesForStateWithCode(
-      operationResponses[code as codeType],
-      state,
+    return {
       code,
-      deref,
-    );
-    if (error !== undefined) {
-      err = chooseBestMatchingError(error, err);
-    }
+      ...validStatesForStateWithCode(
+        operationResponses[code as codeType],
+        state,
+        code,
+        deref,
+      ),
+    };
+  });
 
-    if (responses === undefined) {
-      debugLog(
-        `validStatesForStateWithoutCode: Could not find matching responses for ${code}`,
-      );
-      continue;
-    }
+  const responses: codeToMedia = mapped
+    .filter(o => o.error === undefined && o.responses !== undefined)
+    .reduce((acc, o) => {
+      const resp = (o.responses as codeToMedia)[o.code];
+      const filtered = Object.keys(resp)
+        .filter(contentType => Object.keys(resp[contentType]).length > 0)
+        .reduce(
+          (obj, contentType) => ({ ...obj, [contentType]: resp[contentType] }),
+          {},
+        );
+      return {
+        ...acc,
+        ...(Object.keys(filtered).length > 0 ? { [o.code]: filtered } : {}),
+      };
+    }, {});
 
-    const resp = responses[code];
-    debugLog(
-      `validStatesForStateWithoutCode: No errors found for ${code}, filtering empty content`,
-    );
-    const filteredStateMedia = Object.keys(resp).reduce(
-      (acc: IResponsesFromContent, contentType: string) =>
-        Object.keys(resp[contentType]).length > 0
-          ? Object.assign(acc, { [contentType]: resp[contentType] })
-          : acc,
-      {},
-    );
-    if (Object.keys(filteredStateMedia).length > 0) {
-      relevantResponses[code] = filteredStateMedia;
-    }
-  }
-  return Object.keys(relevantResponses).length > 0
-    ? { responses: relevantResponses }
-    : { error: err };
+  const success = Object.keys(responses).length > 0;
+  const error = success
+    ? undefined
+    : chooseErrorFromList(mapped.map(o => o.error));
+  return success ? { responses } : { error };
 };
 
 const getStateFromMedia = (
@@ -179,38 +174,43 @@ const getStateFromMedia = (
   debugLog(
     `getStateFromMedia: Attempting to copy a partial state for ${state} from given media types ${contentRecord}`,
   );
-  let err: IValidationError | undefined;
-  const relevantResponses: IResponsesFromContent = {};
-  let success = false;
-  for (const contentType of Object.keys(contentRecord)) {
-    const content = contentRecord[contentType];
+  const mapped = Object.keys(contentRecord).map(mediaType => {
+    const content = contentRecord[mediaType];
     if (content === undefined || content.schema === undefined) {
-      debugLog(`getStateFromMedia: No schema defined in ${contentType}`);
-      err = chooseBestMatchingError(
-        {
+      debugLog(`getStateFromMedia: No schema defined in ${mediaType}`);
+      return {
+        mediaType,
+        error: {
           msg: `No schema defined in '${JSON.stringify(content)}'!`,
           nestedLevel: -1,
         },
-        err,
-      );
-      continue;
+      };
     }
     const { spreadState, error } = state.gen(deref<Schema>(content.schema));
-    if (error !== undefined) {
-      err = chooseBestMatchingError({ msg: error, nestedLevel: 0 }, err);
-      continue;
-    }
-
     debugLog(
-      `getStateFromMedia: Copied matching state, verifying all state elements exist (not null)`,
+      `getStateFromMedia: Spread state for ${mediaType} ${
+        error !== undefined ? "has errors" : "is valid"
+      }`,
     );
+    return error !== undefined
+      ? { mediaType, error: { msg: error, nestedLevel: 0 } }
+      : { mediaType, spreadState };
+  });
 
-    debugLog(`getStateFromMedia: Spread state is valid for ${contentType}`);
-    relevantResponses[contentType] = spreadState;
-    success = true;
-  }
+  const responses: IResponsesFromContent = mapped
+    .filter(obj => obj.spreadState !== undefined)
+    .reduce(
+      (acc, obj) => ({
+        ...acc,
+        [obj.mediaType]: obj.spreadState,
+      }),
+      {},
+    );
+  const success = Object.keys(responses).length > 0;
   return {
-    responses: relevantResponses,
-    error: success ? undefined : err,
+    responses,
+    error: success
+      ? undefined
+      : chooseErrorFromList(mapped.map(obj => obj.error)),
   };
 };

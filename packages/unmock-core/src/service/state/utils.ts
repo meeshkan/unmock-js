@@ -308,3 +308,11 @@ export const chooseBestMatchingError = (
     ? secondError
     : firstError;
 };
+
+export const chooseErrorFromList = (
+  errList: Array<IValidationError | undefined>,
+) =>
+  errList.reduce(
+    (e, c) => (c === undefined ? e : chooseBestMatchingError(c, e)),
+    undefined,
+  );
