@@ -93,16 +93,7 @@ export class Service implements IService {
     if (realEndpoint === undefined) {
       return undefined;
     }
-    const schemaEndpoint = realEndpoint.schemaEndpoint;
-    const operationSchema = this.schema.paths[schemaEndpoint][method];
-    if (operationSchema === undefined) {
-      return undefined;
-    }
 
-    return this.state.getState(
-      method,
-      realEndpoint.normalizedEndpoint,
-      operationSchema,
-    );
+    return this.state.getState(method, realEndpoint.normalizedEndpoint);
   }
 }

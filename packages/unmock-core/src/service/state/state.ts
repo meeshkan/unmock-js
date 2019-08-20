@@ -2,18 +2,9 @@ import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import { DSL } from "../dsl";
-import {
-  codeToMedia,
-  ExtendedHTTPMethod,
-  HTTPMethod,
-  Operation,
-} from "../interfaces";
+import { codeToMedia, ExtendedHTTPMethod, HTTPMethod } from "../interfaces";
 import { IStateUpdate, IValidationError } from "./interfaces";
-import {
-  chooseBestMatchingError,
-  filterStatesByOperation,
-  getOperations,
-} from "./utils";
+import { chooseBestMatchingError, getOperations } from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -111,7 +102,6 @@ export class State {
   public getState(
     method: HTTPMethod,
     endpoint: string,
-    operation: Operation,
   ): codeToMedia | undefined {
     debugLog(`Filtering all saved states that match '${endpoint}'...`);
 
@@ -140,16 +130,34 @@ export class State {
     debugLog(`Most relevant endpoint is ${mostRelevantEndpoint}`);
 
     // From the chosen endpoint, check if the given method exists, if not, choose the DEFAULT METHOD state.
-    const relevantState =
-      this.state[mostRelevantEndpoint][method] !== undefined
-        ? this.state[mostRelevantEndpoint][method]
-        : this.state[mostRelevantEndpoint][DEFAULT_STATE_HTTP_METHOD];
+    const matchingMethod = Object.keys(
+      this.state[mostRelevantEndpoint],
+    ).includes(method)
+      ? method
+      : DEFAULT_STATE_HTTP_METHOD;
+    const relevantState = this.state[mostRelevantEndpoint][matchingMethod];
 
-    // Filter all the states that do not match the operation schema
-    // const filteredStates = filterStatesByOperation(states, operation);
     const { parsed, newState } = DSL.actTopLevelFromOAS(relevantState);
-    console.log(newState, mostRelevantEndpoint);
-    // TODO: After parsing, do we want to see if we need to remove items from the current state?
+    // Update state if needed
+    Object.keys(newState).forEach(code =>
+      Object.keys(newState[code]).forEach(media => {
+        const state = newState[code][media];
+        if (state === undefined) {
+          // Marked for deletion
+          this.deleteStateInternal(
+            mostRelevantEndpoint,
+            matchingMethod,
+            code,
+            media,
+          );
+        } else if (Object.keys(state).length > 0) {
+          // new state available
+          this.updateStateInternal(mostRelevantEndpoint, matchingMethod, {
+            [code]: { [media]: state },
+          });
+        }
+      }),
+    );
     return Object.keys(parsed).length > 0 ? parsed : undefined;
   }
 
@@ -172,5 +180,32 @@ export class State {
       ...this.state[endpoint][method],
       ...responses,
     };
+  }
+
+  private deleteStateInternal(
+    endpoint: string,
+    method: ExtendedHTTPMethod,
+    code: string,
+    mediaType: string,
+  ) {
+    if (
+      this.state[endpoint] === undefined ||
+      this.state[endpoint][method] === undefined ||
+      this.state[endpoint][code] === undefined ||
+      this.state[endpoint][code][mediaType] === undefined
+    ) {
+      return;
+    }
+
+    delete this.state[endpoint][code][mediaType];
+    if (Object.keys(this.state[endpoint][method][code]).length === 0) {
+      delete this.state[endpoint][method][code];
+      if (Object.keys(this.state[endpoint][method]).length === 0) {
+        delete this.state[endpoint][method];
+        if (Object.keys(this.state[endpoint]).length === 0) {
+          delete this.state[endpoint];
+        }
+      }
+    }
   }
 }

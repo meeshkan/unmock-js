@@ -122,7 +122,9 @@ const actOnSchema = (
   const newStateAndResult = actWithAllActors(schema);
 
   const parsed = defaultsDeep({}, ...newStateAndResult.parsed);
-  const newState = defaultsDeep({}, ...newStateAndResult.newState);
+  const newState = newStateAndResult.newState.includes(undefined) // undefined means state is marked for deletion
+    ? undefined
+    : defaultsDeep({}, ...newStateAndResult.newState);
 
   const maybeProperties = parsed.properties;
   if (
@@ -137,8 +139,5 @@ const actOnSchema = (
     delete parsed.properties;
   }
 
-  return {
-    parsed,
-    newState: Object.keys(newState).length > 0 ? newState : undefined,
-  };
+  return { parsed, newState };
 };
