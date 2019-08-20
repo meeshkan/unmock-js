@@ -129,6 +129,15 @@ describe("Test object provider", () => {
     expect(spreadState).toEqual({ spreadState: {} }); // Empty state => empty spread state
   });
 
+  it("with undefined or null values", () => {
+    // What does it mean to have undefined/null as value?
+    [undefined, null].forEach(val => {
+      const res = objResponse({ test: val }).gen(schema);
+      expect(res.error).toContain("undefined or null");
+      expect(res.spreadState).toEqual({});
+    });
+  });
+
   it("with specific path", () => {
     const spreadState = objResponse({
       test: { id: "a" },

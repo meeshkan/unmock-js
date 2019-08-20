@@ -90,6 +90,88 @@ const generateTextResponse = (
 };
 
 /**
+ * Matches between partial `state` and `schema` when given `key` is missing in `schema`,
+ * by traversing `schema` if possible. If traversal is not possible, a value of `null` is assigned to given `key`.
+ * @param schema
+ * @param state
+ * @param key
+ */
+const matchWhenMissingKey = (schema: any, state: any, key: string) => {
+  if (hasNoNestedItems(schema)) {
+    // Option 1a: no matching key and no traversal to go through - the key is missing
+    return { [key]: null };
+  }
+  debugLog(`matchWhenMissingKey: traversing nested items for ${key}`);
+  // Option 1b: current schema has no matching key, but contains indirection (items/properties, etc)
+  // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
+  const translated = DSL.replaceDSLWithOAS(state, schema);
+  const spread = {
+    ...oneLevelOfIndirectNestedness(schema, state),
+    ...translated,
+  };
+  if (Object.keys(spread).length === 0) {
+    spread[key] = null;
+  }
+  return spread;
+};
+
+/**
+ * Matches between partial `state` and `schema` when given `state[key]` is a concrete value.
+ * Validates `state[key]` against `schema[key]`. If validation fails, a value of `null` is assigned to given `key`.
+ * @param schema
+ * @param state
+ * @param key
+ */
+const matchWithConcreteValue = (schema: any, value: any, key: string) => ({
+  [key]:
+    isSchema(schema) && ajv.validate(schema, value)
+      ? { ...schema, const: value }
+      : typeof value === "function"
+      ? { ...schema, "x-unmock-function": value }
+      : null,
+});
+
+/**
+ * Matches between partial `state` and `schema` when given `state[key]` is not a concrete value.
+ * Traverses both `state[key]` and `state` to further match.
+ * If traversal is not possible, a value of `null` is assigned to given `key`.
+ * @param schema
+ * @param state
+ * @param key
+ */
+const matchWithNonConcreteValue = (schema: any, state: any, key: string) => {
+  const stateValue = state[key]; // assumed to exist
+  if ([undefined, null].includes(stateValue)) {
+    throw new Error(
+      `${key} in '${JSON.stringify(state)}' is undefined or null!`,
+    );
+  }
+  if (hasNoNestedItems(schema) && isEmptyObject(schema)) {
+    debugLog(
+      `matchWithNonConcreteValue: but more traversal is needed and not possible -> missing value found`,
+    );
+    // Option 3: Current schema has matching key, but state specifies an object and schema has final value
+    return { [key]: null };
+  }
+
+  debugLog(
+    `matchWithNonConcreteValue: traversing ${JSON.stringify(
+      schema,
+    )} and ${JSON.stringify(stateValue)}`,
+  );
+  // Option 4: Current scheme has matching key, state specifies an object - traverse schema and indirection
+  // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
+  const translated = DSL.replaceDSLWithOAS(stateValue, schema);
+  const spread = {
+    [key]: {
+      ...spreadStateFromService(schema, stateValue),
+      ...translated,
+    },
+  };
+  return oneLevelOfIndirectNestedness(schema, state, spread);
+};
+
+/**
  * Given a state request, finds the matching objects
  * within the schema that apply to the request. These
  * are fetched so that one can use the spread operator
@@ -113,126 +195,53 @@ const spreadStateFromService = (
       statePath,
     )} in ${JSON.stringify(serviceSchema)}`,
   );
-  let matches: { [key: string]: any } = {};
 
-  for (const key of Object.keys(statePath)) {
-    debugLog(
-      `spreadStateFromService: traversing the given state, looking to match ${key}`,
-    );
-    const scm = serviceSchema[key];
-    const stateValue = statePath[key];
-
-    if (scm === undefined) {
-      if (hasNestedItems(serviceSchema)) {
-        debugLog(
-          `spreadStateFromService: No ${key} in schema, traversing nested items instead`,
-        );
-        // Option 1a: current schema has no matching key, but contains indirection (items/properties, etc)
-        // `statePath` at this point may also contain DSL elements, so we parse them before moving onwards
-        const translated = DSL.replaceDSLWithOAS(statePath, serviceSchema);
-        const spread = {
-          ...oneLevelOfIndirectNestedness(serviceSchema, statePath),
-          ...translated,
-        };
-        if (Object.keys(spread).length === 0) {
-          spread[key] = null;
-        }
-        matches = { ...matches, ...spread };
-      } else {
-        // Option 1b: no matching key and no traversal to go through - the key is missing
-        matches[key] = null;
-      }
-    } else if (scm !== undefined) {
-      if (isConcreteValue(stateValue)) {
-        debugLog(
-          `spreadStateFromService: Found ${key} in schema, validating ${stateValue} against ${JSON.stringify(
-            scm,
-          )}, using null if types mismatch`,
-        );
-        // Option 2: Current scheme has matching key, and the state specifies a non-object (or schema). Validate schema.
-        // TODO do we want to throw for invalid types?
-        const spread = {
-          [key]:
-            isSchema(scm) && ajv.validate(scm, stateValue)
-              ? { ...scm, const: stateValue }
-              : typeof stateValue === "function"
-              ? { ...scm, "x-unmock-function": stateValue }
-              : null,
-        };
-        matches = { ...matches, ...spread };
-      } else if (hasNestedItems(scm) || isNonEmptyObject(scm)) {
-        debugLog(
-          `spreadStateFromService: Found ${key} in schema, traversing ${JSON.stringify(
-            scm,
-          )} and ${JSON.stringify(stateValue)}`,
-        );
-        // Option 3: Current scheme has matching key, state specifies an object - traverse schema and indirection
-        // `stateValue` at this point may also contain DSL elements, so we parse them before moving onwards
-        const translated = DSL.replaceDSLWithOAS(stateValue, scm);
-        const spread = {
-          [key]: { ...spreadStateFromService(scm, stateValue), ...translated },
-        };
-        matches = {
-          ...matches,
-          ...oneLevelOfIndirectNestedness(scm, statePath, spread),
-        };
-      } else {
-        debugLog(
-          `spreadStateFromService: Found ${key} in schema, but more ` +
-            `traversal is needed and not possible -> missing value found`,
-        );
-        // Option 4: Current schema has matching key, but state specifies an object and schema has final value
-        matches[key] = null;
-      }
-    } else {
-      throw new Error(
-        `${statePath[key]} (object '${JSON.stringify(
-          statePath,
-        )}' with key '${key}') is not an object, string, number, boolean or function!`,
+  return Object.keys(statePath)
+    .map(key => {
+      debugLog(
+        `spreadStateFromService: traversing the given state, looking to match ${key}`,
       );
-    }
-  }
-  debugLog(
-    `spreadStateFromService: Results for this iteration: ${JSON.stringify(
-      matches,
-    )}`,
-  );
-  return matches;
+      const scm = serviceSchema[key];
+      const stateValue = statePath[key];
+      return scm === undefined
+        ? matchWhenMissingKey(serviceSchema, statePath, key)
+        : isConcreteValue(stateValue)
+        ? matchWithConcreteValue(scm, stateValue, key)
+        : matchWithNonConcreteValue(scm, statePath, key);
+    })
+    .reduce((obj, el) => ({ ...obj, ...el }), {});
 };
 
 // Items that hold nested contents in OAS
 const NESTED_SCHEMA_ITEMS = ["properties", "items", "additionalProperties"];
 
-const hasNestedItems = (obj: any) =>
-  NESTED_SCHEMA_ITEMS.some((key: string) => obj[key] !== undefined);
+const hasNoNestedItems = (obj: any) =>
+  NESTED_SCHEMA_ITEMS.every((key: string) => obj[key] === undefined);
 
 const isConcreteValue = (obj: any) =>
   ["string", "number", "boolean", "function"].includes(typeof obj);
 
-const isNonEmptyObject = (obj: any) =>
-  typeof obj === "object" && Object.keys(obj).length > 0;
+const isEmptyObject = (obj: any) =>
+  typeof obj !== "object" || Object.keys(obj).length === 0;
 
 const oneLevelOfIndirectNestedness = (
   schema: any,
   path: any,
   internalObj: { [key: string]: any } = {},
-) => {
-  for (const key of NESTED_SCHEMA_ITEMS) {
-    if (schema[key] !== undefined) {
-      const maybeContents = spreadStateFromService(schema[key], path);
-      if (
-        maybeContents !== undefined &&
-        Object.keys(maybeContents).length > 0 &&
-        Object.keys(maybeContents).every(
-          (k: string) => maybeContents[k] !== null,
-        )
-      ) {
-        internalObj[key] = maybeContents;
-      }
+) =>
+  NESTED_SCHEMA_ITEMS.reduce((o, key) => {
+    if (schema[key] === undefined) {
+      return o;
     }
-  }
-  return internalObj;
-};
+    const maybeContents = spreadStateFromService(schema[key], path);
+    const hasContents =
+      maybeContents !== undefined &&
+      Object.keys(maybeContents).length > 0 &&
+      Object.keys(maybeContents).every(
+        (k: string) => maybeContents[k] !== null,
+      );
+    return { ...o, ...(hasContents ? { [key]: maybeContents } : {}) };
+  }, internalObj);
 
 /**
  * Recursively iterates over given `obj` and verifies all values are
