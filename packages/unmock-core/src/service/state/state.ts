@@ -87,7 +87,7 @@ export class State {
   }
 
   /**
-   * Returns the state for given combination of method and endpoint.
+   * Returns the state for given combination of method and endpoint. Might update state according to DSL.
    * At this point, method is expected to be a valid HTTP method, and endpoint is expected
    * to be specific endpoint.
    * @param method
@@ -139,30 +139,33 @@ export class State {
 
     const { parsed, newState } = DSL.actTopLevelFromOAS(relevantState);
     // Update state if needed
-    Object.keys(newState).forEach(code =>
-      Object.keys(newState[code]).forEach(media => {
-        const state = newState[code][media];
-        if (state === undefined) {
-          // Marked for deletion
-          this.deleteStateInternal(
-            mostRelevantEndpoint,
-            matchingMethod,
-            code,
-            media,
-          );
-        } else if (Object.keys(state).length > 0) {
-          // new state available
-          this.updateStateInternal(mostRelevantEndpoint, matchingMethod, {
-            [code]: { [media]: state },
-          });
-        }
-      }),
-    );
+    this.updateStateFromDSL(newState, mostRelevantEndpoint, matchingMethod);
     return Object.keys(parsed).length > 0 ? parsed : undefined;
   }
 
   public reset() {
     this.state = {};
+  }
+
+  private updateStateFromDSL(
+    newState: codeToMedia,
+    endpoint: string,
+    method: ExtendedHTTPMethod,
+  ) {
+    Object.keys(newState).forEach(code =>
+      Object.keys(newState[code]).forEach(media => {
+        const state = newState[code][media];
+        if (state === undefined) {
+          // Marked for deletion
+          this.deleteStateInternal(endpoint, method, code, media);
+        } else if (Object.keys(state).length > 0) {
+          // new state available
+          this.updateStateInternal(endpoint, method, {
+            [code]: { [media]: state },
+          });
+        }
+      }),
+    );
   }
 
   private updateStateInternal(
