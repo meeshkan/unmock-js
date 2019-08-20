@@ -1,12 +1,12 @@
-import { SinonSpy, spy as sinonSpy } from "sinon";
+import { SinonSpy as SinonSpyType, spy as sinonSpy } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
 
-export type RequestResponseSpy = SinonSpy<
+export type RequestResponseSpy = SinonSpyType<
   [ISerializedRequest],
   ISerializedResponse
 >;
 
-interface IRequestResponsePair {
+export interface IRequestResponsePair {
   req: ISerializedRequest;
   res: ISerializedResponse;
 }
@@ -23,18 +23,13 @@ export interface ICallTracker {
   reset(): void;
 }
 
-export type RequestResponseSpyNotifier = CallTracker<
-  ISerializedRequest,
-  ISerializedResponse
->;
-
 /**
  * Container for tracking spy calls via `track` method,
  * calls are exposed via `spy` property.
  */
 class CallTracker<TArg = any, TReturnValue = any> {
   // tslint:disable-line:max-classes-per-file
-  public readonly spy: SinonSpy<[TArg], TReturnValue>;
+  public readonly spy: SinonSpyType<[TArg], TReturnValue>;
   private returnValue?: TReturnValue;
   constructor() {
     this.spy = sinonSpy(this.spyFn.bind(this));
