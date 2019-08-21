@@ -14,7 +14,8 @@ export {
   CustomConsole as UnmockConsole,
 } from "./console";
 
-export { default as sinon } from "sinon";
+import sinon from "sinon";
+export { sinon };
 
 import { StateFacadeType } from "./service/interfaces";
 export type States = StateFacadeType;
