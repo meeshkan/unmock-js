@@ -41,7 +41,9 @@ describe("Tests generator", () => {
     });
     services.slack.state({}); // should pass
     services.petstore.state({}); // should pass
-    expect(() => services.github.state({})).toThrow("service named 'github'"); // no github service
+    expect(() => services.github.state({})).toThrow(
+      "property 'state' of undefined",
+    ); // no github service
   });
 
   it("sets a state for swagger api converted to openapi", () => {

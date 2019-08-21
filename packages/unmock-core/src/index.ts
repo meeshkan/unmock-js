@@ -1,7 +1,6 @@
 import {
   IBackend,
   ILogger,
-  IServiceStore,
   IUnmockOptions,
   IUnmockPackage,
 } from "./interfaces";
@@ -49,12 +48,13 @@ export class CorePackage implements IUnmockPackage {
       flaky: () => this.flaky.get(),
     };
     this.backend.initialize(opts);
+    return this.services;
   }
   public init() {
-    this.on();
+    return this.on();
   }
   public initialize() {
-    this.on();
+    return this.on();
   }
 
   public off() {

@@ -74,7 +74,7 @@ const StateHandler = (service: IServiceCore) => ({
         state: StateInput | undefined,
       ) => {
         stateUpdateFn(endpoint, state, resetOrRestMethod);
-        return new Proxy({}, StateHandler(service));
+        return new Proxy(stateUpdateFn, StateHandler(service));
       };
     }
     // `resetOrRestMethod` is either "reset" or some bogus we can't handle

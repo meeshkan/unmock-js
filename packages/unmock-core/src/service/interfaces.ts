@@ -51,10 +51,6 @@ export const isExtendedRESTMethod = (
 ): maybeMethod is ExtendedHTTPMethod =>
   maybeMethod === DEFAULT_STATE_HTTP_METHOD || isRESTMethod(maybeMethod);
 
-export interface IServiceMapping {
-  [serviceName: string]: IServiceCore;
-}
-
 export interface IStateInputGenerator {
   /**
    * Whether or not the given state is actually empty
@@ -112,9 +108,7 @@ export interface IService {
   readonly state: StateType;
 }
 
-export interface IServiceStore {
-  [serviceName: string]: IService;
-}
+export type ServiceStoreType = Record<string, IService>;
 
 export interface IServiceCore {
   /**

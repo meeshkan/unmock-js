@@ -15,7 +15,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
   responseCreatorFactory,
-  IServiceStore,
+  ServiceStoreType,
   UnmockConsole,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
@@ -93,7 +93,7 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend implements IBackend {
-  private serviceStore: IServiceStore = {};
+  private serviceStore: ServiceStoreType = {};
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
@@ -110,7 +110,7 @@ export default class NodeBackend implements IBackend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: IUnmockOptions): any {
+  public initialize(options: IUnmockOptions) {
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }

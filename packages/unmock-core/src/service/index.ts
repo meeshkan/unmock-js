@@ -1,3 +1,3 @@
 export { ServiceParser } from "./parser";
 
-export { IService, IServiceStore } from "./interfaces";
+export { IService, ServiceStoreType } from "./interfaces";

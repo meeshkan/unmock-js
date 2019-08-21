@@ -28,7 +28,9 @@ const DynamicPathsService = (
 describe("Fluent API and Service instantiation tests", () => {
   it("Store with empty paths throws", () => {
     const store = PetStoreWithEmptyPaths;
-    expect(() => store.noservice).toThrow("No service named 'noservice'");
+    expect(() => store.noservice.state).toThrow(
+      "property 'state' of undefined",
+    );
     expect(() => store.petstore.state("boom")).toThrow("has no defined paths");
     expect(() => store.petstore.state.get("boom")).toThrow(
       "has no defined paths",
@@ -55,7 +57,8 @@ describe("Fluent API and Service instantiation tests", () => {
 
   it("Non HTTP methods are recognized as services and throws", () => {
     const store = PetStoreWithPseudoResponses;
-    expect(() => store.get).toThrow("No service named 'get'");
+    // @ts-ignore
+    expect(() => store.get("foo")).toThrow("not a function");
     // @ts-ignore
     expect(() => store.petstore.state.get({}).boom).toThrow(
       "what to do with 'boom'",

@@ -18,12 +18,12 @@ import {
   Dereferencer,
   Header,
   IServiceCore,
-  IServiceStore,
   MatcherResponse,
   Operation,
   Response,
   Responses,
   Schema,
+  ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
@@ -46,7 +46,7 @@ export function responseCreatorFactory({
   serviceDefLoader: IServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { services: IServiceStore; createResponse: CreateResponse } {
+}): { services: ServiceStoreType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
     ServiceParser.parse(serviceDef),
