@@ -8,7 +8,6 @@ import {
   StateInput,
   StateType,
 } from "./interfaces";
-export { ServiceParser } from "./parser";
 import {
   functionResponse,
   objResponse,
