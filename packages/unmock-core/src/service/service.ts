@@ -45,6 +45,10 @@ export class Service implements IService {
       : objResponse(state);
 
     this.core.updateState({ endpoint, method, newState });
+    return new Proxy(
+      this.updateDefaultState.bind(this),
+      StateHandler(this.core),
+    );
   }
 }
 

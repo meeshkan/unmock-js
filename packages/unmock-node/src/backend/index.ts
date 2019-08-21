@@ -96,7 +96,6 @@ export default class NodeBackend implements IBackend {
   private serviceStore: IServiceStore = {};
   private readonly config: INodeBackendOptions;
   private mitm: any;
-  private stateStore?: IServiceStore = {};
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
@@ -156,12 +155,8 @@ export default class NodeBackend implements IBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    if (this.stateStore) {
-      Object.values(this.serviceStore).forEach(service =>
-        service.state.reset(),
-      );
-      this.serviceStore = {};
-    }
+    Object.values(this.serviceStore).forEach(service => service.state.reset());
+    this.serviceStore = {};
     ClientRequestTracker.stop();
   }
 

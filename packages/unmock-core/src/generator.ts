@@ -26,7 +26,6 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
-import { Service } from "./service/service";
 import { ServiceStore } from "./service/serviceStore";
 
 type Headers = Record<string, Header>;
@@ -52,17 +51,19 @@ export function responseCreatorFactory({
   const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
     ServiceParser.parse(serviceDef),
   );
-  const serviceStore = new ServiceStore(coreServices);
-  const services: IServiceStore = coreServices.reduce(
-    (o, core) => ({ ...o, [core.name]: new Service(core) }),
-    {},
-  );
+
+  const match = (sreq: ISerializedRequest) =>
+    coreServices
+      .map(service => service.match(sreq))
+      .filter(res => res !== undefined)[0];
+  const services = ServiceStore(coreServices);
+
   return {
     services,
     createResponse: (req: ISerializedRequest) => {
       // Setup the unmock properties for jsf parsing of x-unmock-*
       setupJSFUnmockProperties(req);
-      const res = generateMockFromTemplate(options, serviceStore.match(req));
+      const res = generateMockFromTemplate(options, match(req));
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
       jsf.reset(); // removes unmock-properties
       return res;

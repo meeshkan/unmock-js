@@ -1,10 +1,5 @@
 import { CorePackage, IBackend } from "..";
 
-class TestPackage extends CorePackage {
-  public states() {
-    return undefined;
-  }
-}
 // tslint:disable-next-line: max-classes-per-file
 class TestBackend implements IBackend {
   public initialize(_: any): never {
@@ -21,9 +16,9 @@ const backend = new TestBackend();
 
 describe("Tests core package", () => {
   describe("tests allowedHosts", () => {
-    let pkg: TestPackage;
+    let pkg: CorePackage;
     beforeEach(() => {
-      pkg = new TestPackage(backend);
+      pkg = new CorePackage(backend);
     });
 
     test("defaults work as expected", () => {

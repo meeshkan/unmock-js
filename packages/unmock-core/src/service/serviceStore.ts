@@ -1,19 +1,20 @@
-import { ISerializedRequest } from "../interfaces";
-import { IServiceCore, IServiceMapping, MatcherResponse } from "./interfaces";
+import { IService, IServiceCore, IServiceStore } from "./interfaces";
+import { Service } from "./service";
 
-export class ServiceStore {
-  private readonly serviceMapping: IServiceMapping = {};
+export const ServiceStore = (coreServices: IServiceCore[]) =>
+  new Proxy(
+    coreServices.reduce(
+      (o, core) => ({ ...o, [core.name]: new Service(core) }),
+      {},
+    ),
+    getService,
+  );
 
-  constructor(services: IServiceCore[]) {
-    services.forEach(service => {
-      this.serviceMapping[service.name] = service;
-    });
-  }
-
-  public match(sreq: ISerializedRequest): MatcherResponse {
-    // TODO: Maybe use fp-ts' Option here
-    return Object.values(this.serviceMapping)
-      .map(service => service.match(sreq))
-      .filter(res => res !== undefined)[0];
-  }
-}
+const getService = {
+  get: (store: IServiceStore, serviceName: string): IService => {
+    if (store[serviceName] !== undefined) {
+      return store[serviceName];
+    }
+    throw new Error(`unmock: No service named '${serviceName}'!`);
+  },
+};

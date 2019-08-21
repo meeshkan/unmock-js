@@ -24,7 +24,6 @@ export class CorePackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
-  public readonly services: IServiceStore;
   protected readonly backend: IBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
 
@@ -36,7 +35,6 @@ export class CorePackage implements IUnmockPackage {
   ) {
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
-    this.services = this.backend.services;
 
     this.allowedHosts = new AllowedHosts();
     this.flaky = new BooleanSetting();
@@ -61,5 +59,9 @@ export class CorePackage implements IUnmockPackage {
 
   public off() {
     this.backend.reset();
+  }
+
+  public get services() {
+    return this.backend.services;
   }
 }
