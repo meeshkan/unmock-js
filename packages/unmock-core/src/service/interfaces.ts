@@ -172,11 +172,13 @@ export type UnmockServiceState = IUnmockServiceState & ITopLevelDSL | IDSL;
 // Type definitions for the Proxy class used to wrap the State Store.
 // ##########################
 
-// Used to define the simplify the types used
-type FluentStateStore = StateFacadeType & SetStateForSpecificMethod;
 // Used to define the response from intercepted request
 type FunctionInput = (req: ISerializedRequest) => any;
-type StateInput = IStateInputGenerator | UnmockServiceState | string | FunctionInput;
+export type StateInput =
+  | IStateInputGenerator
+  | UnmockServiceState
+  | string
+  | FunctionInput;
 
 // Used to incorporate the reset method when needed
 interface IResetState {
@@ -194,7 +196,7 @@ type SetStateForSpecificMethod = {
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any GET endpoint, or if no GET endpoints exist.
    */
-  get(state: StateInput): FluentStateStore;
+  get(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given GET endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -204,14 +206,14 @@ type SetStateForSpecificMethod = {
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the state cannot be applied to the given endpoint, or if the endpoint does not specify a GET operation.
    */
-  get(endpoint: string, state: StateInput): FluentStateStore;
+  get(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all HEAD endpoints in the current service, for which the state can be applied.
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any HEAD endpoint, or if no HEAD endpoints exist.
    */
-  head(state: StateInput): FluentStateStore;
+  head(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given HEAD endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -221,14 +223,14 @@ type SetStateForSpecificMethod = {
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the state cannot be applied to the given endpoint, or if the endpoint does not specify a HEAD operation.
    */
-  head(endpoint: string, state: StateInput): FluentStateStore;
+  head(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all POST endpoints in the current service, for which the state can be applied.
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any POST endpoint, or if no POST endpoints exist.
    */
-  post(state: StateInput): FluentStateStore;
+  post(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given POST endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -239,7 +241,7 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a POST operation.
    */
-  post(endpoint: string, state: StateInput): FluentStateStore;
+  post(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all PUT endpoints in the current service, for which the state can be applied.
@@ -247,7 +249,7 @@ type SetStateForSpecificMethod = {
    * @throws If the given state cannot be applied to any PUT endpoint,
    *         or if no PUT endpoints exist.
    */
-  put(state: StateInput): FluentStateStore;
+  put(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given PUT endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -258,7 +260,7 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a PUT operation.
    */
-  put(endpoint: string, state: StateInput): FluentStateStore;
+  put(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all PATCH endpoints in the current service, for which the state can be applied.
@@ -266,7 +268,7 @@ type SetStateForSpecificMethod = {
    * @throws If the given state cannot be applied to any PATCH endpoint,
    *         or if no PATCH endpoints exist.
    */
-  patch(state: StateInput): FluentStateStore;
+  patch(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given PATCH endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -277,14 +279,14 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a PATCH operation.
    */
-  patch(endpoint: string, state: StateInput): FluentStateStore;
+  patch(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all DELETE endpoints in the current service, for which the state can be applied.
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any DELETE endpoint, or if no DELETE endpoints exist.
    */
-  delete(state: StateInput): FluentStateStore;
+  delete(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given DELETE endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -295,14 +297,14 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a DELETE operation.
    */
-  delete(endpoint: string, state: StateInput): FluentStateStore;
+  delete(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all OPTIONS endpoints in the current service, for which the state can be applied.
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any OPTIONS endpoint, or if no OPTIONS endpoints exist.
    */
-  options(state: StateInput): FluentStateStore;
+  options(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given OPTIONS endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -313,14 +315,14 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a OPTIONS operation.
    */
-  options(endpoint: string, state: StateInput): FluentStateStore;
+  options(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 
   /**
    * Sets the given state for all TRACE endpoints in the current service, for which the state can be applied.
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any TRACE endpoint, or if no TRACE endpoints exist.
    */
-  trace(state: StateInput): FluentStateStore;
+  trace(state: StateInput): SetStateForSpecificMethod;
   /**
    * Sets the given state for the given TRACE endpoint (or matching endpoints if using a glob pattern).
    * @param {string} endpoint Desired endpoint for the state.
@@ -331,7 +333,7 @@ type SetStateForSpecificMethod = {
    * @throws If the state cannot be applied to the given endpoint,
    *         or if the endpoint does not specify a TRACE operation.
    */
-  trace(endpoint: string, state: StateInput): FluentStateStore;
+  trace(endpoint: string, state: StateInput): SetStateForSpecificMethod;
 } & IResetState;
 
 // Used for service-general state setups
@@ -341,7 +343,7 @@ type SetStateForAllPaths =
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the given state cannot be applied to any endpoint.
    */
-  (state: StateInput) => FluentStateStore;
+  (state: StateInput) => SetStateForSpecificMethod;
 
 type SetStateForMatchingEndpoint =
   /**
@@ -353,7 +355,7 @@ type SetStateForMatchingEndpoint =
    * @param state An object setting the state or a DSL transformer used to set it.
    * @throws If the state cannot be applied to the given endpoint.
    */
-  (endpoint: string, state: StateInput) => FluentStateStore;
+  (endpoint: string, state: StateInput) => SetStateForSpecificMethod;
 
 export type StateFacadeType = {
   // Has either `reset()` function or string signature with function call
@@ -361,3 +363,8 @@ export type StateFacadeType = {
     SetStateForMatchingEndpoint &
     SetStateForSpecificMethod;
 } & IResetState;
+
+export type StateType = SetStateForAllPaths &
+  SetStateForMatchingEndpoint &
+  SetStateForSpecificMethod &
+  IResetState;

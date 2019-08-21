@@ -3,7 +3,8 @@ import {
   ExtendedHTTPMethod,
   isRESTMethod,
   isStateInputGenerator,
-  UnmockServiceState,
+  StateInput,
+  StateType,
 } from "./interfaces";
 export { ServiceParser } from "./parser";
 import { ServiceCore } from "./serviceCore";
@@ -14,7 +15,7 @@ import {
 } from "./state/transformers";
 
 export class Service {
-  public readonly state: any;
+  public readonly state: StateType;
   constructor(private readonly core: ServiceCore) {
     this.state = new Proxy(
       this.updateDefaultState.bind(this),
@@ -22,14 +23,11 @@ export class Service {
     );
   }
 
-  private updateDefaultState(state: UnmockServiceState | string): void;
+  private updateDefaultState(state: StateInput | string): void;
+  private updateDefaultState(endpoint: string, state: StateInput): void;
   private updateDefaultState(
-    endpoint: string,
-    state: UnmockServiceState | string,
-  ): void;
-  private updateDefaultState(
-    stateOrEndpoint: string | UnmockServiceState,
-    maybeState?: UnmockServiceState | string,
+    stateOrEndpoint: string | StateInput,
+    maybeState?: StateInput,
     method: ExtendedHTTPMethod = DEFAULT_STATE_HTTP_METHOD,
   ) {
     const { state, endpoint } =
@@ -68,7 +66,7 @@ const StateHandler = (service: ServiceCore) => ({
       // `resetOrRestMethod` is indeed a method and we use the previously used service
       return (
         endpoint: string = DEFAULT_STATE_ENDPOINT,
-        state: UnmockServiceState | undefined | string,
+        state: StateInput | undefined,
       ) => {
         stateUpdateFn(endpoint, state, resetOrRestMethod);
         return new Proxy({}, StateHandler(service));
