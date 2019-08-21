@@ -8,18 +8,12 @@ const servicesDirectory = path.join(__dirname, "..", "resources");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
-    let nodeInterceptor: NodeBackend;
-    let unmock: CorePackage;
+    const nodeInterceptor = new NodeBackend({ servicesDirectory });
+    const unmock = new CorePackage(nodeInterceptor);
 
-    beforeAll(() => {
-      nodeInterceptor = new NodeBackend({ servicesDirectory });
-      unmock = new CorePackage(nodeInterceptor);
-      unmock.on();
-    });
+    beforeAll(() => unmock.on());
 
-    afterAll(() => {
-      unmock.off();
-    });
+    afterAll(() => unmock.off());
 
     beforeEach(() =>
       Object.values(unmock.services).forEach(core => core.state.reset()),
