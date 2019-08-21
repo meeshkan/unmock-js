@@ -12,6 +12,19 @@ import { IValidationError } from "./interfaces";
 
 // These are specific to OAS and not part of json schema standard
 const ajv = new Ajv({ unknownFormats: ["int32", "int64"] });
+/**
+ * Adds a [key: string] signature to Schema, so accessing specific objects is permitted
+ */
+interface IPartialSchema extends Schema {
+  [key: string]: any;
+}
+interface ISpreadState {
+  [pathKey: string]:
+    | Schema
+    | { const: any }
+    | { "x-unmock-function": () => any }
+    | null;
+}
 
 const debugLog = debug("unmock:state:transformers");
 
@@ -43,7 +56,7 @@ export const objResponse = (
       if (missingParam !== undefined) {
         throw new Error(missingParam.msg);
       }
-      return spread;
+      return spread as Record<string, Schema>;
     }),
   state,
 });
@@ -96,7 +109,11 @@ const generateTextResponse = (
  * @param state
  * @param key
  */
-const matchWhenMissingKey = (schema: any, state: any, key: string) => {
+const matchWhenMissingKey = (
+  schema: Schema,
+  state: UnmockServiceState,
+  key: string,
+): ISpreadState => {
   if (hasNoNestedItems(schema)) {
     // Option 1a: no matching key and no traversal to go through - the key is missing
     return { [key]: null };
@@ -122,7 +139,11 @@ const matchWhenMissingKey = (schema: any, state: any, key: string) => {
  * @param state
  * @param key
  */
-const matchWithConcreteValue = (schema: any, value: any, key: string) => ({
+const matchWithConcreteValue = (
+  schema: Schema,
+  value: any,
+  key: string,
+): ISpreadState => ({
   [key]:
     isSchema(schema) && ajv.validate(schema, value)
       ? { ...schema, const: value }
@@ -139,7 +160,11 @@ const matchWithConcreteValue = (schema: any, value: any, key: string) => ({
  * @param state
  * @param key
  */
-const matchWithNonConcreteValue = (schema: any, state: any, key: string) => {
+const matchWithNonConcreteValue = (
+  schema: Schema,
+  state: UnmockServiceState,
+  key: string,
+): ISpreadState => {
   const stateValue = state[key]; // assumed to exist
   if ([undefined, null].includes(stateValue)) {
     throw new Error(
@@ -187,9 +212,9 @@ const matchWithNonConcreteValue = (schema: any, state: any, key: string) => {
  *          number or boolean (i.e. `{ path: { to: { state: undefined } } }` )
  */
 const spreadStateFromService = (
-  serviceSchema: any,
-  statePath: any,
-): { [pathKey: string]: any | null } => {
+  serviceSchema: IPartialSchema,
+  statePath: UnmockServiceState,
+): ISpreadState => {
   debugLog(
     `spreadStateFromService: Looking to match ${JSON.stringify(
       statePath,
@@ -215,19 +240,27 @@ const spreadStateFromService = (
 // Items that hold nested contents in OAS
 const NESTED_SCHEMA_ITEMS = ["properties", "items", "additionalProperties"];
 
-const hasNoNestedItems = (obj: any) =>
+const hasNoNestedItems = (obj: IPartialSchema) =>
   NESTED_SCHEMA_ITEMS.every((key: string) => obj[key] === undefined);
 
 const isConcreteValue = (obj: any) =>
   ["string", "number", "boolean", "function"].includes(typeof obj);
 
-const isEmptyObject = (obj: any) =>
-  typeof obj !== "object" || Object.keys(obj).length === 0;
+const isEmptyObject = (obj: Schema) => Object.keys(obj).length === 0;
 
+/**
+ * Traverses down `schema` along known OpenAPI nested items (as defined in `NESTED_SCHEMA_ITEMS`),
+ * to match `path`. Returns a copy of expanded, matching items, nested under the matching key.
+ * If `initObj` is provided, the above copy will be contain `initObj` as well, possibly overwriting existing values
+ * if they collide with the nested items.
+ * @param schema
+ * @param path
+ * @param initObj
+ */
 const oneLevelOfIndirectNestedness = (
-  schema: any,
-  path: any,
-  internalObj: { [key: string]: any } = {},
+  schema: IPartialSchema,
+  path: UnmockServiceState,
+  initObj: { [pathKey: string]: Schema | null } = {},
 ) =>
   NESTED_SCHEMA_ITEMS.reduce((o, key) => {
     if (schema[key] === undefined) {
@@ -241,7 +274,7 @@ const oneLevelOfIndirectNestedness = (
         (k: string) => maybeContents[k] !== null,
       );
     return { ...o, ...(hasContents ? { [key]: maybeContents } : {}) };
-  }, internalObj);
+  }, initObj);
 
 /**
  * Recursively iterates over given `obj` and verifies all values are
@@ -252,7 +285,7 @@ const oneLevelOfIndirectNestedness = (
  * @return An IMissingParam if some missing parameter is found, or undefined if no parameters are missing.
  */
 const DFSVerifyNoneAreNull = (
-  obj: any,
+  obj: IPartialSchema,
   nestedLevel: number = 0,
 ): IValidationError | undefined => {
   if (obj === undefined) {
@@ -266,7 +299,7 @@ const DFSVerifyNoneAreNull = (
       };
     }
     if (typeof obj[key] === "object") {
-      return DFSVerifyNoneAreNull(obj[key], nestedLevel + 1);
+      return DFSVerifyNoneAreNull(obj[key] as IPartialSchema, nestedLevel + 1);
     }
   }
   return undefined;
