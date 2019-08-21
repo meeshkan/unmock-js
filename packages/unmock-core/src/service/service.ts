@@ -1,22 +1,23 @@
 import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
+  IService,
+  IServiceCore,
   isRESTMethod,
   isStateInputGenerator,
   StateInput,
   StateType,
 } from "./interfaces";
 export { ServiceParser } from "./parser";
-import { ServiceCore } from "./serviceCore";
 import {
   functionResponse,
   objResponse,
   textResponse,
 } from "./state/transformers";
 
-export class Service {
+export class Service implements IService {
   public readonly state: StateType;
-  constructor(private readonly core: ServiceCore) {
+  constructor(private readonly core: IServiceCore) {
     this.state = new Proxy(
       this.updateDefaultState.bind(this),
       StateHandler(this.core),
@@ -59,7 +60,7 @@ const AfterResetHandler = {
   },
 };
 
-const StateHandler = (service: ServiceCore) => ({
+const StateHandler = (service: IServiceCore) => ({
   get: (stateUpdateFn: any, resetOrRestMethod: string): any => {
     // Accessing an attribute under state - different HTTP methods or reset
     if (isRESTMethod(resetOrRestMethod)) {

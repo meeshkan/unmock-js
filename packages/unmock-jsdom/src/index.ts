@@ -4,13 +4,7 @@ import BrowserLogger from "./logger/browser-logger";
 
 const backend = new JSDomBackend();
 
-class UnmockJSDOM extends CorePackage {
-  public states(): never {
-    throw new Error("Unmock JSDOM does not implement state management yet!");
-  }
-}
-
-const unmock = new UnmockJSDOM(backend, {
+const unmock = new CorePackage(backend, {
   logger: new BrowserLogger(),
 });
 

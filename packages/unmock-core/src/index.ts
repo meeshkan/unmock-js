@@ -1,6 +1,7 @@
 import {
   IBackend,
   ILogger,
+  IServiceStore,
   IUnmockOptions,
   IUnmockPackage,
 } from "./interfaces";
@@ -17,15 +18,13 @@ export {
 import sinon from "sinon";
 export { sinon };
 
-import { StateFacadeType } from "./service/interfaces";
-export type States = StateFacadeType;
-
 export const dsl = transformers;
 
-export abstract class CorePackage implements IUnmockPackage {
+export class CorePackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
+  public readonly services: IServiceStore;
   protected readonly backend: IBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
 
@@ -37,6 +36,7 @@ export abstract class CorePackage implements IUnmockPackage {
   ) {
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
+    this.services = this.backend.services;
 
     this.allowedHosts = new AllowedHosts();
     this.flaky = new BooleanSetting();
@@ -50,18 +50,16 @@ export abstract class CorePackage implements IUnmockPackage {
       log: (message: string) => this.logger.log(message),
       flaky: () => this.flaky.get(),
     };
-    return this.backend.initialize(opts);
+    this.backend.initialize(opts);
   }
   public init() {
-    return this.on();
+    this.on();
   }
   public initialize() {
-    return this.on();
+    this.on();
   }
 
   public off() {
     this.backend.reset();
   }
-
-  public abstract states(): States | undefined;
 }

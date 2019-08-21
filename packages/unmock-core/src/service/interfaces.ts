@@ -52,7 +52,7 @@ export const isExtendedRESTMethod = (
   maybeMethod === DEFAULT_STATE_HTTP_METHOD || isRESTMethod(maybeMethod);
 
 export interface IServiceMapping {
-  [serviceName: string]: IService;
+  [serviceName: string]: IServiceCore;
 }
 
 export interface IStateInputGenerator {
@@ -101,10 +101,22 @@ export type mediaTypeToSchema = Record<string, Schema>;
 export type codeToMedia = Record<string, mediaTypeToSchema>;
 
 export type MatcherResponse =
-  | { operation: Operation; state: codeToMedia | undefined; service: IService }
+  | {
+      operation: Operation;
+      state: codeToMedia | undefined;
+      service: IServiceCore;
+    }
   | undefined;
 
 export interface IService {
+  readonly state: StateType;
+}
+
+export interface IServiceStore {
+  [serviceName: string]: IService;
+}
+
+export interface IServiceCore {
   /**
    * Name for the service.
    */
@@ -356,13 +368,6 @@ type SetStateForMatchingEndpoint =
    * @throws If the state cannot be applied to the given endpoint.
    */
   (endpoint: string, state: StateInput) => SetStateForSpecificMethod;
-
-export type StateFacadeType = {
-  // Has either `reset()` function or string signature with function call
-  [serviceName: string]: SetStateForAllPaths &
-    SetStateForMatchingEndpoint &
-    SetStateForSpecificMethod;
-} & IResetState;
 
 export type StateType = SetStateForAllPaths &
   SetStateForMatchingEndpoint &

@@ -3,7 +3,7 @@ import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
   Dereferencer,
   HTTPMethod,
-  IService,
+  IServiceCore,
   IServiceInput,
   IStateInput,
   MatcherResponse,
@@ -13,7 +13,7 @@ import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
 
-export class ServiceCore implements IService {
+export class ServiceCore implements IServiceCore {
   public readonly name: string;
   public readonly absPath: string;
   public readonly dereferencer: Dereferencer;

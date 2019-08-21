@@ -15,7 +15,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
   responseCreatorFactory,
-  States,
+  IServiceStore,
   UnmockConsole,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
@@ -93,16 +93,17 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend implements IBackend {
+  private serviceStore: IServiceStore = {};
   private readonly config: INodeBackendOptions;
   private mitm: any;
-  private stateStore?: States = undefined;
+  private stateStore?: IServiceStore = {};
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
   }
 
-  public get states() {
-    return this.stateStore;
+  public get services() {
+    return this.serviceStore;
   }
 
   /**
@@ -138,7 +139,7 @@ export default class NodeBackend implements IBackend {
       unmockDirectories,
     });
 
-    const { stateStore, createResponse } = responseCreatorFactory({
+    const { services, createResponse } = responseCreatorFactory({
       listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
       options,
       serviceDefLoader,
@@ -147,9 +148,7 @@ export default class NodeBackend implements IBackend {
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
-    this.stateStore = stateStore;
-
-    return stateStore;
+    this.serviceStore = services;
   }
 
   public reset() {
@@ -158,8 +157,10 @@ export default class NodeBackend implements IBackend {
       this.mitm = undefined;
     }
     if (this.stateStore) {
-      this.stateStore.reset();
-      this.stateStore = undefined;
+      Object.values(this.serviceStore).forEach(service =>
+        service.state.reset(),
+      );
+      this.serviceStore = {};
     }
     ClientRequestTracker.stop();
   }

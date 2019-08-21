@@ -13,20 +13,20 @@ import {
   IServiceDefLoader,
   IUnmockOptions,
 } from "./interfaces";
-import { stateFacadeFactory } from "./service";
 import {
   codeToMedia,
   Dereferencer,
   Header,
-  IService,
+  IServiceCore,
+  IServiceStore,
   MatcherResponse,
   Operation,
   Response,
   Responses,
   Schema,
-  StateFacadeType,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
+import { Service } from "./service/service";
 import { ServiceStore } from "./service/serviceStore";
 
 type Headers = Record<string, Header>;
@@ -47,15 +47,18 @@ export function responseCreatorFactory({
   serviceDefLoader: IServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { stateStore: StateFacadeType; createResponse: CreateResponse } {
+}): { services: IServiceStore; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-  const services: IService[] = serviceDefs.map(serviceDef =>
+  const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
     ServiceParser.parse(serviceDef),
   );
-  const serviceStore = new ServiceStore(services);
-  const stateStore = stateFacadeFactory(serviceStore);
+  const serviceStore = new ServiceStore(coreServices);
+  const services: IServiceStore = coreServices.reduce(
+    (o, core) => ({ ...o, [core.name]: new Service(core) }),
+    {},
+  );
   return {
-    stateStore,
+    services,
     createResponse: (req: ISerializedRequest) => {
       // Setup the unmock properties for jsf parsing of x-unmock-*
       setupJSFUnmockProperties(req);
