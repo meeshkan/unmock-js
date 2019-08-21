@@ -1,9 +1,15 @@
 import { stateFacadeFactory } from "../service";
+import {
+  PetstoreServiceWithDynamicPaths,
+  PetStoreServiceWithEmptyPaths,
+  PetStoreServiceWithEmptyResponses,
+  PetStoreServiceWithPseudoResponses,
+} from "./utils";
+
 import { OpenAPIObject } from "../service/interfaces";
-import { ServiceCore } from "../service/serviceCore";
 import { ServiceStore } from "../service/serviceStore";
 
-const schemaBase: OpenAPIObject = {
+export const schemaBase: OpenAPIObject = {
   openapi: "3.0.0",
   info: {
     version: "1.0.0",
@@ -13,76 +19,25 @@ const schemaBase: OpenAPIObject = {
   paths: {},
 };
 
-// define some service populators that match IOASMappingGenerator type
 const PetStoreWithEmptyPaths = new ServiceStore([
-  new ServiceCore({ schema: schemaBase, name: "petstore" }),
+  PetStoreServiceWithEmptyPaths,
 ]);
 
 const PetStoreWithEmptyResponses = new ServiceStore([
-  new ServiceCore({
-    name: "petstore",
-    schema: { ...schemaBase, paths: { "/pets": { get: { responses: {} } } } },
-  }),
+  PetStoreServiceWithEmptyResponses,
 ]);
 
-const PetStoreWithPseudoResponses = new ServiceStore([
-  new ServiceCore({
-    name: "petstore",
-    schema: {
-      ...schemaBase,
-      paths: {
-        "/pets": {
-          get: {
-            responses: {
-              200: {
-                description: "Mock response",
-                content: {
-                  "application/json": {
-                    schema: {},
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  }),
+export const PetStoreWithPseudoResponses = new ServiceStore([
+  PetStoreServiceWithPseudoResponses,
 ]);
 
-const DynamicPathsService = (
+export const DynamicPathsService = (
   params: any,
-  ...additionalPathElement: string[]
-) => {
-  const path = `/pets/{petId}${additionalPathElement.join("/")}`;
-  return new ServiceStore([
-    new ServiceCore({
-      schema: {
-        ...schemaBase,
-        paths: {
-          [path]: {
-            get: {
-              summary: "Info for a specific pet",
-              operationId: "showPetById",
-              tags: ["pets"],
-              ...params,
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {},
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      name: "petstore",
-    }),
+  ...additionalPathElements: string[]
+) =>
+  new ServiceStore([
+    PetstoreServiceWithDynamicPaths(params, ...additionalPathElements),
   ]);
-};
 
 describe("Fluent API and Service instantiation tests", () => {
   it("Store with empty paths throws", () => {
