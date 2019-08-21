@@ -1,7 +1,7 @@
 const unmockRequireDefault = require("../").default; // tslint:disable-line:no-var-requires
 const dslRequire = require("../").dsl; // tslint:disable-line:no-var-requires
 import unmockDefaultImport from "../";
-import { dsl, UnmockRequest, UnmockResponse } from "../";
+import { dsl, sinon, UnmockRequest, UnmockResponse } from "../";
 
 describe("Imports", () => {
   describe("with require", () => {
@@ -34,6 +34,13 @@ describe("Imports", () => {
       const response: UnmockResponse = { body: "asdf", statusCode: 200 };
       expect(request).toBeDefined();
       expect(response).toBeDefined();
+    });
+  });
+  describe("for sinon", () => {
+    it("should have assert and match", () => {
+      const fooMatcher = sinon.match("foo");
+      expect(fooMatcher.test("foo")).toBe(true);
+      sinon.assert.match("foo", fooMatcher);
     });
   });
 });
