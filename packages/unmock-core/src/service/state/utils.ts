@@ -136,16 +136,13 @@ const getOperationsFromPathItem = (
       pathItem,
     )}`,
   );
-  const operations: OperationsForStateUpdate = [];
-  for (const key of Object.keys(pathItem)) {
-    if (isRESTMethod(key)) {
-      const method = key as HTTPMethod;
-      const operation = pathItem[key];
-      if (operation !== undefined) {
-        operations.push({ endpoint, method, operation });
-      }
-    }
-  }
+  const operations: OperationsForStateUpdate = Object.keys(pathItem)
+    .filter(key => isRESTMethod(key) && pathItem[key] !== undefined)
+    .map(key => ({
+      endpoint,
+      method: key as HTTPMethod,
+      operation: pathItem[key as HTTPMethod] as Operation,
+    }));
   if (operations.length === 0) {
     debugLog(`getOperationsFromPathItem: no operations found`);
     return undefined;
@@ -156,7 +153,7 @@ const getOperationsFromPathItem = (
 const stringHasDSLKeys = (input: string) =>
   DSLKeys.some((key: string) => input.includes(key));
 
-export const chooseBestMatchingError = (
+const chooseBestMatchingError = (
   firstError: IValidationError,
   secondError?: IValidationError,
 ) => {
@@ -173,3 +170,12 @@ export const chooseBestMatchingError = (
     ? secondError
     : firstError;
 };
+
+// TODO: Maybe use fp-ts' Validation type here?
+export const chooseErrorFromList = (
+  errList: Array<IValidationError | undefined>,
+) =>
+  errList.reduce(
+    (e, c) => (c === undefined ? e : chooseBestMatchingError(c, e)),
+    undefined,
+  );

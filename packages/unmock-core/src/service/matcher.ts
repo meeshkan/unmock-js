@@ -172,7 +172,10 @@ export class OASMatcher {
     }
     for (const server of servers) {
       const serverUrl = url.parse(server.url);
-      if (serverUrl.protocol === undefined || !(/^https?:$/.test(serverUrl.protocol))) {
+      if (
+        serverUrl.protocol === undefined ||
+        !/^https?:$/.test(serverUrl.protocol)
+      ) {
         throw new Error(`Unknown protocol: ${serverUrl.protocol}`);
       }
       const protocol = serverUrl.protocol.replace(":", "");
