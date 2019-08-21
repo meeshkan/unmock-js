@@ -25,6 +25,7 @@ export class ServiceStore {
   }
 
   public match(sreq: ISerializedRequest): MatcherResponse {
+    // TODO: Maybe use fp-ts' Option here
     return Object.values(this.serviceMapping)
       .map(service => service.match(sreq))
       .filter(res => res !== undefined)[0];

@@ -171,6 +171,7 @@ const chooseBestMatchingError = (
     : firstError;
 };
 
+// TODO: Maybe use fp-ts' Validation type here?
 export const chooseErrorFromList = (
   errList: Array<IValidationError | undefined>,
 ) =>
