@@ -13,6 +13,9 @@ class TestBackend implements IBackend {
   public reset() {
     return;
   }
+  public get services() {
+    return {};
+  }
 }
 const backend = new TestBackend();
 
