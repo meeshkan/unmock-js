@@ -3,7 +3,7 @@ import { isLeft } from "fp-ts/lib/Either";
 import jsYaml from "js-yaml";
 import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile } from "../interfaces";
-import { Service } from "./service";
+import { ServiceCore } from "./serviceCore";
 
 const debugLog = debug("unmock:service-parser");
 
@@ -15,7 +15,7 @@ export abstract class ServiceParser {
    * Parse service definition into a service.
    * @param serviceDef Service definition.
    */
-  public static parse(serviceDef: IServiceDef): Service {
+  public static parse(serviceDef: IServiceDef): ServiceCore {
     const serviceFiles = serviceDef.serviceFiles;
 
     const matchingFiles = serviceFiles.filter(
@@ -31,7 +31,9 @@ export abstract class ServiceParser {
       );
     }
 
-    debugLog(`Found ${matchingFiles.length} service specifications for folder ${serviceDef.directoryName}`);
+    debugLog(
+      `Found ${matchingFiles.length} service specifications for folder ${serviceDef.directoryName}`,
+    );
 
     const serviceFile = matchingFiles[0];
 
@@ -55,7 +57,7 @@ export abstract class ServiceParser {
     // TODO Maybe read from the schema first
     const name = serviceDef.directoryName;
 
-    return new Service({
+    return new ServiceCore({
       absPath: serviceDef.absolutePath,
       name,
       schema: schema.right,

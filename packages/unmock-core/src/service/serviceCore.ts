@@ -13,7 +13,7 @@ import { OASMatcher } from "./matcher";
 import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
 
-export class Service implements IService {
+export class ServiceCore implements IService {
   public readonly name: string;
   public readonly absPath: string;
   public readonly dereferencer: Dereferencer;
