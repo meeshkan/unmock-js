@@ -36,25 +36,21 @@ describe("Fluent API and Service instantiation tests", () => {
   });
 
   it("Store with non-empty paths with non-matching method throws", () => {
-    const store = PetStoreWithEmptyResponses;
-    expect(() => store.petstore.state.post("boom")).toThrow(
-      "Can't find any endpoints with method",
-    );
+    expect(() =>
+      PetStoreWithEmptyResponses.petstore.state.post("boom"),
+    ).toThrow("Can't find any endpoints with method");
   });
 
   it("Store with existing path does not throw", () => {
-    const store = PetStoreWithPseudoResponses;
-    store.petstore.state({}); // Should pass
+    PetStoreWithPseudoResponses.petstore.state({}); // Should pass
   });
 
   it("Store with REST method call does not throw", () => {
-    const store = PetStoreWithPseudoResponses;
-    store.petstore.state.get({}); // Should pass
+    PetStoreWithPseudoResponses.petstore.state.get({}); // Should pass
   });
 
   it("Chaining multiple states with REST methods does not throw", () => {
-    const store = PetStoreWithPseudoResponses;
-    store.petstore.state.get({}).get({});
+    PetStoreWithPseudoResponses.petstore.state.get({}).get({});
   });
 
   it("Non HTTP methods are recognized as services and throws", () => {
@@ -66,66 +62,60 @@ describe("Fluent API and Service instantiation tests", () => {
     );
   });
 
-  // it("Specifying missing endpoint without rest method throws", () => {
-  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-  //   store.petstore("/pets", {}); // should pass
-  //   expect(() => store.petstore("/pet", {})).toThrow("Can't find endpoint");
-  // });
+  it("Specifying missing endpoint without rest method throws", () => {
+    const state = PetStoreWithPseudoResponses.petstore.state;
+    state("/pets", {}); // should pass
+    expect(() => state("/pet", {})).toThrow("Can't find endpoint");
+  });
 
-  // it("Specifying existing endpoint with rest method does not throw", () => {
-  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-  //   store.petstore.get("/pets", {}); // should pass
-  // });
+  it("Specifying existing endpoint with rest method does not throw", () => {
+    PetStoreWithPseudoResponses.petstore.state.get("/pets", {}); // should pass
+  });
 
-  // it("Specifying missing endpoint with rest method throws", () => {
-  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-  //   expect(() => store.petstore.post("/pets", {})).toThrow(
-  //     "Can't find response",
-  //   );
-  //   expect(() => store.petstore.get("/pet", {})).toThrow("Can't find endpoint");
-  // });
+  it("Specifying missing endpoint with rest method throws", () => {
+    const state = PetStoreWithPseudoResponses.petstore.state;
+    expect(() => state.post("/pets", {})).toThrow("Can't find response");
+    expect(() => state.get("/pet", {})).toThrow("Can't find endpoint");
+  });
 });
 
-// describe("Test paths matching on serviceStore", () => {
-//   // tslint:disable: object-literal-sort-keys
-//   const petStoreParameters = {
-//     parameters: [
-//       {
-//         name: "petId",
-//         in: "path",
-//         required: true,
-//         description: "The id of the pet to retrieve",
-//         schema: { type: "string" },
-//       },
-//       {
-//         name: "test",
-//         in: "path",
-//       },
-//     ],
-//   };
+describe("Test paths matching on serviceStore", () => {
+  const petStoreParameters = {
+    parameters: [
+      {
+        name: "petId",
+        in: "path",
+        required: true,
+        description: "The id of the pet to retrieve",
+        schema: { type: "string" },
+      },
+      {
+        name: "test",
+        in: "path",
+      },
+    ],
+  };
 
-//   it("Paths are converted to regexp", () => {
-//     const store = stateFacadeFactory(DynamicPathsService(petStoreParameters));
-//     store.petstore("/pets/2", {}); // Should pass
-//     store.petstore("/pets/{petId}", {}); // should pass
-//     expect(() => store.petstore("/pet/2", {})).toThrow("Can't find endpoint");
-//     expect(() => store.petstore("/pets/", {})).toThrow("Can't find endpoint");
-//   });
+  it("Paths are converted to regexp", () => {
+    const petstore = DynamicPathsService(petStoreParameters).petstore;
+    petstore.state("/pets/2", {}); // Should pass
+    petstore.state("/pets/{petId}", {}); // should pass
+    expect(() => petstore.state("/pet/2", {})).toThrow("Can't find endpoint");
+    expect(() => petstore.state("/pets/", {})).toThrow("Can't find endpoint");
+  });
 
-//   it("attempting to create a store with missing parameters throws", () => {
-//     expect(() => stateFacadeFactory(DynamicPathsService({}))).toThrow(
-//       "no description for path parameters!",
-//     );
-//     expect(() =>
-//       stateFacadeFactory(DynamicPathsService({ parameters: {} })),
-//     ).toThrow("no description for path parameters!");
-//   });
+  it("attempting to create a store with missing parameters throws", () => {
+    expect(() => DynamicPathsService({})).toThrow(
+      "no description for path parameters!",
+    );
+    expect(() => DynamicPathsService({ parameters: {} })).toThrow(
+      "no description for path parameters!",
+    );
+  });
 
-//   it("attempting to create a store with partially missing parameters throws", () => {
-//     expect(() =>
-//       stateFacadeFactory(
-//         DynamicPathsService(petStoreParameters, "/{boom}", "{foo}"),
-//       ),
-//     ).toThrow("following path parameters have not been described");
-//   });
-// });
+  it("attempting to create a store with partially missing parameters throws", () => {
+    expect(() =>
+      DynamicPathsService(petStoreParameters, "/{boom}", "{foo}"),
+    ).toThrow("following path parameters have not been described");
+  });
+});
