@@ -1,104 +1,90 @@
-// import {
-// PetstoreServiceWithDynamicPaths,
-// PetStoreServiceWithEmptyPaths,
-// PetStoreServiceWithEmptyResponses,
-// PetStoreServiceWithPseudoResponses,
-// } from "./utils";
+import {
+  PetstoreServiceWithDynamicPaths,
+  PetStoreServiceWithEmptyPaths,
+  PetStoreServiceWithEmptyResponses,
+  PetStoreServiceWithPseudoResponses,
+} from "./utils";
 
-// import { OpenAPIObject } from "../service/interfaces";
-// import { ServiceStore } from "../service/serviceStore";
+import { ServiceStore } from "../service/serviceStore";
 
-// const PetStoreWithEmptyPaths = new ServiceStore([
-//   PetStoreServiceWithEmptyPaths,
-// ]);
+const PetStoreWithEmptyPaths = ServiceStore([PetStoreServiceWithEmptyPaths]);
 
-// const PetStoreWithEmptyResponses = new ServiceStore([
-//   PetStoreServiceWithEmptyResponses,
-// ]);
+const PetStoreWithEmptyResponses = ServiceStore([
+  PetStoreServiceWithEmptyResponses,
+]);
 
-// const PetStoreWithPseudoResponses = new ServiceStore([
-//   PetStoreServiceWithPseudoResponses,
-// ]);
+const PetStoreWithPseudoResponses = ServiceStore([
+  PetStoreServiceWithPseudoResponses,
+]);
 
-// const DynamicPathsService = (
-//   params: any,
-//   ...additionalPathElements: string[]
-// ) =>
-//   new ServiceStore([
-//     PetstoreServiceWithDynamicPaths(params, ...additionalPathElements),
-//   ]);
+const DynamicPathsService = (
+  params: any,
+  ...additionalPathElements: string[]
+) =>
+  ServiceStore([
+    PetstoreServiceWithDynamicPaths(params, ...additionalPathElements),
+  ]);
 
-// describe("Fluent API and Service instantiation tests", () => {
-//   it("Store with empty paths throws", () => {
-//     const store = stateFacadeFactory(PetStoreWithEmptyPaths);
-//     expect(store.noservice).toThrow("Can't find specification");
-//     expect(store.petstore).toThrow("has no defined paths");
-//     expect(store.petstore.get).toThrow("has no defined paths");
-//   });
+describe("Fluent API and Service instantiation tests", () => {
+  it("Store with empty paths throws", () => {
+    const store = PetStoreWithEmptyPaths;
+    expect(() => store.noservice).toThrow("No service named 'noservice'");
+    expect(() => store.petstore.state("boom")).toThrow("has no defined paths");
+    expect(() => store.petstore.state.get("boom")).toThrow(
+      "has no defined paths",
+    );
+  });
 
-//   it("Store with non-empty paths with non-matching method throws", () => {
-//     const store = stateFacadeFactory(PetStoreWithEmptyResponses);
-//     expect(store.petstore.post).toThrow("Can't find any endpoints with method");
-//   });
+  it("Store with non-empty paths with non-matching method throws", () => {
+    const store = PetStoreWithEmptyResponses;
+    expect(() => store.petstore.state.post("boom")).toThrow(
+      "Can't find any endpoints with method",
+    );
+  });
 
-//   it("Store with existing path does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore({}); // Should pass
-//   });
+  it("Store with existing path does not throw", () => {
+    const store = PetStoreWithPseudoResponses;
+    store.petstore.state({}); // Should pass
+  });
 
-//   it("Store with REST method call does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore.get({}); // Should pass
-//   });
+  it("Store with REST method call does not throw", () => {
+    const store = PetStoreWithPseudoResponses;
+    store.petstore.state.get({}); // Should pass
+  });
 
-//   it("Chaining multiple states without REST methods does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store
-//       .petstore({})
-//       .petstore({})
-//       .petstore({});
-//   });
+  it("Chaining multiple states with REST methods does not throw", () => {
+    const store = PetStoreWithPseudoResponses;
+    store.petstore.state.get({}).get({});
+  });
 
-//   it("Chaining multiple states with REST methods does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore
-//       .get({})
-//       .petstore.get({})
-//       .petstore({});
-//   });
+  it("Non HTTP methods are recognized as services and throws", () => {
+    const store = PetStoreWithPseudoResponses;
+    expect(() => store.get).toThrow("No service named 'get'");
+    // @ts-ignore
+    expect(() => store.petstore.state.get({}).boom).toThrow(
+      "what to do with 'boom'",
+    );
+  });
 
-//   it("Chaining multiple methods for a service does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore
-//       .get({})
-//       .get({})
-//       .petstore({});
-//   });
-//   it("Non HTTP methods are recognized as services and throws", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     expect(store.get).toThrow("Can't find specification");
-//     expect(store.petstore.get({}).boom).toThrow("Can't find specification");
-//   });
+  // it("Specifying missing endpoint without rest method throws", () => {
+  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
+  //   store.petstore("/pets", {}); // should pass
+  //   expect(() => store.petstore("/pet", {})).toThrow("Can't find endpoint");
+  // });
 
-//   it("Specifying missing endpoint without rest method throws", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore("/pets", {}); // should pass
-//     expect(() => store.petstore("/pet", {})).toThrow("Can't find endpoint");
-//   });
+  // it("Specifying existing endpoint with rest method does not throw", () => {
+  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
+  //   store.petstore.get("/pets", {}); // should pass
+  // });
 
-//   it("Specifying existing endpoint with rest method does not throw", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     store.petstore.get("/pets", {}); // should pass
-//   });
-
-//   it("Specifying missing endpoint with rest method throws", () => {
-//     const store = stateFacadeFactory(PetStoreWithPseudoResponses);
-//     expect(() => store.petstore.post("/pets", {})).toThrow(
-//       "Can't find response",
-//     );
-//     expect(() => store.petstore.get("/pet", {})).toThrow("Can't find endpoint");
-//   });
-// });
+  // it("Specifying missing endpoint with rest method throws", () => {
+  //   const store = stateFacadeFactory(PetStoreWithPseudoResponses);
+  //   expect(() => store.petstore.post("/pets", {})).toThrow(
+  //     "Can't find response",
+  //   );
+  //   expect(() => store.petstore.get("/pet", {})).toThrow("Can't find endpoint");
+  // });
+});
 
 // describe("Test paths matching on serviceStore", () => {
 //   // tslint:disable: object-literal-sort-keys
