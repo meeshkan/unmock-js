@@ -1,5 +1,7 @@
-import { States } from ".";
+import { ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
+
+export { ServiceStoreType };
 
 export interface ILogger {
   log(message: string): void;
@@ -22,17 +24,18 @@ export interface IUnmockOptions extends ILogger {
 }
 
 export interface IBackend {
-  initialize(options: IUnmockOptions): States;
+  readonly services: ServiceStoreType;
+  initialize(options: IUnmockOptions): void;
   reset(): void;
 }
 
 export interface IUnmockPackage {
   allowedHosts: AllowedHosts;
-  on(): States;
-  init(): States;
-  initialize(): States;
+  services: ServiceStoreType;
+  on(): ServiceStoreType;
+  init(): ServiceStoreType;
+  initialize(): ServiceStoreType;
   off(): void;
-  states(): States | undefined;
 }
 
 /**

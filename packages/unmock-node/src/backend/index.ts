@@ -15,7 +15,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
   responseCreatorFactory,
-  States,
+  ServiceStoreType,
   UnmockConsole,
 } from "unmock-core";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
@@ -93,16 +93,16 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend implements IBackend {
+  private serviceStore: ServiceStoreType = {};
   private readonly config: INodeBackendOptions;
   private mitm: any;
-  private stateStore?: States = undefined;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
   }
 
-  public get states() {
-    return this.stateStore;
+  public get services() {
+    return this.serviceStore;
   }
 
   /**
@@ -110,7 +110,7 @@ export default class NodeBackend implements IBackend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: IUnmockOptions): any {
+  public initialize(options: IUnmockOptions) {
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
@@ -138,7 +138,7 @@ export default class NodeBackend implements IBackend {
       unmockDirectories,
     });
 
-    const { stateStore, createResponse } = responseCreatorFactory({
+    const { services, createResponse } = responseCreatorFactory({
       listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
       options,
       serviceDefLoader,
@@ -147,9 +147,7 @@ export default class NodeBackend implements IBackend {
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
-    this.stateStore = stateStore;
-
-    return stateStore;
+    this.serviceStore = services;
   }
 
   public reset() {
@@ -157,10 +155,8 @@ export default class NodeBackend implements IBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    if (this.stateStore) {
-      this.stateStore.reset();
-      this.stateStore = undefined;
-    }
+    Object.values(this.serviceStore).forEach(service => service.state.reset());
+    this.serviceStore = {};
     ClientRequestTracker.stop();
   }
 

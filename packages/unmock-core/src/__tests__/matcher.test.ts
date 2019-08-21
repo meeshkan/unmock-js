@@ -1,15 +1,6 @@
-import fs from "fs";
-import jsYaml from "js-yaml";
-import path from "path";
 import { ISerializedRequest } from "..";
 import { OASMatcher } from "../service/matcher";
-
-const petStoreYamlString: string = fs.readFileSync(
-  path.join(__dirname, "__unmock__", "petstore", "spec.yaml"),
-  "utf-8",
-);
-
-const schema = jsYaml.safeLoad(petStoreYamlString);
+import { PetStoreSchema as schema } from "./utils";
 
 describe("OASMatcher", () => {
   describe("with petstore schema", () => {

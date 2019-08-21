@@ -55,7 +55,7 @@ const actOn$times: Actor = (origState: Schema) => {
   };
 };
 
-export const actors: { [propertyName: string]: Actor } = {
+const actors: { [propertyName: string]: Actor } = {
   [SCHEMA_TIMES]: actOn$times,
 };
 

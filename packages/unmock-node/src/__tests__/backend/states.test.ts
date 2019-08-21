@@ -1,35 +1,23 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage, States } from "unmock-core";
+import { CorePackage } from "unmock-core";
 import { dsl, UnmockRequest } from "../../..";
-
 import NodeBackend from "../../backend";
-
-class StateTestPackage extends CorePackage {
-  public states() {
-    return (this.backend as NodeBackend).states;
-  }
-}
 
 const servicesDirectory = path.join(__dirname, "..", "resources");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
-    let nodeInterceptor: NodeBackend;
-    let unmock: StateTestPackage;
-    let states: States;
+    const nodeInterceptor = new NodeBackend({ servicesDirectory });
+    const unmock = new CorePackage(nodeInterceptor);
 
-    beforeAll(() => {
-      nodeInterceptor = new NodeBackend({ servicesDirectory });
-      unmock = new StateTestPackage(nodeInterceptor);
-      states = unmock.on();
-    });
+    beforeAll(() => unmock.on());
 
-    afterAll(() => {
-      unmock.off();
-    });
+    afterAll(() => unmock.off());
 
-    beforeEach(() => states.reset());
+    beforeEach(() =>
+      Object.values(unmock.services).forEach(core => core.state.reset()),
+    );
 
     test("Throws when asking for non existing method/path", async () => {
       try {
@@ -42,7 +30,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct code upon request without other state", async () => {
-      states.petstore({ $code: 200 });
+      unmock.services.petstore.state({ $code: 200 });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(
@@ -54,21 +42,21 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct state after setting state with status code", async () => {
-      states.petstore({ $code: 200, id: 5 });
+      unmock.services.petstore.state({ $code: 200, id: 5 });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
     });
 
     test("gets correct state after setting state without status code", async () => {
-      states.petstore({ message: "Hello World" });
+      unmock.services.petstore.state({ message: "Hello World" });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.message).toEqual("Hello World");
     });
 
     test("gets correct state after multiple overriden state requests", async () => {
-      states.petstore({ id: -1 }).get("/pets", { id: 5 });
+      unmock.services.petstore.state({ id: -1 }).get("/pets", { id: 5 });
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
@@ -78,21 +66,21 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct state when setting textual response", async () => {
-      states.petstore("foo");
+      unmock.services.petstore.state("foo");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBe("foo");
     });
 
     test("gets correct state when setting textual response with path", async () => {
-      states.petstore("/pets", "bar");
+      unmock.services.petstore.state("/pets", "bar");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data).toBe("bar");
     });
 
     test("uses default response when setting textual response with DSL with non-existing status code", async () => {
-      states.petstore(dsl.textResponse("foo", { $code: 400 }));
+      unmock.services.petstore.state(dsl.textResponse("foo", { $code: 400 }));
       try {
         await axios("http://petstore.swagger.io/v1/pets");
         throw new Error("Expected a 400 response");
@@ -103,19 +91,21 @@ describe("Node.js interceptor", () => {
     });
 
     test("sets an entire response from function", async () => {
-      states.petstore(() => "baz");
+      unmock.services.petstore.state(() => "baz");
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("baz");
     });
 
     test("sets an entire response from with request object", async () => {
-      states.petstore((req: UnmockRequest) => req.host);
+      unmock.services.petstore.state((req: UnmockRequest) => req.host);
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("petstore.swagger.io");
     });
 
     test("sets an entire response from function with DSL", async () => {
-      states.petstore(dsl.functionResponse(() => "baz", { $code: 404 }));
+      unmock.services.petstore.state(
+        dsl.functionResponse(() => "baz", { $code: 404 }),
+      );
       try {
         await axios("http://petstore.swagger.io/v1/pets");
         throw new Error("Expected a 404 response");
@@ -126,7 +116,9 @@ describe("Node.js interceptor", () => {
     });
 
     test("fails setting an array size for non-array elements", async () => {
-      expect(() => states.petstore({ id: { $size: 5 } })).toThrow("$size");
+      expect(() =>
+        unmock.services.petstore.state({ id: { $size: 5 } }),
+      ).toThrow("$size");
     });
   });
 });

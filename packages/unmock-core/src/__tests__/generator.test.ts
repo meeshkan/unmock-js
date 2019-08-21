@@ -35,23 +35,25 @@ const serviceDefLoader: IServiceDefLoader = {
 
 describe("Tests generator", () => {
   it("loads all paths in __unmock__", () => {
-    const { stateStore } = responseCreatorFactory({
+    const { services } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
-    stateStore.slack({}); // should pass
-    stateStore.petstore({}); // should pass
-    expect(() => stateStore.github({})).toThrow("service named 'github'"); // no github service
+    services.slack.state({}); // should pass
+    services.petstore.state({}); // should pass
+    expect(() => services.github.state({})).toThrow(
+      "property 'state' of undefined",
+    ); // no github service
   });
 
   it("sets a state for swagger api converted to openapi", () => {
-    const { stateStore } = responseCreatorFactory({
+    const { services } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
-    stateStore.slack("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
+    services.slack.state("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
     expect(() =>
-      stateStore.slack("/bots.info", { bot: { app_id: "A123456789" } }),
+      services.slack.state("/bots.info", { bot: { app_id: "A123456789" } }),
     ).toThrow("type is incorrect"); // Does not match the specified pattern
   });
 
@@ -100,11 +102,11 @@ describe("Tests generator", () => {
   });
 
   it("Generates correct response from differing status codes", () => {
-    const { stateStore, createResponse } = responseCreatorFactory({
+    const { services, createResponse } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
-    stateStore.filestackApi("/prefetch", "prefetch");
+    services.filestackApi.state("/prefetch", "prefetch");
     let resp = createResponse({
       host: "cloud.filestackapi.com",
       method: "options",
@@ -131,11 +133,11 @@ describe("Tests generator", () => {
   });
 
   it("Sets a state with a function and generates accordingly", () => {
-    const { stateStore, createResponse } = responseCreatorFactory({
+    const { services, createResponse } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
-    stateStore.petstore({ id: () => "foo", $size: 5, $code: 200 });
+    services.petstore.state({ id: () => "foo", $size: 5, $code: 200 });
     let resp = createResponse({
       host: "petstore.swagger.io",
       method: "get",
@@ -151,7 +153,7 @@ describe("Tests generator", () => {
       throw new Error("Response body was undefined?");
     }
 
-    stateStore.petstore({ id: () => 1 });
+    services.petstore.state({ id: () => 1 });
     resp = createResponse({
       host: "petstore.swagger.io",
       method: "get",

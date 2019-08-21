@@ -3,5 +3,5 @@ export {
   ISerializedRequest as Request,
   ISerializedRequest as UnmockRequest,
   ISerializedResponse as UnmockResponse,
-  States,
+  ServiceStoreType as UnmockServices,
 } from "unmock-core";
