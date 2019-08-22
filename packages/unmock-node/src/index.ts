@@ -1,4 +1,4 @@
-import { CorePackage } from "unmock-core";
+import { CorePackage, IUnmockPackage } from "unmock-core";
 import NodeBackend from "./backend";
 import _WinstonLogger from "./loggers/winston-logger";
 
@@ -13,7 +13,10 @@ export * from "./types";
 
 const backend = new NodeBackend();
 
-const unmock = new CorePackage(backend, { logger: new _WinstonLogger() });
+const unmock: IUnmockPackage = new CorePackage(backend, {
+  logger: new _WinstonLogger(),
+});
+
 export type UnmockNode = typeof unmock;
 
 export default unmock;
