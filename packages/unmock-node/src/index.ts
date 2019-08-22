@@ -14,4 +14,6 @@ export * from "./types";
 const backend = new NodeBackend();
 
 const unmock = new CorePackage(backend, { logger: new _WinstonLogger() });
+export type UnmockNode = typeof unmock;
+
 export default unmock;
