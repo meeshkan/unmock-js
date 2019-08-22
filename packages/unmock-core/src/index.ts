@@ -9,6 +9,7 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
+export { IService } from "./service/interfaces";
 export {
   default as unmockConsole,
   CustomConsole as UnmockConsole,
@@ -48,7 +49,7 @@ export class CorePackage implements IUnmockPackage {
       flaky: () => this.flaky.get(),
     };
     this.backend.initialize(opts);
-    return this.services;
+    return this;
   }
   public init() {
     return this.on();
