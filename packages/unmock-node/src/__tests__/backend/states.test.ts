@@ -1,7 +1,7 @@
 import axios from "axios";
 import path from "path";
 import { CorePackage } from "unmock-core";
-import { dsl, UnmockRequest } from "../../..";
+import { dsl, Service, UnmockRequest } from "../../..";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "resources");
@@ -11,12 +11,12 @@ describe("Node.js interceptor", () => {
     const nodeInterceptor = new NodeBackend({ servicesDirectory });
     const unmock = new CorePackage(nodeInterceptor);
 
-    beforeAll(() => unmock.on());
-
     afterAll(() => unmock.off());
 
     beforeEach(() =>
-      Object.values(unmock.services).forEach(core => core.state.reset()),
+      Object.values(unmock.services).forEach((core: Service) =>
+        core.state.reset(),
+      ),
     );
 
     test("Throws when asking for non existing method/path", async () => {

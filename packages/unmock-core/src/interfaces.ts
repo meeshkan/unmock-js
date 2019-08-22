@@ -32,9 +32,9 @@ export interface IBackend {
 export interface IUnmockPackage {
   allowedHosts: AllowedHosts;
   services: ServiceStoreType;
-  on(): ServiceStoreType;
-  init(): ServiceStoreType;
-  initialize(): ServiceStoreType;
+  on(): IUnmockPackage;
+  init(): IUnmockPackage;
+  initialize(): IUnmockPackage;
   off(): void;
 }
 
