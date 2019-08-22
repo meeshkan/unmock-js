@@ -1,6 +1,7 @@
 import fs from "fs";
 import jsYaml from "js-yaml";
 import path from "path";
+import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
 
@@ -92,4 +93,16 @@ export const PetstoreServiceWithDynamicPaths = (
     },
     name: "petstore",
   });
+};
+
+export const testRequest: ISerializedRequest = {
+  method: "get",
+  path: "/v3",
+  host: "api.github.com",
+  protocol: "https",
+};
+
+export const testResponse: ISerializedResponse = {
+  statusCode: 200,
+  body: "OK",
 };

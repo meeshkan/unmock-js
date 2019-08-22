@@ -7,6 +7,7 @@ import {
 import { ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
+import { IRequestResponsePair, RequestResponseSpy } from "./spy";
 
 export {
   Header,
@@ -106,6 +107,8 @@ export type MatcherResponse =
 
 export interface IService {
   readonly state: StateType;
+  readonly spy: RequestResponseSpy;
+  reset(): void;
 }
 
 export type ServiceStoreType = Record<string, IService>;
@@ -132,9 +135,19 @@ export interface IServiceCore {
   readonly dereferencer: Dereferencer;
 
   /**
+   * Spy keeping track of request response pairs
+   */
+  readonly spy: RequestResponseSpy;
+
+  /**
    * Whether the OAS has a defined "paths" object or not.
    */
   hasDefinedPaths: boolean;
+
+  /**
+   * Track a request-response pair, recorded in `spy`
+   */
+  track(requestResponsePair: IRequestResponsePair): void;
 
   /**
    * Updates the state for given method and endpoint.

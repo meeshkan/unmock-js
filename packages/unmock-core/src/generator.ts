@@ -63,7 +63,18 @@ export function responseCreatorFactory({
     createResponse: (req: ISerializedRequest) => {
       // Setup the unmock properties for jsf parsing of x-unmock-*
       setupJSFUnmockProperties(req);
-      const res = generateMockFromTemplate(options, match(req));
+      const matcherResponse: MatcherResponse = match(req);
+
+      const res = generateMockFromTemplate(options, matcherResponse);
+
+      // Notify call tracker
+      if (
+        typeof matcherResponse !== "undefined" &&
+        typeof res !== "undefined"
+      ) {
+        matcherResponse.service.track({ req, res });
+      }
+
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
       jsf.reset(); // removes unmock-properties
       return res;
