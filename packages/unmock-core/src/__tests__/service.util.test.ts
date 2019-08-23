@@ -33,6 +33,10 @@ describe("Tests deref", () => {
           },
           name: { type: "string" },
           tag: { type: "string" },
+          properties: {
+            type: "object",
+            properties: { isCat: { type: "boolean" } },
+          },
         },
       },
     });
@@ -54,6 +58,10 @@ describe("Tests deref", () => {
           },
           name: { type: "string" },
           tag: { type: "string" },
+          properties: {
+            type: "object",
+            properties: { isCat: { type: "boolean" } },
+          },
         },
       },
     });
