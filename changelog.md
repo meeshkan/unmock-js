@@ -1,5 +1,18 @@
 # CHANGELOG.md
 
+## 0.2.0 (2019-08-23)
+
+Breaking changes:
+
+  - `unmock.on()` returns `this` instead of `states` object.
+  - Deleted `unmock.states`: state changes should be done via `unmock.services["service"].state`
+
+Features:
+
+  - Exports `UnmockRequest`, `UnmockResponse` and other exposed types
+  - Adds service spy for keeping track of service calls
+  - Exports `sinon` for easy assertions on service spy
+
 ## 0.1.10 (2019-08-14)
 
 Fixes:
