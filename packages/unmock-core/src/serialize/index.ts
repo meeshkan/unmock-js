@@ -3,8 +3,8 @@ import * as http from "http";
 // @types/readable-stream not compatible with @types/node@8?
 // @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
-import { IIncomingHeaders, ISerializedRequest } from "unmock-core";
 import url from "url";
+import { IIncomingHeaders, ISerializedRequest } from "../interfaces";
 
 /**
  * Network serializers
