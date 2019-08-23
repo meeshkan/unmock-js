@@ -45,3 +45,9 @@ paths:
             text/plain:
               schema:
                 type: string
+        default:
+          description: Pseudo default response for testing purposes
+          content:
+            text/plain:
+              schema:
+                type: string

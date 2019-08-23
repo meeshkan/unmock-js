@@ -1,9 +1,9 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage, IService, sinon } from "unmock-core";
+import { UnmockPackage, IService, sinon } from "../../";
 import NodeBackend from "../../backend";
 
-const servicesDirectory = path.join(__dirname, "..", "resources");
+const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
 describe("Node.js interceptor", () => {
   describe("with petstore in place", () => {
@@ -81,7 +81,7 @@ describe("Node.js interceptor", () => {
 
 describe("Unmock node package", () => {
   const nodeInterceptor = new NodeBackend({ servicesDirectory });
-  const unmock = new CorePackage(nodeInterceptor);
+  const unmock = new UnmockPackage(nodeInterceptor);
   describe("service spy", () => {
     let petstore: IService;
     beforeAll(() => {
