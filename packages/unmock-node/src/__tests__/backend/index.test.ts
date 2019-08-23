@@ -1,5 +1,6 @@
 import axios from "axios";
 import path from "path";
+import { CorePackage, IService, sinon } from "unmock-core";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "resources");
@@ -74,6 +75,33 @@ describe("Node.js interceptor", () => {
         return;
       }
       throw new Error("Was supposed to throw a cancellation error");
+    });
+  });
+});
+
+describe("Unmock node package", () => {
+  const nodeInterceptor = new NodeBackend({ servicesDirectory });
+  const unmock = new CorePackage(nodeInterceptor);
+  describe("service spy", () => {
+    let petstore: IService;
+    beforeAll(() => {
+      petstore = unmock.on().services.petstore;
+    });
+    beforeEach(() => {
+      petstore.reset();
+    });
+    test("should track a successful request-response pair", async () => {
+      await axios.post("http://petstore.swagger.io/v1/pets", {});
+      sinon.assert.calledOnce(petstore.spy);
+      sinon.assert.calledWith(petstore.spy, sinon.match({ method: "POST" }));
+      expect(petstore.spy.firstCall.returnValue).toEqual(
+        expect.objectContaining({ statusCode: 201 }),
+      );
+    });
+    test("should not have tracked calls after reset", async () => {
+      await axios.post("http://petstore.swagger.io/v1/pets", {});
+      petstore.reset();
+      sinon.assert.notCalled(petstore.spy);
     });
   });
 });

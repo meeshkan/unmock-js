@@ -5,6 +5,8 @@ import _WinstonLogger from "./loggers/winston-logger";
 // DSL
 export { dsl } from "unmock-core";
 
+export { RequestResponseSpy } from "unmock-core";
+
 // Sinon for asserts and matchers
 export { sinon } from "unmock-core";
 

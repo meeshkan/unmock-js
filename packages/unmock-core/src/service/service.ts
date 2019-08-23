@@ -8,6 +8,7 @@ import {
   StateInput,
   StateType,
 } from "./interfaces";
+import { RequestResponseSpy } from "./spy";
 import {
   functionResponse,
   objResponse,
@@ -16,11 +17,18 @@ import {
 
 export class Service implements IService {
   public readonly state: StateType;
+  public readonly spy: RequestResponseSpy;
   constructor(private readonly core: IServiceCore) {
     this.state = new Proxy(
       this.updateDefaultState.bind(this),
       StateHandler(this.core),
     );
+    this.spy = core.spy;
+  }
+
+  public reset(): void {
+    this.state.reset();
+    this.spy.resetHistory();
   }
 
   private updateDefaultState(state: StateInput | string): void;

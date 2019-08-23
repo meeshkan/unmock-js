@@ -10,6 +10,12 @@ import {
   OpenAPIObject,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
+import {
+  createCallTracker,
+  ICallTracker,
+  IRequestResponsePair,
+  RequestResponseSpy,
+} from "./spy";
 import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
 
@@ -21,6 +27,7 @@ export class ServiceCore implements IServiceCore {
   private readonly oasSchema: OpenAPIObject;
   private readonly matcher: OASMatcher;
   private readonly state: State;
+  private readonly callTracker: ICallTracker;
 
   constructor(opts: IServiceInput) {
     this.oasSchema = opts.schema;
@@ -34,6 +41,7 @@ export class ServiceCore implements IServiceCore {
     this.state = new State();
     const deref = derefIfNeeded({ schema: this.schema, absPath: this.absPath });
     this.dereferencer = <T>(objToDeref: any) => deref<T>(objToDeref);
+    this.callTracker = createCallTracker();
   }
 
   get schema(): OpenAPIObject {
@@ -42,6 +50,14 @@ export class ServiceCore implements IServiceCore {
 
   get hasDefinedPaths(): boolean {
     return this.hasPaths;
+  }
+
+  public track(requestResponsePair: IRequestResponsePair) {
+    this.callTracker.track(requestResponsePair);
+  }
+
+  get spy(): RequestResponseSpy {
+    return this.callTracker.spy;
   }
 
   public match(sreq: ISerializedRequest): MatcherResponse {

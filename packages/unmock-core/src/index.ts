@@ -10,6 +10,7 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 export * from "./interfaces";
 export * from "./generator";
 export { IService } from "./service/interfaces";
+export { RequestResponseSpy } from "./service/spy";
 export {
   default as unmockConsole,
   CustomConsole as UnmockConsole,
