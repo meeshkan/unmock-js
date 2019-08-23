@@ -180,13 +180,13 @@ export class State {
     if (
       this.state[endpoint] === undefined ||
       this.state[endpoint][method] === undefined ||
-      this.state[endpoint][code] === undefined ||
-      this.state[endpoint][code][mediaType] === undefined
+      this.state[endpoint][method][code] === undefined ||
+      this.state[endpoint][method][code][mediaType] === undefined
     ) {
       return;
     }
 
-    delete this.state[endpoint][code][mediaType];
+    delete this.state[endpoint][method][code][mediaType];
     if (Object.keys(this.state[endpoint][method][code]).length === 0) {
       delete this.state[endpoint][method][code];
       if (Object.keys(this.state[endpoint][method]).length === 0) {

@@ -122,5 +122,25 @@ describe("Node.js interceptor", () => {
     test("fails setting an array size for non-array elements", async () => {
       expect(() => petstore.state({ id: { $size: 5 } })).toThrow("$size");
     });
+
+    it("Updates $times correctly", async () => {
+      const postMessage = (text: string) =>
+        axios.post("https://slack.com/api/chat.postMessage", {
+          data: { channel: "my_channel_id", text },
+        });
+      const text = "foo";
+      const { slack } = unmock.services;
+
+      slack.state.post("/chat.postMessage", { message: { text }, $times: 3 });
+      let resp = await postMessage(text);
+
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage(text);
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage(text);
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage(text);
+      expect(resp.data.message.text).not.ToEqual(text);
+    });
   });
 });
