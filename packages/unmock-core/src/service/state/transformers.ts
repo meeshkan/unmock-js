@@ -193,8 +193,7 @@ const matchWithNonConcreteValue = (
       ...translated,
     },
   };
-  const x = oneLevelOfIndirectNestedness(schema, state, spread);
-  return x;
+  return oneLevelOfIndirectNestedness(schema, state, spread);
 };
 
 /**
