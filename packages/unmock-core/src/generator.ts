@@ -13,18 +13,17 @@ import {
   IServiceDefLoader,
   IUnmockOptions,
 } from "./interfaces";
-import { stateFacadeFactory } from "./service";
 import {
   codeToMedia,
   Dereferencer,
   Header,
-  IService,
+  IServiceCore,
   MatcherResponse,
   Operation,
   Response,
   Responses,
   Schema,
-  StateFacadeType,
+  ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
@@ -47,19 +46,35 @@ export function responseCreatorFactory({
   serviceDefLoader: IServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { stateStore: StateFacadeType; createResponse: CreateResponse } {
+}): { services: ServiceStoreType; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-  const services: IService[] = serviceDefs.map(serviceDef =>
+  const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
     ServiceParser.parse(serviceDef),
   );
-  const serviceStore = new ServiceStore(services);
-  const stateStore = stateFacadeFactory(serviceStore);
+
+  const match = (sreq: ISerializedRequest) =>
+    coreServices
+      .map(service => service.match(sreq))
+      .filter(res => res !== undefined)[0];
+  const services = ServiceStore(coreServices);
+
   return {
-    stateStore,
+    services,
     createResponse: (req: ISerializedRequest) => {
       // Setup the unmock properties for jsf parsing of x-unmock-*
       setupJSFUnmockProperties(req);
-      const res = generateMockFromTemplate(options, serviceStore.match(req));
+      const matcherResponse: MatcherResponse = match(req);
+
+      const res = generateMockFromTemplate(options, matcherResponse);
+
+      // Notify call tracker
+      if (
+        typeof matcherResponse !== "undefined" &&
+        typeof res !== "undefined"
+      ) {
+        matcherResponse.service.track({ req, res });
+      }
+
       listeners.forEach((listener: IListener) => listener.notify({ req, res }));
       jsf.reset(); // removes unmock-properties
       return res;

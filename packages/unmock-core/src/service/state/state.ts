@@ -2,18 +2,9 @@ import debug from "debug";
 import minimatch from "minimatch";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import { DSL } from "../dsl";
-import {
-  codeToMedia,
-  ExtendedHTTPMethod,
-  HTTPMethod,
-  Operation,
-} from "../interfaces";
-import { IStateUpdate, IValidationError } from "./interfaces";
-import {
-  chooseBestMatchingError,
-  filterStatesByOperation,
-  getOperations,
-} from "./utils";
+import { codeToMedia, ExtendedHTTPMethod, HTTPMethod } from "../interfaces";
+import { IStateUpdate } from "./interfaces";
+import { chooseErrorFromList, getOperations } from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -36,8 +27,7 @@ export class State {
    * and the result is used to verify the contents of `stateInput`.
    */
   public update(stateUpdate: IStateUpdate) {
-    const { stateInput } = stateUpdate;
-    const { endpoint, method, newState } = stateInput;
+    const { endpoint, method, newState } = stateUpdate.stateInput;
     debugLog(`Fetching operations for '${method} ${endpoint}'...`);
     const ops = getOperations(stateUpdate);
     if (ops.error !== undefined) {
@@ -56,35 +46,17 @@ export class State {
       )}`,
     );
 
-    let error: IValidationError | undefined;
-    let opsResult = false;
-    for (const op of ops.operations) {
-      debugLog(`Testing against ${JSON.stringify(op.operation)}`);
-      // For each operation, verify the new state applies and save in `this.state`
-      const stateResponses = getValidStatesForOperationWithState(
+    const mapped = ops.operations.map(op =>
+      getValidStatesForOperationWithState(
         op.operation,
         newState,
         stateUpdate.dereferencer,
-      );
-      if (stateResponses.error !== undefined) {
-        // failed path
-        debugLog(
-          `Couldn't match for ${op.operation.operationId} - received error ${stateResponses.error.msg}`,
-        );
-        error = chooseBestMatchingError(stateResponses.error, error);
-        continue;
-      }
-      debugLog(`Matched successfully for ${JSON.stringify(op.operation)}`);
-      const augmentedResponses = DSL.translateTopLevelToOAS(
-        newState.top,
-        stateResponses.responses,
-      );
-      this.updateStateInternal(endpoint, method, augmentedResponses);
-      opsResult = true;
-    }
+      ),
+    );
 
-    if (opsResult === false) {
-      // all paths had an error - can't operate properly
+    const failed = mapped.every(resp => resp.error !== undefined);
+    if (failed) {
+      const error = chooseErrorFromList(mapped.map(resp => resp.error));
       throw new Error(
         error
           ? error.msg
@@ -93,10 +65,15 @@ export class State {
             )}`,
       );
     }
+
+    mapped
+      .filter(resp => resp.error === undefined)
+      .map(resp => DSL.translateTopLevelToOAS(newState.top, resp.responses))
+      .forEach(aug => this.updateStateInternal(endpoint, method, aug));
   }
 
   /**
-   * Returns the state for given combination of method and endpoint.
+   * Returns the state for given combination of method and endpoint. Might update state according to DSL.
    * At this point, method is expected to be a valid HTTP method, and endpoint is expected
    * to be specific endpoint.
    * @param method
@@ -111,54 +88,70 @@ export class State {
   public getState(
     method: HTTPMethod,
     endpoint: string,
-    operation: Operation,
   ): codeToMedia | undefined {
     debugLog(`Filtering all saved states that match '${endpoint}'...`);
 
-    const matchingEndpointKeys = Object.keys(this.state).filter(
-      (sKey: string) => minimatch(endpoint, sKey, { nocase: true }),
-    );
-    if (matchingEndpointKeys.length === 0) {
+    const mostRelevantEndpoint = Object.keys(this.state)
+      .filter(
+        (sKey: string) =>
+          minimatch(endpoint, sKey, { nocase: true }) &&
+          (this.state[sKey][method] !== undefined ||
+            this.state[sKey][DEFAULT_STATE_HTTP_METHOD] !== undefined),
+      )
+      .sort((a: string, b: string) => {
+        // sort endpoints by location of asterisks and frequency
+        // (done to choose most relevant endpoint with state). Results is e.g:
+        // (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
+        const nA = a.split("*");
+        const nB = b.split("*");
+        return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*"))
+          ? -1
+          : 1;
+      })[0];
+    if (mostRelevantEndpoint === undefined) {
       debugLog(`No states match '${endpoint}'`);
       return undefined;
     }
-    // sort endpoints by location of asterisks and frequency
-    // (done to spread and overwrite as needed). Results is e.g:
-    // (**, /stores/*/petId/*, /stores/*/petId/404, /stores/myStore/petId/*, /stores/foo/petId/200)
-    matchingEndpointKeys.sort((a: string, b: string) => {
-      const nA = a.split("*");
-      const nB = b.split("*");
-      return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*")) ? 1 : -1;
-    });
 
-    debugLog(
-      `Found following endpoints as matches for '${matchingEndpointKeys}: ${JSON.stringify(
-        matchingEndpointKeys,
-      )}`,
-    );
+    debugLog(`Most relevant endpoint is ${mostRelevantEndpoint}`);
 
-    // From the above, sorted methods, get all states that match either DEFAULT_STATE_HTTP_METHOD
-    // or the given method. Push the DEFAULT_STATE one before to maintain order.
-    const states: codeToMedia[] = [];
-    for (const key of matchingEndpointKeys) {
-      const methodToStatus = this.state[key];
-      if (methodToStatus[DEFAULT_STATE_HTTP_METHOD] !== undefined) {
-        states.push(methodToStatus[DEFAULT_STATE_HTTP_METHOD]);
-      }
-      if (methodToStatus[method] !== undefined) {
-        states.push(methodToStatus[method]);
-      }
-    }
+    // From the chosen endpoint, check if the given method exists, if not, choose the DEFAULT METHOD state.
+    const matchingMethod = Object.keys(
+      this.state[mostRelevantEndpoint],
+    ).includes(method)
+      ? method
+      : DEFAULT_STATE_HTTP_METHOD;
+    const relevantState = this.state[mostRelevantEndpoint][matchingMethod];
 
-    // Filter all the states that do not match the operation schema
-    const filteredStates = filterStatesByOperation(states, operation);
-    const parsedTopLevel = DSL.actTopLevelFromOAS(filteredStates);
-    // TODO: After parsing, do we want to see if we need to remove items from the current state?
-    return Object.keys(parsedTopLevel).length > 0 ? parsedTopLevel : undefined;
+    const { parsed, newState } = DSL.actTopLevelFromOAS(relevantState);
+    // Update state if needed
+    this.updateStateFromDSL(newState, mostRelevantEndpoint, matchingMethod);
+    return Object.keys(parsed).length > 0 ? parsed : undefined;
   }
 
   public reset() {
     this.state = {};
+  }
+
+  private updateStateFromDSL(
+    newState: codeToMedia,
+    endpoint: string,
+    method: ExtendedHTTPMethod,
+  ) {
+    Object.keys(newState).forEach(code =>
+      Object.keys(newState[code]).forEach(media => {
+        const state = newState[code][media];
+        if (state === undefined) {
+          // Marked for deletion
+          this.deleteStateInternal(endpoint, method, code, media);
+        } else if (Object.keys(state).length > 0) {
+          // new state available
+          this.updateStateInternal(endpoint, method, {
+            [code]: { [media]: state },
+          });
+        }
+      }),
+    );
   }
 
   private updateStateInternal(
@@ -176,5 +169,32 @@ export class State {
       ...this.state[endpoint][method],
       ...responses,
     };
+  }
+
+  private deleteStateInternal(
+    endpoint: string,
+    method: ExtendedHTTPMethod,
+    code: string,
+    mediaType: string,
+  ) {
+    if (
+      this.state[endpoint] === undefined ||
+      this.state[endpoint][method] === undefined ||
+      this.state[endpoint][method][code] === undefined ||
+      this.state[endpoint][method][code][mediaType] === undefined
+    ) {
+      return;
+    }
+
+    delete this.state[endpoint][method][code][mediaType];
+    if (Object.keys(this.state[endpoint][method][code]).length === 0) {
+      delete this.state[endpoint][method][code];
+      if (Object.keys(this.state[endpoint][method]).length === 0) {
+        delete this.state[endpoint][method];
+        if (Object.keys(this.state[endpoint]).length === 0) {
+          delete this.state[endpoint];
+        }
+      }
+    }
   }
 }

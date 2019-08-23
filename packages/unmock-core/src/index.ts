@@ -9,17 +9,19 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 // top-level exports
 export * from "./interfaces";
 export * from "./generator";
+export { IService } from "./service/interfaces";
+export { RequestResponseSpy } from "./service/spy";
 export {
   default as unmockConsole,
   CustomConsole as UnmockConsole,
 } from "./console";
 
-import { StateFacadeType } from "./service/interfaces";
-export type States = StateFacadeType;
+import sinon from "sinon";
+export { sinon };
 
 export const dsl = transformers;
 
-export abstract class CorePackage implements IUnmockPackage {
+export class CorePackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
@@ -47,7 +49,8 @@ export abstract class CorePackage implements IUnmockPackage {
       log: (message: string) => this.logger.log(message),
       flaky: () => this.flaky.get(),
     };
-    return this.backend.initialize(opts);
+    this.backend.initialize(opts);
+    return this;
   }
   public init() {
     return this.on();
@@ -60,5 +63,7 @@ export abstract class CorePackage implements IUnmockPackage {
     this.backend.reset();
   }
 
-  public abstract states(): States | undefined;
+  public get services() {
+    return this.backend.services;
+  }
 }

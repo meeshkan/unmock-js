@@ -107,7 +107,10 @@ describe("Translates top level DSL to OAS", () => {
 
 describe("Translates non-top level DSL to OAS", () => {
   it("Returns empty translation for empty state", () => {
-    expect(DSL.translateDSLToOAS({}, {})).toEqual({});
+    expect(DSL.translateDSLToOAS({}, {})).toEqual({
+      translated: {},
+      cleaned: {},
+    });
   });
 
   describe("Translates $size correctly", () => {
@@ -130,22 +133,25 @@ describe("Translates non-top level DSL to OAS", () => {
       DSL.STRICT_MODE = false;
       // Test with non-numeric
       const state: { $size: any } = { $size: "a" };
-      let translated = DSL.translateDSLToOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: "a" });
+      let result = DSL.translateDSLToOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: "a" });
+      expect(state).toEqual({ $size: "a" }); // should not be changed
 
       // Test with non-positive input
       state.$size = -1;
-      translated = DSL.translateDSLToOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: -1 });
+      result = DSL.translateDSLToOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: -1 });
+      expect(state).toEqual({ $size: -1 }); // should not be changed
 
       // Test with non-array input
       state.$size = 5;
       arraySchema.type = "object";
-      translated = DSL.translateDSLToOAS(state, arraySchema);
-      expect(translated).toEqual({}); // Nothing was translated
-      expect(state).toEqual({ $size: 5 });
+      result = DSL.translateDSLToOAS(state, arraySchema);
+      expect(result.translated).toEqual({}); // Nothing was translated
+      expect(result.cleaned).toEqual({ $size: 5 });
+      expect(state).toEqual({ $size: 5 }); // should not be changed
     });
 
     it("Throws with non-numeric input in strict mode", () => {
@@ -172,9 +178,10 @@ describe("Translates non-top level DSL to OAS", () => {
 
     it("Translates $size correctly", () => {
       const state = { $size: 3, id: 5 };
-      const translated = DSL.translateDSLToOAS(state, arraySchema);
-      expect(state).toEqual({ id: 5 }); // $size element should be removed
-      expect(translated).toEqual({ maxItems: 3, minItems: 3 });
+      const result = DSL.translateDSLToOAS(state, arraySchema);
+      expect(state).toEqual({ $size: 3, id: 5 }); // state should not be changed
+      expect(result.translated).toEqual({ maxItems: 3, minItems: 3 });
+      expect(result.cleaned).toEqual({ id: 5 }); // $size element should be removed
     });
   });
 });
@@ -198,21 +205,28 @@ describe("Acts on top level DSL in OAS", () => {
     it("Removes $times in returned copy", () => {
       const copy = DSL.actTopLevelFromOAS(states);
       // removes properties as nothing's there anymore
-      expect(copy).toEqual({ 200: { "application/json": {} } });
+      expect(copy.parsed).toEqual({ 200: { "application/json": {} } });
+      expect(copy.newState).toEqual({
+        200: {
+          "application/json": {
+            properties: { "x-unmock-times": { type: "unmock", default: 1 } },
+          },
+        },
+      });
     });
 
-    it("Decreases $times in original states", () => {
-      DSL.actTopLevelFromOAS(states);
-      expect(states["200"]["application/json"].properties).toEqual({
+    it("Decreases $times in new state", () => {
+      const { newState } = DSL.actTopLevelFromOAS(states);
+      expect(newState["200"]["application/json"].properties).toEqual({
         "x-unmock-times": { type: "unmock", default: 1 },
       });
     });
 
-    it("Removes $times from original states", () => {
-      DSL.actTopLevelFromOAS(states);
-      DSL.actTopLevelFromOAS(states);
-      DSL.actTopLevelFromOAS(states);
-      expect(states["200"]["application/json"]).toBeUndefined(); // media type is removed if its now empty
+    it("Removes $times from new state", () => {
+      let result = DSL.actTopLevelFromOAS(states);
+      result = DSL.actTopLevelFromOAS(result.newState);
+      expect(result.newState["200"]["application/json"]).toBeUndefined(); // media type is removed if its now empty
+      expect(result.parsed).toEqual({ 200: { "application/json": {} } });
     });
   });
 });

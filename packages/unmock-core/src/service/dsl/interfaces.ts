@@ -16,6 +16,7 @@ export interface ITopLevelDSL {
    */
   $code?: number;
   $times?: number;
+  [DSLKey: string]: any;
 }
 
 /**
@@ -40,3 +41,13 @@ export interface IUnmockProperty {
     default: any;
   };
 }
+
+/**
+ * Stuff for general DSL submodule
+ */
+
+export type Actor = (
+  originalSchema: Schema,
+) => { parsed: Schema; newState: Schema | undefined };
+export type Translator = (state: any, schema: Schema) => any;
+export type TopTranslator = (value: any) => any;

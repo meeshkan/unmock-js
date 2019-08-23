@@ -1,15 +1,10 @@
 import debug from "debug";
-import { cloneDeep } from "lodash";
-import { codeToMedia, Schema } from "../interfaces";
-import { actOn$times } from "./actors";
-import { SCHEMA_TIMES } from "./constants";
+import { defaultsDeep } from "lodash";
+import { codeToMedia, mediaTypeToSchema, Schema } from "../interfaces";
+import { actWithAllActors } from "./actors";
 import { ITopLevelDSL } from "./interfaces";
-import { translate$size, translate$times } from "./translators";
-import {
-  hasUnmockProperty,
-  injectUnmockProperty,
-  throwOnErrorIfStrict,
-} from "./utils";
+import { topTranslators, translators } from "./translators";
+import { injectUnmockProperty } from "./utils";
 
 const debugLog = debug("unmock:dsl");
 
@@ -27,22 +22,28 @@ export abstract class DSL {
   public static STRICT_MODE = true;
 
   /**
-   * Translated DSL instructions in `state` to OAS, based on `schema`.
-   * Modifies `state` in-place by removing the relevant DSL instructions.
+   * Translates DSL instructions in `state` to OAS, based on `schema`.
    * @param state
    * @param schema
-   * @returns A translated list of arguments.
+   * @returns An object with the translations and a cleaned state without translation-specific keywords
    */
-  public static translateDSLToOAS(state: any, schema: Schema): any {
-    let translated: { [OASKey: string]: string | number | boolean } = {};
-    if (state.$size !== undefined) {
-      throwOnErrorIfStrict(() => {
-        translated = { ...translated, ...translate$size(state, schema) };
-        delete state.$size;
-      });
-    }
-    return translated;
+  public static translateDSLToOAS(
+    state: any,
+    schema: Schema,
+  ): { translated: any; cleaned: any } {
+    return Object.entries(translators).reduce(
+      ({ translated, cleaned }, [property, fn]) => {
+        const { [property]: maybeUsed, ...rest } = cleaned;
+        const newTranslation =
+          maybeUsed !== undefined ? fn(cleaned, schema) : undefined;
+        return newTranslation !== undefined
+          ? { translated: newTranslation, cleaned: rest }
+          : { translated, cleaned };
+      },
+      { translated: {}, cleaned: state },
+    );
   }
+
   /**
    * Replaces top-level DSL elements in `top` with injected OAS items in every `response` in `responses`.
    * Objects injected are always prefixed with `x-unmock-`, and have a `type` equal to `unmock`, with the
@@ -59,12 +60,21 @@ export abstract class DSL {
     }
     // Handles top-level schema and injects the literals to responses.
     // $code is a special case, handled outside this function (acts as a key and not a value)
-    if (top.$times !== undefined) {
-      throwOnErrorIfStrict(() => {
-        const translated = translate$times(top.$times);
-        injectUnmockProperty(responses, translated);
-      });
-    }
+    Object.keys(topTranslators)
+      .filter(
+        dslKey => top[dslKey] !== undefined /* only valid top-level DSL keys */,
+      )
+      .map(
+        dslKey => topTranslators[dslKey](top[dslKey]) /* get the translation */,
+      )
+      .filter(
+        translation =>
+          translation !== undefined /* no undefined translations */,
+      )
+      .forEach(
+        translation =>
+          injectUnmockProperty(responses, translation) /* add to responses */,
+      );
     return responses;
   }
 
@@ -74,34 +84,60 @@ export abstract class DSL {
    * The relevant top level DSL instructions are removed from the returned copy.
    * @param states
    */
-  public static actTopLevelFromOAS(states: codeToMedia): codeToMedia {
-    const copy: codeToMedia = {};
-    for (const code of Object.keys(states)) {
-      copy[code] = {};
-      for (const mediaType of Object.keys(states[code])) {
-        copy[code][mediaType] = cloneDeep(states[code][mediaType]);
-        const schema = copy[code][mediaType];
-        if (schema.properties === undefined) {
-          continue;
-        }
-        if (hasUnmockProperty(schema, SCHEMA_TIMES)) {
-          actOn$times(copy[code], states[code], mediaType);
-        }
-        if (Object.keys(schema.properties).length === 0) {
-          debugLog(
-            `schema.properties is now empty, removing 'properties' from copied response '${code}/${mediaType}'`,
-          );
-          delete schema.properties;
-          // The returned `properties` might now be empty, representing an empty response.
-        }
-      }
-      if (Object.keys(copy[code]).length === 0) {
-        debugLog(
-          `Entire response is empty, removing '${code}' from copied response`,
-        );
-        delete copy[code];
-      }
-    }
-    return copy;
+  public static actTopLevelFromOAS(
+    states: codeToMedia,
+  ): { parsed: codeToMedia; newState: codeToMedia } {
+    return reduceAndHoistElements(states, (mToS: mediaTypeToSchema) =>
+      reduceAndHoistElements(mToS, actOnSchema),
+    );
   }
 }
+
+/**
+ * Used to reduce the given `iterable` by running `callable` on every element,
+ * and hoisting `parsed` and `newState` from that operation.
+ * @param iterable
+ * @param callable
+ */
+const reduceAndHoistElements = (
+  iterable: { [key: string]: any },
+  callable: (value: any) => { parsed: any; newState: any },
+) =>
+  Object.keys(iterable)
+    .map(key => ({ name: key, ...callable(iterable[key]) }))
+    .reduce(
+      ({ parsed, newState }, o) => ({
+        parsed: { ...parsed, [o.name]: o.parsed },
+        newState: { ...newState, [o.name]: o.newState },
+      }),
+      {
+        parsed: {},
+        newState: {},
+      },
+    );
+
+const actOnSchema = (
+  schema: Schema,
+): { parsed: Schema; newState: Schema | undefined } => {
+  const newStateAndResult = actWithAllActors(schema);
+
+  const parsed = defaultsDeep({}, ...newStateAndResult.parsed);
+  const newState = newStateAndResult.newState.includes(undefined) // undefined means state is marked for deletion
+    ? undefined
+    : defaultsDeep({}, ...newStateAndResult.newState);
+
+  const maybeProperties = parsed.properties;
+  if (
+    maybeProperties !== undefined &&
+    Object.keys(maybeProperties).length === 0
+  ) {
+    debugLog(
+      `schema.properties is now empty, removing 'properties' from copied response '${JSON.stringify(
+        schema,
+      )}'`,
+    );
+    delete parsed.properties;
+  }
+
+  return { parsed, newState };
+};

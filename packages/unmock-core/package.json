@@ -1,5 +1,5 @@
 {
-  "version": "0.1.10",
+  "version": "0.2.0",
   "name": "unmock-core",
   "displayName": "unmock-core",
   "main": "dist/index.js",
@@ -26,6 +26,7 @@
     "lodash": "^4.17.14",
     "minimatch": "^3.0.4",
     "querystring": "^0.2.0",
+    "sinon": "^7.4.1",
     "swagger2openapi": "^5.3.0",
     "xregexp": "^4.2.4"
   },

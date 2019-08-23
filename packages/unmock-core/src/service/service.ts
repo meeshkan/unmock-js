@@ -1,108 +1,99 @@
-import { ISerializedRequest } from "../interfaces";
-import { DEFAULT_STATE_ENDPOINT } from "./constants";
+import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
-  Dereferencer,
-  HTTPMethod,
+  ExtendedHTTPMethod,
   IService,
-  IServiceInput,
-  IStateInput,
-  MatcherResponse,
-  OpenAPIObject,
+  IServiceCore,
+  isRESTMethod,
+  isStateInputGenerator,
+  StateInput,
+  StateType,
 } from "./interfaces";
-import { OASMatcher } from "./matcher";
-import { State } from "./state/state";
-import { derefIfNeeded } from "./util";
+import { RequestResponseSpy } from "./spy";
+import {
+  functionResponse,
+  objResponse,
+  textResponse,
+} from "./state/transformers";
 
 export class Service implements IService {
-  public readonly name: string;
-  public readonly absPath: string;
-  public readonly dereferencer: Dereferencer;
-  private hasPaths: boolean = false;
-  private readonly oasSchema: OpenAPIObject;
-  private readonly matcher: OASMatcher;
-  private readonly state: State;
-
-  constructor(opts: IServiceInput) {
-    this.oasSchema = opts.schema;
-    this.name = opts.name;
-    this.absPath = opts.absPath || process.cwd();
-    this.hasPaths = // Find this once, as schema is immutable
-      this.schema !== undefined &&
-      this.schema.paths !== undefined &&
-      Object.keys(this.schema.paths).length > 0;
-    this.matcher = new OASMatcher({ schema: this.schema });
-    this.state = new State();
-    const deref = derefIfNeeded({ schema: this.schema, absPath: this.absPath });
-    this.dereferencer = <T>(objToDeref: any) => deref<T>(objToDeref);
+  public readonly state: StateType;
+  public readonly spy: RequestResponseSpy;
+  constructor(private readonly core: IServiceCore) {
+    this.state = new Proxy(
+      this.updateDefaultState.bind(this),
+      StateHandler(this.core),
+    );
+    this.spy = core.spy;
   }
 
-  get schema(): OpenAPIObject {
-    return this.oasSchema;
-  }
-
-  get hasDefinedPaths(): boolean {
-    return this.hasPaths;
-  }
-
-  public match(sreq: ISerializedRequest): MatcherResponse {
-    const maybeOp = this.matcher.matchToOperationObject(sreq);
-    if (maybeOp === undefined) {
-      return undefined;
-    }
-
-    const state = this.getState(sreq.method as HTTPMethod, sreq.path);
-    return {
-      operation: maybeOp,
-      state,
-      service: this,
-    };
-  }
-
-  public resetState() {
+  public reset(): void {
     this.state.reset();
+    this.spy.resetHistory();
   }
 
-  public updateState(stateInput: IStateInput) {
-    if (!this.hasDefinedPaths) {
-      throw new Error(`'${this.name}' has no defined paths!`);
-    }
-    const { endpoint } = stateInput;
-    let schemaEndpoint = endpoint;
-    if (endpoint !== DEFAULT_STATE_ENDPOINT) {
-      const parsedEndpoint = this.matcher.findEndpoint(endpoint);
-      if (parsedEndpoint === undefined) {
-        throw new Error(`Can't find endpoint '${endpoint}' in '${this.name}'`);
-      }
-      schemaEndpoint = parsedEndpoint.schemaEndpoint;
-    }
+  private updateDefaultState(state: StateInput | string): void;
+  private updateDefaultState(endpoint: string, state: StateInput): void;
+  private updateDefaultState(
+    stateOrEndpoint: string | StateInput,
+    maybeState?: StateInput,
+    method: ExtendedHTTPMethod = DEFAULT_STATE_HTTP_METHOD,
+  ) {
+    const { state, endpoint } =
+      maybeState === undefined
+        ? { state: stateOrEndpoint, endpoint: DEFAULT_STATE_ENDPOINT }
+        : { state: maybeState, endpoint: stateOrEndpoint as string };
 
-    this.state.update({
-      stateInput,
-      serviceName: this.name,
-      schemaEndpoint,
-      paths: this.schema.paths,
-      dereferencer: this.dereferencer,
-    });
-  }
+    const newState = isStateInputGenerator(state)
+      ? state
+      : typeof state === "string"
+      ? textResponse(state)
+      : typeof state === "function"
+      ? functionResponse(state)
+      : objResponse(state);
 
-  public getState(method: HTTPMethod, endpoint: string) {
-    // TODO at some point we'd probably want to move to regex for case insensitivity
-    method = method.toLowerCase() as HTTPMethod;
-    endpoint = endpoint.toLowerCase();
-    const realEndpoint = this.matcher.findEndpoint(endpoint);
-    if (realEndpoint === undefined) {
-      return undefined;
-    }
-    const schemaEndpoint = realEndpoint.schemaEndpoint;
-    const operationSchema = this.schema.paths[schemaEndpoint][method];
-    if (operationSchema === undefined) {
-      return undefined;
-    }
-
-    return this.state.getState(
-      method,
-      realEndpoint.normalizedEndpoint,
-      operationSchema,
+    this.core.updateState({ endpoint, method, newState });
+    return new Proxy(
+      this.updateDefaultState.bind(this),
+      StateHandler(this.core),
     );
   }
 }
+
+const AfterResetHandler = {
+  // underscores are used to ignore the argument not being used
+  get: (_: any, _2: any) => {
+    throw new Error(
+      "Don't use fluent API after reseting a state, it makes it harder to track the state changes.",
+    );
+  },
+  apply: (_: any, _2: any, _3: any[]) => {
+    throw new Error("Don't use fluent API after reseting a state!");
+  },
+};
+
+const StateHandler = (service: IServiceCore) => ({
+  get: (stateUpdateFn: any, resetOrRestMethod: string): any => {
+    // Accessing an attribute under state - different HTTP methods or reset
+    if (isRESTMethod(resetOrRestMethod)) {
+      // `resetOrRestMethod` is indeed a method and we use the previously used service
+      return (
+        endpoint: string = DEFAULT_STATE_ENDPOINT,
+        state: StateInput | undefined,
+      ) => {
+        stateUpdateFn(endpoint, state, resetOrRestMethod);
+        return new Proxy(stateUpdateFn, StateHandler(service));
+      };
+    }
+    // `resetOrRestMethod` is either "reset" or some bogus we can't handle
+    if (resetOrRestMethod === "reset") {
+      // call the reset function, and return a throwing proxy
+      return () => {
+        service.resetState();
+        return new Proxy({}, AfterResetHandler);
+      };
+    }
+    throw new Error(
+      `Unsure what to do with '${resetOrRestMethod}' when setting a state for ${service.name}`,
+    );
+  },
+});

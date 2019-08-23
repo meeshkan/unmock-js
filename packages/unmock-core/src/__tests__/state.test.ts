@@ -92,7 +92,7 @@ const updateState = (
   });
 
 const getState = (state: State, method: HTTPMethod, endpoint: string) =>
-  state.getState(method, endpoint, fullSchema.paths["/test/{test_id}"].get);
+  state.getState(method, endpoint);
 
 describe("Test state management", () => {
   it("returns undefined when setting empty state", () => {
