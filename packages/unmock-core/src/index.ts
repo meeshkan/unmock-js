@@ -6,15 +6,17 @@ import {
 } from "./interfaces";
 import * as transformers from "./service/state/transformers";
 import { AllowedHosts, BooleanSetting } from "./settings";
-// top-level exports
-export * from "./interfaces";
-export * from "./generator";
-export { IService } from "./service/interfaces";
-export { RequestResponseSpy } from "./service/spy";
+
 export {
-  default as unmockConsole,
-  CustomConsole as UnmockConsole,
-} from "./console";
+  ISerializedRequest as Request,
+  ISerializedRequest as UnmockRequest,
+  ISerializedResponse as UnmockResponse,
+  ServiceStoreType as UnmockServices,
+} from "./interfaces";
+export {
+  IService as UnmockService,
+  IService as Service,
+} from "./service/interfaces";
 
 import sinon from "sinon";
 export { sinon };
