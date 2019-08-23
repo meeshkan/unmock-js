@@ -140,7 +140,7 @@ describe("Node.js interceptor", () => {
       resp = await postMessage(text);
       expect(resp.data.message.text).toEqual(text);
       resp = await postMessage(text);
-      expect(resp.data.message.text).not.ToEqual(text);
+      expect(resp.data.message.text).not.toEqual(text);
     });
   });
 });
