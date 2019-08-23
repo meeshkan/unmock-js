@@ -18,7 +18,6 @@
   "dependencies": {
     "commander": "^2.20.0",
     "glob": "^7.1.3",
-    "unmock-core": "file:../unmock-core",
-    "unmock-node": "file:../unmock-node"
+    "unmock-core": "file:../unmock-core"
   }
 }

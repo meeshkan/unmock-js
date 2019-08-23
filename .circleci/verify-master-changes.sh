@@ -48,7 +48,7 @@ echo ""
 
 # verify the version is sync'd across packages
 echo "Verifying version ($MAIN_VERSION) is synchronized across monorepo"
-for f in "lerna.json" "packages/unmock/package.json" "packages/unmock-cli/package.json" "packages/unmock-node/package.json"; do
+for f in "lerna.json" "packages/unmock/package.json" "packages/unmock-cli/package.json"; do
   CUR_VERSION="$(get_version_from_file $f)"
   if [ "$CUR_VERSION" != "$MAIN_VERSION" ]; then
     echo "Found mismatched version '${CUR_VERSION}', declared in '${f}'"
