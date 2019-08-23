@@ -17,15 +17,12 @@ describe("Node.js interceptor", () => {
       petstore = unmock.services.petstore;
       filestackApi = unmock.services.filestackApi;
     });
-    afterAll(() => {
-      unmock.off();
-    });
+    afterAll(() => unmock.off());
 
-    beforeEach(() =>
-      Object.values(unmock.services).forEach((core: Service) =>
-        core.state.reset(),
-      ),
-    );
+    beforeEach(() => {
+      petstore.reset();
+      filestackApi.reset();
+    });
 
     test("Throws when asking for non existing method/path", async () => {
       try {
@@ -70,7 +67,7 @@ describe("Node.js interceptor", () => {
       expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
       const response2 = await axios("http://petstore.swagger.io/v1/pets/3");
       expect(response2.status).toBe(200);
-      expect(response2.data.every((pet: any) => pet.id === -1)).toBeTruthy();
+      expect(response2.data.id).toEqual(-1);
     });
 
     test("gets correct state when setting textual response", async () => {
@@ -125,24 +122,35 @@ describe("Node.js interceptor", () => {
       expect(() => petstore.state({ id: { $size: 5 } })).toThrow("$size");
     });
 
-    it("Updates $times correctly", async () => {
-      const postMessage = (text: string) =>
+    test("updates $times correctly", async () => {
+      const text = "foo";
+      const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {
           data: { channel: "my_channel_id", text },
         });
-      const text = "foo";
       const { slack } = unmock.services;
 
       slack.state.post("/chat.postMessage", { message: { text }, $times: 3 });
-      let resp = await postMessage(text);
+      let resp = await postMessage();
 
       expect(resp.data.message.text).toEqual(text);
-      resp = await postMessage(text);
+      resp = await postMessage();
       expect(resp.data.message.text).toEqual(text);
-      resp = await postMessage(text);
+      resp = await postMessage();
       expect(resp.data.message.text).toEqual(text);
-      resp = await postMessage(text);
+      resp = await postMessage();
       expect(resp.data.message.text).not.toEqual(text);
+    });
+
+    test("handles 'properties' keyword correctly", async () => {
+      petstore
+        .state({ properties: { isCat: true } })
+        .get("/pets/3", { properties: { isCat: false } });
+      let resp = await axios("http://petstore.swagger.io/v1/pets/54");
+      expect(resp.data.properties.isCat).toBeTruthy();
+
+      resp = await axios("http://petstore.swagger.io/v1/pets/3");
+      expect(resp.data.properties.isCat).toBeFalsy();
     });
   });
 });

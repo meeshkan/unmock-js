@@ -193,7 +193,8 @@ const matchWithNonConcreteValue = (
       ...translated,
     },
   };
-  return oneLevelOfIndirectNestedness(schema, state, spread);
+  const x = oneLevelOfIndirectNestedness(schema, state, spread);
+  return x;
 };
 
 /**
@@ -273,7 +274,13 @@ const oneLevelOfIndirectNestedness = (
       Object.keys(maybeContents).every(
         (k: string) => maybeContents[k] !== null,
       );
-    return { ...o, ...(hasContents ? { [key]: maybeContents } : {}) };
+    return hasContents
+      ? o[key] !== undefined
+        ? // `key` already exists in original object, we don't want to replace it.
+          // this usually happens if e.g. a real property is named 'properties'
+          { ...o, [key]: { ...o[key], [key]: maybeContents } }
+        : { ...o, [key]: maybeContents }
+      : o;
   }, initObj);
 
 /**

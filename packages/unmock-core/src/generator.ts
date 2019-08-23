@@ -55,7 +55,8 @@ export function responseCreatorFactory({
   const match = (sreq: ISerializedRequest) =>
     coreServices
       .map(service => service.match(sreq))
-      .filter(res => res !== undefined)[0];
+      .filter(res => res !== undefined)
+      .shift();
   const services = ServiceStore(coreServices);
 
   return {
