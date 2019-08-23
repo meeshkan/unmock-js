@@ -7,23 +7,16 @@ import {
 import * as transformers from "./service/state/transformers";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
-export {
-  ISerializedRequest as Request,
-  ISerializedRequest as UnmockRequest,
-  ISerializedResponse as UnmockResponse,
-  ServiceStoreType as UnmockServices,
-} from "./interfaces";
-export {
-  IService as UnmockService,
-  IService as Service,
-} from "./service/interfaces";
-
+export * from "./types";
+// Sinon for asserts and matchers
 import sinon from "sinon";
+import NodeBackend from "./backend";
+import WinstonLogger from "./loggers/winston-logger";
 export { sinon };
 
 export const dsl = transformers;
 
-export class CorePackage implements IUnmockPackage {
+class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
@@ -69,3 +62,11 @@ export class CorePackage implements IUnmockPackage {
     return this.backend.services;
   }
 }
+
+const unmock: IUnmockPackage = new UnmockPackage(new NodeBackend(), {
+  logger: new WinstonLogger(),
+});
+
+export type UnmockNode = typeof unmock;
+
+export default unmock;
