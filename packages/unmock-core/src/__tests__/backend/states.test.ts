@@ -1,19 +1,21 @@
 import axios from "axios";
 import path from "path";
-import { CorePackage } from "unmock-core";
-import { dsl, Service, UnmockRequest } from "../../..";
+import { dsl, Service, UnmockPackage, UnmockRequest } from "../..";
 import NodeBackend from "../../backend";
 
-const servicesDirectory = path.join(__dirname, "..", "resources");
+const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
     const nodeInterceptor = new NodeBackend({ servicesDirectory });
-    const unmock = new CorePackage(nodeInterceptor);
+    const unmock = new UnmockPackage(nodeInterceptor);
     let petstore: Service;
+    let filestackApi: Service;
 
     beforeAll(() => {
-      petstore = unmock.on().services.petstore;
+      unmock.on();
+      petstore = unmock.services.petstore;
+      filestackApi = unmock.services.filestackApi;
     });
     afterAll(() => {
       unmock.off();
@@ -72,23 +74,23 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct state when setting textual response", async () => {
-      petstore.state("foo");
-      const response = await axios("http://petstore.swagger.io/v1/pets");
+      filestackApi.state("foo");
+      const response = await axios("https://cloud.filestackapi.com/prefetch");
       expect(response.status).toBe(200);
       expect(response.data).toBe("foo");
     });
 
     test("gets correct state when setting textual response with path", async () => {
-      petstore.state("/pets", "bar");
-      const response = await axios("http://petstore.swagger.io/v1/pets");
+      filestackApi.state("/prefetch", "bar");
+      const response = await axios("https://cloud.filestackapi.com/prefetch");
       expect(response.status).toBe(200);
       expect(response.data).toBe("bar");
     });
 
     test("uses default response when setting textual response with DSL with non-existing status code", async () => {
-      petstore.state(dsl.textResponse("foo", { $code: 400 }));
+      filestackApi.state(dsl.textResponse("foo", { $code: 400 }));
       try {
-        await axios("http://petstore.swagger.io/v1/pets");
+        await axios("https://cloud.filestackapi.com/prefetch");
         throw new Error("Expected a 400 response");
       } catch (err) {
         expect(err.response.status).toBe(400);

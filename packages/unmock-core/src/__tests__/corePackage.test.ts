@@ -1,4 +1,4 @@
-import { CorePackage, IBackend } from "..";
+import { UnmockPackage, IBackend } from "..";
 
 // tslint:disable-next-line: max-classes-per-file
 class TestBackend implements IBackend {
@@ -16,9 +16,9 @@ const backend = new TestBackend();
 
 describe("Tests core package", () => {
   describe("tests allowedHosts", () => {
-    let pkg: CorePackage;
+    let pkg: UnmockPackage;
     beforeEach(() => {
-      pkg = new CorePackage(backend);
+      pkg = new UnmockPackage(backend);
     });
 
     test("defaults work as expected", () => {

@@ -8,16 +8,16 @@ import {
 import _ from "lodash";
 import Mitm from "mitm";
 import net from "net";
+import { CustomConsole } from "../console";
+import { responseCreatorFactory } from "../generator";
 import {
   CreateResponse,
   IBackend,
   ISerializedRequest,
   ISerializedResponse,
   IUnmockOptions,
-  responseCreatorFactory,
   ServiceStoreType,
-  UnmockConsole,
-} from "unmock-core";
+} from "../interfaces";
 import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
@@ -71,7 +71,7 @@ async function handleRequestAndResponse(
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = UnmockConsole.format("instruct", errMsg);
+      const formatted = CustomConsole.format("instruct", errMsg);
       clientRequest.emit("error", Error(formatted));
       return;
     }

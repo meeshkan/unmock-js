@@ -2,7 +2,7 @@ import debug from "debug";
 import fs from "fs";
 import { flatMap } from "lodash";
 import path from "path";
-import { IServiceDef, IServiceDefLoader } from "unmock-core";
+import { IServiceDef, IServiceDefLoader } from "../interfaces";
 
 export interface IFsServiceDefLoaderOptions {
   unmockDirectories: string[];
