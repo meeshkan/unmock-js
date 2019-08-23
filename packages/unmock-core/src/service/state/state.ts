@@ -4,7 +4,11 @@ import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import { DSL } from "../dsl";
 import { codeToMedia, ExtendedHTTPMethod, HTTPMethod } from "../interfaces";
 import { IStateUpdate } from "./interfaces";
-import { chooseErrorFromList, getOperations } from "./utils";
+import {
+  chooseErrorFromList,
+  convertEndpointToWildcard,
+  getOperations,
+} from "./utils";
 import { getValidStatesForOperationWithState } from "./validator";
 
 const debugLog = debug("unmock:state");
@@ -46,13 +50,15 @@ export class State {
       )}`,
     );
 
-    const mapped = ops.operations.map(op =>
-      getValidStatesForOperationWithState(
+    const mapped = ops.operations.map(op => ({
+      ...getValidStatesForOperationWithState(
         op.operation,
         newState,
         stateUpdate.dereferencer,
       ),
-    );
+      endpoint: op.endpoint,
+      method: op.method,
+    }));
 
     const failed = mapped.every(resp => resp.error !== undefined);
     if (failed) {
@@ -68,8 +74,14 @@ export class State {
 
     mapped
       .filter(resp => resp.error === undefined)
-      .map(resp => DSL.translateTopLevelToOAS(newState.top, resp.responses))
-      .forEach(aug => this.updateStateInternal(endpoint, method, aug));
+      .map(resp => ({
+        state: DSL.translateTopLevelToOAS(newState.top, resp.responses),
+        endpoint: convertEndpointToWildcard(resp.endpoint),
+        method: resp.method,
+      }))
+      .forEach(aug =>
+        this.updateStateInternal(aug.endpoint, aug.method, aug.state),
+      );
   }
 
   /**
@@ -107,7 +119,9 @@ export class State {
         return nA > nB || (nA === nB && a.indexOf("*") < b.indexOf("*"))
           ? -1
           : 1;
-      })[0];
+      })
+      .shift();
+
     if (mostRelevantEndpoint === undefined) {
       debugLog(`No states match '${endpoint}'`);
       return undefined;
