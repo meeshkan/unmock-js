@@ -7,10 +7,6 @@ import { RequestResponseSpy } from "../service/spy";
  */
 export const UnmockExpectExtend = {
   called(receivedService: Service) {
-    if (!("spy" in receivedService)) {
-      throw Error("Expected to receive a service with spy member");
-    }
-
     const spy: RequestResponseSpy = receivedService.spy;
 
     if (spy.called) {
@@ -26,20 +22,17 @@ export const UnmockExpectExtend = {
     }
   },
   calledTimes(receivedService: Service, count: number) {
-    if (!("spy" in receivedService)) {
-      throw Error("Expected to receive a service with spy member");
-    }
-
     const spy: RequestResponseSpy = receivedService.spy;
 
     if (spy.callCount === count) {
       return {
-        message: () => `expected not to be called`,
+        message: () => `expected not to be called ${count} times`,
         pass: true,
       };
     } else {
       return {
-        message: () => `expected to be called`,
+        message: () =>
+          `expected to be called ${count} times, was called ${spy.callCount} times`,
         pass: false,
       };
     }
