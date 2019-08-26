@@ -4,7 +4,6 @@ import {
   Dereferencer,
   HTTPMethod,
   IServiceCore,
-  IServiceInput,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
@@ -29,7 +28,7 @@ export class ServiceCore implements IServiceCore {
   private readonly state: State;
   private readonly callTracker: ICallTracker;
 
-  constructor(opts: IServiceInput) {
+  constructor(opts: { schema: OpenAPIObject; name: string; absPath?: string }) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
     this.absPath = opts.absPath || process.cwd();
