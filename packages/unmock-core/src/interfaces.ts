@@ -73,17 +73,6 @@ export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
 
-export interface IServiceDefLoader {
-  /**
-   * Asynchronously read service definitions.
-   */
-  load(): Promise<IServiceDef[]>;
-  /**
-   * Synchronously read service definitions.
-   */
-  loadSync(): IServiceDef[];
-}
-
 export interface IServiceDefFile {
   /**
    * Basename for the service definition file: for example, `index.yaml`.

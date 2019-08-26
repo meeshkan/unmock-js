@@ -9,6 +9,7 @@ import _ from "lodash";
 import Mitm from "mitm";
 import net from "net";
 import { CustomConsole } from "../console";
+import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
 import {
   CreateResponse,
@@ -18,7 +19,6 @@ import {
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
-import { FsServiceDefLoader } from "../loaders/fs-service-def-loader";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
 import { resolveUnmockDirectories } from "../utils";

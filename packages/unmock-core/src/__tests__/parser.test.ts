@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { IServiceDef } from "..";
-import { ServiceParser } from "../service/parser";
+import { ServiceParser } from "../parser";
 
 const absPath = path.join(__dirname, "__unmock__", "petstore", "spec.yaml");
 const petStoreYamlString: string = fs.readFileSync(absPath, "utf-8");

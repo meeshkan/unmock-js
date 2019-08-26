@@ -13,12 +13,7 @@ import NodeBackend from "./backend";
 import WinstonLogger from "./loggers/winston-logger";
 export { sinon };
 // TODO: temporary exports while migrating to new package structure
-export {
-  IServiceDef,
-  ISerializedRequest,
-  IServiceDefLoader,
-  IBackend,
-} from "./interfaces";
+export { IServiceDef, ISerializedRequest, IBackend } from "./interfaces";
 export { IService } from "./service/interfaces";
 export { responseCreatorFactory } from "./generator";
 
