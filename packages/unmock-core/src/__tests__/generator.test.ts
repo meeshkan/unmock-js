@@ -116,7 +116,7 @@ describe("Tests generator", () => {
     expect(resp).toBeDefined();
     if (resp !== undefined) {
       expect(resp.statusCode).toEqual(204);
-      expect(resp.body).toEqual('"prefetch"');
+      expect(resp.body).toEqual("prefetch");
     }
 
     resp = createResponse({
@@ -128,7 +128,7 @@ describe("Tests generator", () => {
     expect(resp).toBeDefined();
     if (resp !== undefined) {
       expect(resp.statusCode).toEqual(200);
-      expect(resp.body).toEqual('"prefetch"');
+      expect(resp.body).toEqual("prefetch");
     }
   });
 
@@ -146,9 +146,11 @@ describe("Tests generator", () => {
     });
     expect(resp).toBeDefined();
     if (resp && resp.body !== undefined) {
-      JSON.parse(resp.body).forEach((pet: any) =>
-        expect(pet.id).toEqual("foo"),
-      );
+      if (!(resp.body instanceof Array)) {
+        throw new Error("Response body was not an object but a string");
+      }
+
+      resp.body.forEach((pet: any) => expect(pet.id).toEqual("foo"));
     } else {
       throw new Error("Response body was undefined?");
     }
@@ -162,7 +164,10 @@ describe("Tests generator", () => {
     });
     expect(resp).toBeDefined();
     if (resp && resp.body !== undefined) {
-      JSON.parse(resp.body).forEach((pet: any) => expect(pet.id).toEqual(1));
+      if (!(resp.body instanceof Array)) {
+        throw new Error("Response body was not an object but a string");
+      }
+      resp.body.forEach((pet: any) => expect(pet.id).toEqual(1));
     } else {
       throw new Error("Response body was undefined?");
     }

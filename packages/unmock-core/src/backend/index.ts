@@ -31,7 +31,7 @@ const respondFromSerializedResponse = (
   res: ServerResponse,
 ) => {
   res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
-  res.end(serializedResponse.body);
+  res.end(JSON.stringify(serializedResponse.body));
 };
 
 const errorForMissingTemplate = (sreq: ISerializedRequest) => {
@@ -147,6 +147,7 @@ export default class NodeBackend implements IBackend {
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
+
     this.serviceStore = services;
   }
 

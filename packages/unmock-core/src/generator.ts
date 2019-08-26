@@ -302,7 +302,7 @@ const generateMockFromTemplate = (
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
 
-  const body = JSON.stringify(resolvedTemplate);
+  const body = resolvedTemplate;
   jsf.option("useDefaultValue", true);
   const resHeaders = jsf.generate(normalizeHeaders(headers));
   jsf.option("useDefaultValue", false);

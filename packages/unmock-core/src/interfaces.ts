@@ -64,7 +64,7 @@ export interface ISerializedRequest {
 }
 
 export interface ISerializedResponse {
-  body?: string;
+  body?: string | object;
   headers?: IOutgoingHeaders;
   statusCode: number;
 }
