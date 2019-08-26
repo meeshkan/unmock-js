@@ -1,6 +1,6 @@
 import path from "path";
-import { responseCreatorFactory } from "..";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
+import { responseCreatorFactory } from "../generator";
 
 const mockOptions = {
   flaky: () => false,

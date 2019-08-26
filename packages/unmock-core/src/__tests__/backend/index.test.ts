@@ -1,6 +1,6 @@
 import axios from "axios";
 import path from "path";
-import { UnmockPackage, IService, sinon } from "../../";
+import { Service, sinon, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
@@ -83,7 +83,7 @@ describe("Unmock node package", () => {
   const nodeInterceptor = new NodeBackend({ servicesDirectory });
   const unmock = new UnmockPackage(nodeInterceptor);
   describe("service spy", () => {
-    let petstore: IService;
+    let petstore: Service;
     beforeAll(() => {
       petstore = unmock.on().services.petstore;
     });

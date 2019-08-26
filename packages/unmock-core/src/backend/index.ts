@@ -13,7 +13,6 @@ import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
 import {
   CreateResponse,
-  IBackend,
   ISerializedRequest,
   ISerializedResponse,
   IUnmockOptions,
@@ -92,7 +91,7 @@ interface IBypassableSocket extends net.Socket {
   bypass: () => void;
 }
 
-export default class NodeBackend implements IBackend {
+export default class NodeBackend {
   private serviceStore: ServiceStoreType = {};
   private readonly config: INodeBackendOptions;
   private mitm: any;
@@ -101,7 +100,7 @@ export default class NodeBackend implements IBackend {
     this.config = { ...nodeBackendDefaultOptions, ...config };
   }
 
-  public get services() {
+  public get services(): ServiceStoreType {
     return this.serviceStore;
   }
 
@@ -167,9 +166,7 @@ export default class NodeBackend implements IBackend {
   ) {
     debugLog("Handling incoming message...");
     req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
-    req.on("abort", () => {
-      debugLog("Intercepted request aborted");
-    });
+    req.on("abort", () => debugLog("Intercepted request aborted"));
     const clientRequest = ClientRequestTracker.pop(req);
     setImmediate(() =>
       handleRequestAndResponse(createResponse, req, res, clientRequest),

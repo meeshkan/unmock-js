@@ -1,33 +1,23 @@
-import {
-  IBackend,
-  ILogger,
-  IUnmockOptions,
-  IUnmockPackage,
-} from "./interfaces";
-import * as transformers from "./service/state/transformers";
-import { AllowedHosts, BooleanSetting } from "./settings";
-export * from "./types";
 // Sinon for asserts and matchers
 import sinon from "sinon";
 import NodeBackend from "./backend";
+import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
-export { sinon };
-// TODO: temporary exports while migrating to new package structure
-export { IServiceDef, ISerializedRequest, IBackend } from "./interfaces";
-export { IService } from "./service/interfaces";
-export { responseCreatorFactory } from "./generator";
+import { AllowedHosts, BooleanSetting } from "./settings";
 
-export const dsl = transformers;
+export * from "./types";
+export { sinon };
+export { default as dsl } from "./service/state/transformers";
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
-  protected readonly backend: IBackend;
+  protected readonly backend: NodeBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
 
   constructor(
-    backend: IBackend,
+    backend: NodeBackend,
     options?: {
       logger?: ILogger;
     },

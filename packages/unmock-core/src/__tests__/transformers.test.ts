@@ -1,9 +1,7 @@
 import { Schema } from "../service/interfaces";
-import {
-  objResponse,
-  TEXT_RESPONSE_ERROR,
-  textResponse,
-} from "../service/state/transformers";
+import { objResponse, textResponse } from "../service/state/transformers";
+
+const TEXT_RESPONSE_ERROR = "Can't set text response for non-string schemas";
 
 const schema: Schema = {
   properties: {

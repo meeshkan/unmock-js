@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { IServiceDef } from "..";
+import { IServiceDef } from "../interfaces";
 import { ServiceParser } from "../parser";
 
 const absPath = path.join(__dirname, "__unmock__", "petstore", "spec.yaml");

@@ -1,7 +1,7 @@
-import { UnmockPackage, IBackend } from "..";
+import { UnmockNode, UnmockPackage } from "..";
+import NodeBackend from "../backend/index";
 
-// tslint:disable-next-line: max-classes-per-file
-class TestBackend implements IBackend {
+class TestBackend extends NodeBackend {
   public initialize(_: any): never {
     throw Error("Not implemented");
   }
@@ -16,7 +16,7 @@ const backend = new TestBackend();
 
 describe("Tests core package", () => {
   describe("tests allowedHosts", () => {
-    let pkg: UnmockPackage;
+    let pkg: UnmockNode;
     beforeEach(() => {
       pkg = new UnmockPackage(backend);
     });
