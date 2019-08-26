@@ -1,5 +1,5 @@
 import { Service } from "../service/service";
-import { RequestResponseSpy } from "../service/spy";
+import { UnmockExpectExtend } from "./extend";
 
 interface IExpectReturn {
   message: () => string;
@@ -50,60 +50,18 @@ type Expect<T extends (a: any, ...args: any) => any> = T extends (
 // type Fn3 = Expect<typeof fn3>;
 
 /**
- * `unmock.expect`, independent of jest.
- * unmock.expect(service).toBeCalled();
- * unmock.expect(service).toBeCalledTimes(1);
+ * `unmock.expect`, independent of jest. Makes callable expects from `UnmockExpectExtend` as follows:
+ * unmock.expect(service).toBeCalled(); => UnmockExpectExtend.toBeCalled(service);
+ * unmock.expect(service).toBeCalledTimes(1) => UnmockExpectExtend.toBeCalledTimes(service, 1);
  * @param service Service instance
  */
-export const expect = (service: Service) => {
-  const called = bindFirstArg(service, expectExtend.called);
-  const calledTimes = bindFirstArg(service, expectExtend.calledTimes);
+export const expect = (service: Service): UnmockExpectType => {
   return {
-    called,
-    calledTimes,
+    called: bindFirstArg(service, UnmockExpectExtend.called),
+    calledTimes: bindFirstArg(service, UnmockExpectExtend.calledTimes),
   };
 };
 
-/**
- * expect-extend format for custom expects.
- */
-const expectExtend = {
-  called(receivedService: Service) {
-    if (!("spy" in receivedService)) {
-      throw Error("Expected to receive a service with spy member");
-    }
-
-    const spy: RequestResponseSpy = receivedService.spy;
-
-    if (spy.called) {
-      return {
-        message: () => `expected not to be called`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () => `expected to be called`,
-        pass: false,
-      };
-    }
-  },
-  calledTimes(receivedService: Service, count: number) {
-    if (!("spy" in receivedService)) {
-      throw Error("Expected to receive a service with spy member");
-    }
-
-    const spy: RequestResponseSpy = receivedService.spy;
-
-    if (spy.callCount === count) {
-      return {
-        message: () => `expected not to be called`,
-        pass: true,
-      };
-    } else {
-      return {
-        message: () => `expected to be called`,
-        pass: false,
-      };
-    }
-  },
+type UnmockExpectType = {
+  [P in keyof UnmockExpectExtend]: Expect<UnmockExpectExtend[P]>;
 };
