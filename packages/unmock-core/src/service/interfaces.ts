@@ -47,10 +47,6 @@ export type OASMethodKey = keyof PathItem & HTTPMethod;
 
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
   RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
-export const isExtendedRESTMethod = (
-  maybeMethod: string,
-): maybeMethod is ExtendedHTTPMethod =>
-  maybeMethod === DEFAULT_STATE_HTTP_METHOD || isRESTMethod(maybeMethod);
 
 export interface IStateInputGenerator {
   /**
@@ -85,11 +81,6 @@ export interface IStateInput {
   method: ExtendedHTTPMethod;
   endpoint: string;
   newState: IStateInputGenerator;
-}
-export interface IServiceInput {
-  schema: OpenAPIObject;
-  name: string;
-  absPath?: string;
 }
 
 // maps from media types (e.g. "application/json") to schema
@@ -161,6 +152,14 @@ export interface IServiceCore {
    * This provides easy access to wipe a state after every test.
    */
   resetState(): void;
+
+  /**
+   * Gets the state matching the given request (method + endpoint).
+   * Returns undefined if not state matches.
+   * @param method
+   * @param endpoint
+   */
+  getState(method: HTTPMethod, endpoint: string): codeToMedia | undefined;
 
   /**
    * Match a given request to the service. Return an operation object for successful match,

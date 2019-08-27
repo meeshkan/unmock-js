@@ -1,8 +1,8 @@
 import path from "path";
-import { IServiceDef } from "../../";
-import { FsServiceDefLoader } from "../../loaders/fs-service-def-loader";
+import { FsServiceDefLoader } from "../fs-service-def-loader";
+import { IServiceDef } from "../interfaces";
 
-const RESOURCES_DIR = path.join(__dirname, "..", "__unmock__");
+const RESOURCES_DIR = path.join(__dirname, "__unmock__");
 
 describe("File system service def loader", () => {
   it("loads serviceDefs from existing directory", () => {

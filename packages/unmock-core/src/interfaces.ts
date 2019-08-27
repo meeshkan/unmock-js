@@ -23,12 +23,6 @@ export interface IUnmockOptions extends ILogger {
   flaky(): boolean;
 }
 
-export interface IBackend {
-  readonly services: ServiceStoreType;
-  initialize(options: IUnmockOptions): void;
-  reset(): void;
-}
-
 export interface IUnmockPackage {
   allowedHosts: AllowedHosts;
   services: ServiceStoreType;
@@ -72,17 +66,6 @@ export interface ISerializedResponse {
 export type CreateResponse = (
   request: ISerializedRequest,
 ) => ISerializedResponse | undefined;
-
-export interface IServiceDefLoader {
-  /**
-   * Asynchronously read service definitions.
-   */
-  load(): Promise<IServiceDef[]>;
-  /**
-   * Synchronously read service definitions.
-   */
-  loadSync(): IServiceDef[];
-}
 
 export interface IServiceDefFile {
   /**

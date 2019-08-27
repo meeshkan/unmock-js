@@ -38,9 +38,6 @@ const genBuilder = (
   }
 };
 
-export const TEXT_RESPONSE_ERROR =
-  "Can't set text response for non-string schemas";
-
 export const objResponse = (
   state?: UnmockServiceState,
 ): IStateInputGenerator => ({
@@ -97,7 +94,7 @@ const generateTextResponse = (
     `generateTextResponse: Verifying ${schema} can contain a simple string`,
   );
   if (state === undefined || schema === undefined || schema.type !== "string") {
-    throw new Error(TEXT_RESPONSE_ERROR);
+    throw new Error("Can't set text response for non-string schemas");
   }
   return { ...schema, const: state };
 };
@@ -310,3 +307,5 @@ const DFSVerifyNoneAreNull = (
   }
   return undefined;
 };
+
+export default { textResponse, functionResponse, objResponse };

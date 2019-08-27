@@ -2,11 +2,7 @@ import debug from "debug";
 import fs from "fs";
 import { flatMap } from "lodash";
 import path from "path";
-import { IServiceDef, IServiceDefLoader } from "../interfaces";
-
-export interface IFsServiceDefLoaderOptions {
-  unmockDirectories: string[];
-}
+import { IServiceDef } from "./interfaces";
 
 const debugLog = debug("unmock:fs-service-def-loader");
 
@@ -16,7 +12,7 @@ const debugLog = debug("unmock:fs-service-def-loader");
  * 2. Environment variable `UNMOCK_SERVICES_DIRECTORY`
  * 3. `${process.cwd()}/__unmock__`
  */
-export class FsServiceDefLoader implements IServiceDefLoader {
+export class FsServiceDefLoader {
   /**
    * Read service parser input from directory containing all the files for a given service.
    * @param absoluteDirectory Absolute path to service directory. For example, /path/to/__unmock__/petstore/
@@ -64,14 +60,20 @@ export class FsServiceDefLoader implements IServiceDefLoader {
 
   private readonly unmockDirectories: string[];
 
-  public constructor(options: IFsServiceDefLoaderOptions) {
+  public constructor(options: { unmockDirectories: string[] }) {
     this.unmockDirectories = options.unmockDirectories;
   }
 
+  /**
+   * Asynchronously read service definitions.
+   */
   public async load(): Promise<IServiceDef[]> {
     return this.loadSync(); // Simple wrap in promise for now
   }
 
+  /**
+   * Synchronously read service definitions.
+   */
   public loadSync(): IServiceDef[] {
     return flatMap(this.unmockDirectories, (directory: string) =>
       FsServiceDefLoader.loadSyncUnmockDirectory(directory),
