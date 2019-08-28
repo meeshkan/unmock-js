@@ -39,6 +39,30 @@ const verifyOnlyOneCall = ({
   return spy;
 };
 
+export const createFunctionsForMethod = (method: HTTPMethod) => {
+  return {
+    [`${method}Host`](this: UnmockServiceSpy): string {
+      const spyWithMethod = this.withMethod(method);
+      verifyOnlyOneCall({ spy: spyWithMethod, errPrefix: `${method}Host` });
+      return spyWithMethod.firstCall.args[0].host;
+    },
+    [`${method}ResponseBody`](
+      this: UnmockServiceSpy,
+      matcher?: SinonMatcher,
+    ): any {
+      const spyWithMethod = this.withMethod(method);
+      const spyMatched = matcher
+        ? decorateSpy(spyWithMethod.withArgs(matcher))
+        : spyWithMethod;
+      verifyOnlyOneCall({
+        spy: spyMatched,
+        errPrefix: `${method}ResponseBody`,
+      });
+      return spyMatched.firstCall.returnValue.body;
+    },
+  };
+};
+
 const postMethods = {
   postHost(this: UnmockServiceSpy): string {
     const spyWithPost = this.withMethod("post");
@@ -68,6 +92,9 @@ const postMethods = {
   },
 };
 
-const customSpyMethods: ISpyDecoration = { ...helperMethods, ...postMethods };
+const customSpyMethods: ISpyDecoration = {
+  ...helperMethods,
+  ...postMethods,
+};
 
 export default decorateSpy;
