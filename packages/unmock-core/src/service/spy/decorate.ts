@@ -20,7 +20,7 @@ const helperMethods = {
 export interface ISpyDecoration {
   withMethod(method: HTTPMethod): UnmockServiceSpy;
   postRequestBody(matcher?: SinonMatcher): any;
-  postResponseBody(): any;
+  postResponseBody(matcher?: SinonMatcher): any;
 }
 
 const verifyOnlyOneCall = ({
@@ -58,10 +58,13 @@ const postMethods = {
     verifyOnlyOneCall({ spy: spyMatched, errPrefix: "postRequestBody" });
     return spyMatched.firstCall.args[0].body;
   },
-  postResponseBody(this: UnmockServiceSpy): any {
+  postResponseBody(this: UnmockServiceSpy, matcher?: SinonMatcher): any {
     const spyWithPost = this.withMethod("post");
-    verifyOnlyOneCall({ spy: spyWithPost, errPrefix: "postResponseBody" });
-    return spyWithPost.firstCall.args[0].body;
+    const spyMatched = matcher
+      ? decorateSpy(spyWithPost.withArgs(matcher))
+      : spyWithPost;
+    verifyOnlyOneCall({ spy: spyMatched, errPrefix: "postResponseBody" });
+    return spyMatched.firstCall.returnValue.body;
   },
 };
 
