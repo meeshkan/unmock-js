@@ -4,7 +4,7 @@ import {
   PathItem,
   Schema,
 } from "loas3/dist/generated/full";
-import { ISerializedRequest } from "../interfaces";
+import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
 import { IRequestResponsePair, RequestResponseSpy } from "./spy";
@@ -26,27 +26,12 @@ export {
   Responses,
 } from "loas3/dist/generated/full";
 
-const RESTMethodTypes = [
-  "get",
-  "head",
-  "post",
-  "put",
-  "patch",
-  "delete",
-  "options",
-  "trace",
-] as const;
-
 const DEF_REST_METHOD = [DEFAULT_STATE_HTTP_METHOD] as const;
 
 type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
-export type HTTPMethod = typeof RESTMethodTypes[number];
 export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
 
 export type OASMethodKey = keyof PathItem & HTTPMethod;
-
-export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
-  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
 
 export interface IStateInputGenerator {
   /**
