@@ -1,4 +1,4 @@
-import { assert } from "sinon";
+import { assert, match } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { createCallTracker, ICallTracker } from "../service/spy";
 
@@ -44,6 +44,20 @@ describe("Decorated spy", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(callTracker.spy.postRequestBody()).toBe(postRequest.body);
+    });
+    it("should return when used with matching matcher", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(
+        callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
+      ).toBe(postRequest.body);
+    });
+    it("should throw when used with non-matching matcher", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(() =>
+        callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
+      ).toThrowError("postRequestBody: Expected");
     });
     it("should throw when nothing tracked", () => {
       expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
