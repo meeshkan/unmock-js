@@ -68,7 +68,7 @@ export interface ISerializedRequest {
   body?: string | object;
   headers?: IIncomingHeaders;
   host: string;
-  method: string;
+  method: HTTPMethod;
   path: string;
   protocol: "http" | "https";
 }
