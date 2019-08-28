@@ -7,7 +7,7 @@ describe("OASMatcher", () => {
     const matcher = new OASMatcher({ schema });
     const validRequest: UnmockRequest = {
       host: "petstore.swagger.io",
-      method: "GET",
+      method: "get",
       path: "/v1/pets",
       protocol: "http",
     };
