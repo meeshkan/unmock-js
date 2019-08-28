@@ -12,7 +12,7 @@ import {
   createCallTracker,
   ICallTracker,
   IRequestResponsePair,
-  RequestResponseSpy,
+  UnmockServiceSpy,
 } from "./spy";
 import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
@@ -54,7 +54,7 @@ export class ServiceCore implements IServiceCore {
     this.callTracker.track(requestResponsePair);
   }
 
-  get spy(): RequestResponseSpy {
+  get spy(): UnmockServiceSpy {
     return this.callTracker.spy;
   }
 

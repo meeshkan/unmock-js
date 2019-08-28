@@ -1,4 +1,4 @@
-export { RequestResponseSpy } from "./service/spy/index";
+export { UnmockServiceSpy } from "./service/spy";
 export {
   ISerializedRequest as Request,
   ISerializedRequest as UnmockRequest,
