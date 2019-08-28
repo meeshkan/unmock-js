@@ -5,10 +5,10 @@ import * as http from "http";
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
 import url from "url";
 import {
+  HTTPMethod,
   IIncomingHeaders,
   ISerializedRequest,
   isRESTMethod,
-  HTTPMethod,
 } from "../interfaces";
 
 /**
