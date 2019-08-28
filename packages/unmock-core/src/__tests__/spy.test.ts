@@ -39,15 +39,29 @@ const postRequest: ISerializedRequest = {
 };
 
 describe("Decorated spy", () => {
-  it("should have postRequestBody when tracked", () => {
-    const callTracker: ICallTracker = createCallTracker();
-    callTracker.track({ req: postRequest, res: fakeResponse });
-    expect(callTracker.spy.postRequestBody()).toBe(postRequest.body);
+  describe("postRequestBody", () => {
+    it("should return ", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postRequestBody()).toBe(postRequest.body);
+    });
+    it("should throw when nothing tracked", () => {
+      expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
+        "postRequestBody: Expected",
+      );
+    });
   });
-  it("should throw for postRequestBody when not tracked", () => {
-    const callTracker: ICallTracker = createCallTracker();
-    expect(() => callTracker.spy.postRequestBody()).toThrowError(
-      "postRequestBody: Expected",
-    );
+
+  describe("withMethod", () => {
+    it("should return one call when post request tracked", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.withMethod("post").callCount).toBe(1);
+    });
+    it("should not return calls for get when post request tracked", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.withMethod("get").callCount).toBe(0);
+    });
   });
 });
