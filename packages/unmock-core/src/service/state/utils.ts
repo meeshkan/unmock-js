@@ -1,5 +1,9 @@
 import debug from "debug";
-import { HTTPMethod, isRESTMethod } from "../../interfaces";
+import {
+  HTTPMethod,
+  isRESTMethod,
+  toLowerCaseHttpMethod,
+} from "../../interfaces";
 import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
@@ -67,7 +71,8 @@ export const getOperations = ({
     debugLog(
       `getOperations: Fetching operations for REST method '${method}'...`,
     );
-    const op = pathItem[method as HTTPMethod];
+    const lowerCaseMethod = toLowerCaseHttpMethod(method as HTTPMethod);
+    const op = pathItem[lowerCaseMethod];
     return op === undefined
       ? err(`response for '${method} ${endpoint}'`)
       : {

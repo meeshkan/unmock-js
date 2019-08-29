@@ -74,13 +74,14 @@ const AfterResetHandler = {
 const StateHandler = (service: IServiceCore) => ({
   get: (stateUpdateFn: any, resetOrRestMethod: string): any => {
     // Accessing an attribute under state - different HTTP methods or reset
-    if (isRESTMethod(resetOrRestMethod)) {
+    const upperCasedCommand = resetOrRestMethod.toUpperCase();
+    if (isRESTMethod(upperCasedCommand)) {
       // `resetOrRestMethod` is indeed a method and we use the previously used service
       return (
         endpoint: string = DEFAULT_STATE_ENDPOINT,
         state: StateInput | undefined,
       ) => {
-        stateUpdateFn(endpoint, state, resetOrRestMethod);
+        stateUpdateFn(endpoint, state, upperCasedCommand);
         return new Proxy(stateUpdateFn, StateHandler(service));
       };
     }

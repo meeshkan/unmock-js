@@ -4,20 +4,36 @@ import { AllowedHosts } from "./settings/allowedHosts";
 export { ServiceStoreType };
 
 const RESTMethodTypes = [
-  "get",
-  "head",
-  "post",
-  "put",
-  "patch",
-  "delete",
-  "options",
-  "trace",
+  "GET",
+  "HEAD",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+  "OPTIONS",
+  "TRACE",
 ] as const;
 
 export type HTTPMethod = typeof RESTMethodTypes[number];
 
 export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
-  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
+  RESTMethodTypes.toString().includes(maybeMethod);
+
+export type HTTPMethodLowerCase =
+  | "get"
+  | "head"
+  | "post"
+  | "put"
+  | "patch"
+  | "delete"
+  | "options"
+  | "trace";
+
+export const toLowerCaseHttpMethod = (
+  method: HTTPMethod,
+): HTTPMethodLowerCase => {
+  return method.toLowerCase() as HTTPMethodLowerCase;
+};
 
 export interface ILogger {
   log(message: string): void;

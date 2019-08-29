@@ -76,7 +76,7 @@ function extractVars(
   }
 
   // https://nodejs.org/api/http.html#http_message_method
-  const method = methodNode.toLowerCase();
+  const method = methodNode.toUpperCase();
 
   if (!isRESTMethod(method)) {
     throw new Error(`Unknown REST method: ${method}`);
