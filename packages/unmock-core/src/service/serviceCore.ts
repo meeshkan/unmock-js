@@ -64,7 +64,7 @@ export class ServiceCore implements IServiceCore {
       return undefined;
     }
 
-    const state = this.getState(sreq.method as HTTPMethod, sreq.path);
+    const state = this.getState(sreq.method as HTTPMethod, sreq.pathname);
     return {
       operation: maybeOp,
       state,

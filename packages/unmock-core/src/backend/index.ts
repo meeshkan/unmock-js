@@ -38,14 +38,14 @@ const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   return `No matching template found for intercepted request. Please ensure that
 
   1. You have defined a service for host ${serverUrl}
-  2. The service has a path matching "${sreq.method} ${sreq.path}"
+  2. The service has a path matching "${sreq.method} ${sreq.pathname}"
 
   For example, add the following to your service:
 
   servers:
     - url: ${sreq.protocol}://${sreq.host}
   paths:
-    ${sreq.path}:
+    ${sreq.pathname}:
       ${sreq.method.toLowerCase()}:
         // OpenAPI operation object
         responses:

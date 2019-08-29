@@ -182,7 +182,7 @@ export class OASMatcher {
 
       debugLog(
         `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
-          `vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
+          `vs ${sreq.host}, ${sreq.pathname} vs ${serverUrl.pathname}`,
       );
       if (serverUrl.pathname === undefined) {
         throw new Error("Got undefined pathname");
