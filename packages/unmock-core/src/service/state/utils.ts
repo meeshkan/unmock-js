@@ -1,13 +1,13 @@
 import debug from "debug";
+import { HTTPMethod, isRESTMethod } from "../../interfaces";
 import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
 import { DSLKeys } from "../dsl/interfaces";
+
 import {
   ExtendedHTTPMethod,
-  HTTPMethod,
-  isRESTMethod,
   OASMethodKey,
   Operation,
   PathItem,

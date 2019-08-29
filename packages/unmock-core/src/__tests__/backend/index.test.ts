@@ -93,7 +93,7 @@ describe("Unmock node package", () => {
     test("should track a successful request-response pair", async () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});
       sinon.assert.calledOnce(petstore.spy);
-      sinon.assert.calledWith(petstore.spy, sinon.match({ method: "POST" }));
+      sinon.assert.calledWith(petstore.spy, sinon.match({ method: "post" }));
       expect(petstore.spy.firstCall.returnValue).toEqual(
         expect.objectContaining({ statusCode: 201 }),
       );

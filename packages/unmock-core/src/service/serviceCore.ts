@@ -1,8 +1,7 @@
-import { ISerializedRequest } from "../interfaces";
+import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
   Dereferencer,
-  HTTPMethod,
   IServiceCore,
   IStateInput,
   MatcherResponse,

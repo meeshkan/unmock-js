@@ -1,8 +1,9 @@
 import debug from "debug";
 import minimatch from "minimatch";
+import { HTTPMethod } from "../../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import { DSL } from "../dsl";
-import { codeToMedia, ExtendedHTTPMethod, HTTPMethod } from "../interfaces";
+import { codeToMedia, ExtendedHTTPMethod } from "../interfaces";
 import { IStateUpdate } from "./interfaces";
 import {
   chooseErrorFromList,

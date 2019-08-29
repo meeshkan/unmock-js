@@ -3,6 +3,22 @@ import { AllowedHosts } from "./settings/allowedHosts";
 
 export { ServiceStoreType };
 
+const RESTMethodTypes = [
+  "get",
+  "head",
+  "post",
+  "put",
+  "patch",
+  "delete",
+  "options",
+  "trace",
+] as const;
+
+export type HTTPMethod = typeof RESTMethodTypes[number];
+
+export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
+  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
+
 export interface ILogger {
   log(message: string): void;
 }
@@ -52,7 +68,7 @@ export interface ISerializedRequest {
   body?: string | object;
   headers?: IIncomingHeaders;
   host: string;
-  method: string;
+  method: HTTPMethod;
   path: string;
   protocol: "http" | "https";
 }

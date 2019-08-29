@@ -4,7 +4,12 @@ import * as http from "http";
 // @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
 import url from "url";
-import { IIncomingHeaders, ISerializedRequest } from "../interfaces";
+import {
+  HTTPMethod,
+  IIncomingHeaders,
+  ISerializedRequest,
+  isRESTMethod,
+} from "../interfaces";
 
 /**
  * Network serializers
@@ -41,7 +46,7 @@ class BodySerializer extends readable.Transform {
 function extractVars(
   interceptedRequest: http.IncomingMessage,
 ): {
-  method: string;
+  method: HTTPMethod;
   host: string;
   path: string;
   headers: IIncomingHeaders;
@@ -56,11 +61,11 @@ function extractVars(
 
   const host = hostWithPort.split(":")[0];
 
-  const { method, url: requestUrl } = interceptedRequest;
+  const { method: methodNode, url: requestUrl } = interceptedRequest;
   if (!requestUrl) {
     throw new Error("Missing request url.");
   }
-  if (!method) {
+  if (!methodNode) {
     throw new Error("Missing method");
   }
 
@@ -68,6 +73,13 @@ function extractVars(
 
   if (!path) {
     throw new Error("Could not parse path");
+  }
+
+  // https://nodejs.org/api/http.html#http_message_method
+  const method = methodNode.toLowerCase();
+
+  if (!isRESTMethod(method)) {
+    throw new Error(`Unknown REST method: ${method}`);
   }
 
   return {

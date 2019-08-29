@@ -1,6 +1,7 @@
+import { HTTPMethod } from "../interfaces";
+
 import {
   ExtendedHTTPMethod,
-  HTTPMethod,
   IStateInputGenerator,
 } from "../service/interfaces";
 import { State } from "../service/state/state";
