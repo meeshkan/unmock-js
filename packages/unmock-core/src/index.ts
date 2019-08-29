@@ -1,5 +1,5 @@
 // Sinon for asserts and matchers
-import sinon from "sinon";
+import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
