@@ -22,8 +22,8 @@
     "coverage:upload": "codecov",
     "version": "lerna version --no-git-tag-version",
     "unmock": "node packages/unmock-cli/dist/index.js",
-    "generate-spy": "npx ts-node packages/unmock-core/scripts/generate-spy-decorators.ts > packages/unmock-core/src/service/spy/generated/index.ts && prettier '**/generated/*.{js,ts}' --write",
-    "generate-spy-dry": "npx ts-node packages/unmock-core/scripts/generate-spy-decorators.ts"
+    "generate-spy": "npx ts-node packages/unmock-core/scripts/generate-spy.ts > packages/unmock-core/src/service/spy/generated/index.ts && prettier '**/generated/*.{js,ts}' --write",
+    "generate-spy-dry": "npx ts-node packages/unmock-core/scripts/generate-spy.ts"
   },
   "lint-staged": {
     "*.ts": [
