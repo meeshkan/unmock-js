@@ -1,7 +1,7 @@
 import { spy as sinonSpy } from "sinon";
 import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
 import decorateSpy from "./decorate";
-import { ICallTracker, UnmockServiceSpy } from "./types";
+import { ICallTracker, ServiceSpy } from "./types";
 
 /**
  * Container for tracking spy calls via `track` method,
@@ -18,7 +18,7 @@ class CallTracker {
     const bareSpy = sinonSpy(gen);
     return decorateSpy(bareSpy);
   }
-  public readonly spy: UnmockServiceSpy;
+  public readonly spy: ServiceSpy;
   private returnValue?: ISerializedResponse;
 
   constructor() {

@@ -8,7 +8,7 @@ import {
   StateInput,
   StateType,
 } from "./interfaces";
-import { UnmockServiceSpy } from "./spy";
+import { ServiceSpy } from "./spy";
 import {
   functionResponse,
   objResponse,
@@ -17,7 +17,7 @@ import {
 
 export class Service implements IService {
   public readonly state: StateType;
-  public readonly spy: UnmockServiceSpy;
+  public readonly spy: ServiceSpy;
   constructor(private readonly core: IServiceCore) {
     this.state = new Proxy(
       this.updateDefaultState.bind(this),

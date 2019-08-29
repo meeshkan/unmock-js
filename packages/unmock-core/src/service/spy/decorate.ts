@@ -1,11 +1,11 @@
 import { decorators } from "./generated";
-import { SinonSpy, UnmockServiceSpy } from "./types";
+import { ServiceSpy, SinonSpy } from "./types";
 
 /**
  * Add custom methods to spy
  * @param spy Sinon spy (NOTE: modified in-place!)
  */
-export const decorateSpy = (spy: SinonSpy): UnmockServiceSpy => {
+export const decorateSpy = (spy: SinonSpy): ServiceSpy => {
   return Object.assign(spy, decorators);
 };
 
@@ -13,9 +13,9 @@ export const verifyOnlyOneCall = ({
   spy,
   errPrefix,
 }: {
-  spy: UnmockServiceSpy;
+  spy: ServiceSpy;
   errPrefix: string;
-}): UnmockServiceSpy => {
+}): ServiceSpy => {
   const callCount = spy.callCount;
   if (callCount !== 1) {
     throw Error(
