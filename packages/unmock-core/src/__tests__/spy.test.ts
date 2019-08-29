@@ -40,19 +40,19 @@ const postRequest: ISerializedRequest = {
 
 describe("Decorated spy", () => {
   describe("postRequestBody", () => {
-    it("should return ", () => {
+    it("should return request body when single one tracked", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(callTracker.spy.postRequestBody()).toBe(postRequest.body);
     });
-    it("should return when used with matching matcher", () => {
+    it("should return request body when used with matching matcher", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(
         callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
       ).toBe(postRequest.body);
     });
-    it("should throw when used with non-matching matcher", () => {
+    it("should throw when called with non-matching matcher", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(() =>
@@ -63,6 +63,30 @@ describe("Decorated spy", () => {
       expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
         "postRequestBody: Expected",
       );
+    });
+    it("should throw when two matching calls tracked", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
+        "postRequestBody: Expected",
+      );
+    });
+  });
+
+  describe("postResponseBody", () => {
+    it("should return response body", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postResponseBody()).toBe(fakeResponse.body);
+    });
+  });
+
+  describe("postRequestHost", () => {
+    it("should return request host", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postRequestHost()).toBe(fakeRequest.host);
     });
   });
 
