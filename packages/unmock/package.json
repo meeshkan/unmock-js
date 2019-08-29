@@ -6,6 +6,7 @@
   "bin": {
     "unmock": "./index.js"
   },
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -15,6 +16,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock-cli": "file:../unmock-cli"
+    "unmock-cli": "file:../unmock-cli",
+    "unmock-core": "file:../unmock-core"
   }
 }
