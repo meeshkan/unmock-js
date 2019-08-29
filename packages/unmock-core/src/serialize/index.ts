@@ -7,9 +7,9 @@ import url from "url";
 import {
   HTTPMethod,
   IIncomingHeaders,
+  IIncomingQuery,
   ISerializedRequest,
   isRESTMethod,
-  IIncomingQuery,
 } from "../interfaces";
 
 /**
