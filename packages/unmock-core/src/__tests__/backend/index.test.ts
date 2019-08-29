@@ -82,6 +82,9 @@ describe("Node.js interceptor", () => {
 describe("Unmock node package", () => {
   const nodeInterceptor = new NodeBackend({ servicesDirectory });
   const unmock = new UnmockPackage(nodeInterceptor);
+  afterAll(() => {
+    unmock.off();
+  });
   describe("service spy", () => {
     let petstore: Service;
     beforeAll(() => {

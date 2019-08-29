@@ -9,7 +9,9 @@ describe("OASMatcher", () => {
       host: "petstore.swagger.io",
       method: "get",
       path: "/v1/pets",
+      pathname: "/v1/pets",
       protocol: "http",
+      query: {},
     };
     it("matches a correct request", () => {
       const sreq: UnmockRequest = validRequest;
@@ -29,6 +31,7 @@ describe("OASMatcher", () => {
       const sreq: UnmockRequest = {
         ...validRequest,
         path: "/v1",
+        pathname: "/v1",
       };
       const responseTemplate = matcher.matchToOperationObject(sreq);
       expect(responseTemplate).toBeUndefined();

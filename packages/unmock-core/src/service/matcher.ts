@@ -182,7 +182,7 @@ export class OASMatcher {
 
       debugLog(
         `Testing: ${protocol} vs. ${sreq.protocol}, ${serverUrl.hostname} ` +
-          `vs ${sreq.host}, ${sreq.path} vs ${serverUrl.pathname}`,
+          `vs ${sreq.host}, ${sreq.pathname} vs ${serverUrl.pathname}`,
       );
       if (serverUrl.pathname === undefined) {
         throw new Error("Got undefined pathname");
@@ -190,10 +190,10 @@ export class OASMatcher {
       if (
         protocol === sreq.protocol &&
         serverUrl.hostname === sreq.host &&
-        sreq.path.startsWith(serverUrl.pathname)
+        sreq.pathname.startsWith(serverUrl.pathname)
       ) {
         const reqPathWithoutServerPrefix = OASMatcher.normalizeRequestPathToServerPath(
-          sreq.path,
+          sreq.pathname,
           serverUrl.pathname,
         );
 

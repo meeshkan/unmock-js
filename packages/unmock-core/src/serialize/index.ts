@@ -7,6 +7,7 @@ import url from "url";
 import {
   HTTPMethod,
   IIncomingHeaders,
+  IIncomingQuery,
   ISerializedRequest,
   isRESTMethod,
 } from "../interfaces";
@@ -46,10 +47,12 @@ class BodySerializer extends readable.Transform {
 function extractVars(
   interceptedRequest: http.IncomingMessage,
 ): {
+  headers: IIncomingHeaders;
   method: HTTPMethod;
   host: string;
   path: string;
-  headers: IIncomingHeaders;
+  pathname: string;
+  query: IIncomingQuery;
 } {
   const headers = interceptedRequest.headers;
 
@@ -69,10 +72,14 @@ function extractVars(
     throw new Error("Missing method");
   }
 
-  const { pathname: path } = url.parse(requestUrl, true);
+  const { path, pathname, query } = url.parse(requestUrl, true);
 
   if (!path) {
     throw new Error("Could not parse path");
+  }
+
+  if (!pathname) {
+    throw new Error("Could not parse pathname");
   }
 
   // https://nodejs.org/api/http.html#http_message_method
@@ -87,6 +94,8 @@ function extractVars(
     host,
     method,
     path,
+    pathname,
+    query,
   };
 }
 
@@ -110,7 +119,9 @@ const safelyParseJson = (body: string): string | object => {
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
-  const { headers, host, method, path } = extractVars(interceptedRequest);
+  const { headers, host, method, path, pathname, query } = extractVars(
+    interceptedRequest,
+  );
 
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
   const protocol = isEncrypted ? "https" : "http";
@@ -128,7 +139,9 @@ export const serializeRequest = async (
     host,
     method,
     path,
+    pathname,
     protocol,
+    query,
   };
   return serializedRequest;
 };
