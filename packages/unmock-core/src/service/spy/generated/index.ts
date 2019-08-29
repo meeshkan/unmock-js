@@ -9,14 +9,18 @@ import { decorateSpy, verifyOnlyOneCall } from "../decorate";
 export interface ISpyDecoration {
   with(matcher: SinonMatcher): UnmockServiceSpy;
   withMethod(method: HTTPMethod): UnmockServiceSpy;
-  postHost(matcher?: SinonMatcher): string;
+  postRequestHost(matcher?: SinonMatcher): string;
   postRequestBody(matcher?: SinonMatcher): any;
-  getHost(matcher?: SinonMatcher): string;
+  postResponseBody(matcher?: SinonMatcher): any;
+  getRequestHost(matcher?: SinonMatcher): string;
   getRequestBody(matcher?: SinonMatcher): any;
-  putHost(matcher?: SinonMatcher): string;
+  getResponseBody(matcher?: SinonMatcher): any;
+  putRequestHost(matcher?: SinonMatcher): string;
   putRequestBody(matcher?: SinonMatcher): any;
-  deleteHost(matcher?: SinonMatcher): string;
+  putResponseBody(matcher?: SinonMatcher): any;
+  deleteRequestHost(matcher?: SinonMatcher): string;
   deleteRequestBody(matcher?: SinonMatcher): any;
+  deleteResponseBody(matcher?: SinonMatcher): any;
 }
 
 export const decorators = {
@@ -26,7 +30,7 @@ export const decorators = {
   withMethod(this: UnmockServiceSpy, method: HTTPMethod): UnmockServiceSpy {
     return this.with(match({ method }));
   },
-  postHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
+  postRequestHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "post" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -40,7 +44,14 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
-  getHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
+  postResponseBody(this: UnmockServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postResponseBody" });
+    return spyWithMatcher.firstCall.returnValue.body;
+  },
+  getRequestHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "get" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -54,7 +65,14 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
-  putHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
+  getResponseBody(this: UnmockServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getResponseBody" });
+    return spyWithMatcher.firstCall.returnValue.body;
+  },
+  putRequestHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "put" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -68,7 +86,14 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
-  deleteHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
+  putResponseBody(this: UnmockServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putResponseBody" });
+    return spyWithMatcher.firstCall.returnValue.body;
+  },
+  deleteRequestHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "delete" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -81,5 +106,12 @@ export const decorators = {
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
+  },
+  deleteResponseBody(this: UnmockServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteResponseBody" });
+    return spyWithMatcher.firstCall.returnValue.body;
   },
 };
