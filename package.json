@@ -21,7 +21,9 @@
     "coverage": "npm test -- --coverage",
     "coverage:upload": "codecov",
     "version": "lerna version --no-git-tag-version",
-    "unmock": "node packages/unmock-cli/dist/index.js"
+    "unmock": "node packages/unmock-cli/dist/index.js",
+    "generate-spy": "npx ts-node packages/unmock-core/scripts/generate-spy-decorators.ts > packages/unmock-core/src/service/spy/generated/index.ts && prettier '**/generated/*.{js,ts}' --write",
+    "generate-spy-dry": "npx ts-node packages/unmock-core/scripts/generate-spy-decorators.ts"
   },
   "lint-staged": {
     "*.ts": [
@@ -63,6 +65,7 @@
     "prettier-check": "^2.0.0",
     "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.4.4"
