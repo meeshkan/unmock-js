@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as yaml from "js-yaml";
 import * as path from "path";
-import * as XRegExp from "xregexp";
+import XRegExp = require("xregexp");
 import { Parameter } from "../service/interfaces";
 import {
   buildPathRegexStringFromParameters,
