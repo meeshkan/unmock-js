@@ -7,6 +7,8 @@ const fakeRequest: ISerializedRequest = {
   host: "github.com",
   protocol: "https",
   path: "/v3",
+  pathname: "/v3",
+  query: {},
 };
 
 const fakeResponse: ISerializedResponse = {

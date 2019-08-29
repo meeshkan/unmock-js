@@ -98,8 +98,10 @@ export const PetstoreServiceWithDynamicPaths = (
 export const testRequest: ISerializedRequest = {
   method: "get",
   path: "/v3",
+  pathname: "/v3",
   host: "api.github.com",
   protocol: "https",
+  query: {},
 };
 
 export const testResponse: ISerializedResponse = {

@@ -47,7 +47,9 @@ describe("Tests generator", () => {
         host: "petstore.swagger.io",
         method: "post",
         path: "/v1/pets",
+        pathname: "/v1/pets",
         protocol: "http",
+        query: {},
       });
       expect(resp).toBeDefined();
       if (resp !== undefined) {
@@ -68,7 +70,9 @@ describe("Tests generator", () => {
         host: "petstore.swagger.io",
         method: "post",
         path: "/v1/pets",
+        pathname: "/v1/pets",
         protocol: "http",
+        query: {},
       });
       expect(resp).toBeDefined();
       if (resp !== undefined) {
@@ -91,7 +95,9 @@ describe("Tests generator", () => {
       host: "cloud.filestackapi.com",
       method: "options",
       path: "/prefetch",
+      pathname: "/prefetch",
       protocol: "https",
+      query: {},
     });
     expect(resp).toBeDefined();
     if (resp !== undefined) {
@@ -103,7 +109,9 @@ describe("Tests generator", () => {
       host: "cloud.filestackapi.com",
       method: "get",
       path: "/prefetch",
+      pathname: "/prefetch",
       protocol: "https",
+      query: {},
     });
     expect(resp).toBeDefined();
     if (resp !== undefined) {
@@ -122,7 +130,9 @@ describe("Tests generator", () => {
       host: "petstore.swagger.io",
       method: "get",
       path: "/v1/pets",
+      pathname: "/v1/pets",
       protocol: "http",
+      query: {},
     });
     expect(resp).toBeDefined();
     if (resp && resp.body !== undefined) {
@@ -138,7 +148,9 @@ describe("Tests generator", () => {
       host: "petstore.swagger.io",
       method: "get",
       path: "/v1/pets",
+      pathname: "/v1/pets",
       protocol: "http",
+      query: {},
     });
     expect(resp).toBeDefined();
     if (resp && resp.body !== undefined) {
