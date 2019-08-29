@@ -1,6 +1,6 @@
-import http, { IncomingMessage } from "http";
-import https from "https";
-import Mitm from "mitm";
+import * as http from "http";
+import * as https from "https";
+import Mitm = require("mitm");
 import { serializeRequest } from "../../serialize";
 
 describe("Request serializer", () => {
@@ -16,7 +16,7 @@ describe("Request serializer", () => {
     const testHost = "example.org";
     const testPath = "/v1?name=erkki";
 
-    mitm.on("request", async (req: IncomingMessage) => {
+    mitm.on("request", async (req: http.IncomingMessage) => {
       const serializedRequest = await serializeRequest(req);
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("get");
@@ -61,7 +61,7 @@ describe("Request serializer", () => {
       message,
     });
 
-    mitm.on("request", async (req: IncomingMessage) => {
+    mitm.on("request", async (req: http.IncomingMessage) => {
       const serializedRequest = await serializeRequest(req);
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("post");

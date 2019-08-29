@@ -1,5 +1,5 @@
 import debug from "debug";
-import minimatch from "minimatch";
+import minimatch = require("minimatch");
 import { HTTPMethod } from "../../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "../constants";
 import { DSL } from "../dsl";

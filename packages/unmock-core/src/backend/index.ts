@@ -5,9 +5,9 @@ import {
   RequestOptions,
   ServerResponse,
 } from "http";
-import _ from "lodash";
-import Mitm from "mitm";
-import net from "net";
+import * as _ from "lodash";
+import Mitm = require("mitm");
+import * as net from "net";
 import { CustomConsole } from "../console";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";

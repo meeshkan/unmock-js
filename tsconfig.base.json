@@ -6,7 +6,7 @@
     "target": "es2015",
     "module": "commonjs",
     "moduleResolution": "node",
-    "esModuleInterop": true,
+    "esModuleInterop": false,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

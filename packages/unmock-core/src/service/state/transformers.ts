@@ -1,4 +1,4 @@
-import Ajv from "ajv";
+import * as Ajv from "ajv";
 import debug from "debug";
 import { ISerializedRequest } from "../../interfaces";
 import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";

@@ -1,6 +1,6 @@
 import debug from "debug";
-import url from "url";
-import XRegExp from "xregexp";
+import * as url from "url";
+import XRegExp = require("xregexp");
 import { ISerializedRequest } from "../interfaces";
 import { OASMethodKey, OpenAPIObject, PathItem } from "./interfaces";
 import {

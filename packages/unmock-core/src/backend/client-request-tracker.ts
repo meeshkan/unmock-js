@@ -1,7 +1,7 @@
 import debug from "debug";
 import { ClientRequest, IncomingMessage } from "http";
-import net from "net";
-import shimmer from "shimmer";
+import * as net from "net";
+import * as shimmer from "shimmer";
 import { v4 as uuidv4 } from "uuid";
 
 const debugLog = debug("unmock:client-request-tracker");
