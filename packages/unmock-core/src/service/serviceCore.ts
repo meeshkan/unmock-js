@@ -64,7 +64,7 @@ export class ServiceCore implements IServiceCore {
       return undefined;
     }
 
-    const state = this.getState(sreq.method as HTTPMethod, sreq.pathname);
+    const state = this.getState(sreq.method, sreq.pathname);
     return {
       operation: maybeOp,
       state,
@@ -101,7 +101,6 @@ export class ServiceCore implements IServiceCore {
 
   public getState(method: HTTPMethod, endpoint: string) {
     // TODO at some point we'd probably want to move to regex for case insensitivity
-    method = method.toLowerCase() as HTTPMethod;
     endpoint = endpoint.toLowerCase();
     const realEndpoint = this.matcher.findEndpoint(endpoint);
     if (realEndpoint === undefined) {
