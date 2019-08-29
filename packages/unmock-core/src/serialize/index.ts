@@ -93,7 +93,7 @@ function extractVars(
     headers,
     host,
     method,
-    path: pathname, // FIXME: Hack until we support full paths
+    path,
     pathname,
     query,
   };

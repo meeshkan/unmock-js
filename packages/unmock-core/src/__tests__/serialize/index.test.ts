@@ -21,9 +21,7 @@ describe("Request serializer", () => {
       expect(serializedRequest.host).toBe(testHost);
       expect(serializedRequest.method.toLowerCase()).toBe("get");
       expect(serializedRequest.pathname).toBe("/v1");
-      // FIXME: Path should be the full path including query
-      // expect(serializedRequest.path).toBe("/v1?name=erkki");
-      expect(serializedRequest.path).toBe("/v1");
+      expect(serializedRequest.path).toBe(testPath);
       expect(serializedRequest.query).toEqual({ name: "erkki" });
       expect(serializedRequest.protocol).toBe("http");
       expect(serializedRequest.body).toBeUndefined();
