@@ -24,7 +24,7 @@ export const decorators = {
     return decorateSpy(this.withArgs(matcher));
   },
   withMethod(this: UnmockServiceSpy, method: HTTPMethod): UnmockServiceSpy {
-    return decorateSpy(this.withArgs(match({ method })));
+    return this.with(match({ method }));
   },
   postHost(this: UnmockServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "post" });
