@@ -77,6 +77,15 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("foo");
     });
 
+    test("gets correct state with query parameter when setting textual response", async () => {
+      filestackApi.state("foo");
+      const response = await axios(
+        "https://cloud.filestackapi.com/prefetch?apikey=fake",
+      );
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("foo");
+    });
+
     test("gets correct state when setting textual response with path", async () => {
       filestackApi.state("/prefetch", "bar");
       const response = await axios("https://cloud.filestackapi.com/prefetch");
