@@ -7,7 +7,7 @@ import {
 import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
-import { IRequestResponsePair, RequestResponseSpy } from "./spy";
+import { IRequestResponsePair, ServiceSpy } from "./spy";
 
 export {
   Header,
@@ -83,7 +83,7 @@ export type MatcherResponse =
 
 export interface IService {
   readonly state: StateType;
-  readonly spy: RequestResponseSpy;
+  readonly spy: ServiceSpy;
   reset(): void;
 }
 
@@ -113,7 +113,7 @@ export interface IServiceCore {
   /**
    * Spy keeping track of request response pairs
    */
-  readonly spy: RequestResponseSpy;
+  readonly spy: ServiceSpy;
 
   /**
    * Whether the OAS has a defined "paths" object or not.
