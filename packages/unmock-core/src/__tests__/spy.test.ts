@@ -35,6 +35,8 @@ const postRequest: ISerializedRequest = {
   host: "github.com",
   protocol: "https",
   path: "/v3",
+  pathname: "/v3/",
+  query: {},
   body: {
     hello: "foo",
   },
