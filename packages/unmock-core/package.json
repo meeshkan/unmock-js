@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
   "name": "unmock-core",
   "displayName": "unmock-core",
   "main": "dist/index.js",
@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@types/sinon": "^7.0.13",
-    "app-root-path": "^2.2.1",
     "ajv": "^6.10.0",
+    "app-root-path": "^2.2.1",
     "axios": "^0.18.0",
     "boxen": "3.2.0",
     "chalk": "^2.4.2",
