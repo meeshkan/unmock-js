@@ -1,5 +1,21 @@
 # CHANGELOG.md
 
+## 0.2.1 (2019-08-30)
+
+Breaking changes:
+
+  - Renamed `unmock-node` package as `unmock`
+
+Fixes:
+
+  - Added the missing SinonJS types
+  - Fixed setting state using reserved OpenAPI schema keywords such as `type`
+
+Features:
+
+  - Added `pathname` and `query` request object
+  - Added spy helpers such as `postResponseBody`
+
 ## 0.2.0 (2019-08-23)
 
 Breaking changes:
