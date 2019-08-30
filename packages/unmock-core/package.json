@@ -13,6 +13,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@types/sinon": "^7.0.13",
     "app-root-path": "^2.2.1",
     "ajv": "^6.10.0",
     "axios": "^0.18.0",
