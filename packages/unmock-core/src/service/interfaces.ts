@@ -4,10 +4,10 @@ import {
   PathItem,
   Schema,
 } from "loas3/dist/generated/full";
-import { ISerializedRequest } from "../interfaces";
+import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IDSL, ITopLevelDSL } from "./dsl/interfaces";
-import { IRequestResponsePair, RequestResponseSpy } from "./spy";
+import { IRequestResponsePair, ServiceSpy } from "./spy";
 
 export {
   Header,
@@ -26,31 +26,12 @@ export {
   Responses,
 } from "loas3/dist/generated/full";
 
-const RESTMethodTypes = [
-  "get",
-  "head",
-  "post",
-  "put",
-  "patch",
-  "delete",
-  "options",
-  "trace",
-] as const;
-
 const DEF_REST_METHOD = [DEFAULT_STATE_HTTP_METHOD] as const;
 
 type DEFAULT_HTTP_METHOD_AS_TYPE = typeof DEF_REST_METHOD[number];
-export type HTTPMethod = typeof RESTMethodTypes[number];
 export type ExtendedHTTPMethod = HTTPMethod | DEFAULT_HTTP_METHOD_AS_TYPE;
 
 export type OASMethodKey = keyof PathItem & HTTPMethod;
-
-export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
-  RESTMethodTypes.toString().includes(maybeMethod.toLowerCase());
-export const isExtendedRESTMethod = (
-  maybeMethod: string,
-): maybeMethod is ExtendedHTTPMethod =>
-  maybeMethod === DEFAULT_STATE_HTTP_METHOD || isRESTMethod(maybeMethod);
 
 export interface IStateInputGenerator {
   /**
@@ -86,11 +67,6 @@ export interface IStateInput {
   endpoint: string;
   newState: IStateInputGenerator;
 }
-export interface IServiceInput {
-  schema: OpenAPIObject;
-  name: string;
-  absPath?: string;
-}
 
 // maps from media types (e.g. "application/json") to schema
 export type mediaTypeToSchema = Record<string, Schema>;
@@ -107,7 +83,7 @@ export type MatcherResponse =
 
 export interface IService {
   readonly state: StateType;
-  readonly spy: RequestResponseSpy;
+  readonly spy: ServiceSpy;
   reset(): void;
 }
 
@@ -137,7 +113,7 @@ export interface IServiceCore {
   /**
    * Spy keeping track of request response pairs
    */
-  readonly spy: RequestResponseSpy;
+  readonly spy: ServiceSpy;
 
   /**
    * Whether the OAS has a defined "paths" object or not.
@@ -161,6 +137,14 @@ export interface IServiceCore {
    * This provides easy access to wipe a state after every test.
    */
   resetState(): void;
+
+  /**
+   * Gets the state matching the given request (method + endpoint).
+   * Returns undefined if not state matches.
+   * @param method
+   * @param endpoint
+   */
+  getState(method: HTTPMethod, endpoint: string): codeToMedia | undefined;
 
   /**
    * Match a given request to the service. Return an operation object for successful match,

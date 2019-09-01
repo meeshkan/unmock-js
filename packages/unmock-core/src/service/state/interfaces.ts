@@ -1,10 +1,5 @@
-import {
-  Dereferencer,
-  HTTPMethod,
-  IStateInput,
-  Operation,
-  Paths,
-} from "../interfaces";
+import { HTTPMethod } from "../../interfaces";
+import { Dereferencer, IStateInput, Operation, Paths } from "../interfaces";
 
 export interface IStateUpdate {
   stateInput: IStateInput;

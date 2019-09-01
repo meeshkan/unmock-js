@@ -4,15 +4,16 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
+import { FsServiceDefLoader } from "./fs-service-def-loader";
 import {
   CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
-  IServiceDefLoader,
   IUnmockOptions,
 } from "./interfaces";
+import { ServiceParser } from "./parser";
 import {
   codeToMedia,
   Dereferencer,
@@ -25,7 +26,6 @@ import {
   Schema,
   ServiceStoreType,
 } from "./service/interfaces";
-import { ServiceParser } from "./service/parser";
 import { ServiceStore } from "./service/serviceStore";
 
 type Headers = Record<string, Header>;
@@ -43,7 +43,7 @@ export function responseCreatorFactory({
   listeners = [],
   options,
 }: {
-  serviceDefLoader: IServiceDefLoader;
+  serviceDefLoader: FsServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
 }): { services: ServiceStoreType; createResponse: CreateResponse } {
@@ -55,7 +55,8 @@ export function responseCreatorFactory({
   const match = (sreq: ISerializedRequest) =>
     coreServices
       .map(service => service.match(sreq))
-      .filter(res => res !== undefined)[0];
+      .filter(res => res !== undefined)
+      .shift();
   const services = ServiceStore(coreServices);
 
   return {

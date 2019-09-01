@@ -1,13 +1,13 @@
 import debug from "debug";
+import { HTTPMethod, isRESTMethod } from "../../interfaces";
 import {
   DEFAULT_STATE_ENDPOINT,
   DEFAULT_STATE_HTTP_METHOD,
 } from "../constants";
 import { DSLKeys } from "../dsl/interfaces";
+
 import {
   ExtendedHTTPMethod,
-  HTTPMethod,
-  isRESTMethod,
   OASMethodKey,
   Operation,
   PathItem,
@@ -102,8 +102,8 @@ const getOperationsByMethod = (
   );
   const anyMethod = method === DEFAULT_STATE_HTTP_METHOD;
   const filterFn = anyMethod
-    ? (pathItemKey: string) => isRESTMethod(pathItemKey)
-    : (pathItemKey: string) => pathItemKey === method;
+    ? (pathMethod: string) => isRESTMethod(pathMethod)
+    : (pathMethod: string) => pathMethod === method;
 
   const operations: OperationsForStateUpdate = Object.keys(paths).reduce(
     (ops: OperationsForStateUpdate, path: string) => {
@@ -179,3 +179,11 @@ export const chooseErrorFromList = (
     (e, c) => (c === undefined ? e : chooseBestMatchingError(c, e)),
     undefined,
   );
+
+/**
+ * Converts an OpenAPI parameter to a wildcard without validating against the schema.
+ * @example /pets/{pet_id} -> /pets/*
+ * @param endpoint
+ */
+export const convertEndpointToWildcard = (endpoint: string) =>
+  endpoint.replace(/\{[^}]*?\}/g, "*");

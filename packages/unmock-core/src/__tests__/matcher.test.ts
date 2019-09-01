@@ -1,24 +1,26 @@
-import { ISerializedRequest } from "..";
+import { UnmockRequest } from "..";
 import { OASMatcher } from "../service/matcher";
 import { PetStoreSchema as schema } from "./utils";
 
 describe("OASMatcher", () => {
   describe("with petstore schema", () => {
     const matcher = new OASMatcher({ schema });
-    const validRequest: ISerializedRequest = {
+    const validRequest: UnmockRequest = {
       host: "petstore.swagger.io",
-      method: "GET",
+      method: "get",
       path: "/v1/pets",
+      pathname: "/v1/pets",
       protocol: "http",
+      query: {},
     };
     it("matches a correct request", () => {
-      const sreq: ISerializedRequest = validRequest;
+      const sreq: UnmockRequest = validRequest;
       const responseTemplate = matcher.matchToOperationObject(sreq);
       expect(responseTemplate).toBeDefined();
       expect(responseTemplate).toHaveProperty("operationId");
     });
     it("does not match the wrong host", () => {
-      const sreq: ISerializedRequest = {
+      const sreq: UnmockRequest = {
         ...validRequest,
         host: "pets.swagger.io",
       };
@@ -26,15 +28,16 @@ describe("OASMatcher", () => {
       expect(responseTemplate).toBeUndefined();
     });
     it("does not match the wrong path", () => {
-      const sreq: ISerializedRequest = {
+      const sreq: UnmockRequest = {
         ...validRequest,
         path: "/v1",
+        pathname: "/v1",
       };
       const responseTemplate = matcher.matchToOperationObject(sreq);
       expect(responseTemplate).toBeUndefined();
     });
     it("does not match the wrong protocol", () => {
-      const sreq: ISerializedRequest = {
+      const sreq: UnmockRequest = {
         ...validRequest,
         protocol: "https",
       };

@@ -28,8 +28,8 @@ Unmock works by capturing HTTP calls in your code and injecting responses from m
 Any of the subpackages in this project can be installed via `npm` or `yarn`.
 
 ```sh
-$ npm install --save unmock # the cli
-$ npm install --save unmock-<platform> # node, jsdom
+$ npm install --save unmock # all the packages
+$ npm install --save unmock-<tool> # specific unmock tools (core, cli, expect, etc)
 ```
 
 ## Usage
@@ -40,9 +40,7 @@ This package contains the following six repositories.
 | ------------------------------------------------- | ------------------------------------------------------- |
 | [`unmock`](packages/unmock/README.md)             | Main CLI                                                |
 | [`unmock-cli`](packages/unmock-cli/README.md)     | Functions for the CLI, useful for building a custom CLI |
-| [`unmock-core`](packages/unmock-core/README.md)   | Core functions useful for building alternative backends |
-| [`unmock-jsdom`](packages/unmock-jsdom/README.md) | Browser SDK                                             |
-| [`unmock-node`](packages/unmock-node/README.md)   | Node SDK                                                |
+| [`unmock-core`](packages/unmock-core/README.md)   | Core Node SDK                                           |
 
 ## Contributing
 

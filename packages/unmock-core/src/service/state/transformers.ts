@@ -38,9 +38,6 @@ const genBuilder = (
   }
 };
 
-export const TEXT_RESPONSE_ERROR =
-  "Can't set text response for non-string schemas";
-
 export const objResponse = (
   state?: UnmockServiceState,
 ): IStateInputGenerator => ({
@@ -97,7 +94,7 @@ const generateTextResponse = (
     `generateTextResponse: Verifying ${schema} can contain a simple string`,
   );
   if (state === undefined || schema === undefined || schema.type !== "string") {
-    throw new Error(TEXT_RESPONSE_ERROR);
+    throw new Error("Can't set text response for non-string schemas");
   }
   return { ...schema, const: state };
 };
@@ -273,7 +270,13 @@ const oneLevelOfIndirectNestedness = (
       Object.keys(maybeContents).every(
         (k: string) => maybeContents[k] !== null,
       );
-    return { ...o, ...(hasContents ? { [key]: maybeContents } : {}) };
+    return hasContents
+      ? o[key] !== undefined
+        ? // `key` already exists in original object, we don't want to replace it.
+          // this usually happens if e.g. a real property is named 'properties'
+          { ...o, [key]: { ...o[key], [key]: maybeContents } }
+        : { ...o, [key]: maybeContents }
+      : o;
   }, initObj);
 
 /**
@@ -304,3 +307,5 @@ const DFSVerifyNoneAreNull = (
   }
   return undefined;
 };
+
+export default { textResponse, functionResponse, objResponse };

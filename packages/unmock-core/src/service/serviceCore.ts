@@ -1,10 +1,8 @@
-import { ISerializedRequest } from "../interfaces";
+import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
   Dereferencer,
-  HTTPMethod,
   IServiceCore,
-  IServiceInput,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
@@ -14,7 +12,7 @@ import {
   createCallTracker,
   ICallTracker,
   IRequestResponsePair,
-  RequestResponseSpy,
+  ServiceSpy,
 } from "./spy";
 import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
@@ -29,7 +27,7 @@ export class ServiceCore implements IServiceCore {
   private readonly state: State;
   private readonly callTracker: ICallTracker;
 
-  constructor(opts: IServiceInput) {
+  constructor(opts: { schema: OpenAPIObject; name: string; absPath?: string }) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
     this.absPath = opts.absPath || process.cwd();
@@ -56,7 +54,7 @@ export class ServiceCore implements IServiceCore {
     this.callTracker.track(requestResponsePair);
   }
 
-  get spy(): RequestResponseSpy {
+  get spy(): ServiceSpy {
     return this.callTracker.spy;
   }
 
@@ -66,7 +64,7 @@ export class ServiceCore implements IServiceCore {
       return undefined;
     }
 
-    const state = this.getState(sreq.method as HTTPMethod, sreq.path);
+    const state = this.getState(sreq.method, sreq.pathname);
     return {
       operation: maybeOp,
       state,
@@ -103,7 +101,6 @@ export class ServiceCore implements IServiceCore {
 
   public getState(method: HTTPMethod, endpoint: string) {
     // TODO at some point we'd probably want to move to regex for case insensitivity
-    method = method.toLowerCase() as HTTPMethod;
     endpoint = endpoint.toLowerCase();
     const realEndpoint = this.matcher.findEndpoint(endpoint);
     if (realEndpoint === undefined) {

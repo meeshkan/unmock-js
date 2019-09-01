@@ -1,6 +1,7 @@
+import { HTTPMethod } from "../interfaces";
+
 import {
   ExtendedHTTPMethod,
-  HTTPMethod,
   IStateInputGenerator,
 } from "../service/interfaces";
 import { State } from "../service/state/state";
@@ -119,7 +120,7 @@ describe("Test state management", () => {
   it("saves state from any endpoint and get method as expected", () => {
     const state = new State();
     updateState(state, "get", "**", objResponse({ foo: { id: 5 } }), "**");
-    const stateResult = getState(state, "get", "/");
+    const stateResult = getState(state, "get", "/test/bar");
     expect(stateResult).toEqual({
       200: {
         "application/json": {
@@ -143,7 +144,7 @@ describe("Test state management", () => {
   it("parses $times on specific endpoint as expected", () => {
     const state = new State();
     updateState(state, "get", "**", objResponse({ id: 5, $times: 2 }), "**");
-    const getRes = () => getState(state, "get", "/");
+    const getRes = () => getState(state, "get", "/test/bar");
     expect(getRes()).toEqual({
       200: {
         "application/json": {
@@ -195,7 +196,7 @@ describe("Test state management", () => {
   it("saves state from any endpoint and any method as expected", () => {
     const state = new State();
     updateState(state, "any", "**", objResponse({ id: 5 }), "**");
-    const stateResult = getState(state, "get", "/");
+    const stateResult = getState(state, "get", "/test/bar");
     expect(stateResult).toEqual({
       200: {
         "application/json": {
@@ -249,7 +250,7 @@ describe("Test state management", () => {
   it("saves nested state correctly", () => {
     const state = new State();
     updateState(state, "any", "**", objResponse({ foo: { id: 5 } }), "**");
-    const stateResult = getState(state, "get", "/");
+    const stateResult = getState(state, "get", "/test/bar");
     expect(stateResult).toEqual({
       200: {
         "application/json": {
@@ -273,7 +274,7 @@ describe("Test state management", () => {
   it("Handles textual state correctly", () => {
     const state = new State();
     updateState(state, "any", "**", textResponse("foobar"), "**");
-    const stateResult = getState(state, "get", "/");
+    const stateResult = getState(state, "get", "/test/bar");
     expect(stateResult).toEqual({
       200: { "text/plain": { const: "foobar", type: "string" } },
     });

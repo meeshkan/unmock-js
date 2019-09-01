@@ -1,14 +1,14 @@
+import { isRESTMethod } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
   IService,
   IServiceCore,
-  isRESTMethod,
   isStateInputGenerator,
   StateInput,
   StateType,
 } from "./interfaces";
-import { RequestResponseSpy } from "./spy";
+import { ServiceSpy } from "./spy";
 import {
   functionResponse,
   objResponse,
@@ -17,7 +17,7 @@ import {
 
 export class Service implements IService {
   public readonly state: StateType;
-  public readonly spy: RequestResponseSpy;
+  public readonly spy: ServiceSpy;
   constructor(private readonly core: IServiceCore) {
     this.state = new Proxy(
       this.updateDefaultState.bind(this),
