@@ -37,7 +37,11 @@ export class Service implements IService {
   // that only accepts (sreq: ISerializedRequest, scm?: Schema) => Schema | Generator
   // then, the function would just be:
   // private updateDefaultState(func: FuncType) {
-  //   
+  //   this.core.updateState(functionResponse(state));
+  //   return new Proxy(
+  //    this.updateDefaultState.bind(this),
+  //    StateHandler(this.core),
+  //   );
   // }
   private updateDefaultState(
     stateOrEndpoint: string | StateInput,
