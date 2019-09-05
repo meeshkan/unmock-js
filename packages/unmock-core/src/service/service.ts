@@ -33,6 +33,12 @@ export class Service implements IService {
 
   private updateDefaultState(state: StateInput | string): void;
   private updateDefaultState(endpoint: string, state: StateInput): void;
+  // I would recommend only having one function, updateDefaultState,
+  // that only accepts (sreq: ISerializedRequest, scm?: Schema) => Schema | Generator
+  // then, the function would just be:
+  // private updateDefaultState(func: FuncType) {
+  //   
+  // }
   private updateDefaultState(
     stateOrEndpoint: string | StateInput,
     maybeState?: StateInput,
