@@ -12,7 +12,8 @@
   "bugs": {
     "url": "https://github.com/unmock/unmock-js/issues"
   },
-  "dependencies": {
-    "unmock-core": "file:../unmock-core"
+  "dependencies": {},
+  "peerDependencies": {
+    "jest": ">= 22.0.0"
   }
 }
