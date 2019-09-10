@@ -24,7 +24,6 @@ import {
   Response,
   Responses,
   Schema,
-  ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
@@ -46,7 +45,7 @@ export function responseCreatorFactory({
   serviceDefLoader: FsServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { services: ServiceStoreType; createResponse: CreateResponse } {
+}): { serviceStore: ServiceStore; createResponse: CreateResponse } {
   const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
   const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
     ServiceParser.parse(serviceDef),
@@ -57,10 +56,11 @@ export function responseCreatorFactory({
       .map(service => service.match(sreq))
       .filter(res => res !== undefined)
       .shift();
-  const services = ServiceStore(coreServices);
+  // TODO: Maybe move service store instantiation and service parser to backend?
+  const serviceStore = new ServiceStore(coreServices);
 
   return {
-    services,
+    serviceStore,
     createResponse: (req: ISerializedRequest) => {
       // Setup the unmock properties for jsf parsing of x-unmock-*
       setupJSFUnmockProperties(req);

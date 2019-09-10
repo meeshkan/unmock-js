@@ -60,6 +60,12 @@ const unmock: IUnmockPackage = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 
+// const dynamicService = (foo: any) => {
+//   unmockPackage.services;
+// };
+
+// const unmock = Object.assign(dynamicService, unmockPackage);
+
 export type UnmockNode = typeof unmock;
 
 export default unmock;
