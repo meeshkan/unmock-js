@@ -13,6 +13,7 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@jest/reporters": "^24.9.0",
     "unmock-core": "file:../unmock-core"
   }
 }
