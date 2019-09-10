@@ -1,10 +1,7 @@
 import { seedHack } from "../generator";
-import Logger from "../loggers/winston-logger";
 export interface IRunnerOptions {
   maxLoop: number;
 }
-
-const logger = new Logger();
 
 const defaultRunnerOptions: IRunnerOptions = {
   maxLoop: 20,
@@ -33,10 +30,10 @@ export default
     }
   }
   if (errors.length === realOptions.maxLoop) {
-    logger.log("Too many errors for unmock to handle, only showing the first one.");
+    errors[0].message = "@unmock - all tests in loop failed. Here is the first error.\n" + errors[0].message;
     throw errors[0];
   } else if (errors.length > 0) {
-    logger.log("Unmock got several errors. Check the output from the runner. We'll show you one for kicks now.");
+    errors[0].message = "@unmock - several tests in loop failed failed. Here is one error.\n" + errors[0].message;
     throw errors[0];
   }
   cb();
