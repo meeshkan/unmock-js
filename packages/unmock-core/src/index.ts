@@ -87,7 +87,7 @@ const dynamicService = (baseUrl: string) => {
     bknd.updateServices({
       baseUrl,
       method,
-      endpoint,
+      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
       statusCode,
       response: data,
     });
