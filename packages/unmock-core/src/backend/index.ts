@@ -109,8 +109,9 @@ export default class NodeBackend {
 
   public updateServices(newService: IObjectToService) {
     if (this.serviceStore) {
-      this.serviceStore.updateOrAdd(newService);
+      return this.serviceStore.updateOrAdd(newService);
     }
+    return undefined;
   }
 
   /**

@@ -73,5 +73,7 @@ export class ServiceStore {
     });
     this.cores[serviceName] = newServiceCore;
     this.services[serviceName] = new Service(newServiceCore);
+
+    return this.services[serviceName];
   }
 }

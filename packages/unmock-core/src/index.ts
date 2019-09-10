@@ -64,92 +64,92 @@ const unmockPackage: IUnmockPackage = new UnmockPackage(bknd, {
 
 const dynamicService = (baseUrl: string) => ({
   get(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
         method: "get",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   head(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "head",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   post(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "post",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   put(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "put",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   patch(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "patch",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   delete(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "delete",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   options(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "options",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
   trace(endpoint: string) {
-    return new DynamicServiceSpec(dss =>
-      bknd.updateServices({
+    return new DynamicServiceSpec(dss => {
+      return bknd.updateServices({
         baseUrl,
-        method: "get",
+        method: "trace",
         endpoint,
         statusCode: dss.statusCode,
         response: dss.data,
-      }),
-    );
+      });
+    });
   },
 });
 
@@ -179,7 +179,7 @@ class DynamicServiceSpec {
     } else {
       this.data = maybeStatusCode as Schema; // TODO: ditto
     }
-    this.updater(this);
+    return this.updater(this);
   }
 }
 
