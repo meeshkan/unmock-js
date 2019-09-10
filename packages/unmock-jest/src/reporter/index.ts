@@ -1,6 +1,4 @@
 // tslint:disable:no-console
-// tslint:disable:no-unused-vars
-// tslint:disable:no-empty
 import { IUnmockJestReporterOptions, resolveOptions } from "./options";
 
 // https://jestjs.io/docs/en/configuration#reporters-array-modulename-modulename-options
@@ -45,6 +43,4 @@ export default class UnmockJestReporter implements jest.Reporter {
   public onTestStart(test: jest.Test): void {
     console.log("onTestStart", test);
   }
-
-  public getLastError(): jest.Maybe<Error> {}
 }
