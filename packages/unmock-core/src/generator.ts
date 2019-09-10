@@ -4,6 +4,7 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
+import seedrandom from "seedrandom";
 import { FsServiceDefLoader } from "./fs-service-def-loader";
 import {
   CreateResponse,
@@ -27,7 +28,9 @@ import {
   ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-
+export const seedHack = {
+  seed: 0,
+};
 type Headers = Record<string, Header>;
 
 function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
@@ -296,9 +299,7 @@ const generateMockFromTemplate = (
     chooseResponseFromOperation(operation, service.dereferencer, {
       isFlaky: options.flaky(),
     });
-
-  // Always generate all fields for now
-  jsf.option("alwaysFakeOptionals", true);
+  jsf.option("random", seedrandom(`${seedHack.seed}`));
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
 

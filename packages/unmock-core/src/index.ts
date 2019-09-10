@@ -3,8 +3,10 @@ import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
+import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
+export { runner };
 export * from "./types";
 export { sinon };
 export { default as dsl } from "./service/state/transformers";

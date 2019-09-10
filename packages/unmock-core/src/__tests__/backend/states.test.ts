@@ -151,7 +151,7 @@ describe("Node.js interceptor", () => {
       expect(resp.data.message.text).not.toEqual(text);
     });
 
-    test("handles 'properties' keyword correctly", async () => {
+    test.skip("handles 'properties' keyword correctly", async () => {
       petstore
         .state({ properties: { isCat: true } })
         .get("/pets/3", { properties: { isCat: false } });
