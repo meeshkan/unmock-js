@@ -1,10 +1,16 @@
 // Sinon for asserts and matchers
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
-import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
+import {
+  ILogger,
+  IUnmockOptions,
+  IUnmockPackage,
+  HTTPMethod,
+} from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
 import { AllowedHosts, BooleanSetting } from "./settings";
 import { Schema } from "./service/interfaces";
+import { Service } from "./service";
 
 export * from "./types";
 export { sinon };
@@ -62,106 +68,67 @@ const unmockPackage: IUnmockPackage = new UnmockPackage(bknd, {
   logger: new WinstonLogger(),
 });
 
-const dynamicService = (baseUrl: string) => ({
-  get(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "get",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
+type UpdateCallback = ({
+  statusCode,
+  data,
+}: {
+  statusCode: number;
+  data: Schema;
+}) => Service | undefined;
+
+const dynamicService = (baseUrl: string) => {
+  const dynFn = (method: HTTPMethod, endpoint: string) => ({
+    statusCode,
+    data,
+  }: {
+    statusCode: number;
+    data: Schema;
+  }) =>
+    bknd.updateServices({
+      baseUrl,
+      method,
+      endpoint,
+      statusCode,
+      response: data,
     });
-  },
-  head(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "head",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  post(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "post",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  put(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "put",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  patch(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "patch",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  delete(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "delete",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  options(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "options",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-  trace(endpoint: string) {
-    return new DynamicServiceSpec(dss => {
-      return bknd.updateServices({
-        baseUrl,
-        method: "trace",
-        endpoint,
-        statusCode: dss.statusCode,
-        response: dss.data,
-      });
-    });
-  },
-});
+
+  return {
+    get(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("get", endpoint));
+    },
+    head(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("head", endpoint));
+    },
+    post(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("post", endpoint));
+    },
+    put(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("put", endpoint));
+    },
+    patch(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("patch", endpoint));
+    },
+    delete(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("delete", endpoint));
+    },
+    options(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("options", endpoint));
+    },
+    trace(endpoint: string) {
+      return new DynamicServiceSpec(dynFn("trace", endpoint));
+    },
+  };
+};
 
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
 type InputToPoet = any;
 // tslint:disable-next-line: max-classes-per-file
 class DynamicServiceSpec {
-  public statusCode: number = 200;
-  public data: Schema = {};
+  private statusCode: number = 200; // TODO default success statuscode per verb?
+  private data: Schema = {};
 
-  constructor(private updater: (input: DynamicServiceSpec) => void) {}
+  constructor(private updater: UpdateCallback) {}
 
   public reply(statusCode: number, data?: InputToPoet): void;
   public reply(data: InputToPoet): void;
@@ -179,7 +146,7 @@ class DynamicServiceSpec {
     } else {
       this.data = maybeStatusCode as Schema; // TODO: ditto
     }
-    return this.updater(this);
+    return this.updater({ data: this.data, statusCode: this.statusCode });
   }
 }
 
