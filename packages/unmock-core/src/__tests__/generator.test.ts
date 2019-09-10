@@ -15,7 +15,9 @@ const serviceDefLoader = new FsServiceDefLoader({
 
 describe("Tests generator", () => {
   it("loads all paths in __unmock__", () => {
-    const { services } = responseCreatorFactory({
+    const {
+      serviceStore: { services },
+    } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
@@ -27,7 +29,9 @@ describe("Tests generator", () => {
   });
 
   it("sets a state for swagger api converted to openapi", () => {
-    const { services } = responseCreatorFactory({
+    const {
+      serviceStore: { services },
+    } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
@@ -86,7 +90,10 @@ describe("Tests generator", () => {
   });
 
   it("Generates correct response from differing status codes", () => {
-    const { services, createResponse } = responseCreatorFactory({
+    const {
+      serviceStore: { services },
+      createResponse,
+    } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
@@ -121,7 +128,10 @@ describe("Tests generator", () => {
   });
 
   it("Sets a state with a function and generates accordingly", () => {
-    const { services, createResponse } = responseCreatorFactory({
+    const {
+      serviceStore: { services },
+      createResponse,
+    } = responseCreatorFactory({
       serviceDefLoader,
       options: mockOptions,
     });
