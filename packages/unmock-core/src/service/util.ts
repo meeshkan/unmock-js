@@ -1,8 +1,8 @@
-import fs from "fs";
-import jsyaml from "js-yaml";
-import pointer from "json-pointer";
-import fspath from "path";
-import XRegExp from "xregexp";
+import * as fs from "fs";
+import * as jsyaml from "js-yaml";
+import * as pointer from "json-pointer";
+import * as fspath from "path";
+import XRegExp = require("xregexp");
 import { OAS_PATH_PARAM_REGEXP, OAS_PATH_PARAMS_KW } from "./constants";
 import { OpenAPIObject, Parameter, Paths } from "./interfaces";
 

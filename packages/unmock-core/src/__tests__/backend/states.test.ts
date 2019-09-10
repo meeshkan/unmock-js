@@ -1,5 +1,5 @@
 import axios from "axios";
-import path from "path";
+import * as path from "path";
 import { dsl, Service, UnmockPackage, UnmockRequest } from "../..";
 import NodeBackend from "../../backend";
 

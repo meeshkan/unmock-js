@@ -1,4 +1,4 @@
-import XRegExp from "xregexp";
+import XRegExp = require("xregexp");
 
 export const DEFAULT_STATE_HTTP_METHOD = "any";
 export const DEFAULT_STATE_ENDPOINT = "**";

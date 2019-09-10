@@ -1,8 +1,8 @@
-import appRootPath from "app-root-path";
+import * as appRootPath from "app-root-path";
 import debug from "debug";
-import fs from "fs";
+import * as fs from "fs";
 import { uniq } from "lodash";
-import path from "path";
+import * as path from "path";
 
 const debugLog = debug("unmock:node:utils");
 

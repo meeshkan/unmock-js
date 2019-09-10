@@ -1,4 +1,4 @@
-import path from "path";
+import * as path from "path";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
 

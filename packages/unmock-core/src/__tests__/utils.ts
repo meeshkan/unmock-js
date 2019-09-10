@@ -1,6 +1,6 @@
-import fs from "fs";
-import jsYaml from "js-yaml";
-import path from "path";
+import * as fs from "fs";
+import * as jsYaml from "js-yaml";
+import * as path from "path";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
