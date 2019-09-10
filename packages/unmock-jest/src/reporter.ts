@@ -13,7 +13,6 @@ export default class UnmockJestTestReporter implements jest.Reporter {
     options: jest.ReporterOnStartOptions,
   ) {
     console.log("onRunStart");
-    throw Error("Reporter error");
   }
 
   public onRunComplete(
