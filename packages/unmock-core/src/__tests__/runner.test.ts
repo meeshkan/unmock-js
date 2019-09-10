@@ -21,10 +21,15 @@ describe("Node.js interceptor", () => {
       petstore.reset();
     });
 
-    test("runner works when everything is right", runner(async () => {
+    test("runner loop works", runner(async () => {
       const resp = await axios("http://petstore.swagger.io/v1/pets/54");
       expect(typeof resp.data.name).toBe("string");
     }));
 
+    // hm ... this works because it fails, but how to test?
+    test.skip("runner loop fails when it should fail", runner(async () => {
+      const resp = await axios("http://petstore.swagger.io/v1/pets/54");
+      expect(resp.data.name).toBe("id");
+    }));
   });
 });
