@@ -61,7 +61,7 @@ export class UnmockPackage implements IUnmockPackage {
     return this.backend.services;
   }
 
-  public nock(baseUrl: string) {
+  public nock(baseUrl: string, name?: string) {
     const dynFn = (method: HTTPMethod, endpoint: string) => ({
       statusCode,
       data,
@@ -75,6 +75,7 @@ export class UnmockPackage implements IUnmockPackage {
         endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
         statusCode,
         response: data,
+        name,
       });
 
     return {
