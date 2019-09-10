@@ -1,0 +1,19 @@
+{
+  "version": "0.2.1",
+  "name": "unmock-jest",
+  "displayName": "unmock-jest",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "jest": ">= 22.0.0"
+  }
+}
