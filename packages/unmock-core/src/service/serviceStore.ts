@@ -51,12 +51,17 @@ export class ServiceStore {
     // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
     const mediaType =
       typeof response === "string" ? "text/*" : "application/json";
+    // TODO: Decouple from ServiceCore :( - this is nasty
     const newPath: PathItem = {
       [endpoint]: {
         [method]: {
-          [statusCode]: {
-            description: "Automatically added",
-            [mediaType]: { schema: response },
+          responses: {
+            [statusCode]: {
+              description: "Automatically added",
+              content: {
+                [mediaType]: { schema: response },
+              },
+            },
           },
         },
       },
@@ -66,7 +71,6 @@ export class ServiceStore {
     const newPaths = defaultsDeep(newPath, baseSchema.paths);
     const newServers = defaultsDeep(newUrls, baseSchema.servers);
     const finalSchema = { ...baseSchema, paths: newPaths, servers: newServers };
-    // TODO: Decouple from ServiceCore :(
     const newServiceCore = new ServiceCore({
       schema: finalSchema,
       name: serviceName,

@@ -2,15 +2,15 @@
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import {
+  HTTPMethod,
   ILogger,
   IUnmockOptions,
   IUnmockPackage,
-  HTTPMethod,
 } from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
-import { AllowedHosts, BooleanSetting } from "./settings";
-import { Schema } from "./service/interfaces";
 import { Service } from "./service";
+import { Schema } from "./service/interfaces";
+import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./types";
 export { sinon };
@@ -22,7 +22,6 @@ export class UnmockPackage implements IUnmockPackage {
   public useInProduction: BooleanSetting;
   protected readonly backend: NodeBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-
   constructor(
     backend: NodeBackend,
     options?: {
@@ -61,10 +60,53 @@ export class UnmockPackage implements IUnmockPackage {
   public get services() {
     return this.backend.services;
   }
+
+  public nock(baseUrl: string) {
+    const dynFn = (method: HTTPMethod, endpoint: string) => ({
+      statusCode,
+      data,
+    }: {
+      statusCode: number;
+      data: Schema;
+    }) =>
+      this.backend.updateServices({
+        baseUrl,
+        method,
+        endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
+        statusCode,
+        response: data,
+      });
+
+    return {
+      get(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("get", endpoint));
+      },
+      head(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("head", endpoint));
+      },
+      post(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("post", endpoint));
+      },
+      put(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("put", endpoint));
+      },
+      patch(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("patch", endpoint));
+      },
+      delete(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("delete", endpoint));
+      },
+      options(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("options", endpoint));
+      },
+      trace(endpoint: string) {
+        return new DynamicServiceSpec(dynFn("trace", endpoint));
+      },
+    };
+  }
 }
 
-const bknd = new NodeBackend();
-const unmockPackage: IUnmockPackage = new UnmockPackage(bknd, {
+const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 
@@ -76,50 +118,6 @@ type UpdateCallback = ({
   data: Schema;
 }) => Service | undefined;
 
-const dynamicService = (baseUrl: string) => {
-  const dynFn = (method: HTTPMethod, endpoint: string) => ({
-    statusCode,
-    data,
-  }: {
-    statusCode: number;
-    data: Schema;
-  }) =>
-    bknd.updateServices({
-      baseUrl,
-      method,
-      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-      statusCode,
-      response: data,
-    });
-
-  return {
-    get(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("get", endpoint));
-    },
-    head(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("head", endpoint));
-    },
-    post(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("post", endpoint));
-    },
-    put(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("put", endpoint));
-    },
-    patch(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("patch", endpoint));
-    },
-    delete(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("delete", endpoint));
-    },
-    options(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("options", endpoint));
-    },
-    trace(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("trace", endpoint));
-    },
-  };
-};
-
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
 type InputToPoet = any;
@@ -130,9 +128,12 @@ class DynamicServiceSpec {
 
   constructor(private updater: UpdateCallback) {}
 
-  public reply(statusCode: number, data?: InputToPoet): void;
-  public reply(data: InputToPoet): void;
-  public reply(maybeStatusCode: number | InputToPoet, maybeData?: InputToPoet) {
+  public reply(statusCode: number, data?: InputToPoet): Service | undefined;
+  public reply(data: InputToPoet): Service | undefined;
+  public reply(
+    maybeStatusCode: number | InputToPoet,
+    maybeData?: InputToPoet,
+  ): Service | undefined {
     if (maybeData !== undefined) {
       this.data = maybeData as Schema; // TODO: use poet to convert to JSON Schema?
       this.statusCode = maybeStatusCode;
@@ -149,8 +150,6 @@ class DynamicServiceSpec {
     return this.updater({ data: this.data, statusCode: this.statusCode });
   }
 }
-
-const unmock = Object.assign(unmockPackage, dynamicService); // Add the function call to the unmock object
 
 export type UnmockNode = typeof unmock;
 
