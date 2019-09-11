@@ -7,21 +7,21 @@ const outputFolder = pathResolve(__filename, "__unmock__", "__snapshots__");
 describe("Snapshotter", () => {
   let snapshotter: FSSnapshotter;
   it("should have correct default options when instantiated without options", () => {
-    snapshotter = FSSnapshotter.getOrUpdateSnapshotter() as FSSnapshotter;
+    snapshotter = FSSnapshotter.getOrUpdateSnapshotter();
     expect(snapshotter.options.outputFolder).toMatch(osTmpdir());
   });
 
   it("should respect given options", () => {
     snapshotter = FSSnapshotter.getOrUpdateSnapshotter({
       outputFolder,
-    }) as FSSnapshotter;
+    });
     expect(snapshotter.options.outputFolder).toBe(outputFolder);
   });
 
   it("should snapshot without errors on notify", () => {
     snapshotter = FSSnapshotter.getOrUpdateSnapshotter({
       outputFolder,
-    }) as FSSnapshotter;
+    });
     snapshotter.notify({ req: testRequest, res: testResponse });
   });
 });
