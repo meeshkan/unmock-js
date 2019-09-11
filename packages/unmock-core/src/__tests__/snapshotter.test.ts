@@ -24,4 +24,8 @@ describe("Snapshotter", () => {
     });
     snapshotter.notify({ req: testRequest, res: testResponse });
   });
+
+  it("should be running in Jest", () => {
+    expect(FSSnapshotter.runningInJest).toBe(true);
+  });
 });

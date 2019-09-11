@@ -141,7 +141,7 @@ export default class NodeBackend {
     const { services, createResponse } = responseCreatorFactory({
       listeners: [
         new FSLogger({ directory: this.config.servicesDirectory }),
-        FSSnapshotter.getOrUpdateSnapshotter(),
+        FSSnapshotter.getOrUpdateSnapshotter({}),
       ],
       options,
       serviceDefLoader,

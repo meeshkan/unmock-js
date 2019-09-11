@@ -42,23 +42,22 @@ export default class FSSnapshotter implements IListener {
   /**
    * Build snapshotting listener or update with given options (if exists).
    * Only builds a singleton instance.
-   * @param newOptions New options (if defined)
+   * @param newOptions If defined, the existing instance is updated with the given options.
+   * If undefined and an instance exists, its options are not changed.
    */
   public static getOrUpdateSnapshotter(
-    newOptions?: IFSSnapshotterOptions,
+    newOptions?: Partial<IFSSnapshotterOptions>,
   ): FSSnapshotter {
     // Only allow singleton instantiation.
     // Instantiating multiple snapshotters would have unexpected behaviour
     // due to global modifications to expect().unmockSnapshot
-    if (FSSnapshotter.instance) {
+    if (typeof FSSnapshotter.instance !== "undefined") {
       if (newOptions) {
         FSSnapshotter.instance.update(newOptions);
       }
       return FSSnapshotter.instance;
     }
-    const newInstance = new FSSnapshotter(newOptions);
-    FSSnapshotter.instance = newInstance;
-    FSSnapshotter.instance.extendExpect();
+    FSSnapshotter.instance = new FSSnapshotter(newOptions);
     return FSSnapshotter.instance;
   }
 
@@ -82,12 +81,12 @@ export default class FSSnapshotter implements IListener {
 
   public options: IFSSnapshotterOptions;
 
-  private constructor(options?: IFSSnapshotterOptions) {
+  private constructor(options?: Partial<IFSSnapshotterOptions>) {
     this.options = resolveOptions(options || {});
-    this.extendExpect();
+    this.extendExpectIfInJest();
   }
 
-  public extendExpect() {
+  public extendExpectIfInJest() {
     if (!FSSnapshotter.runningInJest) {
       return;
     }
@@ -106,7 +105,7 @@ export default class FSSnapshotter implements IListener {
    */
   public update(options?: Partial<IFSSnapshotterOptions>) {
     this.options = resolveOptions(options || {});
-    this.extendExpect();
+    this.extendExpectIfInJest();
   }
 
   public notify(input: IListenerInput) {
