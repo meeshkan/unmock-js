@@ -33,7 +33,13 @@ export interface IListener {
   }): void;
 }
 
+export interface IRunnerOptions {
+  maxLoop: number;
+  seed: number;
+}
+
 export interface IUnmockOptions extends ILogger {
+  runnerOptions: IRunnerOptions;
   useInProduction(): boolean;
   isWhitelisted(url: string): boolean;
   flaky(): boolean;
@@ -41,6 +47,7 @@ export interface IUnmockOptions extends ILogger {
 
 export interface IUnmockPackage {
   allowedHosts: AllowedHosts;
+  runnerOptions: Partial<IRunnerOptions>;
   services: ServiceStoreType;
   on(): IUnmockPackage;
   init(): IUnmockPackage;

@@ -16,6 +16,10 @@ describe("Node.js interceptor", () => {
         isWhitelisted: (_: string) => false,
         log: (_: string) => undefined,
         useInProduction: () => false,
+        runnerOptions: {
+          maxLoop: 20,
+          seed: 0,
+        },
       });
     });
 
