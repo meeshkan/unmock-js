@@ -76,6 +76,11 @@ export interface IUnmockPackage {
    * Any dynamically-defined services will be deleted.
    */
   reloadServices(): void;
+
+  /**
+   * Resets all services' state, including spies.
+   */
+  reset(): void;
 }
 
 /**
