@@ -41,5 +41,19 @@ describe("Node.js interceptor", () => {
       }
       expect(threw).toBe(true);
     });
+    test("runner loop fails properly with callback", async () => {
+      const failure = [];
+      const cb: jest.DoneCallback = () => { /**/ };
+      cb.fail = (error: string | {message: string}) => { failure.push(error); };
+      await runner(async (c) => {
+        try {
+          const resp = await axios("http://petstore.swagger.io/v1/pets/54");
+          if (resp.data.name !== "id") { throw Error(); }
+        } catch {
+          c.fail("testing failure in callback...");
+        }
+      })(cb);
+      expect(failure.length).toBeGreaterThan(0);
+    });
   });
 });

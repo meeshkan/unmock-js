@@ -8,6 +8,27 @@ const defaultRunnerOptions: IRunnerOptions = {
   maxLoop: 20,
 };
 
+const errorHandler = (
+  allFailed: boolean,
+  errors: Error[],
+  intermediaryErrors: Array<(string | { message: string})>,
+  cb?: jest.DoneCallback) => {
+    // tslint:disable-next-line:max-line-length
+    const msg = (rest: string) => `${chalk.red("@unmock")} - ${allFailed ? "all" : "some"} tests failed. Here's the first error.\n${rest}`;
+    if (errors.length) {
+      errors[0].message = msg(errors[0].message);
+    } else {
+      intermediaryErrors[0] = typeof intermediaryErrors[0] === "string"
+        ? msg(intermediaryErrors[0] as string)
+        : { message: msg((intermediaryErrors[0] as { message: string}).message) };
+    }
+    if (cb) {
+      cb.fail(intermediaryErrors.length ? intermediaryErrors[0] : errors[0].message);
+    } else {
+      throw errors[0];
+    }
+};
+
 export default
   (fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) =>
   async (cb?: jest.DoneCallback) => {
@@ -18,7 +39,7 @@ export default
   const intermediaryErrors: Array<(string | { message: string})> = [];
   const intermediaryDoneCallback: jest.DoneCallback = () => { /**/ };
   intermediaryDoneCallback.fail = (error: string | {message: string}) => { intermediaryErrors.push(error); };
-  const errors = [];
+  const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
     seedHack.seed = i;
@@ -35,17 +56,9 @@ export default
   }
   // >= in case fail is called multiple times... fix
   if (errors.length + intermediaryErrors.length >= realOptions.maxLoop) {
-    errors[0].message = `${chalk.red("@unmock")} - all tests failed. Here's the first error.\n` + errors[0].message;
-    // tslint:disable-next-line:no-unused-expression
-    cb && cb.fail(intermediaryErrors.length ? intermediaryErrors[0] : errors[0].message);
-    // if there is no callback, we throw the error
-    throw errors[0];
+    errorHandler(true, errors, intermediaryErrors, cb);
   } else if (errors.length + intermediaryErrors.length > 0) {
-    errors[0].message = `${chalk.red("@unmock")} - several tests failed. Here's the first error.\n` + errors[0].message;
-    // tslint:disable-next-line:no-unused-expression
-    cb && cb.fail(intermediaryErrors.length ? intermediaryErrors[0] : errors[0].message);
-    // if there is no callback, we call the error
-    throw errors[0];
+    errorHandler(false, errors, intermediaryErrors, cb);
   } else {
     // tslint:disable-next-line:no-unused-expression
     cb && cb();
