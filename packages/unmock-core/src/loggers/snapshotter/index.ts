@@ -5,15 +5,6 @@ import { resolve as pathResolve } from "path";
 import { IListener, IListenerInput } from "../../interfaces";
 import { unmockSnapshot } from "./snapshot";
 
-declare global {
-  namespace expect {
-    // tslint:disable-next-line:interface-name
-    interface Matchers<R> {
-      unmockSnapshot(obj: any): R;
-    }
-  }
-}
-
 export interface IFSSnapshotterOptions {
   outputFolder: string;
 }
