@@ -41,7 +41,6 @@ export const resolveOptions = (
 export default class FSSnapshotter implements IListener {
   /**
    * Build snapshotting listener or update with given options (if exists).
-   * If not running in Jest, returns a NOOP listener.
    * Only builds a singleton instance.
    * @param newOptions New options (if defined)
    */
@@ -89,6 +88,9 @@ export default class FSSnapshotter implements IListener {
   }
 
   public extendExpect() {
+    if (!FSSnapshotter.runningInJest) {
+      return;
+    }
     expect.extend({
       unmockSnapshot: unmockSnapshot(this.options),
     });
