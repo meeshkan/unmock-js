@@ -88,7 +88,7 @@ export default class FSSnapshotter implements IListener {
 
   private static instance?: FSSnapshotter;
 
-  private options: IFSSnapshotterOptions;
+  public options: IFSSnapshotterOptions;
 
   private constructor(options?: IFSSnapshotterOptions) {
     this.options = resolveOptions(options || {});
