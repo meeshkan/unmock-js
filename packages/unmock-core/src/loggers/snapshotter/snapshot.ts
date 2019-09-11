@@ -8,7 +8,6 @@ const debugLog = debug("unmock-core:snapshotter");
 export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
   // TODO Ensure destination exists and is writable
   return function(this: expect.MatcherState, obj: IListenerInput) {
-    // tslint:disable-next-line:no-console
     debugLog(
       "Snapshotting:",
       options.outputFolder,
