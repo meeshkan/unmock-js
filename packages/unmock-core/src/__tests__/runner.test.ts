@@ -26,10 +26,20 @@ describe("Node.js interceptor", () => {
       expect(typeof resp.data.name).toBe("string");
     }));
 
-    // hm ... this works because it fails, but how to test?
-    test.skip("runner loop fails when it should fail", runner(async () => {
-      const resp = await axios("http://petstore.swagger.io/v1/pets/54");
-      expect(resp.data.name).toBe("id");
-    }));
+    // TODO: I cannot get this to work with expect.toThrow()...
+    test("runner loop fails properly without callback", async () => {
+      let threw = false;
+      try {
+        await runner(async () => {
+          const resp = await axios("http://petstore.swagger.io/v1/pets/54");
+          expect(resp.data.name).toBe("id");
+        })();
+      } catch (e) {
+        if (e.constructor.name === "JestAssertionError") {
+          threw = true;
+        }
+      }
+      expect(threw).toBe(true);
+    });
   });
 });
