@@ -33,10 +33,6 @@ export const resolveOptions = (
   return merge({}, DEFAULT_OPTIONS, userOptions);
 };
 
-const NOOP_LISTENER: IListener = {
-  notify(_: IListenerInput) {}, // tslint:disable-line:no-empty
-};
-
 /**
  * Snapshotter to filesystem. Because snapshotting is based
  * on extending `expect` globally, only one singleton instance
@@ -51,10 +47,7 @@ export default class FSSnapshotter implements IListener {
    */
   public static getOrUpdateSnapshotter(
     newOptions?: IFSSnapshotterOptions,
-  ): IListener {
-    if (!FSSnapshotter.runningInJest) {
-      return NOOP_LISTENER;
-    }
+  ): FSSnapshotter {
     // Only allow singleton instantiation.
     // Instantiating multiple snapshotters would have unexpected behaviour
     // due to global modifications to expect().unmockSnapshot
@@ -115,6 +108,9 @@ export default class FSSnapshotter implements IListener {
   }
 
   public notify(input: IListenerInput) {
+    if (!FSSnapshotter.runningInJest) {
+      return;
+    }
     // @ts-ignore
     return expect(input).unmockSnapshot();
   }

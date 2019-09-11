@@ -8,13 +8,12 @@ const debugLog = debug("unmock-core:snapshotter");
 export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
   // TODO Ensure destination exists and is writable
   return function(this: expect.MatcherState, obj: IListenerInput) {
-    debugLog(
-      "Snapshotting:",
-      options.outputFolder,
-      this.testPath,
-      this.currentTestName,
+    debugLog("Snapshotting:", {
+      outputFolder: options.outputFolder,
+      testPath: this.testPath,
+      currentTestName: this.currentTestName,
       obj,
-    );
+    });
 
     /* const snapFile = path.join(
         SNAPSHOTS_FOLDER,
