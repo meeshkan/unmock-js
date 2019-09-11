@@ -28,6 +28,9 @@ import {
   ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
+export const seedHack = {
+  seed: 0,
+};
 type Headers = Record<string, Header>;
 
 function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
@@ -296,8 +299,7 @@ const generateMockFromTemplate = (
     chooseResponseFromOperation(operation, service.dereferencer, {
       isFlaky: options.flaky(),
     });
-  console.log("SEED", options.runnerOptions.seed);
-  jsf.option("random", seedrandom(`${options.runnerOptions.seed}`));
+  jsf.option("random", seedrandom(`${seedHack.seed}`));
   jsf.option("useDefaultValue", false);
   const resolvedTemplate = jsf.generate(template);
 

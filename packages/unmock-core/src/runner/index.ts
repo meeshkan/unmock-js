@@ -1,5 +1,12 @@
 import chalk from "chalk";
-import unmock from "..";
+import { seedHack } from "../generator";
+export interface IRunnerOptions {
+  maxLoop: number;
+}
+
+const defaultRunnerOptions: IRunnerOptions = {
+  maxLoop: 20,
+};
 
 const errorHandler = (
   allFailed: boolean,
@@ -22,20 +29,20 @@ const errorHandler = (
     }
 };
 
-export default (fn?: jest.ProvidesCallback) =>
+export default
+  (fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) =>
   async (cb?: jest.DoneCallback) => {
-  const maxLoop = unmock.runnerOptions && unmock.runnerOptions.maxLoop || 20;
+  const realOptions = {
+    ...defaultRunnerOptions,
+    ...options,
+  };
   const intermediaryErrors: Array<(string | { message: string})> = [];
   const intermediaryDoneCallback: jest.DoneCallback = () => { /**/ };
   intermediaryDoneCallback.fail = (error: string | {message: string}) => { intermediaryErrors.push(error); };
   const errors: Error[] = [];
   const res = [];
-  if (!unmock.runnerOptions) {
-    unmock.runnerOptions = {};
-  }
-  for (let i = 0; i < maxLoop; i++) {
-    unmock.runnerOptions.seed = i;
-    unmock.on();
+  for (let i = 0; i < realOptions.maxLoop; i++) {
+    seedHack.seed = i;
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
@@ -46,10 +53,9 @@ export default (fn?: jest.ProvidesCallback) =>
         throw e;
       }
     }
-    unmock.off();
   }
   // >= in case fail is called multiple times... fix
-  if (errors.length + intermediaryErrors.length >= maxLoop) {
+  if (errors.length + intermediaryErrors.length >= realOptions.maxLoop) {
     errorHandler(true, errors, intermediaryErrors, cb);
   } else if (errors.length + intermediaryErrors.length > 0) {
     errorHandler(false, errors, intermediaryErrors, cb);

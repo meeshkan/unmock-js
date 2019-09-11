@@ -1,13 +1,8 @@
 import path from "path";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
-import { IUnmockOptions } from "../interfaces";
 
-const mockOptions: IUnmockOptions = {
-  runnerOptions: {
-    maxLoop: 20,
-    seed: 0,
-  },
+const mockOptions = {
   flaky: () => false,
   isWhitelisted: (_: string) => false,
   log: (_: string) => undefined,
