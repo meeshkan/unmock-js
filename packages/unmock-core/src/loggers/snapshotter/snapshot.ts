@@ -14,39 +14,6 @@ export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
       currentTestName: this.currentTestName,
       obj,
     });
-
-    /* const snapFile = path.join(
-        SNAPSHOTS_FOLDER,
-        `${path.basename(this.testPath)}.snap`,
-      );
-      if (!fs.existsSync(SNAPSHOTS_FOLDER)) {
-        mkdirp.sync(SNAPSHOTS_FOLDER);
-      }
-      let contents: {
-        [testCallNumber: string]: string;
-      } = {};
-      if (fs.existsSync(snapFile)) {
-        if (CLEARED_SNAPSHOT_FILES.indexOf(snapFile) === -1) {
-          // First we delete previous snapshots, then we continuously update them.
-          CLEARED_SNAPSHOT_FILES.push(snapFile);
-          fs.unlinkSync(snapFile);
-        } else {
-          contents = require(snapFile);
-        }
-      }
-      const numOfCalls = Object.keys(contents).length + 1;
-      contents[`${this.currentTestName} ${numOfCalls}`] = obj;
-      const stringContents = Object.keys(contents)
-        .map(
-          (key: string) =>
-            "exports['" +
-            key +
-            "'] = " +
-            JSON.stringify(contents[key], undefined, 2) +
-            ";\n",
-        )
-        .join("\n");
-      fs.writeFileSync(snapFile, stringContents); */
     return {
       pass: true,
     };
