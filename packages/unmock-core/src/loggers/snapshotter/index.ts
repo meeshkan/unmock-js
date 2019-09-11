@@ -1,13 +1,8 @@
 import * as expect from "expect";
-import { realpathSync } from "fs";
 import { merge } from "lodash";
 import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
-import {
-  IListener,
-  ISerializedRequest,
-  ISerializedResponse,
-} from "../../interfaces";
+import { IListener, IListenerInput } from "../../interfaces";
 import { unmockSnapshot } from "./snapshot";
 
 declare global {
@@ -17,11 +12,6 @@ declare global {
       unmockSnapshot(obj: any): R;
     }
   }
-}
-
-export interface IRequestResponsePair {
-  req: ISerializedRequest;
-  res?: ISerializedResponse;
 }
 
 export interface IFSSnapshotterOptions {
@@ -44,7 +34,7 @@ export const resolveOptions = (
 };
 
 const NOOP_LISTENER: IListener = {
-  notify(_: IRequestResponsePair) {}, // tslint:disable-line:no-empty
+  notify(_: IListenerInput) {}, // tslint:disable-line:no-empty
 };
 
 /**
@@ -124,7 +114,7 @@ export default class FSSnapshotter implements IListener {
     this.extendExpect();
   }
 
-  public notify(input: { req: ISerializedRequest; res?: ISerializedResponse }) {
+  public notify(input: IListenerInput) {
     // @ts-ignore
     return expect(input).unmockSnapshot();
   }

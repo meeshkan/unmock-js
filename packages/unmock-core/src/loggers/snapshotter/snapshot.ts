@@ -1,12 +1,15 @@
+import debug from "debug";
 import * as expect from "expect";
-// import * as path from "path";
-import { IFSSnapshotterOptions, IRequestResponsePair } from ".";
+import { IFSSnapshotterOptions } from ".";
+import { IListenerInput } from "../../interfaces";
+
+const debugLog = debug("unmock-core:snapshotter");
 
 export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
   // TODO Ensure destination exists and is writable
-  return function(this: expect.MatcherState, obj: IRequestResponsePair) {
+  return function(this: expect.MatcherState, obj: IListenerInput) {
     // tslint:disable-next-line:no-console
-    console.log(
+    debugLog(
       "Snapshotting:",
       options.outputFolder,
       this.testPath,
@@ -52,7 +55,6 @@ export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
   };
 };
 
-// Always add this, ensures added once per context
 expect.addSnapshotSerializer({
   print: (val: any) => JSON.stringify(val, undefined, 2),
   // Smoke test for a value that is a request-response pair
