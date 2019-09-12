@@ -23,11 +23,12 @@ const format = (snapshot: ISnapshot): string => {
 };
 
 const ENCODING = "utf-8";
+const SNAPSHOT_FILENAME = "snapshots.jsonl";
 
 export class FsSnapshotWriterReader implements ISnapshotWriterReader {
   private readonly outputFile: string;
   constructor(snapshotFolder: string) {
-    this.outputFile = path.resolve(snapshotFolder, "snapshots.jsonl");
+    this.outputFile = path.resolve(snapshotFolder, SNAPSHOT_FILENAME);
   }
 
   public write(snapshot: ISnapshot) {
