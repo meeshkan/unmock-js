@@ -104,11 +104,20 @@ const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
 
 // TODO add more built-in types like this
 export const u = {
-  str: jspt.string,
-  number: jspt.number,
-  int: jspt.integer,
-  city: () =>
-    string_<IDynamicJSONValue>({ dynamic: DynamicJSONSymbol })("address.city"),
+  str() {
+    return jspt.string();
+  },
+  number() {
+    return jspt.number();
+  },
+  int() {
+    return jspt.integer();
+  },
+  city() {
+    return string_<IDynamicJSONValue>({ dynamic: DynamicJSONSymbol })(
+      "address.city",
+    );
+  },
 };
 
 // Defined nock-like syntax to create/update a service on the fly
@@ -123,10 +132,7 @@ type UpdateCallback = ({
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
 type Primitives = string | number | boolean;
-type InputToPoet =
-  | { [k: string]: InputToPoet | Primitives[] | Primitives }
-  | Primitives
-  | Primitives[];
+type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
 export class DynamicServiceSpec {
   private data: Schema = {};
