@@ -97,20 +97,16 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend {
-  public serviceStore: ServiceStore;
+  public serviceStore: ServiceStore = new ServiceStore([]);
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
-    this.serviceStore = new ServiceStore([]);
+    this.loadServices();
   }
 
-  public get services(): ServiceStoreType {
-    return (this.serviceStore && this.serviceStore.services) || {};
-  }
-
-  public initServices(defLoader?: FsServiceDefLoader) {
+  public loadServices() {
     // Resolve where services can live
     const unmockDirectories = this.config.servicesDirectory
       ? [this.config.servicesDirectory]
@@ -119,11 +115,9 @@ export default class NodeBackend {
     debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader =
-      defLoader ||
-      new FsServiceDefLoader({
-        unmockDirectories,
-      });
+    const serviceDefLoader = new FsServiceDefLoader({
+      unmockDirectories,
+    });
 
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
@@ -131,6 +125,10 @@ export default class NodeBackend {
     );
 
     this.serviceStore = new ServiceStore(coreServices);
+  }
+
+  public get services(): ServiceStoreType {
+    return (this.serviceStore && this.serviceStore.services) || {};
   }
 
   /**
@@ -153,8 +151,6 @@ export default class NodeBackend {
     this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
       this.mitmOnConnect(options, socket, opts),
     );
-
-    this.initServices();
 
     const createResponse = responseCreatorFactory({
       listeners: [

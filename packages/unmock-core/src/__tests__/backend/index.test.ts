@@ -8,7 +8,6 @@ const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 describe("Loads services properly", () => {
   it("loads all paths in __unmock__", () => {
     const backend = new NodeBackend({ servicesDirectory });
-    backend.initServices();
     backend.services.slack.state({}); // should pass
     backend.services.petstore.state({}); // should pass
     expect(() => backend.services.github.state({})).toThrow(
@@ -18,7 +17,6 @@ describe("Loads services properly", () => {
 
   it("sets a state for swagger api converted to openapi", () => {
     const backend = new NodeBackend({ servicesDirectory });
-    backend.initServices();
     backend.services.slack.state("/bots.info", {
       bot: { app_id: "A12345678" },
     }); // should pass

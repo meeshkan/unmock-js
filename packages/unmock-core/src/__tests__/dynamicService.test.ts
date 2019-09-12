@@ -1,8 +1,7 @@
 import unmock, { u } from "..";
 
 describe("Tests dynamic path tests", () => {
-  beforeEach(() => unmock.on());
-  afterEach(() => unmock.off());
+  beforeEach(() => unmock.reloadServices());
 
   it("Adds a service", () => {
     expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
@@ -24,7 +23,7 @@ describe("Tests dynamic path tests", () => {
       // type-checking mostly...
       throw new Error("Service was undefined??");
     }
-    service.state.get("/foo", { foo: "abc" }); // should succeed
+    expect(() => service.state.get("/foo", { foo: "abc" })).not.toThrow(); // should succeed
   });
 
   it("Adds a service and updates it on consecutive calls", () => {

@@ -1,8 +1,6 @@
 import * as path from "path";
 import NodeBackend from "../backend/index";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
-import { IService } from "../service/interfaces";
 
 const mockOptions = {
   flaky: () => false,
@@ -11,22 +9,12 @@ const mockOptions = {
   useInProduction: () => false,
 };
 
-const backend = new NodeBackend();
-
-const serviceDefLoader = new FsServiceDefLoader({
-  unmockDirectories: [path.join(__dirname, "__unmock__")],
+const backend = new NodeBackend({
+  servicesDirectory: path.join(__dirname, "__unmock__"),
 });
+const services = backend.services;
 
 describe("Tests generator", () => {
-  let services: Record<string, IService>;
-  beforeEach(() => {
-    backend.initServices(serviceDefLoader);
-    services = backend.services;
-  });
-  afterEach(() => {
-    services = {};
-  });
-
   it("in non-flaky mode", () => {
     const createResponse = responseCreatorFactory({
       options: mockOptions,
