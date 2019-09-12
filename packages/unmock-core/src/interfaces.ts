@@ -39,12 +39,43 @@ export interface IUnmockOptions extends ILogger {
 }
 
 export interface IUnmockPackage {
+  /**
+   * List of whitelisted hosts/endpoints. These will not be intercepted by unmock.
+   * Supports wildcards and regular expressions.
+   */
   allowedHosts: AllowedHosts;
+
+  /**
+   * A mapping of service name to a service object.
+   * Allows you to access a service spy, modify a state, etc.
+   */
   services: ServiceStoreType;
+
+  /**
+   * Starts intercepting outgoing requests.
+   */
   on(): IUnmockPackage;
+
+  /**
+   * Alias for on()
+   */
   init(): IUnmockPackage;
+
+  /**
+   * Alias for on()
+   */
   initialize(): IUnmockPackage;
+
+  /**
+   * Stops intercepting outgoing requests. Spies and states are reset.
+   */
   off(): void;
+
+  /**
+   * Reloads all services for unmock.
+   * Any dynamically-defined services will be deleted.
+   */
+  reloadServices(): void;
 }
 
 /**

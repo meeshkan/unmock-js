@@ -5,6 +5,29 @@ import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
+describe("Loads services properly", () => {
+  it("loads all paths in __unmock__", () => {
+    const backend = new NodeBackend({ servicesDirectory });
+    backend.services.slack.state({}); // should pass
+    backend.services.petstore.state({}); // should pass
+    expect(() => backend.services.github.state({})).toThrow(
+      "property 'state' of undefined",
+    ); // no github service
+  });
+
+  it("sets a state for swagger api converted to openapi", () => {
+    const backend = new NodeBackend({ servicesDirectory });
+    backend.services.slack.state("/bots.info", {
+      bot: { app_id: "A12345678" },
+    }); // should pass
+    expect(() =>
+      backend.services.slack.state("/bots.info", {
+        bot: { app_id: "A123456789" },
+      }),
+    ).toThrow("type is incorrect"); // Does not match the specified pattern
+  });
+});
+
 describe("Node.js interceptor", () => {
   describe("with petstore in place", () => {
     let nodeInterceptor: NodeBackend;

@@ -59,6 +59,10 @@ export class UnmockPackage implements IUnmockPackage {
   public nock(baseUrl: string, name?: string) {
     return nockify({ backend: this.backend, baseUrl, name });
   }
+
+  public reloadServices() {
+    this.backend.loadServices();
+  }
 }
 
 const unmock = new UnmockPackage(new NodeBackend(), {
