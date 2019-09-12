@@ -4,7 +4,13 @@ import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
 
 export class ServiceStore {
+  /**
+   * `services` is a wrapper for each `IServiceCore` in `cores`, and is ultimately what's available for the user.
+   */
   public readonly services: Record<string, Service>;
+  /**
+   * `cores` is an internal mapping, allowing manipulation and extraction of services as needed
+   */
   public readonly cores: Record<string, IServiceCore>;
 
   constructor(coreServices: IServiceCore[]) {
