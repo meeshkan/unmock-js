@@ -161,5 +161,16 @@ describe("Node.js interceptor", () => {
       resp = await axios("http://petstore.swagger.io/v1/pets/3");
       expect(resp.data.properties.isCat).toBeFalsy();
     });
+
+    test("Works with multiple codes", async () => {
+      petstore.state(dsl.functionResponse(() => "baz", { $code: [404, 500] }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 404 response");
+      } catch (err) {
+        expect([404, 500]).toContain(err.response.status);
+        expect(err.response.data).toBe("baz");
+      }
+    });
   });
 });
