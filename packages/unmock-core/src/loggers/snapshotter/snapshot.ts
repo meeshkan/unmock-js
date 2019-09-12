@@ -8,29 +8,21 @@ const debugLog = debug("unmock-core:snapshotter");
 
 const MATCHER_PASS = { pass: true };
 
+/**
+ * Retuns a snapshotter attachable to `expect.extend`.
+ * Checks if the destination directory is writable.
+ * If not, fails silently.
+ */
 export const unmockSnapshot = (options: IFSSnapshotterOptions) => {
-  // TODO Ensure destination exists and is writable
-
   const outputFolder = options.outputFolder;
 
-  const exists =
-    !fs.existsSync(outputFolder) && fs.lstatSync(outputFolder).isDirectory();
-
-  let canWrite = true;
-
-  if (!exists) {
-    try {
-      fs.mkdirSync(outputFolder);
-    } catch (err) {
-      canWrite = false;
-      throw Error(
-        `Failed creating directory: ${outputFolder}, err: ${err.message}`,
-      );
-    }
-  }
+  const isWritable =
+    fs.existsSync(outputFolder) &&
+    fs.lstatSync(outputFolder).isDirectory() &&
+    fs.accessSync(outputFolder, fs.constants.W_OK);
 
   return function(this: expect.MatcherState, obj: IListenerInput) {
-    if (!canWrite) {
+    if (!isWritable) {
       debugLog(`Cannot write to ${outputFolder}, skipping snapshotting`);
       return MATCHER_PASS;
     }

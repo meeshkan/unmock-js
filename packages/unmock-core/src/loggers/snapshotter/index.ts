@@ -1,4 +1,5 @@
 import * as expect from "expect";
+import * as fs from "fs";
 import { merge } from "lodash";
 import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
@@ -22,6 +23,18 @@ export const resolveOptions = (
   userOptions: Partial<IFSSnapshotterOptions>,
 ): IFSSnapshotterOptions => {
   return merge({}, DEFAULT_OPTIONS, userOptions);
+};
+
+const ensureDirExists = (directory: string) => {
+  if (!fs.existsSync(directory)) {
+    return fs.mkdirSync(directory); // TODO Catch
+  }
+
+  if (!fs.lstatSync(directory).isDirectory()) {
+    throw Error(`Destination exists but is not directory: ${directory}`);
+  }
+
+  return;
 };
 
 /**
@@ -48,7 +61,11 @@ export default class FSSnapshotter implements IListener {
       }
       return FSSnapshotter.instance;
     }
-    FSSnapshotter.instance = new FSSnapshotter(newOptions);
+    const options = resolveOptions(newOptions || {});
+
+    ensureDirExists(options.outputFolder);
+
+    FSSnapshotter.instance = new FSSnapshotter(options);
     return FSSnapshotter.instance;
   }
 
@@ -72,8 +89,8 @@ export default class FSSnapshotter implements IListener {
 
   public options: IFSSnapshotterOptions;
 
-  private constructor(options?: Partial<IFSSnapshotterOptions>) {
-    this.options = resolveOptions(options || {});
+  private constructor(options: IFSSnapshotterOptions) {
+    this.options = options;
     this.extendExpectIfInJest();
   }
 

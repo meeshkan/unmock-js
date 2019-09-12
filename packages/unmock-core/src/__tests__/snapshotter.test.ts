@@ -2,7 +2,12 @@ import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
 import FSSnapshotter from "../loggers/snapshotter";
 import { testRequest, testResponse } from "./utils";
-const outputFolder = pathResolve(__filename, "__unmock__", "__snapshots__");
+const outputFolder = pathResolve(
+  __filename,
+  "..",
+  "__unmock__",
+  "__snapshots__",
+);
 
 describe("Snapshotter", () => {
   let snapshotter: FSSnapshotter;
