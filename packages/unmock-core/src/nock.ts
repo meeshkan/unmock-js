@@ -1,5 +1,5 @@
 import * as io from "io-ts";
-import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
+import { cnst_, extendT, string_, tuple_, type_ } from "json-schema-poet";
 import {
   JSONArray,
   JSONObject,
@@ -107,6 +107,7 @@ export const u = {
   str: jspt.string,
   number: jspt.number,
   int: jspt.integer,
+  city: () => string_({})("address.city"),
 };
 
 // Defined nock-like syntax to create/update a service on the fly

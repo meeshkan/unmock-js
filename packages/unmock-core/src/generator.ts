@@ -105,6 +105,7 @@ const toJSONSchemaType = (input: any) =>
     : typeof input;
 
 const setupJSFUnmockProperties = (sreq: ISerializedRequest) => {
+  jsf.extend("faker", () => require("faker"));
   // Handle post-generation references, etc
   jsf.define(
     "unmock-function",

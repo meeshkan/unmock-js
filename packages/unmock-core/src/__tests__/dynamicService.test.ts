@@ -32,7 +32,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.city() });
     const service = unmock
       .nock("https://foo.com")
       .post("/foo")
