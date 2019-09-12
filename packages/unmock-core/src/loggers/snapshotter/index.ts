@@ -14,7 +14,7 @@ import {
 
 const debugLog = debug("unmock:snapshotter");
 
-export interface IFSSnapshotterOptions {
+export interface IFsSnapshotterOptions {
   outputFolder: string;
 }
 
@@ -23,13 +23,13 @@ export const DEFAULT_SNAPSHOT_DIRECTORY = pathResolve(
   ".unmock",
 );
 
-const DEFAULT_OPTIONS: IFSSnapshotterOptions = {
+const DEFAULT_OPTIONS: IFsSnapshotterOptions = {
   outputFolder: DEFAULT_SNAPSHOT_DIRECTORY,
 };
 
 export const resolveOptions = (
-  userOptions: Partial<IFSSnapshotterOptions>,
-): IFSSnapshotterOptions => {
+  userOptions: Partial<IFsSnapshotterOptions>,
+): IFsSnapshotterOptions => {
   return merge({}, DEFAULT_OPTIONS, userOptions);
 };
 
@@ -60,7 +60,7 @@ export default class FsSnapshotter implements IListener {
    * If undefined and an instance exists, its options are not changed.
    */
   public static getOrUpdateSnapshotter(
-    newOptions?: Partial<IFSSnapshotterOptions>,
+    newOptions?: Partial<IFsSnapshotterOptions>,
   ): FsSnapshotter {
     // Only allow singleton instantiation.
     // Instantiating multiple snapshotters would have unexpected behaviour
@@ -99,7 +99,7 @@ export default class FsSnapshotter implements IListener {
 
   private writer: ISnapshotWriterReader;
 
-  private constructor(options: IFSSnapshotterOptions) {
+  private constructor(options: IFsSnapshotterOptions) {
     this.writer = new FsSnapshotWriterReader(options.outputFolder);
     this.extendExpectIfInJest(this.writer);
   }
@@ -129,7 +129,7 @@ export default class FsSnapshotter implements IListener {
    * Update options and extend expect with the new options
    * @param newOptions
    */
-  public update(newOptions?: Partial<IFSSnapshotterOptions>) {
+  public update(newOptions?: Partial<IFsSnapshotterOptions>) {
     const options = resolveOptions(newOptions || {});
     this.writer = new FsSnapshotWriterReader(options.outputFolder);
     this.extendExpectIfInJest(this.writer);
