@@ -19,6 +19,7 @@ import {
   ServiceStoreType,
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
+import FSSnapshotter from "../loggers/snapshotter";
 import { serializeRequest } from "../serialize";
 import { IObjectToService } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
@@ -150,7 +151,10 @@ export default class NodeBackend {
     });
 
     const { serviceStore, createResponse } = responseCreatorFactory({
-      listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
+      listeners: [
+        new FSLogger({ directory: this.config.servicesDirectory }),
+        FSSnapshotter.getOrUpdateSnapshotter({}),
+      ],
       options,
       serviceDefLoader,
     });
