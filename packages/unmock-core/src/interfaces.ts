@@ -23,14 +23,13 @@ export interface ILogger {
   log(message: string): void;
 }
 
+export interface IListenerInput {
+  req: ISerializedRequest;
+  res?: ISerializedResponse;
+}
+
 export interface IListener {
-  notify({
-    req,
-    res,
-  }: {
-    req: ISerializedRequest;
-    res?: ISerializedResponse;
-  }): void;
+  notify(input: IListenerInput): void;
 }
 
 export interface IUnmockOptions extends ILogger {
