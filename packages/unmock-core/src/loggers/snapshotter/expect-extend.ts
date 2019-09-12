@@ -3,7 +3,7 @@ import * as expect from "expect";
 import { IListenerInput } from "../../interfaces";
 import { ISnapshotWriterReader } from "./snapshot-writer-reader";
 
-const debugLog = debug("unmock-core:snapshotter:expect-extend");
+const debugLog = debug("unmock:snapshotter:expect-extend");
 
 const MATCHER_PASS = { pass: true };
 

@@ -1,10 +1,11 @@
 import debug from "debug";
 import * as fs from "fs";
+import { flatten } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { IListenerInput } from "../../interfaces";
 
-const debugLog = debug("unmock:snapshot-writer");
+const debugLog = debug("unmock:snapshotter:writer");
 
 export interface ISnapshot {
   testPath: string;
@@ -25,10 +26,27 @@ const format = (snapshot: ISnapshot): string => {
 const ENCODING = "utf-8";
 const SNAPSHOT_FILENAME = "snapshots.jsonl";
 
+const createTmpDirIn = (snapshotFolder: string): string => {
+  return fs.mkdtempSync(`${snapshotFolder}${path.sep}`);
+};
+
 export class FsSnapshotWriterReader implements ISnapshotWriterReader {
+  public static readFileContents(filename: string): ISnapshot[] {
+    const fileContents = fs.readFileSync(filename, ENCODING);
+    const lines = fileContents.split(os.EOL);
+    return lines
+      .filter(line => !!line.trim())
+      .map(line => {
+        debugLog(`Parsing line: ${line}`);
+        return JSON.parse(line);
+      });
+  }
   private readonly outputFile: string;
-  constructor(snapshotFolder: string) {
-    this.outputFile = path.resolve(snapshotFolder, SNAPSHOT_FILENAME);
+  constructor(private readonly snapshotFolder: string) {
+    this.outputFile = path.join(
+      createTmpDirIn(snapshotFolder),
+      SNAPSHOT_FILENAME,
+    );
   }
 
   public write(snapshot: ISnapshot) {
@@ -46,24 +64,43 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
     }
   }
 
+  public findSnapshotFiles(): string[] {
+    return fs
+      .readdirSync(this.snapshotFolder)
+      .map(filename => path.join(this.snapshotFolder, filename))
+      .filter(file => fs.lstatSync(file).isDirectory())
+      .map(dir => path.join(dir, SNAPSHOT_FILENAME))
+      .filter(
+        filename => fs.existsSync(filename) && fs.lstatSync(filename).isFile(),
+      );
+  }
+
   public read(): ISnapshot[] {
-    if (!fs.existsSync(this.outputFile)) {
+    if (!fs.existsSync(this.snapshotFolder)) {
       return [];
     }
 
-    const fileContents = fs.readFileSync(this.outputFile, ENCODING);
-    const lines = fileContents.split(os.EOL);
-    return lines
-      .filter(line => !!line.trim())
-      .map(line => {
-        debugLog(`Parsing line: ${line}`);
-        return JSON.parse(line);
-      });
+    const snapshotFiles = this.findSnapshotFiles();
+    const snapshots: ISnapshot[][] = snapshotFiles.map(filename =>
+      FsSnapshotWriterReader.readFileContents(filename),
+    );
+    return flatten(snapshots);
   }
 
-  public deleteSnapshots() {
-    if (fs.existsSync(this.outputFile)) {
-      fs.unlinkSync(this.outputFile);
+  public deleteSnapshots(): void {
+    if (!fs.existsSync(this.snapshotFolder)) {
+      return;
     }
+    this.findSnapshotFiles().forEach(filename => {
+      fs.unlinkSync(filename);
+      // If directory empty, delete
+      const directory = path.dirname(filename);
+      if (fs.readdirSync(directory).length === 0) {
+        debugLog(`Deleting directory: ${directory}`);
+        fs.rmdirSync(directory);
+      } else {
+        debugLog(`Directory not empty, not removing: ${directory}`);
+      }
+    });
   }
 }
