@@ -39,5 +39,6 @@ describe("Snapshotter", () => {
 
   afterEach(() => {
     snapshotter.deleteSnapshots();
+    snapshotter = FSSnapshotter.getOrUpdateSnapshotter({}); // Back to default
   });
 });
