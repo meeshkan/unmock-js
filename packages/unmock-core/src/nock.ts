@@ -1,8 +1,107 @@
+import * as io from "io-ts";
+import * as jsp from "json-schema-poet";
+import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
+import {
+  JSONArray,
+  JSONObject,
+  JSONPrimitive,
+  JSONSchemaObject,
+  JSSTAnything,
+  JSSTEmpty,
+} from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
 import { Service } from "./service";
 import { Schema } from "./service/interfaces";
 
+// Used to differentiate between e.g. `{ foo: { type: "string" } }` as a literal value
+// (i.e. key `foo` having the value of `{type: "string"}`) and a dynamic JSON schema
+const DynamicJSONSymbol: unique symbol = Symbol();
+interface IDynamicJSONValue {
+  dynamic: typeof DynamicJSONSymbol;
+}
+const isDynamic = (u: unknown): u is IDynamicJSONValue =>
+  typeof u === "object" && (u as any).dynamic === DynamicJSONSymbol;
+const DynamicJSONValue: io.Type<
+  IDynamicJSONValue,
+  IDynamicJSONValue
+> = new io.Type<IDynamicJSONValue, IDynamicJSONValue>(
+  "DynamicJSONValueType",
+  isDynamic,
+  (input, context) =>
+    isDynamic(input) ? io.success(input) : io.failure(input, context),
+  io.identity,
+);
+
+const JSO = JSONSchemaObject(JSSTEmpty(DynamicJSONValue), DynamicJSONValue);
+// Define json schema types extended with the dynamic json value property
+type ExtendedJSONSchema = JSONSchemaObject<
+  JSSTEmpty<IDynamicJSONValue>,
+  IDynamicJSONValue
+>;
+type ExtendedPrimitiveType = JSONPrimitive | ExtendedJSONSchema;
+type ExtendedValueType =
+  | ExtendedPrimitiveType
+  | IExtendedArrayType
+  | IExtendedObjectType
+  | JSONArray
+  | JSONObject;
+interface IExtendedObjectType {
+  [k: string]: ExtendedValueType;
+}
+interface IExtendedArrayType extends Array<ExtendedValueType> {} // Defined as interface due to circular reference
+
+// Define matching codecs for the above types
+const ExtendedPrimitive = io.union([JSONPrimitive, JSO]);
+const ExtendedValue: io.Type<
+  ExtendedValueType,
+  ExtendedValueType
+> = io.recursion("ExtendedValue", () =>
+  io.union([
+    ExtendedPrimitive,
+    JSONArray,
+    JSONObject,
+    ExtendedObject,
+    ExtendedArray,
+  ]),
+);
+const ExtendedObject: io.Type<
+  IExtendedObjectType,
+  IExtendedObjectType
+> = io.recursion("ExtendedObject", () => io.record(io.string, ExtendedValue));
+const ExtendedArray: io.Type<
+  IExtendedArrayType,
+  IExtendedArrayType
+> = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
+
+// Define poet to recognize the new "dynamic type"
+// const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
+//   dynamic: DynamicJSONSymbol,
+// });
+
+const removeDynamicSymbol = (
+  schema: ExtendedJSONSchema,
+): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
+  const { dynamic, ...rest } = schema;
+  return rest;
+};
+
+const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
+  JSO.is(e)
+    ? removeDynamicSymbol(e)
+    : ExtendedArray.is(e) || JSONArray.is(e)
+    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(i => JSONSchemify(i)))
+    : ExtendedObject.is(e) || JSONObject.is(e)
+    ? type_<JSSTEmpty<{}>, {}>({})(
+        Object.entries(e).reduce(
+          (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+          {},
+        ),
+        {},
+      )
+    : cnst_<{}>({})(e);
+
+// Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({
   statusCode,
   data,
@@ -29,7 +128,7 @@ export class DynamicServiceSpec {
     maybeData?: InputToPoet,
   ): Service | undefined {
     if (maybeData !== undefined) {
-      this.data = maybeData as Schema; // TODO: use poet to convert to JSON Schema?
+      this.data = JSONSchemify(maybeData) as Schema;
       this.statusCode = maybeStatusCode;
     } else if (
       typeof maybeStatusCode === "number" &&
@@ -39,7 +138,7 @@ export class DynamicServiceSpec {
       // we assume it's a status code
       this.statusCode = maybeStatusCode;
     } else {
-      this.data = maybeStatusCode as Schema; // TODO: ditto
+      this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
     return this.updater({ data: this.data, statusCode: this.statusCode });
   }
