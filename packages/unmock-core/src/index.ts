@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import WinstonLogger from "./loggers/winston-logger";
+import { nockify } from "./nock";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./types";
@@ -15,7 +16,6 @@ export class UnmockPackage implements IUnmockPackage {
   public useInProduction: BooleanSetting;
   protected readonly backend: NodeBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-
   constructor(
     backend: NodeBackend,
     options?: {
@@ -54,9 +54,13 @@ export class UnmockPackage implements IUnmockPackage {
   public get services() {
     return this.backend.services;
   }
+
+  public nock(baseUrl: string, name?: string) {
+    return nockify({ backend: this.backend, baseUrl, name });
+  }
 }
 
-const unmock: IUnmockPackage = new UnmockPackage(new NodeBackend(), {
+const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 

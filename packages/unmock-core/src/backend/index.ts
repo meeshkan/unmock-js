@@ -21,6 +21,8 @@ import {
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
 import { serializeRequest } from "../serialize";
+import { IObjectToService } from "../service/interfaces";
+import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
 
@@ -93,7 +95,9 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend {
-  private serviceStore: ServiceStoreType = {};
+  private static dummyStore = { services: {} };
+
+  private serviceStore: ServiceStore | undefined;
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
@@ -102,7 +106,15 @@ export default class NodeBackend {
   }
 
   public get services(): ServiceStoreType {
-    return this.serviceStore;
+    return (this.serviceStore || NodeBackend.dummyStore).services;
+  }
+
+  // TODO: Refactor s.t. newService is essentialyl a Service/ServiceCore object
+  public updateServices(newService: IObjectToService) {
+    if (this.serviceStore) {
+      return this.serviceStore.updateOrAdd(newService);
+    }
+    return undefined;
   }
 
   /**
@@ -138,7 +150,7 @@ export default class NodeBackend {
       unmockDirectories,
     });
 
-    const { services, createResponse } = responseCreatorFactory({
+    const { serviceStore, createResponse } = responseCreatorFactory({
       listeners: [
         new FSLogger({ directory: this.config.servicesDirectory }),
         FSSnapshotter.getOrUpdateSnapshotter({}),
@@ -150,7 +162,7 @@ export default class NodeBackend {
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
-    this.serviceStore = services;
+    this.serviceStore = serviceStore;
   }
 
   public reset() {
@@ -158,8 +170,13 @@ export default class NodeBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    Object.values(this.serviceStore).forEach(service => service.state.reset());
-    this.serviceStore = {};
+    if (this.serviceStore) {
+      // TODO - this is quite ugly :shrug:
+      Object.values(this.serviceStore.services).forEach(service =>
+        service.state.reset(),
+      );
+      this.serviceStore = undefined;
+    }
     ClientRequestTracker.stop();
   }
 
