@@ -1,31 +1,45 @@
-import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
-import FSSnapshotter from "../loggers/snapshotter";
+import FsSnapshotter from "../loggers/snapshotter";
 import { testRequest, testResponse } from "./utils";
-const outputFolder = pathResolve(__filename, "__unmock__", "__snapshots__");
+const outputFolder = pathResolve(__filename, "..", "__snapshots__");
 
 describe("Snapshotter", () => {
-  let snapshotter: FSSnapshotter;
-  it("should have correct default options when instantiated without options", () => {
-    snapshotter = FSSnapshotter.getOrUpdateSnapshotter();
-    expect(snapshotter.options.outputFolder).toMatch(osTmpdir());
-  });
+  let snapshotter: FsSnapshotter;
 
-  it("should respect given options", () => {
-    snapshotter = FSSnapshotter.getOrUpdateSnapshotter({
+  it("should snapshot on notify and read it", () => {
+    snapshotter = FsSnapshotter.getOrUpdateSnapshotter({
       outputFolder,
     });
-    expect(snapshotter.options.outputFolder).toBe(outputFolder);
+
+    const exampleSnapshot = { req: testRequest, res: testResponse };
+
+    snapshotter.notify(exampleSnapshot);
+
+    const snapshots = snapshotter.readSnapshots();
+    expect(snapshots.length).toBeGreaterThan(0);
+    const snapshot = snapshots[snapshots.length - 1];
+    expect(snapshot).toHaveProperty("data", exampleSnapshot);
   });
 
-  it("should snapshot without errors on notify", () => {
-    snapshotter = FSSnapshotter.getOrUpdateSnapshotter({
+  it("should delete snapshots", () => {
+    snapshotter = FsSnapshotter.getOrUpdateSnapshotter({
       outputFolder,
     });
-    snapshotter.notify({ req: testRequest, res: testResponse });
+    const exampleSnapshot = { req: testRequest, res: testResponse };
+
+    snapshotter.notify(exampleSnapshot);
+    expect(snapshotter.readSnapshots().length).toBeGreaterThan(0);
+
+    snapshotter.deleteSnapshots();
+    expect(snapshotter.readSnapshots()).toHaveLength(0);
   });
 
   it("should be running in Jest", () => {
-    expect(FSSnapshotter.runningInJest).toBe(true);
+    expect(FsSnapshotter.runningInJest).toBe(true);
+  });
+
+  afterEach(() => {
+    snapshotter.deleteSnapshots();
+    snapshotter = FsSnapshotter.getOrUpdateSnapshotter({}); // Back to default
   });
 });
