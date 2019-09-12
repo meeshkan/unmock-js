@@ -7,9 +7,9 @@ import { resolve as pathResolve } from "path";
 import { IListener, IListenerInput } from "../../interfaces";
 import { unmockSnapshot } from "./snapshot";
 import {
+  ISnapshot,
   ISnapshotWriterReader,
   SnapshotWriterReader,
-  ISnapshot,
 } from "./snapshot-writer-reader";
 
 const debugLog = debug("unmock:snapshotter");
