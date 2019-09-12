@@ -83,12 +83,17 @@ export function responseCreatorFactory({
   };
 }
 
-const normalizeHeaders = (headers: Headers | undefined): Headers | undefined =>
+const normalizeHeaders = (
+  headers: Headers | undefined,
+): Record<string, Schema> | undefined =>
   // Removes the 'schema' from each headers so it can generate a proper response
   headers === undefined
     ? undefined
     : Object.keys(headers).reduce(
-        (acc: Headers, h: string) => ({ ...acc, [h]: headers[h].schema }),
+        (acc: Record<string, Schema>, h: string) => ({
+          ...acc,
+          [h]: headers[h].schema as Schema, // TODO: Could be reference / undefined?
+        }),
         {},
       );
 
