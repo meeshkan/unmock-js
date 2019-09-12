@@ -26,7 +26,7 @@ const format = (snapshot: ISnapshot): string => {
 const ENCODING = "utf-8";
 const SNAPSHOT_FILENAME = "snapshots.jsonl";
 
-const createTmpDir = (snapshotFolder: string): string => {
+const createTmpDirIn = (snapshotFolder: string): string => {
   return fs.mkdtempSync(`${snapshotFolder}${path.sep}`);
 };
 
@@ -44,7 +44,7 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
   private readonly outputFile: string;
   constructor(private readonly snapshotFolder: string) {
     this.outputFile = path.join(
-      createTmpDir(snapshotFolder),
+      createTmpDirIn(snapshotFolder),
       SNAPSHOT_FILENAME,
     );
   }
