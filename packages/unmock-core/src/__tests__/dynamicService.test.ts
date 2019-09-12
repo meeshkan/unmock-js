@@ -1,4 +1,4 @@
-import unmock from "..";
+import unmock, { u } from "..";
 
 describe("Tests dynamic path tests", () => {
   beforeEach(() => unmock.on());
@@ -9,7 +9,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("/foo")
-      .reply(200, { type: "object", properties: { foo: { type: "string" } } });
+      .reply(200, { foo: u.str() });
     expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
@@ -18,7 +18,7 @@ describe("Tests dynamic path tests", () => {
     const service = unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { type: "object", properties: { foo: { type: "string" } } });
+      .reply(200, { foo: u.str() });
     expect(Object.keys(unmock.services).length).toEqual(1);
     if (service === undefined) {
       // type-checking mostly...
@@ -32,7 +32,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { type: "object", properties: { foo: { type: "string" } } });
+      .reply(200, { foo: u.str() });
     const service = unmock
       .nock("https://foo.com")
       .post("/foo")
@@ -50,7 +50,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
-      .reply(200, { type: "object", properties: { foo: { type: "string" } } });
+      .reply(200, { foo: u.str() });
     expect(Object.keys(unmock.services).length).toEqual(1);
     unmock.services.foo.state.get("/abc", { $code: 200 }); // should succeed
   });
