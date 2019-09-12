@@ -19,8 +19,8 @@ const DynamicJSONSymbol: unique symbol = Symbol();
 interface IDynamicJSONValue {
   dynamic: typeof DynamicJSONSymbol;
 }
-const isDynamic = (u: unknown): u is IDynamicJSONValue =>
-  typeof u === "object" && (u as any).dynamic === DynamicJSONSymbol;
+const isDynamic = (unk: unknown): unk is IDynamicJSONValue =>
+  typeof unk === "object" && (unk as any).dynamic === DynamicJSONSymbol;
 const DynamicJSONValue: io.Type<
   IDynamicJSONValue,
   IDynamicJSONValue
