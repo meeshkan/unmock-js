@@ -6,7 +6,7 @@ const outputFolder = pathResolve(__filename, "..", "__snapshots__");
 describe("Snapshotter", () => {
   let snapshotter: FSSnapshotter;
 
-  it("should snapshot on notify", () => {
+  it("should snapshot on notify and read it", () => {
     snapshotter = FSSnapshotter.getOrUpdateSnapshotter({
       outputFolder,
     });
@@ -25,13 +25,19 @@ describe("Snapshotter", () => {
       outputFolder,
     });
     const exampleSnapshot = { req: testRequest, res: testResponse };
+
     snapshotter.notify(exampleSnapshot);
     expect(snapshotter.readSnapshots().length).toBeGreaterThan(0);
+
     snapshotter.deleteSnapshots();
     expect(snapshotter.readSnapshots()).toHaveLength(0);
   });
 
   it("should be running in Jest", () => {
     expect(FSSnapshotter.runningInJest).toBe(true);
+  });
+
+  afterEach(() => {
+    snapshotter.deleteSnapshots();
   });
 });
