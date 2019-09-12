@@ -186,7 +186,7 @@ export const nockify = ({
     statusCode: number;
     data: Schema;
   }) =>
-    backend.updateServices({
+    backend.serviceStore.updateOrAdd({
       baseUrl,
       method,
       endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,

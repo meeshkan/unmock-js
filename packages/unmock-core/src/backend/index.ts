@@ -110,11 +110,6 @@ export default class NodeBackend {
     return (this.serviceStore && this.serviceStore.services) || {};
   }
 
-  // TODO: Refactor s.t. newService is essentialyl a Service/ServiceCore object
-  public updateServices(newService: IObjectToService) {
-    return this.serviceStore.updateOrAdd(newService);
-  }
-
   public initServices(defLoader?: FsServiceDefLoader) {
     // Resolve where services can live
     const unmockDirectories = this.config.servicesDirectory
