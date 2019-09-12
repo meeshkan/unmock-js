@@ -23,7 +23,7 @@ import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
 import { ServiceParser } from "../parser";
 import { serializeRequest } from "../serialize";
-import { IObjectToService, IServiceCore } from "../service/interfaces";
+import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
