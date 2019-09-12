@@ -107,7 +107,8 @@ export const u = {
   str: jspt.string,
   number: jspt.number,
   int: jspt.integer,
-  city: () => string_({})("address.city"),
+  city: () =>
+    string_<IDynamicJSONValue>({ dynamic: DynamicJSONSymbol })("address.city"),
 };
 
 // Defined nock-like syntax to create/update a service on the fly
