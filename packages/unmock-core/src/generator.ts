@@ -4,21 +4,17 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
-import { FsServiceDefLoader } from "./fs-service-def-loader";
 import {
   CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
-  IServiceDef,
   IUnmockOptions,
 } from "./interfaces";
-import { ServiceParser } from "./parser";
 import {
   codeToMedia,
   Dereferencer,
   Header,
-  IServiceCore,
   MatcherResponse,
   Operation,
   Response,
@@ -38,48 +34,35 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 }
 
 export function responseCreatorFactory({
-  serviceDefLoader,
   listeners = [],
   options,
+  store,
 }: {
-  serviceDefLoader: FsServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { serviceStore: ServiceStore; createResponse: CreateResponse } {
-  const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-  const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-    ServiceParser.parse(serviceDef),
-  );
-
+  store: ServiceStore;
+}): CreateResponse {
   const match = (sreq: ISerializedRequest) =>
-    coreServices
+    Object.values(store.cores)
       .map(service => service.match(sreq))
       .filter(res => res !== undefined)
       .shift();
-  // TODO: Maybe move service store instantiation and service parser to backend?
-  const serviceStore = new ServiceStore(coreServices);
 
-  return {
-    serviceStore,
-    createResponse: (req: ISerializedRequest) => {
-      // Setup the unmock properties for jsf parsing of x-unmock-*
-      setupJSFUnmockProperties(req);
-      const matcherResponse: MatcherResponse = match(req);
+  return (req: ISerializedRequest) => {
+    // Setup the unmock properties for jsf parsing of x-unmock-*
+    setupJSFUnmockProperties(req);
+    const matcherResponse: MatcherResponse = match(req);
 
-      const res = generateMockFromTemplate(options, matcherResponse);
+    const res = generateMockFromTemplate(options, matcherResponse);
 
-      // Notify call tracker
-      if (
-        typeof matcherResponse !== "undefined" &&
-        typeof res !== "undefined"
-      ) {
-        matcherResponse.service.track({ req, res });
-      }
+    // Notify call tracker
+    if (typeof matcherResponse !== "undefined" && typeof res !== "undefined") {
+      matcherResponse.service.track({ req, res });
+    }
 
-      listeners.forEach((listener: IListener) => listener.notify({ req, res }));
-      jsf.reset(); // removes unmock-properties
-      return res;
-    },
+    listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+    jsf.reset(); // removes unmock-properties
+    return res;
   };
 }
 

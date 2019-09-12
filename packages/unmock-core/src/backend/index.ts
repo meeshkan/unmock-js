@@ -15,13 +15,15 @@ import {
   CreateResponse,
   ISerializedRequest,
   ISerializedResponse,
+  IServiceDef,
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
+import { ServiceParser } from "../parser";
 import { serializeRequest } from "../serialize";
-import { IObjectToService } from "../service/interfaces";
+import { IObjectToService, IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
@@ -95,26 +97,43 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend {
-  private static dummyStore = { services: {} };
-
-  private serviceStore: ServiceStore | undefined;
+  private serviceStore: ServiceStore;
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
+    this.serviceStore = new ServiceStore([]);
   }
 
   public get services(): ServiceStoreType {
-    return (this.serviceStore || NodeBackend.dummyStore).services;
+    return (this.serviceStore && this.serviceStore.services) || {};
   }
 
   // TODO: Refactor s.t. newService is essentialyl a Service/ServiceCore object
   public updateServices(newService: IObjectToService) {
-    if (this.serviceStore) {
-      return this.serviceStore.updateOrAdd(newService);
-    }
-    return undefined;
+    return this.serviceStore.updateOrAdd(newService);
+  }
+
+  public initServices() {
+    // Resolve where services can live
+    const unmockDirectories = this.config.servicesDirectory
+      ? [this.config.servicesDirectory]
+      : resolveUnmockDirectories();
+
+    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
+
+    // Prepare the request-response mapping by bootstrapping all dependencies here
+    const serviceDefLoader = new FsServiceDefLoader({
+      unmockDirectories,
+    });
+
+    const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
+    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
+      ServiceParser.parse(serviceDef),
+    );
+
+    this.serviceStore = new ServiceStore(coreServices);
   }
 
   /**
@@ -138,31 +157,20 @@ export default class NodeBackend {
       this.mitmOnConnect(options, socket, opts),
     );
 
-    // Resolve where services can live
-    const unmockDirectories = this.config.servicesDirectory
-      ? [this.config.servicesDirectory]
-      : resolveUnmockDirectories();
+    this.initServices();
 
-    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
-
-    // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
-    });
-
-    const { serviceStore, createResponse } = responseCreatorFactory({
+    const createResponse = responseCreatorFactory({
       listeners: [
         new FSLogger({ directory: this.config.servicesDirectory }),
         FSSnapshotter.getOrUpdateSnapshotter({}),
       ],
       options,
-      serviceDefLoader,
+      store: this.serviceStore,
     });
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
-    this.serviceStore = serviceStore;
   }
 
   public reset() {
@@ -173,9 +181,8 @@ export default class NodeBackend {
     if (this.serviceStore) {
       // TODO - this is quite ugly :shrug:
       Object.values(this.serviceStore.services).forEach(service =>
-        service.state.reset(),
+        service.reset(),
       );
-      this.serviceStore = undefined;
     }
     ClientRequestTracker.stop();
   }

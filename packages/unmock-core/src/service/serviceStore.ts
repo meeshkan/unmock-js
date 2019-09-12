@@ -5,7 +5,8 @@ import { ServiceCore } from "./serviceCore";
 
 export class ServiceStore {
   public readonly services: Record<string, Service>;
-  private readonly cores: Record<string, IServiceCore>;
+  public readonly cores: Record<string, IServiceCore>;
+
   constructor(coreServices: IServiceCore[]) {
     this.cores = coreServices.reduce(
       (o, core) => ({ ...o, [core.name]: core }),
