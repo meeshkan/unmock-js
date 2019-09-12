@@ -1,3 +1,4 @@
+import debug from "debug";
 import * as expect from "expect";
 import * as fs from "fs";
 import { merge } from "lodash";
@@ -5,6 +6,13 @@ import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
 import { IListener, IListenerInput } from "../../interfaces";
 import { unmockSnapshot } from "./snapshot";
+import {
+  ISnapshotWriterReader,
+  SnapshotWriterReader,
+  ISnapshot,
+} from "./snapshot-writer-reader";
+
+const debugLog = debug("unmock:snapshotter");
 
 export interface IFSSnapshotterOptions {
   outputFolder: string;
@@ -12,7 +20,7 @@ export interface IFSSnapshotterOptions {
 
 export const DEFAULT_SNAPSHOT_DIRECTORY = pathResolve(
   osTmpdir(), // TODO Resolve if symlink?
-  ".unmock-snapshots",
+  ".unmock",
 );
 
 const DEFAULT_OPTIONS: IFSSnapshotterOptions = {
@@ -27,6 +35,7 @@ export const resolveOptions = (
 
 const ensureDirExists = (directory: string) => {
   if (!fs.existsSync(directory)) {
+    debugLog(`Creating snapshot directory: ${directory}`);
     return fs.mkdirSync(directory); // TODO Catch
   }
 
@@ -46,6 +55,7 @@ export default class FSSnapshotter implements IListener {
   /**
    * Build snapshotting listener or update with given options (if exists).
    * Only builds a singleton instance.
+   * Creates the output directory.
    * @param newOptions If defined, the existing instance is updated with the given options.
    * If undefined and an instance exists, its options are not changed.
    */
@@ -87,19 +97,19 @@ export default class FSSnapshotter implements IListener {
 
   private static instance?: FSSnapshotter;
 
-  public options: IFSSnapshotterOptions;
+  private writer: ISnapshotWriterReader;
 
   private constructor(options: IFSSnapshotterOptions) {
-    this.options = options;
-    this.extendExpectIfInJest();
+    this.writer = new SnapshotWriterReader(options.outputFolder);
+    this.extendExpectIfInJest(this.writer);
   }
 
-  public extendExpectIfInJest() {
+  public extendExpectIfInJest(writer: ISnapshotWriterReader) {
     if (!FSSnapshotter.runningInJest) {
       return;
     }
     expect.extend({
-      unmockSnapshot: unmockSnapshot(this.options),
+      unmockSnapshot: unmockSnapshot(writer),
     });
   }
 
@@ -107,13 +117,22 @@ export default class FSSnapshotter implements IListener {
     return typeof process.env.JEST_WORKER_ID !== "undefined";
   }
 
+  public readSnapshots(): ISnapshot[] {
+    return this.writer.read();
+  }
+
+  public deleteSnapshots(): void {
+    return this.writer.deleteSnapshots();
+  }
+
   /**
    * Update options and extend expect with the new options
-   * @param options
+   * @param newOptions
    */
-  public update(options?: Partial<IFSSnapshotterOptions>) {
-    this.options = resolveOptions(options || {});
-    this.extendExpectIfInJest();
+  public update(newOptions?: Partial<IFSSnapshotterOptions>) {
+    const options = resolveOptions(newOptions || {});
+    this.writer = new SnapshotWriterReader(options.outputFolder);
+    this.extendExpectIfInJest(this.writer);
   }
 
   public notify(input: IListenerInput) {
