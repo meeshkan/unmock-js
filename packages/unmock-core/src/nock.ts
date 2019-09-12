@@ -84,7 +84,9 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
   JSO.is(e)
     ? removeDynamicSymbol(e)
     : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(i => JSONSchemify(i)))
+    ? tuple_<JSSTEmpty<{}>, {}>({})(
+        e.map((i: ExtendedValueType) => JSONSchemify(i)),
+      )
     : ExtendedObject.is(e) || JSONObject.is(e)
     ? type_<JSSTEmpty<{}>, {}>({})(
         Object.entries(e).reduce(
@@ -118,24 +120,34 @@ type UpdateCallback = ({
 
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
-type InputToPoet = any;
+type Primitives = string | number | boolean;
+type InputToPoet =
+  | { [k: string]: InputToPoet | Primitives[] | Primitives }
+  | Primitives
+  | Primitives[];
 
 export class DynamicServiceSpec {
-  private statusCode: number = 200; // TODO default success statuscode per verb?
   private data: Schema = {};
 
-  constructor(private updater: UpdateCallback) {}
+  // Default status code passed in constructor
+  constructor(
+    private updater: UpdateCallback,
+    private statusCode: number = 200,
+  ) {}
 
   // TODO: Should this allow fluency for consecutive .get, .post, etc on the same service?
-  public reply(statusCode: number, data?: InputToPoet): Service | undefined;
-  public reply(data: InputToPoet): Service | undefined;
   public reply(
-    maybeStatusCode: number | InputToPoet,
-    maybeData?: InputToPoet,
+    statusCode: number,
+    data?: InputToPoet | InputToPoet[],
+  ): Service | undefined;
+  public reply(data: InputToPoet | InputToPoet[]): Service | undefined;
+  public reply(
+    maybeStatusCode: number | InputToPoet | InputToPoet[],
+    maybeData?: InputToPoet | InputToPoet[],
   ): Service | undefined {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
-      this.statusCode = maybeStatusCode;
+      this.statusCode = maybeStatusCode as number;
     } else if (
       typeof maybeStatusCode === "number" &&
       maybeStatusCode >= 100 &&
@@ -176,28 +188,28 @@ export const nockify = ({
     });
   return {
     get(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("get", endpoint));
+      return new DynamicServiceSpec(dynFn("get", endpoint), 200);
     },
     head(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("head", endpoint));
+      return new DynamicServiceSpec(dynFn("head", endpoint), 200);
     },
     post(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("post", endpoint));
+      return new DynamicServiceSpec(dynFn("post", endpoint), 201);
     },
     put(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("put", endpoint));
+      return new DynamicServiceSpec(dynFn("put", endpoint), 204);
     },
     patch(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("patch", endpoint));
+      return new DynamicServiceSpec(dynFn("patch", endpoint), 204);
     },
     delete(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("delete", endpoint));
+      return new DynamicServiceSpec(dynFn("delete", endpoint), 200);
     },
     options(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("options", endpoint));
+      return new DynamicServiceSpec(dynFn("options", endpoint), 200);
     },
     trace(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("trace", endpoint));
+      return new DynamicServiceSpec(dynFn("trace", endpoint), 200);
     },
   };
 };
