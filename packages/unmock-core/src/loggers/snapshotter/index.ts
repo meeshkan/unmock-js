@@ -5,11 +5,11 @@ import { merge } from "lodash";
 import { tmpdir as osTmpdir } from "os";
 import { resolve as pathResolve } from "path";
 import { IListener, IListenerInput } from "../../interfaces";
-import { unmockSnapshot } from "./snapshot";
+import { unmockSnapshot } from "./expect-extend";
 import {
+  FsSnapshotWriterReader,
   ISnapshot,
   ISnapshotWriterReader,
-  SnapshotWriterReader,
 } from "./snapshot-writer-reader";
 
 const debugLog = debug("unmock:snapshotter");
@@ -51,7 +51,7 @@ const ensureDirExists = (directory: string) => {
  * on extending `expect` globally, only one singleton instance
  * is allowed to exist.
  */
-export default class FSSnapshotter implements IListener {
+export default class FsSnapshotter implements IListener {
   /**
    * Build snapshotting listener or update with given options (if exists).
    * Only builds a singleton instance.
@@ -61,22 +61,22 @@ export default class FSSnapshotter implements IListener {
    */
   public static getOrUpdateSnapshotter(
     newOptions?: Partial<IFSSnapshotterOptions>,
-  ): FSSnapshotter {
+  ): FsSnapshotter {
     // Only allow singleton instantiation.
     // Instantiating multiple snapshotters would have unexpected behaviour
     // due to global modifications to expect().unmockSnapshot
-    if (typeof FSSnapshotter.instance !== "undefined") {
+    if (typeof FsSnapshotter.instance !== "undefined") {
       if (newOptions) {
-        FSSnapshotter.instance.update(newOptions);
+        FsSnapshotter.instance.update(newOptions);
       }
-      return FSSnapshotter.instance;
+      return FsSnapshotter.instance;
     }
     const options = resolveOptions(newOptions || {});
 
     ensureDirExists(options.outputFolder);
 
-    FSSnapshotter.instance = new FSSnapshotter(options);
-    return FSSnapshotter.instance;
+    FsSnapshotter.instance = new FsSnapshotter(options);
+    return FsSnapshotter.instance;
   }
 
   /**
@@ -85,8 +85,8 @@ export default class FSSnapshotter implements IListener {
    * Instantiating new objects will again affect existing snapshotters.
    */
   public static reset() {
-    FSSnapshotter.instance = undefined;
-    FSSnapshotter.removeExtendExpect();
+    FsSnapshotter.instance = undefined;
+    FsSnapshotter.removeExtendExpect();
   }
 
   public static removeExtendExpect() {
@@ -95,17 +95,17 @@ export default class FSSnapshotter implements IListener {
     });
   }
 
-  private static instance?: FSSnapshotter;
+  private static instance?: FsSnapshotter;
 
   private writer: ISnapshotWriterReader;
 
   private constructor(options: IFSSnapshotterOptions) {
-    this.writer = new SnapshotWriterReader(options.outputFolder);
+    this.writer = new FsSnapshotWriterReader(options.outputFolder);
     this.extendExpectIfInJest(this.writer);
   }
 
   public extendExpectIfInJest(writer: ISnapshotWriterReader) {
-    if (!FSSnapshotter.runningInJest) {
+    if (!FsSnapshotter.runningInJest) {
       return;
     }
     expect.extend({
@@ -131,12 +131,12 @@ export default class FSSnapshotter implements IListener {
    */
   public update(newOptions?: Partial<IFSSnapshotterOptions>) {
     const options = resolveOptions(newOptions || {});
-    this.writer = new SnapshotWriterReader(options.outputFolder);
+    this.writer = new FsSnapshotWriterReader(options.outputFolder);
     this.extendExpectIfInJest(this.writer);
   }
 
   public notify(input: IListenerInput) {
-    if (!FSSnapshotter.runningInJest) {
+    if (!FsSnapshotter.runningInJest) {
       return;
     }
     // @ts-ignore
