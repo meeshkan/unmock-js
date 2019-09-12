@@ -20,10 +20,10 @@ import {
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
+import { IObjectToService } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
-import { IObjectToService } from "../service/interfaces";
 
 const debugLog = debug("unmock:node");
 
