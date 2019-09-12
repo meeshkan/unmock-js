@@ -146,9 +146,8 @@ const getStateForOperation = (
       return undefined;
     }
     operationStatusCode = "default";
-    stateStatusCode = genOptions.isFlaky
-      ? firstOrRandomOrUndefined(stateCodes)
-      : chooseResponseCode(stateCodes);
+    // If we have multiple state codes to choose from for this operation, choose one at random
+    stateStatusCode = firstOrRandomOrUndefined(stateCodes);
   } else {
     stateStatusCode = operationStatusCode = genOptions.isFlaky
       ? firstOrRandomOrUndefined(possibleResponseCodes)

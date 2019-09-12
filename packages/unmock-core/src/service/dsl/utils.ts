@@ -16,8 +16,7 @@ export const getTopLevelDSL = (state: UnmockServiceState) =>
   Object.keys(state)
     .filter(
       (key: string) =>
-        TopLevelDSLKeys[key] !== undefined &&
-        TopLevelDSLKeys[key] === typeof state[key],
+        TopLevelDSLKeys[key] !== undefined && TopLevelDSLKeys[key](state[key]),
     )
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
 
@@ -25,8 +24,7 @@ export const filterTopLevelDSL = (state: UnmockServiceState) =>
   Object.keys(state)
     .filter(
       (key: string) =>
-        TopLevelDSLKeys[key] === undefined ||
-        TopLevelDSLKeys[key] !== typeof state[key],
+        TopLevelDSLKeys[key] === undefined || !TopLevelDSLKeys[key](state[key]),
     )
     .reduce((a, b) => ({ ...a, [b]: state[b] }), {});
 

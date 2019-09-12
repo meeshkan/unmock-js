@@ -4,9 +4,12 @@ import { Schema } from "../interfaces";
  * DSL related parameters that can only be found at the top level
  */
 // Defines a mapping for top level DSL keys, to be used with different providers
-export const TopLevelDSLKeys: { [DSLKey: string]: string } = {
-  $code: "number",
-  $times: "number",
+// The values (functions) help determine if the the given `u` is of a valid type
+export const TopLevelDSLKeys: { [DSLKey: string]: (u: unknown) => boolean } = {
+  $code: (u: unknown) =>
+    typeof u === "number" ||
+    (Array.isArray(u) && u.every(n => typeof n === "number")),
+  $times: (u: unknown) => typeof u === "number",
 } as const;
 
 export interface ITopLevelDSL {
@@ -14,7 +17,7 @@ export interface ITopLevelDSL {
    * Defines the response based on the requested response code.
    * If the requested response code is not found, returns 'default'
    */
-  $code?: number;
+  $code?: number | number[];
   $times?: number;
   [DSLKey: string]: any;
 }
