@@ -1,18 +1,7 @@
-import { defaultsDeep } from "lodash";
 import * as url from "url";
-import { HTTPMethod } from "../interfaces";
-import { IServiceCore, OpenAPIObject, PathItem, Schema } from "./interfaces";
+import { IObjectToService, IServiceCore, OpenAPIObject } from "./interfaces";
 import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
-
-export interface IObjectToService {
-  baseUrl: string;
-  method: HTTPMethod;
-  endpoint: string;
-  statusCode: number;
-  response: string | Schema;
-  name?: string;
-}
 
 export class ServiceStore {
   public readonly services: Record<string, Service>;
@@ -28,16 +17,10 @@ export class ServiceStore {
     );
   }
 
-  public updateOrAdd({
-    baseUrl,
-    method,
-    endpoint,
-    statusCode,
-    response,
-    name,
-  }: IObjectToService) {
+  public updateOrAdd(input: IObjectToService) {
     // TODO: Tighly coupled with OpenAPI at the moment... resolve this at a later time
-    const serviceName = name || url.parse(baseUrl).hostname || baseUrl;
+    const serviceName =
+      input.name || url.parse(input.baseUrl).hostname || input.baseUrl;
     const baseSchema: OpenAPIObject =
       serviceName !== undefined && this.cores[serviceName] !== undefined
         ? // service exists
@@ -48,31 +31,8 @@ export class ServiceStore {
             info: { title: "Internally built by unmock", version: "0.0.0" },
             paths: {},
           };
-    // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
-    const mediaType =
-      typeof response === "string" ? "text/*" : "application/json";
-    // TODO: Decouple from ServiceCore :( - this is nasty
-    const newPath: PathItem = {
-      [endpoint]: {
-        [method]: {
-          responses: {
-            [statusCode]: {
-              description: "Automatically added",
-              content: {
-                [mediaType]: { schema: response },
-              },
-            },
-          },
-        },
-      },
-    };
-    const newUrls = [{ url: baseUrl }];
-
-    const newPaths = defaultsDeep(newPath, baseSchema.paths);
-    const newServers = defaultsDeep(newUrls, baseSchema.servers);
-    const finalSchema = { ...baseSchema, paths: newPaths, servers: newServers };
-    const newServiceCore = new ServiceCore({
-      schema: finalSchema,
+    const newServiceCore = ServiceCore.from(baseSchema, {
+      ...input,
       name: serviceName,
     });
     this.cores[serviceName] = newServiceCore;

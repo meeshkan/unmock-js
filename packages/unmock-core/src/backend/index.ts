@@ -20,9 +20,10 @@ import {
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
 import { serializeRequest } from "../serialize";
-import { IObjectToService, ServiceStore } from "../service/serviceStore";
+import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
+import { IObjectToService } from "../service/interfaces";
 
 const debugLog = debug("unmock:node");
 
@@ -107,6 +108,7 @@ export default class NodeBackend {
     return (this.serviceStore || NodeBackend.dummyStore).services;
   }
 
+  // TODO: Refactor s.t. newService is essentialyl a Service/ServiceCore object
   public updateServices(newService: IObjectToService) {
     if (this.serviceStore) {
       return this.serviceStore.updateOrAdd(newService);
