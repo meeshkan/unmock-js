@@ -97,7 +97,7 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend {
-  private serviceStore: ServiceStore;
+  public serviceStore: ServiceStore;
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
@@ -115,7 +115,7 @@ export default class NodeBackend {
     return this.serviceStore.updateOrAdd(newService);
   }
 
-  public initServices() {
+  public initServices(defLoader?: FsServiceDefLoader) {
     // Resolve where services can live
     const unmockDirectories = this.config.servicesDirectory
       ? [this.config.servicesDirectory]
@@ -124,9 +124,11 @@ export default class NodeBackend {
     debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
-    });
+    const serviceDefLoader =
+      defLoader ||
+      new FsServiceDefLoader({
+        unmockDirectories,
+      });
 
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
