@@ -1,5 +1,4 @@
 import * as io from "io-ts";
-import * as jsp from "json-schema-poet";
 import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
 import {
   JSONArray,
@@ -74,11 +73,6 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
-// Define poet to recognize the new "dynamic type"
-// const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
-//   dynamic: DynamicJSONSymbol,
-// });
-
 const removeDynamicSymbol = (
   schema: ExtendedJSONSchema,
 ): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
@@ -100,6 +94,18 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
         {},
       )
     : cnst_<{}>({})(e);
+
+// Define poet to recognize the new "dynamic type"
+const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
+  dynamic: DynamicJSONSymbol,
+});
+
+// TODO add more built-in types like this
+export const u = {
+  str: jspt.string,
+  number: jspt.number,
+  int: jspt.integer,
+};
 
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({
