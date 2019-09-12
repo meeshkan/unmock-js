@@ -43,6 +43,8 @@ const ensureDirExists = (directory: string) => {
     throw Error(`Destination exists but is not directory: ${directory}`);
   }
 
+  debugLog(`Directory exists: ${directory}`);
+
   return;
 };
 
@@ -67,16 +69,27 @@ export default class FsSnapshotter implements IListener {
     // due to global modifications to expect().unmockSnapshot
     if (typeof FsSnapshotter.instance !== "undefined") {
       if (newOptions) {
-        FsSnapshotter.instance.update(newOptions);
+        const updatedOptions = resolveOptions(newOptions || {});
+        ensureDirExists(updatedOptions.outputFolder);
+        FsSnapshotter.instance.update(updatedOptions);
       }
       return FsSnapshotter.instance;
     }
-    const options = resolveOptions(newOptions || {});
 
+    const options = resolveOptions(newOptions || {});
     ensureDirExists(options.outputFolder);
 
     FsSnapshotter.instance = new FsSnapshotter(options);
     return FsSnapshotter.instance;
+  }
+
+  public static extendExpectIfInJest(writer: ISnapshotWriterReader) {
+    if (!FsSnapshotter.runningInJest) {
+      return;
+    }
+    expect.extend({
+      unmockSnapshot: unmockSnapshot(writer),
+    });
   }
 
   /**
@@ -101,16 +114,7 @@ export default class FsSnapshotter implements IListener {
 
   private constructor(options: IFsSnapshotterOptions) {
     this.writer = new FsSnapshotWriterReader(options.outputFolder);
-    this.extendExpectIfInJest(this.writer);
-  }
-
-  public extendExpectIfInJest(writer: ISnapshotWriterReader) {
-    if (!FsSnapshotter.runningInJest) {
-      return;
-    }
-    expect.extend({
-      unmockSnapshot: unmockSnapshot(writer),
-    });
+    FsSnapshotter.extendExpectIfInJest(this.writer);
   }
 
   public static get runningInJest() {
@@ -129,10 +133,9 @@ export default class FsSnapshotter implements IListener {
    * Update options and extend expect with the new options
    * @param newOptions
    */
-  public update(newOptions?: Partial<IFsSnapshotterOptions>) {
-    const options = resolveOptions(newOptions || {});
-    this.writer = new FsSnapshotWriterReader(options.outputFolder);
-    this.extendExpectIfInJest(this.writer);
+  public update(newOptions: IFsSnapshotterOptions) {
+    this.writer = new FsSnapshotWriterReader(newOptions.outputFolder);
+    FsSnapshotter.extendExpectIfInJest(this.writer);
   }
 
   public notify(input: IListenerInput) {
