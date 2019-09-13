@@ -46,16 +46,26 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
     const lines = fileContents.split(os.EOL);
     return lines.filter(line => !!line.trim()).map(line => parseSnapshot(line));
   }
+  /* Internally used folder for writes, example: `${snapshotFolder}/RANDOM_STRING` */
+  private readonly outputFolder: string;
+  /* Destination for writes, example: `${snapshotFolder}/RANDOM_STRING/snapshots.jsonl` */
   private readonly outputFile: string;
+  /**
+   * Write snapshots to a given folder. Snapshots are internally written to folders nested inside
+   * the given folder.
+   * @param snapshotFolder Folder where snapshots are stored (possibly inside nested directories)
+   */
   constructor(private readonly snapshotFolder: string) {
-    this.outputFile = path.join(
-      createTmpDirIn(snapshotFolder),
-      SNAPSHOT_FILENAME,
-    );
+    this.outputFolder = createTmpDirIn(snapshotFolder);
+    this.outputFile = path.join(this.outputFolder, SNAPSHOT_FILENAME);
   }
 
   public write(snapshot: ISnapshot) {
     const contents = format(snapshot);
+    // Check if the output folder exists, it may have been deleted by `deleteSnapshots`
+    if (!fs.existsSync(this.outputFolder)) {
+      fs.mkdirSync(this.outputFolder);
+    }
     if (!fs.existsSync(this.outputFile)) {
       debugLog(`Writing to new file ${this.outputFile}`);
       fs.writeFileSync(this.outputFile, contents + os.EOL, {

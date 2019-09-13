@@ -4,6 +4,7 @@ import {
   format,
   ISnapshot,
   parseSnapshot,
+  FsSnapshotWriterReader,
 } from "../loggers/snapshotter/snapshot-writer-reader";
 import { testRequest, testResponse } from "./utils";
 const outputFolder = pathResolve(__filename, "..", "__snapshots__");
@@ -68,6 +69,47 @@ describe("Snapshot writer/reader", () => {
       const formatted = format(exampleSnapshotInput);
       const parsed = parseSnapshot(formatted);
       expect(parsed).toEqual(exampleSnapshotInput);
+    });
+  });
+
+  const snapshotWriterReader = new FsSnapshotWriterReader(outputFolder);
+
+  beforeEach(() => {
+    snapshotWriterReader.deleteSnapshots();
+  });
+
+  afterEach(() => {
+    snapshotWriterReader.deleteSnapshots();
+  });
+
+  describe("writing and reading", () => {
+    it("should write to expected folder", () => {
+      expect(snapshotWriterReader.read()).toHaveLength(0);
+
+      snapshotWriterReader.write(exampleSnapshotInput);
+
+      const snapshotFiles = snapshotWriterReader.findSnapshotFiles();
+      expect(snapshotFiles).toHaveLength(1);
+      expect(snapshotFiles[0]).toMatch(new RegExp(`^${outputFolder}`));
+    });
+
+    it("should sort inputs by date when reading", () => {
+      expect(snapshotWriterReader.read()).toHaveLength(0);
+
+      const exampleSnapshotInputWithEarlyTimestamp = {
+        ...exampleSnapshotInput,
+        timestamp: new Date(0),
+      };
+
+      snapshotWriterReader.write(exampleSnapshotInput);
+      snapshotWriterReader.write(exampleSnapshotInputWithEarlyTimestamp);
+
+      const parsedSnapshots = snapshotWriterReader.read();
+      expect(parsedSnapshots).toHaveLength(2);
+      expect(parsedSnapshots[0]).toEqual(
+        exampleSnapshotInputWithEarlyTimestamp,
+      );
+      expect(parsedSnapshots[1]).toEqual(exampleSnapshotInput);
     });
   });
 });
