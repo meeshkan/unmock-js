@@ -1,5 +1,5 @@
 // tslint:disable:no-console
-import { utils } from "unmock";
+import { utils as unmockUtils } from "unmock";
 import { IUnmockJestReporterOptions, resolveOptions } from "./options";
 
 // https://jestjs.io/docs/en/configuration#reporters-array-modulename-modulename-options
@@ -31,7 +31,7 @@ export default class UnmockJestReporter implements jest.Reporter {
     console.log("onRunComplete");
     console.log("Contexts", contexts);
     console.log("Results", results);
-    const snapshots = utils.snapshotter
+    const snapshots = unmockUtils.snapshotter
       .getOrUpdateSnapshotter()
       .readSnapshots();
     console.log(`Snapshots: ${JSON.stringify(snapshots)}`);
