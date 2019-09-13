@@ -1,52 +1,47 @@
-// tslint:disable:no-console
-import { ISnapshot, utils as unmockUtils } from "unmock";
-import { IUnmockJestReporterOptions, resolveOptions } from "./options";
+import chalk from "chalk";
+import { utils as unmockUtils } from "unmock";
+import { IReporterOptions, resolveOptions } from "./options";
+import { IJestData } from "./types";
+import writeReport from "./write-report";
+
+/**
+ * Write report from Jest test results, loading snapshots, building report and writing to file.
+ * @param jestData Jest test result
+ */
+export const write = (jestData: IJestData, options: IReporterOptions) => {
+  const snapshots = unmockUtils.snapshotter
+    .getOrUpdateSnapshotter()
+    .readSnapshots();
+  return writeReport({ jestData, snapshots }, options);
+};
+
+const formatLogString = (writtenFilePath: string): string => {
+  return `
+${chalk.bold.magentaBright("unmock")}: Wrote report to
+${chalk.magenta(writtenFilePath)}`;
+};
 
 // https://jestjs.io/docs/en/configuration#reporters-array-modulename-modulename-options
 export default class UnmockJestReporter implements jest.Reporter {
   public readonly rootDir: string;
-  public readonly options: IUnmockJestReporterOptions;
+  public readonly options: IReporterOptions;
   constructor(
     public globalConfig: jest.GlobalConfig,
-    public reporterOptions: Partial<IUnmockJestReporterOptions>,
+    public reporterOptions: Partial<IReporterOptions>,
   ) {
     this.options = resolveOptions(reporterOptions);
     this.rootDir = globalConfig.rootDir;
   }
 
-  /* public onRunStart(
-    results: jest.AggregatedResult,
-    options: jest.ReporterOnStartOptions,
-  ) {
-    console.log("onRunStart");
-    console.log("results", results);
-    console.log("reporterOnStartOptions", options);
-    console.log("Options", this.options);
-  } */
-
-  public onRunComplete(
-    contexts: Set<jest.Context>,
-    results: jest.AggregatedResult,
-  ): jest.Maybe<Promise<void>> {
-    console.log("onRunComplete");
-    console.log("Contexts", contexts);
-    console.log("Results", results);
-    const snapshots: ISnapshot[] = unmockUtils.snapshotter
-      .getOrUpdateSnapshotter()
-      .readSnapshots();
-
-    console.log(`Snapshots: ${JSON.stringify(snapshots)}`);
+  public onRunStart() {
+    unmockUtils.snapshotter.getOrUpdateSnapshotter().deleteSnapshots();
   }
 
-  /* public onTestResult(
-    test: jest.Test,
-    testResult: jest.TestResult,
-    aggregatedResult: jest.AggregatedResult,
-  ): void {
-    console.log("onTestResult", test, testResult, aggregatedResult);
-  } */
-
-  /* public onTestStart(test: jest.Test): void {
-    console.log("onTestStart", test);
-  } */
+  public onRunComplete(
+    _: Set<jest.Context>,
+    results: jest.AggregatedResult,
+  ): jest.Maybe<Promise<void>> {
+    const writtenFilePath = write({ aggregatedResult: results }, this.options);
+    console.log(formatLogString(writtenFilePath)); // tslint:disable-line:no-console
+  }
 }

@@ -5,14 +5,19 @@ export const DEFAULT_OUTPUT_DIRECTORY = path.resolve(
   "__unmock__",
 );
 
-export interface IUnmockJestReporterOptions {
+export const DEFAULT_OUTPUT_FILENAME = "unmock-report.html";
+
+export interface IReporterOptions {
   outputDirectory: string;
+  outputFilename: string;
 }
 
-const DEFAULT_OPTIONS: IUnmockJestReporterOptions = {
+const DEFAULT_OPTIONS: IReporterOptions = {
   outputDirectory: DEFAULT_OUTPUT_DIRECTORY,
+  outputFilename: DEFAULT_OUTPUT_FILENAME,
 };
 
-export const resolveOptions = (
-  reporterOptions: Partial<IUnmockJestReporterOptions>,
-) => ({ ...DEFAULT_OPTIONS, ...reporterOptions });
+export const resolveOptions = (reporterOptions: Partial<IReporterOptions>) => ({
+  ...DEFAULT_OPTIONS,
+  ...reporterOptions,
+});
