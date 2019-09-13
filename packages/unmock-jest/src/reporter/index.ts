@@ -31,6 +31,6 @@ export default class UnmockJestReporter implements jest.Reporter {
     _: Set<jest.Context>,
     results: jest.AggregatedResult,
   ): jest.Maybe<Promise<void>> {
-    return write({ aggregatedResult: results }, options);
+    return write({ aggregatedResult: results }, this.options);
   }
 }
