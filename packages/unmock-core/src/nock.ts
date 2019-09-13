@@ -151,12 +151,12 @@ export class DynamicServiceSpec {
   public reply(
     statusCode: number,
     data?: InputToPoet | InputToPoet[],
-  ): FluentDyamicService;
-  public reply(data: InputToPoet | InputToPoet[]): FluentDyamicService;
+  ): FluentDynamicService;
+  public reply(data: InputToPoet | InputToPoet[]): FluentDynamicService;
   public reply(
     maybeStatusCode: number | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
-  ): FluentDyamicService {
+  ): FluentDynamicService {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
       this.statusCode = maybeStatusCode as number;
@@ -179,7 +179,7 @@ export class DynamicServiceSpec {
   }
 }
 
-type FluentDyamicService = {
+type FluentDynamicService = {
   [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
 } & { state: StateType; spy: ServiceSpy };
 
@@ -188,7 +188,7 @@ const buildFluentNock = (
   baseUrl: string,
   name?: string,
   service?: Service,
-): FluentDyamicService => {
+): FluentDynamicService => {
   const dynFn = (method: HTTPMethod, endpoint: string) => ({
     statusCode,
     data,
@@ -225,7 +225,7 @@ const buildFluentNock = (
         ),
     }),
     {},
-  ) as FluentDyamicService;
+  ) as FluentDynamicService;
   if (service !== undefined) {
     fluent.state = service.state;
     fluent.spy = service.spy;
