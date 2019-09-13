@@ -18,6 +18,7 @@ export const unmockSnapshot = (writer: ISnapshotWriterReader) => {
       testPath: this.testPath || "",
       currentTestName: this.currentTestName || "",
       data: obj,
+      timestamp: new Date(),
     };
     debugLog(`Snapshotting: ${JSON.stringify(snapshotInput)}`);
     writer.write(snapshotInput);

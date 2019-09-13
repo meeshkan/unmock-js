@@ -1,6 +1,6 @@
 import debug from "debug";
 import * as fs from "fs";
-import { flatten } from "lodash";
+import { flatten, sortBy } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { IListenerInput } from "../../interfaces";
@@ -8,6 +8,7 @@ import { IListenerInput } from "../../interfaces";
 const debugLog = debug("unmock:snapshotter:writer");
 
 export interface ISnapshot {
+  timestamp: Date;
   testPath: string;
   currentTestName: string;
   data: IListenerInput;
@@ -19,8 +20,12 @@ export interface ISnapshotWriterReader {
   deleteSnapshots(): void;
 }
 
-const format = (snapshot: ISnapshot): string => {
-  return JSON.stringify(snapshot);
+export const format = (snapshot: ISnapshot): string => {
+  const withStringTs = {
+    ...snapshot,
+    timestamp: snapshot.timestamp.toISOString(),
+  };
+  return JSON.stringify(withStringTs);
 };
 
 const ENCODING = "utf-8";
@@ -30,27 +35,37 @@ const createTmpDirIn = (snapshotFolder: string): string => {
   return fs.mkdtempSync(`${snapshotFolder}${path.sep}`);
 };
 
+export const parseSnapshot = (str: string): ISnapshot => {
+  const parsed = JSON.parse(str);
+  return { ...parsed, timestamp: new Date(parsed.timestamp) };
+};
+
 export class FsSnapshotWriterReader implements ISnapshotWriterReader {
   public static readFileContents(filename: string): ISnapshot[] {
     const fileContents = fs.readFileSync(filename, ENCODING);
     const lines = fileContents.split(os.EOL);
-    return lines
-      .filter(line => !!line.trim())
-      .map(line => {
-        debugLog(`Parsing line: ${line}`);
-        return JSON.parse(line);
-      });
+    return lines.filter(line => !!line.trim()).map(line => parseSnapshot(line));
   }
+  /* Internally used folder for writes, example: `${snapshotFolder}/RANDOM_STRING` */
+  private readonly outputFolder: string;
+  /* Destination for writes, example: `${snapshotFolder}/RANDOM_STRING/snapshots.jsonl` */
   private readonly outputFile: string;
+  /**
+   * Write snapshots to a given folder. Snapshots are internally written to folders nested inside
+   * the given folder.
+   * @param snapshotFolder Folder where snapshots are stored (possibly inside nested directories)
+   */
   constructor(private readonly snapshotFolder: string) {
-    this.outputFile = path.join(
-      createTmpDirIn(snapshotFolder),
-      SNAPSHOT_FILENAME,
-    );
+    this.outputFolder = createTmpDirIn(snapshotFolder);
+    this.outputFile = path.join(this.outputFolder, SNAPSHOT_FILENAME);
   }
 
   public write(snapshot: ISnapshot) {
     const contents = format(snapshot);
+    // Check if the output folder exists, it may have been deleted by `deleteSnapshots`
+    if (!fs.existsSync(this.outputFolder)) {
+      fs.mkdirSync(this.outputFolder);
+    }
     if (!fs.existsSync(this.outputFile)) {
       debugLog(`Writing to new file ${this.outputFile}`);
       fs.writeFileSync(this.outputFile, contents + os.EOL, {
@@ -84,7 +99,9 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
     const snapshots: ISnapshot[][] = snapshotFiles.map(filename =>
       FsSnapshotWriterReader.readFileContents(filename),
     );
-    return flatten(snapshots);
+    return sortBy(flatten(snapshots), (snapshot: ISnapshot) =>
+      snapshot.timestamp.getTime(),
+    );
   }
 
   public deleteSnapshots(): void {

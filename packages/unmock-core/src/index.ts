@@ -2,7 +2,7 @@
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import FsSnapshotter from "./loggers/snapshotter";
+import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
 import { nockify } from "./nock";
 import { AllowedHosts, BooleanSetting } from "./settings";
@@ -12,6 +12,7 @@ export { sinon };
 export { default as dsl } from "./service/state/transformers";
 export { u } from "./nock";
 
+export { ISnapshot };
 const utils = { snapshotter: FsSnapshotter };
 export { utils };
 

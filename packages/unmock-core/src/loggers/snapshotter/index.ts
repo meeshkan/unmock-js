@@ -27,6 +27,8 @@ const DEFAULT_OPTIONS: IFsSnapshotterOptions = {
   outputFolder: DEFAULT_SNAPSHOT_DIRECTORY,
 };
 
+export { ISnapshot };
+
 export const resolveOptions = (
   userOptions: Partial<IFsSnapshotterOptions>,
 ): IFsSnapshotterOptions => {
