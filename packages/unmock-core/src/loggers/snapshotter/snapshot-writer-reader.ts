@@ -8,6 +8,7 @@ import { IListenerInput } from "../../interfaces";
 const debugLog = debug("unmock:snapshotter:writer");
 
 export interface ISnapshot {
+  timestamp: Date;
   testPath: string;
   currentTestName: string;
   data: IListenerInput;
@@ -19,8 +20,12 @@ export interface ISnapshotWriterReader {
   deleteSnapshots(): void;
 }
 
-const format = (snapshot: ISnapshot): string => {
-  return JSON.stringify(snapshot);
+export const format = (snapshot: ISnapshot): string => {
+  const withStringTs = {
+    ...snapshot,
+    timestamp: snapshot.timestamp.toISOString(),
+  };
+  return JSON.stringify(withStringTs);
 };
 
 const ENCODING = "utf-8";
@@ -30,16 +35,16 @@ const createTmpDirIn = (snapshotFolder: string): string => {
   return fs.mkdtempSync(`${snapshotFolder}${path.sep}`);
 };
 
+export const parseSnapshot = (str: string): ISnapshot => {
+  const parsed = JSON.parse(str);
+  return { ...parsed, timestamp: new Date(parsed.timestamp) };
+};
+
 export class FsSnapshotWriterReader implements ISnapshotWriterReader {
   public static readFileContents(filename: string): ISnapshot[] {
     const fileContents = fs.readFileSync(filename, ENCODING);
     const lines = fileContents.split(os.EOL);
-    return lines
-      .filter(line => !!line.trim())
-      .map(line => {
-        debugLog(`Parsing line: ${line}`);
-        return JSON.parse(line);
-      });
+    return lines.filter(line => !!line.trim()).map(line => parseSnapshot(line));
   }
   private readonly outputFile: string;
   constructor(private readonly snapshotFolder: string) {
