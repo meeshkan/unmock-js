@@ -39,7 +39,7 @@ export const writeToDirectory = (
 /**
  * Write Jest report for given snapshots and Jest data.
  */
-const writeReport = (input: IReportInput, opts?: Partial<IReporterOptions>) => {
+const writeReport = (input: IReportInput, opts: IReporterOptions) => {
   const options = resolveOptions(opts || {});
   const report: string = createReport(input);
   writeToDirectory(report, options);

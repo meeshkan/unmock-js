@@ -8,11 +8,11 @@ import writeReport from "./write-report";
  * Write report from Jest test results, loading snapshots, building report and writing to file.
  * @param jestData Jest test result
  */
-export const write = (jestData: IJestData) => {
+export const write = (jestData: IJestData, options: IReporterOptions) => {
   const snapshots = unmockUtils.snapshotter
     .getOrUpdateSnapshotter()
     .readSnapshots();
-  return writeReport({ jestData, snapshots });
+  return writeReport({ jestData, snapshots }, options);
 };
 
 // https://jestjs.io/docs/en/configuration#reporters-array-modulename-modulename-options
@@ -31,6 +31,6 @@ export default class UnmockJestReporter implements jest.Reporter {
     _: Set<jest.Context>,
     results: jest.AggregatedResult,
   ): jest.Maybe<Promise<void>> {
-    return write({ aggregatedResult: results });
+    return write({ aggregatedResult: results }, options);
   }
 }
