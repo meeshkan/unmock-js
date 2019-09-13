@@ -10,11 +10,12 @@ const debugLog = debug("unmock-jest:writer");
 /**
  * Write contents to a file, creating the required directory and destination file.
  * If the destination directory does not exists, creates the directory (not recursively).
+ * @returns Absolute path to the written file.
  */
 export const writeToDirectory = (
   contents: string,
   options: IReporterOptions,
-) => {
+): string => {
   const filepath = path.join(options.outputDirectory, options.outputFilename);
 
   const absoluteFilePath = path.isAbsolute(filepath)
@@ -34,15 +35,17 @@ export const writeToDirectory = (
 
   debugLog(`Writing to: ${absoluteFilePath}`);
   fs.writeFileSync(absoluteFilePath, contents);
+  return absoluteFilePath;
 };
 
 /**
  * Write Jest report for given snapshots and Jest data.
+ * @returns Path to the written file.
  */
 const writeReport = (input: IReportInput, opts: IReporterOptions) => {
   const options = resolveOptions(opts || {});
   const report: string = createReport(input);
-  writeToDirectory(report, options);
+  return writeToDirectory(report, options);
 };
 
 export default writeReport;
