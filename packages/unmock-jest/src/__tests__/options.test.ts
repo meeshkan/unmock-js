@@ -8,4 +8,9 @@ describe("Reporter options", () => {
       DEFAULT_OUTPUT_DIRECTORY,
     );
   });
+  it("should resolve to given output directory", () => {
+    const outputDirectory = "some/dir";
+    const resolvedOptions = resolveOptions({ outputDirectory });
+    expect(resolvedOptions).toHaveProperty("outputDirectory", outputDirectory);
+  });
 });
