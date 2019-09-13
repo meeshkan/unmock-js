@@ -2,9 +2,9 @@ import { resolve as pathResolve } from "path";
 import FsSnapshotter from "../loggers/snapshotter";
 import {
   format,
+  FsSnapshotWriterReader,
   ISnapshot,
   parseSnapshot,
-  FsSnapshotWriterReader,
 } from "../loggers/snapshotter/snapshot-writer-reader";
 import { testRequest, testResponse } from "./utils";
 const outputFolder = pathResolve(__filename, "..", "__snapshots__");
