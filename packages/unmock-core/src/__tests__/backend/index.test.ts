@@ -124,6 +124,12 @@ describe("Unmock node package", () => {
         expect.objectContaining({ statusCode: 201 }),
       );
     });
+    test("should reset spies with unmock.reset()", async () => {
+      await axios.post("http://petstore.swagger.io/v1/pets", {});
+      sinon.assert.calledOnce(petstore.spy);
+      unmock.reset();
+      sinon.assert.notCalled(petstore.spy);
+    });
     test("should not have tracked calls after reset", async () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});
       petstore.reset();
