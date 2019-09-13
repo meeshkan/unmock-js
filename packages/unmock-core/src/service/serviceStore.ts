@@ -24,7 +24,9 @@ export class ServiceStore {
     );
   }
 
-  public updateOrAdd(input: IObjectToService) {
+  public updateOrAdd(
+    input: IObjectToService,
+  ): { store: ServiceStore; service: Service } {
     // TODO: Tighly coupled with OpenAPI at the moment... resolve this at a later time
     const serviceName =
       input.name || url.parse(input.baseUrl).hostname || input.baseUrl;
@@ -45,6 +47,6 @@ export class ServiceStore {
     this.cores[serviceName] = newServiceCore;
     this.services[serviceName] = new Service(newServiceCore);
 
-    return this.services[serviceName];
+    return { store: this, service: this.services[serviceName] };
   }
 }
