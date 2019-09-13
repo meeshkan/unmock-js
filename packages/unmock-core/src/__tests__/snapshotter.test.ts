@@ -72,17 +72,17 @@ describe("Snapshot writer/reader", () => {
     });
   });
 
-  const snapshotWriterReader = new FsSnapshotWriterReader(outputFolder);
-
-  beforeEach(() => {
-    snapshotWriterReader.deleteSnapshots();
-  });
-
-  afterEach(() => {
-    snapshotWriterReader.deleteSnapshots();
-  });
-
   describe("writing and reading", () => {
+    const snapshotWriterReader = new FsSnapshotWriterReader(outputFolder);
+
+    beforeAll(() => {
+      snapshotWriterReader.deleteSnapshots();
+    });
+
+    afterEach(() => {
+      snapshotWriterReader.deleteSnapshots();
+    });
+
     it("should write to expected folder", () => {
       expect(snapshotWriterReader.read()).toHaveLength(0);
 
