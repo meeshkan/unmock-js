@@ -14,11 +14,12 @@ describe("Tests dynamic path tests", () => {
 
   it("Adds a service and changes state", () => {
     expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
-    const service = unmock
+    unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
       .reply(200, { foo: u.str() });
     expect(Object.keys(unmock.services).length).toEqual(1);
+    const service = unmock.services["foo.com"];
     if (service === undefined) {
       // type-checking mostly...
       throw new Error("Service was undefined??");
@@ -32,11 +33,12 @@ describe("Tests dynamic path tests", () => {
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
       .reply(200, { foo: u.city() });
-    const service = unmock
+    unmock
       .nock("https://foo.com")
       .post("/foo")
       .reply(201);
     expect(Object.keys(unmock.services).length).toEqual(1);
+    const service = unmock.services["foo.com"];
     if (service === undefined) {
       // type-checking mostly...
       throw new Error("Service was undefined??");

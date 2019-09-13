@@ -10,10 +10,8 @@ import {
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
-import { Service } from "./service";
-import { Schema, StateType } from "./service/interfaces";
+import { Schema } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-import { ServiceSpy } from "./service/spy";
 
 // Used to differentiate between e.g. `{ foo: { type: "string" } }` as a literal value
 // (i.e. key `foo` having the value of `{type: "string"}`) and a dynamic JSON schema
@@ -129,7 +127,7 @@ type UpdateCallback = ({
 }: {
   statusCode: number;
   data: Schema;
-}) => { store: ServiceStore; service: Service };
+}) => ServiceStore;
 
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
@@ -170,24 +168,23 @@ export class DynamicServiceSpec {
     } else {
       this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
-    const { store, service } = this.updater({
+    const store = this.updater({
       data: this.data,
       statusCode: this.statusCode,
     });
 
-    return buildFluentNock(store, this.baseUrl, this.name, service);
+    return buildFluentNock(store, this.baseUrl, this.name);
   }
 }
 
 type FluentDynamicService = {
   [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
-} & { state: StateType; spy: ServiceSpy };
+};
 
 const buildFluentNock = (
   store: ServiceStore,
   baseUrl: string,
   name?: string,
-  service?: Service,
 ): FluentDynamicService => {
   const dynFn = (method: HTTPMethod, endpoint: string) => ({
     statusCode,
@@ -204,7 +201,7 @@ const buildFluentNock = (
       response: data,
       name,
     });
-  const fluent = Object.entries({
+  return Object.entries({
     get: 200,
     head: 200,
     post: 201,
@@ -226,11 +223,6 @@ const buildFluentNock = (
     }),
     {},
   ) as FluentDynamicService;
-  if (service !== undefined) {
-    fluent.state = service.state;
-    fluent.spy = service.spy;
-  }
-  return fluent;
 };
 
 export const nockify = ({
