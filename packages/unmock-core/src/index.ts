@@ -68,6 +68,10 @@ export class UnmockPackage implements IUnmockPackage {
   public reloadServices() {
     this.backend.loadServices();
   }
+
+  public reset() {
+    Object.values(this.backend.services).forEach(service => service.reset());
+  }
 }
 
 const unmock = new UnmockPackage(new NodeBackend(), {
