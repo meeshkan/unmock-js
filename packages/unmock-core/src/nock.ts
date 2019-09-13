@@ -10,8 +10,8 @@ import {
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
-import { Service } from "./service";
 import { Schema } from "./service/interfaces";
+import { ServiceStore } from "./service/serviceStore";
 
 // Used to differentiate between e.g. `{ foo: { type: "string" } }` as a literal value
 // (i.e. key `foo` having the value of `{type: "string"}`) and a dynamic JSON schema
@@ -127,7 +127,7 @@ type UpdateCallback = ({
 }: {
   statusCode: number;
   data: Schema;
-}) => Service | undefined;
+}) => ServiceStore;
 
 // Placeholder for poet input type, to have
 // e.g. standard object => { type: "object", properties: { ... }}, number => { type: "number", const: ... }
@@ -141,18 +141,20 @@ export class DynamicServiceSpec {
   constructor(
     private updater: UpdateCallback,
     private statusCode: number = 200,
+    private baseUrl: string,
+    private name?: string,
   ) {}
 
   // TODO: Should this allow fluency for consecutive .get, .post, etc on the same service?
   public reply(
     statusCode: number,
     data?: InputToPoet | InputToPoet[],
-  ): Service | undefined;
-  public reply(data: InputToPoet | InputToPoet[]): Service | undefined;
+  ): FluentDynamicService;
+  public reply(data: InputToPoet | InputToPoet[]): FluentDynamicService;
   public reply(
     maybeStatusCode: number | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
-  ): Service | undefined {
+  ): FluentDynamicService {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
       this.statusCode = maybeStatusCode as number;
@@ -166,9 +168,62 @@ export class DynamicServiceSpec {
     } else {
       this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
-    return this.updater({ data: this.data, statusCode: this.statusCode });
+    const store = this.updater({
+      data: this.data,
+      statusCode: this.statusCode,
+    });
+
+    return buildFluentNock(store, this.baseUrl, this.name);
   }
 }
+
+type FluentDynamicService = {
+  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
+};
+
+const buildFluentNock = (
+  store: ServiceStore,
+  baseUrl: string,
+  name?: string,
+): FluentDynamicService => {
+  const dynFn = (method: HTTPMethod, endpoint: string) => ({
+    statusCode,
+    data,
+  }: {
+    statusCode: number;
+    data: Schema;
+  }) =>
+    store.updateOrAdd({
+      baseUrl,
+      method,
+      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
+      statusCode,
+      response: data,
+      name,
+    });
+  return Object.entries({
+    get: 200,
+    head: 200,
+    post: 201,
+    put: 204,
+    patch: 204,
+    delete: 200,
+    options: 200,
+    trace: 200,
+  }).reduce(
+    (o, [method, code]) => ({
+      ...o,
+      [method]: (endpoint: string) =>
+        new DynamicServiceSpec(
+          dynFn(method as HTTPMethod, endpoint),
+          code,
+          baseUrl,
+          name,
+        ),
+    }),
+    {},
+  ) as FluentDynamicService;
+};
 
 export const nockify = ({
   backend,
@@ -178,46 +233,4 @@ export const nockify = ({
   backend: NodeBackend;
   baseUrl: string;
   name?: string;
-}) => {
-  const dynFn = (method: HTTPMethod, endpoint: string) => ({
-    statusCode,
-    data,
-  }: {
-    statusCode: number;
-    data: Schema;
-  }) =>
-    backend.serviceStore.updateOrAdd({
-      baseUrl,
-      method,
-      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-      statusCode,
-      response: data,
-      name,
-    });
-  return {
-    get(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("get", endpoint), 200);
-    },
-    head(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("head", endpoint), 200);
-    },
-    post(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("post", endpoint), 201);
-    },
-    put(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("put", endpoint), 204);
-    },
-    patch(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("patch", endpoint), 204);
-    },
-    delete(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("delete", endpoint), 200);
-    },
-    options(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("options", endpoint), 200);
-    },
-    trace(endpoint: string) {
-      return new DynamicServiceSpec(dynFn("trace", endpoint), 200);
-    },
-  };
-};
+}) => buildFluentNock(backend.serviceStore, baseUrl, name);
