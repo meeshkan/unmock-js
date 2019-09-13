@@ -1,6 +1,6 @@
 import debug from "debug";
 import * as fs from "fs";
-import { flatten } from "lodash";
+import { flatten, sortBy } from "lodash";
 import * as os from "os";
 import * as path from "path";
 import { IListenerInput } from "../../interfaces";
@@ -89,7 +89,9 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
     const snapshots: ISnapshot[][] = snapshotFiles.map(filename =>
       FsSnapshotWriterReader.readFileContents(filename),
     );
-    return flatten(snapshots);
+    return sortBy(flatten(snapshots), (snapshot: ISnapshot) =>
+      snapshot.timestamp.getTime(),
+    );
   }
 
   public deleteSnapshots(): void {
