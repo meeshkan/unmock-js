@@ -41,7 +41,9 @@ describe("Tests dynamic path tests", () => {
       // type-checking mostly...
       throw new Error("Service was undefined??");
     }
-    expect(() => service.state("/foo", { $code: 201 }).get("/foo", { $code: 200 }).not.toThrow();
+    expect(() =>
+      service.state("/foo", { $code: 201 }).get("/foo", { $code: 200 }),
+    ).not.toThrow();
   });
 
   it("Adds a named service", () => {
@@ -51,7 +53,9 @@ describe("Tests dynamic path tests", () => {
       .get("abc") // slash is prepended automatically
       .reply(200, { foo: u.str() });
     expect(Object.keys(unmock.services).length).toEqual(1);
-    expect(() => unmock.services.foo.state.get("/abc", { $code: 200 })).not.toThrow();
+    expect(() =>
+      unmock.services.foo.state.get("/abc", { $code: 200 }),
+    ).not.toThrow();
   });
 
   it("Chains multiple endpoints", () => {
