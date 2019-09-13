@@ -33,6 +33,10 @@ export default class UnmockJestReporter implements jest.Reporter {
     this.rootDir = globalConfig.rootDir;
   }
 
+  public onRunStart() {
+    unmockUtils.snapshotter.getOrUpdateSnapshotter().deleteSnapshots();
+  }
+
   public onRunComplete(
     _: Set<jest.Context>,
     results: jest.AggregatedResult,
