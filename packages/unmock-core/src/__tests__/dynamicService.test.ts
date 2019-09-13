@@ -73,4 +73,33 @@ describe("Tests dynamic path tests", () => {
       unmock.services.foo.state.post("/bar", { $code: 404 }),
     ).not.toThrow();
   });
+
+  it("Chains multiple endpoints in multiple calls", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    const dynamicSpec = unmock
+      .nock("https://abc.com", "foo")
+      .get("foo")
+      .reply(200, { city: u.city() });
+    dynamicSpec.get("foo").reply(404, { msg: u.str() });
+    const service = unmock.services.foo;
+    expect(() => service.state.get("/foo", { $code: 404 })).not.toThrow();
+  });
+
+  it("Allows using same name with multiple servers", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    unmock
+      .nock("https://abc.com", "foo")
+      .get("foo")
+      .reply(200, { city: u.city() });
+    unmock
+      .nock("https://def.com", "foo")
+      .get("foo")
+      .reply(404, { msg: u.str() });
+    unmock
+      .nock("https://abc.com", "foo")
+      .get("foo")
+      .reply(500);
+    const service = unmock.services.foo;
+    expect(() => service.state.get("/foo", { $code: 500 })).not.toThrow();
+  });
 });

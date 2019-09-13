@@ -1,4 +1,4 @@
-import { defaultsDeep } from "lodash";
+import { defaultsDeep, unionBy } from "lodash";
 import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
@@ -53,7 +53,10 @@ export class ServiceCore implements IServiceCore {
     const newUrls = [{ url: baseUrl }];
 
     const newPaths = defaultsDeep(newPath, baseSchema.paths);
-    const newServers = defaultsDeep(newUrls, baseSchema.servers);
+    const newServers = unionBy(
+      newUrls.concat(baseSchema.servers || []),
+      e => e.url,
+    );
     const finalSchema = { ...baseSchema, paths: newPaths, servers: newServers };
     return new ServiceCore({
       schema: finalSchema,
