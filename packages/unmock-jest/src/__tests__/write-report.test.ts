@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import { writeToDirectory } from "../reporter/report-writer";
+import { writeToDirectory } from "../reporter/write-report";
 
 const RANDOM_STRING = Math.random()
   .toString(36)
