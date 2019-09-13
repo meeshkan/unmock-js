@@ -64,7 +64,7 @@ describe("Snapshot writer/reader", () => {
       const formatted = format(exampleSnapshotInput);
       expect(formatted).toContain(timestamp.toISOString());
     });
-    it("should have format and parse be identity", () => {
+    it("should parse the same object from formatted object", () => {
       const formatted = format(exampleSnapshotInput);
       const parsed = parseSnapshot(formatted);
       expect(parsed).toEqual(exampleSnapshotInput);
