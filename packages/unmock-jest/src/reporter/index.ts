@@ -1,7 +1,8 @@
 // tslint:disable:no-console
 import { utils as unmockUtils } from "unmock";
 import { IReporterOptions, resolveOptions } from "./options";
-import writeReport, { IJestData } from "./write-report";
+import { IJestData } from "./types";
+import writeReport from "./write-report";
 
 /**
  * Write report from Jest test results, loading snapshots, building report and writing to file.

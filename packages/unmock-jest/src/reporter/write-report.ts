@@ -1,23 +1,11 @@
 import debug from "debug";
 import * as fs from "fs";
 import * as path from "path";
-import { ISnapshot } from "unmock";
+import createReport from "./create-report";
 import { IReporterOptions, resolveOptions } from "./options";
+import { IReportInput } from "./types";
 
 const debugLog = debug("unmock-jest:writer");
-
-export interface IJestData {
-  aggregatedResult: jest.AggregatedResult;
-}
-
-interface IReportInput {
-  jestData: IJestData;
-  snapshots: ISnapshot[];
-}
-
-export const createReport = (_: IReportInput) => {
-  return "";
-};
 
 /**
  * Write contents to a file, creating the required directory and destination file.
