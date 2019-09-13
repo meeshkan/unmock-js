@@ -53,4 +53,18 @@ describe("Tests dynamic path tests", () => {
     expect(Object.keys(unmock.services).length).toEqual(1);
     unmock.services.foo.state.get("/abc", { $code: 200 }); // should succeed
   });
+
+  it("Chains multiple endpoints", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    unmock
+      .nock("https://abc.com", "foo")
+      .get("abc") // slash is prepended automatically
+      .reply(200, { foo: u.str() })
+      .post("bar")
+      .reply(404);
+    expect(Object.keys(unmock.services).length).toEqual(1);
+    expect(() =>
+      unmock.services.foo.state.post("/bar", { $code: 404 }),
+    ).not.toThrow();
+  });
 });
