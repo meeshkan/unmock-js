@@ -1,4 +1,5 @@
-import { isRESTMethod, ISerializedRequest } from "../interfaces";
+import { OpenAPIObject } from "loas3/dist/generated/full";
+import { ISerializedRequest, isRESTMethod } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
@@ -14,7 +15,6 @@ import {
   objResponse,
   textResponse,
 } from "./state/transformers";
-import { OpenAPIObject } from "loas3/dist/generated/full";
 
 export class Service implements IService {
   public readonly state: StateType;
