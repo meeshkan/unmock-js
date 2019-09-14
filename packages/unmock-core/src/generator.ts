@@ -3,7 +3,10 @@
  */
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
+import { array } from "fp-ts/lib/Array";
 import { defaultsDeep } from "lodash";
+import { fromTraversable, Optional, Prism, Lens } from "monocle-ts";
+import { objectToArray, valueLens, allMethods, MethodName } from "openapi-refinements";
 import {
   CreateResponse,
   IListener,
@@ -16,13 +19,15 @@ import {
   Dereferencer,
   Header,
   MatcherResponse,
+  OpenAPIObject,
   Operation,
   Response,
   Responses,
   Schema,
+  PathItem,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-
+import { some, none } from "fp-ts/lib/Option";
 type Headers = Record<string, Header>;
 
 function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
@@ -44,7 +49,56 @@ export function responseCreatorFactory({
   store: ServiceStore;
 }): CreateResponse {
   if (USE_EXPERIMENTAL_GENERATOR.yes) {
+    const without = (p: PathItem, m: MethodName): PathItem => {
+      const o = { ...p };
+      delete o[m];
+      return o;
+    };
+    const hasUrl = (protocol: string, host: string, o: OpenAPIObject) =>
+    o.servers ? o.servers.map(m => m.url).indexOf(`${protocol}://${host}`) >= 0 : false;
+    const prunePathItem = (m: MethodName, a: MethodName[], p: PathItem): PathItem =>
+      a.length === 0 ? p : prunePathItem(m, a.slice(1), a[0] === m ? p : without(p, a[0]));
+    const matches = (a: string[], b: string[]): boolean =>
+      a.length === b.length
+      && (a.length === 0
+        || (((a[0] === b[0])
+          || (b[0].length > 2 && b[0][0] === "{" && b[0].slice(-1) === "}")) && matches(a.slice(1), b.slice(1))));
+    const pairPrism = <T>() => new Prism<Record<string, T>, [string, T]>(
+      a => Object.entries(a).length !== 1 ? none : some(Object.entries(a)[0]),
+      s => ({ [s[0]]: s[1]}),
+    );
+    const transformers = [
+      // first transformer is the matcher
+      (req: ISerializedRequest, r: Record<string, OpenAPIObject>) =>
+        objectToArray<OpenAPIObject>()
+        .composeTraversal(fromTraversable(array)())
+        .composeLens(valueLens())
+        .modify(oai => objectToArray<PathItem>()
+          .composeTraversal(fromTraversable(array)())
+          .composeLens(valueLens())
+          .modify(pathItem => prunePathItem(req.method, allMethods, pathItem))(Object.entries(oai)
+          .reduce((i, [n, o]) => ({ ...i, ...(matches(req.path.split("/"), n.split("/")) ? {[n]: o} : {})}), {})))(
+            Object.entries(r)
+            .reduce((i, [n, o]) => ({ ...i, ...(hasUrl(req.protocol, req.host, o) ? {[n]: o} : {})}), {})),
+
+      // subsequent developer-defined transformers
+      ...Object.entries(store.cores).map(([_, core]) =>
+      (req: ISerializedRequest, r: Record<string, OpenAPIObject>) =>
+      objectToArray(r)
+      .composeTraversal(
+        fromTraversable(array)<[string, OpenAPIObject]>()
+          .filter(([__, o]) =>
+            hasUrl(req.protocol, req.host, o)))
+      .composeLens(valueLens()).modify(core.transformer)) ];
     return (req: ISerializedRequest) => {
+      const operation = pairPrism<OpenAPIObject>()
+      .composeLens(valueLens())
+      .composeOptional(Optional.fromNullableProp()("paths"))
+      .composePrism(pairPrism<Operation>())
+      .composeLens(valueLens())
+      .getttt()(
+      transformers.reduce((a, b) => b(req, a), Object.entries(store.cores).reduce((a, [n,x]) => ({ ...a, [n]: x.schema}), {})));
+      
       return {
         statusCode: 200,
       };
