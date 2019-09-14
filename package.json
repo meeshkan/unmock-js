@@ -12,6 +12,7 @@
     "format": "prettier '**/*.{js,ts}' --write",
     "lint": "npm run lint-ts",
     "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json",
+    "lint-ts-fix": "tslint --fix --project packages/unmock/ --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json",
     "test": "jest --verbose",
     "test:debug": "DEBUG=unmock* jest --verbose",
     "test:clean": "jest --clearCache",

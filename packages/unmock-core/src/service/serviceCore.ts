@@ -88,6 +88,8 @@ export class ServiceCore implements IServiceCore {
     this.callTracker = createCallTracker();
   }
 
+  public transformer = (_: ISerializedRequest, o: OpenAPIObject) => o;
+
   get schema(): OpenAPIObject {
     return this.oasSchema;
   }

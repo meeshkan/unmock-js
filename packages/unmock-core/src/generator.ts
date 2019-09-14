@@ -32,6 +32,7 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
     ? arr[0]
     : arr[Math.floor(Math.random() * arr.length)];
 }
+export const USE_EXPERIMENTAL_GENERATOR = { yes: false };
 
 export function responseCreatorFactory({
   listeners = [],
@@ -42,6 +43,13 @@ export function responseCreatorFactory({
   options: IUnmockOptions;
   store: ServiceStore;
 }): CreateResponse {
+  if (USE_EXPERIMENTAL_GENERATOR.yes) {
+    return (req: ISerializedRequest) => {
+      return {
+        statusCode: 200,
+      };
+    };
+  } else {
   const match = (sreq: ISerializedRequest) =>
     Object.values(store.cores)
       .map(service => service.match(sreq))
@@ -64,6 +72,7 @@ export function responseCreatorFactory({
     jsf.reset(); // removes unmock-properties
     return res;
   };
+}
 }
 
 const normalizeHeaders = (
