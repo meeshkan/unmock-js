@@ -1,0 +1,237 @@
+import axios from "axios";
+import * as path from "path";
+import { dsl, Service, UnmockPackage, UnmockRequest } from "../..";
+import NodeBackend from "../../backend";
+import { USE_EXPERIMENTAL_GENERATOR } from "../../generator";
+import { includeCodes, changeToConst, responseBody, Arr, changeSingleSchema } from "openapi-refinements";
+import { OpenAPIObject, Response } from "loas3/dist/generated/full";
+USE_EXPERIMENTAL_GENERATOR.yes = true;
+
+const servicesDirectory = path.join(__dirname, "..", "__unmock__");
+
+describe("Node.js interceptor", () => {
+  describe("with state requests in place", () => {
+    const nodeInterceptor = new NodeBackend({ servicesDirectory });
+    const unmock = new UnmockPackage(nodeInterceptor);
+    let petstore: Service;
+    let filestackApi: Service;
+
+    beforeAll(() => {
+      unmock.on();
+      petstore = unmock.services.petstore;
+      filestackApi = unmock.services.filestackApi;
+    });
+    afterAll(() => unmock.off());
+
+    beforeEach(() => {
+      petstore.reset();
+      filestackApi.reset();
+    });
+
+    test("t throws when asking for non existing method/path", async () => {
+      try {
+        await axios.post("http://petstore.swagger.io/v1/pets/3");
+      } catch (e) {
+        expect(e.message).toContain("unmock error: Cannot find a matcher for this request");
+        return;
+      }
+      throw new Error("Shouldn't be here :(");
+    });
+
+    test("t gets correct code upon request without other state", async () => {
+      petstore.transformer((_, o) => includeCodes(true, true, ["200"])(o));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(
+        response.data.every(
+          (pet: any) =>
+            typeof pet.id === "number" && typeof pet.name === "string",
+        ),
+      ).toBeTruthy();
+    });
+
+    test("t gets correct state after setting state with status code", async () => {
+      petstore.transformer((_, o) => [
+        includeCodes(true, true, ["200"]),
+        changeToConst(5)(responseBody(true), [Arr, "id"]),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
+    });
+
+    // not sure what this test in the original was trying to accomplish
+    // there is no message field on 200...
+    test.skip("t gets correct state after setting state without status code", async () => {
+      petstore.state({ message: "Hello World" });
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data.message).toEqual("Hello World");
+    });
+
+    test("t gets correct state after multiple overriden state requests", async () => {
+      petstore.transformer((_, o) => [
+        includeCodes(true, true, ["200"]),
+        changeToConst(5)(responseBody(new RegExp("/pets")), [Arr, "id"]),
+        changeToConst(-1)(responseBody(new RegExp("/pets/{[a-zA-Z0-9/]+}")), ["id"]),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
+      const response2 = await axios("http://petstore.swagger.io/v1/pets/3");
+      expect(response2.status).toBe(200);
+      expect(response2.data.id).toEqual(-1);
+    });
+
+    test("t gets correct state when setting textual response", async () => {
+      filestackApi.transformer((_, o) => [
+        includeCodes(true, true, ["200"]),
+        changeToConst("foo")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["200"], ["text/plain"]), []),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("https://cloud.filestackapi.com/prefetch");
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("foo");
+    });
+
+    test.skip("gets correct state with query parameter when setting textual response", async () => {
+      filestackApi.state("foo");
+      const response = await axios(
+        "https://cloud.filestackapi.com/prefetch?apikey=fake",
+      );
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("foo");
+    });
+
+    test("t gets correct state when setting textual response with path", async () => {
+      filestackApi.transformer((_, o) => [
+        includeCodes(true, true, ["200"]),
+        changeToConst("bar")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["200"], ["text/plain"]), []),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("https://cloud.filestackapi.com/prefetch");
+      expect(response.status).toBe(200);
+      expect(response.data).toBe("bar");
+    });
+
+    test("t default response turns into 500", async () => {
+      filestackApi.transformer((_, o) => [
+        includeCodes(true, true, ["default"]),
+        changeToConst("foo")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["default"], ["text/plain"]), []),
+      ].reduce((a, b) => b(a), o));
+      try {
+        await axios("https://cloud.filestackapi.com/prefetch");
+        throw new Error("Expected a 500 response");
+      } catch (err) {
+        expect(err.response.status).toBe(500);
+        expect(err.response.data).toBe("foo");
+      }
+    });
+
+    test("t sets an entire response from function", async () => {
+      petstore.transformer((_, o) => [
+        includeCodes(true, true, ["200"]),
+        changeToConst([{id: 1, name: "Fluffy"}])(responseBody("/pets", true, ["200"]), []),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toEqual([{id: 1, name: "Fluffy"}]);
+    });
+
+    test("t sets an entire response from with request object", async () => {
+      petstore.transformer((req, o) => [
+        includeCodes(true, true, ["200"]),
+        changeSingleSchema(__ => ___ => ({ type: "string", enum: [req.host]}))
+          (responseBody("/pets", true, ["200"]), []),
+      ].reduce((a, b) => b(a), o));
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.data).toBe("petstore.swagger.io");
+    });
+
+    test("sets an entire response from function with DSL", async () => {
+      petstore.transformer((_, __) => ({
+        openapi: "",
+        info: { title: "", version: ""},
+        paths: {
+          "/pets": {
+            description: "",
+            get: {
+              responses: {
+                404: {
+                  description: "",
+                  content: {
+                    "text/plain": {
+                      schema: {
+                        type: "string",
+                        enum: ["baz"],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 404 response");
+      } catch (err) {
+        expect(err.response.status).toBe(404);
+        expect(err.response.data).toBe("baz");
+      }
+    });
+
+    // this is just a no-op in the new version
+    test.skip("t fails setting an array size for non-array elements", async () => {
+      expect(() => petstore.state({ id: { $size: 5 } })).toThrow("$size");
+    });
+
+    test("t updates times correctly", async () => {
+      const text = "foo";
+      const postMessage = () =>
+        axios.post("https://slack.com/api/chat.postMessage", {
+          data: { channel: "my_channel_id", text },
+        });
+      const { slack } = unmock.services;
+      const counter = { n: 0 };
+      slack.transformer((_, o) => {
+        counter.n += 1;
+        return  [
+          includeCodes(true, true, ["200"]),
+          counter.n <= 3
+          ? changeToConst(text)(responseBody("/chat.postMessage"), ["message", "text"])
+          : (i: OpenAPIObject) => i,
+        ].reduce((a, b) => b(a), o);
+      });
+      let resp = await postMessage();
+
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).not.toEqual(text);
+    });
+
+    test.skip("handles 'properties' keyword correctly", async () => {
+      petstore
+        .state({ properties: { isCat: true } })
+        .get("/pets/3", { properties: { isCat: false } });
+      let resp = await axios("http://petstore.swagger.io/v1/pets/54");
+      expect(resp.data.properties.isCat).toBeTruthy();
+
+      resp = await axios("http://petstore.swagger.io/v1/pets/3");
+      expect(resp.data.properties.isCat).toBeFalsy();
+    });
+
+    test.skip("Works with multiple codes", async () => {
+      petstore.state(dsl.functionResponse(() => "baz", { $code: [404, 500] }));
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+        throw new Error("Expected a 404 response");
+      } catch (err) {
+        expect([404, 500]).toContain(err.response.status);
+        expect(err.response.data).toBe("baz");
+      }
+    });
+  });
+});
