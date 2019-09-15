@@ -1,7 +1,7 @@
-import { without, hasUrl, prunePathItem, matches, refName, firstElementOptional, keyLens, getFirstMethod, operationOptional, useIfHeader, identityGetter, hoistTransformer } from "../generator-experimental";
-import { Operation, PathItem, OpenAPIObject } from "loas3/dist/generated/full";
+import { without, matchUrls, prunePathItem, matches, refName, firstElementOptional, keyLens, getFirstMethod, operationOptional, useIfHeader, identityGetter, hoistTransformer } from "../generator-experimental";
+import { PathItem, OpenAPIObject } from "loas3/dist/generated/full";
 import { some, none } from "fp-ts/lib/Option";
-import { ISerializedRequest } from "packages/unmock-core/dist/interfaces";
+import { ISerializedRequest } from "../interfaces";
 
 interface ITest {
     a?: string;
@@ -14,17 +14,28 @@ test("without correctly removes key", () => {
 });
 
 test("hasUrl works", () => {
-  expect(hasUrl(
+  expect(matchUrls(
     "https",
-    "api.foo.com/v2",
+    "api.foo.com",
     {
       openapi: "",
       paths: {},
       info: { title: "", version: "" },
-      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.com/v2" }]
+      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.com" }],
     },
-  )).toBe(true);
-  expect(hasUrl(
+  )).toEqual(["https://api.foo.com"]);
+  expect(matchUrls(
+    "https",
+    "api.foo.com",
+    {
+      openapi: "",
+      paths: {},
+      info: { title: "", version: "" },
+      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.com/v2/a/b/c" }],
+    },
+  )).toEqual(["https://api.foo.com/v2/a/b/c"]);
+
+  expect(matchUrls(
     "https",
     "api.foo.com/v2",
     {
@@ -33,7 +44,7 @@ test("hasUrl works", () => {
       info: { title: "", version: "" },
       servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.cooom/v2" }]
     },
-  )).toBe(false);
+  ).length).toEqual(0);
 });
 
 test("prune path item works", () => {

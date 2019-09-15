@@ -47,8 +47,10 @@ export const without = <T>(p: T, m: keyof T): T => {
   return o;
 };
 
-export const hasUrl = (protocol: string, host: string, o: OpenAPIObject) =>
-  o.servers ? o.servers.map(m => m.url).indexOf(`${protocol}://${host}`) >= 0 : false;
+export const matchUrls = (protocol: string, host: string, o: OpenAPIObject): string[] =>
+  o.servers
+    ? o.servers.map(m => m.url).filter(i => new URL(i).host === host && new URL(i).protocol === `${protocol}:`)
+    : [];
 
 const prunePathItemInternal = (m: MethodNames, a: MethodNames[], p: PathItem): PathItem =>
   a.length === 0 ? p : prunePathItemInternal(m, a.slice(1), a[0] === m ? p : without(p, a[0]));
@@ -125,6 +127,19 @@ export const parameterSchema = (o: OpenAPIObject) => new Optional<Parameter, [st
   a => s => ({ ...s, name: a[0], schema: a[1] }),
 );
 
+const cutPath = (paths: string[], path: string): string =>
+  paths.length === 0
+    ? path
+    : path.slice(0, paths[0].length) === paths[0]
+      ? path.slice(paths[0].length)
+      : cutPath(paths.slice(1), path);
+
+const removeTrailingSlash = (s: string) => s.length === 0 ? s : s.slice(-1) === "/" ? s.slice(0, -1) : s;
+
+export const truncatePath = (path: string, o: OpenAPIObject, i: ISerializedRequest) =>
+  cutPath(matchUrls(i.protocol, i.host, o).map(u => removeTrailingSlash(new URL(u).pathname)), path);
+
+// const trace = <T>(t: T, m?: string): T => { console.log("TRACE", t, m); return t };
 export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
   objectToArray<OpenAPIObject>()
   .composeTraversal(fromTraversable(array)())
@@ -139,10 +154,12 @@ export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject
           ...(oai.paths ? {
               paths: Object.entries(oai.paths)
                 .reduce((i, [n, o]) =>
-                  ({ ...i, ...(matches(req.path, n) ? {[n]: o} : {})}), {}),
+                  ({ ...i, ...(matches(truncatePath(req.path, oai, req), n) ? {[n]: o} : {})}), {}),
               } : {}),
-        }))(Object.entries(r)
-        .reduce((i, [n, o]) => ({ ...i, ...(hasUrl(req.protocol, req.host, o) ? {[n]: o} : {})}), {}));
+        }))(
+          Object.entries(r)
+            .reduce((i, [n, o]) =>
+              ({ ...i, ...(matchUrls(req.protocol, req.host, o).length > 0 ? {[n]: o} : {})}), {}));
 
 export const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) => OpenAPIObject) =>
     (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
@@ -150,8 +167,12 @@ export const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) 
   .composeTraversal(
     fromTraversable(array)<[string, OpenAPIObject]>()
       .filter(([__, o]) =>
-        hasUrl(req.protocol, req.host, o)))
-  .composeLens(valueLens()).modify(oai => f(req, oai))(r);
+        matchUrls(req.protocol, req.host, o).length > 0))
+  .composeLens(valueLens()).modify(oai => f({
+    ...req,
+    path: truncatePath(req.path, oai, req),
+    pathname: truncatePath(req.pathname, oai, req),
+  }, oai))(r);
 
 export function responseCreatorFactory2({
   listeners = [],
@@ -161,18 +182,18 @@ export function responseCreatorFactory2({
   options: IUnmockOptions;
   store: ServiceStore;
 }): CreateResponse {
-    const transformers = [
-      // first transformer is the matcher
-      matcher,
-      // subsequent developer-defined transformers
-      ...Object.entries(store.cores).map(([_, core]) =>
-        hoistTransformer(core.transformer)),
-    ];
     return (req: ISerializedRequest) => {
+      const transformers = [
+        // first transformer is the matcher
+        matcher,
+        // subsequent developer-defined transformers
+        ...Object.entries(store.cores).map(([_, core]) =>
+          hoistTransformer(core.transformer)),
+      ];
+      const schemas = Object.entries(store.cores)
+        .reduce((a, [n, x]) => ({ ...a, [n]: x.schema}), {});
       const schemaRecord = transformers
-        .reduce((a, b) => b(req, a),
-          Object.entries(store.cores)
-            .reduce((a, [n, x]) => ({ ...a, [n]: x.schema}), {}));
+        .reduce((a, b) => b(req, a), schemas);
       const toSchemas = objectToArray<OpenAPIObject>()
         .composeOptional(firstElementOptional());
       const toSchema = toSchemas

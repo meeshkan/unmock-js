@@ -71,7 +71,7 @@ test("matcher matches correctly", () => {
   });
 });
 
-test("matcher matches correctly", () => {
+test("matcher matches correctly 2", () => {
   expect(matcher({
     host: "api.bar.com",
     path: "/guest/{id}",
