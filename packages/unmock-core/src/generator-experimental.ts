@@ -144,7 +144,7 @@ export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject
         }))(Object.entries(r)
         .reduce((i, [n, o]) => ({ ...i, ...(hasUrl(req.protocol, req.host, o) ? {[n]: o} : {})}), {}));
 
-const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) => OpenAPIObject) =>
+export const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) => OpenAPIObject) =>
     (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
   objectToArray<OpenAPIObject>()
   .composeTraversal(

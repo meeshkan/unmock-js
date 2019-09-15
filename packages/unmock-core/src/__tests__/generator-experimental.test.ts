@@ -1,6 +1,7 @@
-import { without, hasUrl, prunePathItem, matches, refName, firstElementOptional, keyLens, getFirstMethod, operationOptional, useIfHeader, identityGetter } from "../generator-experimental";
+import { without, hasUrl, prunePathItem, matches, refName, firstElementOptional, keyLens, getFirstMethod, operationOptional, useIfHeader, identityGetter, hoistTransformer } from "../generator-experimental";
 import { Operation, PathItem, OpenAPIObject } from "loas3/dist/generated/full";
 import { some, none } from "fp-ts/lib/Option";
+import { ISerializedRequest } from "packages/unmock-core/dist/interfaces";
 
 interface ITest {
     a?: string;
@@ -15,7 +16,7 @@ test("without correctly removes key", () => {
 test("hasUrl works", () => {
   expect(hasUrl(
     "https",
-    "api.foo.com/v2", 
+    "api.foo.com/v2",
     {
       openapi: "",
       paths: {},
@@ -25,7 +26,7 @@ test("hasUrl works", () => {
   )).toBe(true);
   expect(hasUrl(
     "https",
-    "api.foo.com/v2", 
+    "api.foo.com/v2",
     {
       openapi: "",
       paths: {},
@@ -88,8 +89,9 @@ test("operation optional works", () => {
 });
 
 const baseO: OpenAPIObject = {
-  openapi: "",
+  openapi: "hello",
   info: { title: "", version: ""},
+  servers: [{url: "https://hello.api.com"}],
   paths: {},
 };
 
@@ -107,4 +109,30 @@ test("use if header works", () => {
 
 test("identity getter works", () => {
   expect(identityGetter().get(1)).toBe(1);
+});
+
+test("hoist transformer works", () => {
+  const foo = (_: ISerializedRequest, o: OpenAPIObject) => ({ ...o, openapi: "foobar" });
+  const hoisted = hoistTransformer(foo);
+  expect(hoisted({
+    host: "hello.api.com", // will match
+    path: "/users",
+    pathname: "/users",
+    protocol: "https",
+    method: "get",
+    query: {},
+   }, { baseO })).toEqual({
+     baseO: {
+        ...baseO,
+        openapi: "foobar",
+     },
+  });
+  expect(hoisted({
+    host: "helloooooo.api.com", // will result in no-op
+    path: "/users",
+    pathname: "/users",
+    protocol: "https",
+    method: "get",
+    query: {},
+  }, { baseO })).toEqual({ baseO });
 });
