@@ -4,7 +4,7 @@ import {
   PathItem,
   Schema,
 } from "loas3/dist/generated/full";
-import { HTTPMethod, ISerializedRequest } from "../interfaces";
+import { HTTPMethod, ISerializedRequest, IStateTransformer } from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IRequestResponsePair, ServiceSpy } from "./spy";
 
@@ -50,7 +50,7 @@ export type MatcherResponse =
 export interface IService {
   readonly spy: ServiceSpy;
   reset(): void;
-  state(f: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject): void;
+  state(...f: IStateTransformer[]): void;
 }
 
 export type ServiceStoreType = Record<string, IService>;

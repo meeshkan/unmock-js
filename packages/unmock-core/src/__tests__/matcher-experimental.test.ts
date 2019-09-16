@@ -1,4 +1,4 @@
-import { matcher } from "../generator-experimental";
+import { matcher } from "../generator";
 import { OpenAPIObject } from "loas3/dist/generated/full";
 
 const store: Record<string, OpenAPIObject> = {

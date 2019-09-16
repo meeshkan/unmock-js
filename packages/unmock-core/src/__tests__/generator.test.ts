@@ -8,8 +8,8 @@ import {
   operationOptional,
   useIfHeader,
   identityGetter,
-  hoistTransformer
-} from "../generator-experimental";
+  hoistTransformer,
+} from "../generator";
 import { PathItem, OpenAPIObject } from "loas3/dist/generated/full";
 import { some, none } from "fp-ts/lib/Option";
 import { ISerializedRequest } from "../interfaces";

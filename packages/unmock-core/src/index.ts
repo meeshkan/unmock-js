@@ -10,6 +10,7 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
+export { gen } from "./generator-utils";
 
 export { ISnapshot };
 const utils = { snapshotter: FsSnapshotter };

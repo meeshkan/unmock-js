@@ -1,5 +1,5 @@
 import { OpenAPIObject } from "loas3/dist/generated/full";
-import { ISerializedRequest } from "../interfaces";
+import { ISerializedRequest, IStateTransformer } from "../interfaces";
 import {
   IService,
   IServiceCore,
@@ -12,11 +12,14 @@ export class Service implements IService {
     this.spy = core.spy;
   }
 
-  public state(i: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject): void {
-    this.core.transformer = i;
+  public state(a0: IStateTransformer, ...i: IStateTransformer[]): void {
+    // console.log("SETTING STATE");
+    this.core.transformer = (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject =>
+      i.reduce((a, b) => b(req, a), a0(req, o));
   }
 
   public reset(): void {
+    // console.log("RESETTING STATE");
     this.spy.resetHistory();
     this.core.transformer = (_, b) => b;
   }
