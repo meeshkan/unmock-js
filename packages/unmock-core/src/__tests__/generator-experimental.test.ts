@@ -14,11 +14,6 @@ import { PathItem, OpenAPIObject } from "loas3/dist/generated/full";
 import { some, none } from "fp-ts/lib/Option";
 import { ISerializedRequest } from "../interfaces";
 
-interface ITest {
-    a?: string;
-    b?: string;
-}
-
 test("hasUrl works", () => {
   expect(matchUrls(
     "https",
