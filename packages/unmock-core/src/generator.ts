@@ -4,6 +4,7 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
+import { responseCreatorFactory2 } from "./generator-experimental";
 import {
   CreateResponse,
   IListener,
@@ -22,7 +23,6 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-
 type Headers = Record<string, Header>;
 
 function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
@@ -32,6 +32,7 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
     ? arr[0]
     : arr[Math.floor(Math.random() * arr.length)];
 }
+export const USE_EXPERIMENTAL_GENERATOR = { yes: false };
 
 export function responseCreatorFactory({
   listeners = [],
@@ -42,28 +43,36 @@ export function responseCreatorFactory({
   options: IUnmockOptions;
   store: ServiceStore;
 }): CreateResponse {
-  const match = (sreq: ISerializedRequest) =>
-    Object.values(store.cores)
-      .map(service => service.match(sreq))
-      .filter(res => res !== undefined)
-      .shift();
+  if (USE_EXPERIMENTAL_GENERATOR.yes) {
+    return responseCreatorFactory2({
+      listeners,
+      options,
+      store,
+    });
+  } else {
+    const match = (sreq: ISerializedRequest) =>
+      Object.values(store.cores)
+        .map(service => service.match(sreq))
+        .filter(res => res !== undefined)
+        .shift();
 
-  return (req: ISerializedRequest) => {
-    // Setup the unmock properties for jsf parsing of x-unmock-*
-    setupJSFUnmockProperties(req);
-    const matcherResponse: MatcherResponse = match(req);
+    return (req: ISerializedRequest) => {
+      // Setup the unmock properties for jsf parsing of x-unmock-*
+      setupJSFUnmockProperties(req);
+      const matcherResponse: MatcherResponse = match(req);
 
-    const res = generateMockFromTemplate(options, matcherResponse);
+      const res = generateMockFromTemplate(options, matcherResponse);
 
-    // Notify call tracker
-    if (typeof matcherResponse !== "undefined" && typeof res !== "undefined") {
-      matcherResponse.service.track({ req, res });
-    }
+      // Notify call tracker
+      if (typeof matcherResponse !== "undefined" && typeof res !== "undefined") {
+        matcherResponse.service.track({ req, res });
+      }
 
-    listeners.forEach((listener: IListener) => listener.notify({ req, res }));
-    jsf.reset(); // removes unmock-properties
-    return res;
-  };
+      listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+      jsf.reset(); // removes unmock-properties
+      return res;
+    };
+  }
 }
 
 const normalizeHeaders = (

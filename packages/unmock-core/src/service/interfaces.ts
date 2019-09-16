@@ -85,6 +85,7 @@ export interface IService {
   readonly state: StateType;
   readonly spy: ServiceSpy;
   reset(): void;
+  transformer(f: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject): void;
 }
 
 export type ServiceStoreType = Record<string, IService>;
@@ -100,6 +101,9 @@ export interface IObjectToService {
 }
 
 export interface IServiceCore {
+
+  transformer: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
+
   /**
    * Name for the service.
    */

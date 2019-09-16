@@ -1,4 +1,5 @@
-import { isRESTMethod } from "../interfaces";
+import { OpenAPIObject } from "loas3/dist/generated/full";
+import { ISerializedRequest, isRESTMethod } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT, DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import {
   ExtendedHTTPMethod,
@@ -26,9 +27,14 @@ export class Service implements IService {
     this.spy = core.spy;
   }
 
+  public transformer(i: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject): void {
+    this.core.transformer = i;
+  }
+
   public reset(): void {
     this.state.reset();
     this.spy.resetHistory();
+    this.core.transformer = (_, b) => b;
   }
 
   private updateDefaultState(state: StateInput | string): void;
