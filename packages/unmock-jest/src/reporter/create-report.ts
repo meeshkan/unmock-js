@@ -1,8 +1,10 @@
 // @ts-ignore
 // import { Remarkable } from "remarkable";
+import { Dictionary, forEach, groupBy, map } from "lodash";
 import { ISnapshot } from "unmock";
 import * as xmlBuilder from "xmlbuilder";
 import { IReportInput } from "./types";
+import xmlbuilder = require("xmlbuilder");
 
 // const md = new Remarkable();
 const stylesheet = `
@@ -26,10 +28,16 @@ const createHtmlBase = () => {
 
 export const PAGE_TITLE = "Unmock Jest report";
 
+const sortTests = (input: IReportInput): Dictionary<jest.TestResult[]> => {
+  const groupedByFilePath = groupBy(
+    input.jestData.aggregatedResult.testResults,
+    "testFilePath",
+  );
+  return groupedByFilePath;
+};
+
 const renderBody = (input: IReportInput): string => {
-  const reportBody = xmlBuilder
-    .begin()
-    .element("div", { id: "report-content" });
+  const reportBody = xmlBuilder.begin().element("div", { class: "report" });
 
   // Header
   reportBody.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
@@ -45,6 +53,19 @@ const renderBody = (input: IReportInput): string => {
     { class: "metadata" },
     `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
   );
+
+  const testSuites = reportBody.ele("div", { class: "test-results" });
+
+  const grouped = sortTests(input);
+
+  const testSuitesNodes = map(grouped, (_, filename) =>
+    xmlbuilder.begin().ele("p", filename),
+  );
+
+  forEach(testSuitesNodes, value => {
+    const block = testSuites.ele("div");
+    block.importDocument(value);
+  });
 
   return reportBody.end({ pretty: true });
 };
