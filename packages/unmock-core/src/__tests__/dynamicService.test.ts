@@ -71,7 +71,6 @@ describe("Tests dynamic path tests", () => {
       .get("foo")
       .reply(200, { city: u.city() });
     dynamicSpec.get("foo").reply(404, { msg: u.str() });
-    const service = unmock.services.foo;
   });
 
   it("Allows using same name with multiple servers", () => {
@@ -88,6 +87,5 @@ describe("Tests dynamic path tests", () => {
       .nock("https://abc.com", "foo")
       .get("foo")
       .reply(500);
-    const service = unmock.services.foo;
   });
 });
