@@ -6,6 +6,7 @@ const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { array } from "fp-ts/lib/Array";
 import { isNone, none, Option, some } from "fp-ts/lib/Option";
 import { isParameter, isResponse, MediaType } from "loas3/dist/generated/full";
+import { omit } from "lodash";
 import { fromTraversable, Getter, Iso, Lens, Optional, Prism } from "monocle-ts";
 import {
   allMethods,
@@ -42,37 +43,65 @@ import {
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
-export const without = <T>(p: T, m: keyof T): T => {
-  const o = { ...p };
-  delete o[m];
-  return o;
-};
-
+/**
+ * Finds server URLs that match a given protocol and host
+ * @param protocol like http or https
+ * @param host like api.foo.com
+ * @param o an OpenAPI schema from which the server URLs are taken
+ */
 export const matchUrls = (protocol: string, host: string, o: OpenAPIObject): string[] =>
   o.servers
     ? o.servers.map(m => m.url).filter(i => new url.URL(i).host === host && new url.URL(i).protocol === `${protocol}:`)
     : [];
 
 const prunePathItemInternal = (m: MethodNames, a: MethodNames[], p: PathItem): PathItem =>
-  a.length === 0 ? p : prunePathItemInternal(m, a.slice(1), a[0] === m ? p : without(p, a[0]));
+  a.length === 0
+    ? p // return p once we've exchausted all method names
+    : prunePathItemInternal(m, a.slice(1), /* omit everything but m from p */ a[0] === m ? p : omit(p, a[0]));
 
+/**
+ * Take all operations *except* `m` out of a PathItem.
+ * @param m An operation (`get`, `post`, etc)
+ * @param p A path item.
+ */
 export const prunePathItem = (m: MethodNames, p: PathItem) => prunePathItemInternal(m, allMethods, p);
 
-export const matchesInternal = (a: string[], b: string[]): boolean =>
-  a.length === b.length
-  && (a.length === 0
-    || (((a[0] === b[0])
-      || (b[0].length > 2 && b[0][0] === "{" && b[0].slice(-1) === "}")) && matchesInternal(a.slice(1), b.slice(1))));
+export const matchesInternal = (path: string[], pathItemKey: string[]): boolean =>
+  // only a match if same length
+  path.length === pathItemKey.length
+  && (path.length === 0 // terminal condition
+    || (((path[0] === pathItemKey[0]) // either they are equal, or...
+      || /* is wild card, ie {} */ (pathItemKey[0].length > 2 && pathItemKey[0][0] === "{"
+            && pathItemKey[0].slice(-1) === "}"))
+        /* recursion over the path */ && matchesInternal(path.slice(1), pathItemKey.slice(1))));
 
-export const matches = (a: string, b: string): boolean => matchesInternal(a.split("/"), b.split("/"));
+/**
+ * Tests if a path matches an openAPI PathItem key
+ * @param path path
+ * @param pathItemKey path item key
+ */
+export const matches = (path: string, pathItemKey: string): boolean =>
+  matchesInternal(path.split("/"), pathItemKey.split("/"));
 
+/**
+ * Gets the name of a reference from a reference.
+ * ie "#/components/schemas/Foo" => "Foo"
+ * @param r A reference
+ */
 export const refName = (r: Reference): string => r.$ref.split("/")[3];
 
+/**
+ * An optional that returns `some` first element of an array
+ * if it exists, or `none` if it doesn't.
+ */
 export const firstElementOptional = <T>() => new Optional<T[], T>(
   s => s.length > 0 ? some(s[0]) : none,
   a => s => [a, ...s.slice(1)],
 );
 
+/**
+ * A lens that zooms into the `key` of a `[key, value]` pair.
+ */
 export const keyLens = <A, T>() => new Lens<[A, T], A>(
   a => a[0],
   a => s => [a, s[1]],
@@ -92,11 +121,22 @@ const getFirstMethodInternal = (m: MethodNames[], p: PathItem): Option<[MethodNa
 export const getFirstMethod = (p: PathItem): Option<[MethodNames, Operation]> =>
   getFirstMethodInternal(allMethods, p);
 
+/**
+ * Gets `some` random operation (the first one) from a path item
+ * or `none` if there are no operations
+ * @param p A path item
+ */
 export const operationOptional = new Optional<PathItem, [MethodNames, Operation]>(
   a => getFirstMethod(a),
   a => s => ({ ...s, [a[0]]: a[1]}),
 );
 
+/**
+ * Gets `some` header from a reference
+ * or `none` if the reference doesn't exist
+ * @param o an open api object
+ * @param d the name of the header reference
+ */
 export const getHeaderFromRef = (o: OpenAPIObject, d: string): Option<Header> =>
   getComponentFromRef(
     o,
@@ -110,6 +150,12 @@ export const internalGetHeaderFromRef = internalGetComponent(getHeaderFromRef);
 export const useIfHeaderLastMile = (p: Parameter, r: Option<Schema>): Option<[string, Schema]> =>
   isNone(r) ? none : some([p.name, r.value || { type: "string" }]);
 
+/**
+ * Retursn `some` schema for a parameter if it is a header,
+ * else `none`.
+ * @param o An open API object.
+ * @param p A parameter that may be a header.
+ */
 export const useIfHeader = (o: OpenAPIObject, p: Parameter): Option<[string, Schema]> =>
   p.in !== "header"
     ? none
@@ -137,10 +183,27 @@ const cutPath = (paths: string[], path: string): string =>
 
 const removeTrailingSlash = (s: string) => s.length === 0 ? s : s.slice(-1) === "/" ? s.slice(0, -1) : s;
 
+/**
+ * Truncates the path in a request to a path useable by OpenAPI by
+ * removing the part included in the server URL.
+ * @param path A pathname from a request
+ * @param o An open api schema
+ * @param i A request object
+ */
 export const truncatePath = (path: string, o: OpenAPIObject, i: ISerializedRequest) =>
   cutPath(matchUrls(i.protocol, i.host, o).map(u => removeTrailingSlash(new url.URL(u).pathname)), path);
 
-// const trace = <T>(t: T, m?: string): T => { console.log("TRACE", t, m); return t };
+/**
+ * A matcher that takes a request and a dictionary of
+ * openAPI schema and returns a dictionary containing
+ * *only* the schmea with *only* the path item and *only*
+ * the method corresponding to the request. This will be
+ * and empty dictionary if the schema does not exist,
+ * empty PathItems if the path does not exist, and
+ * empty operations if the method does not exist.
+ * @param req The request
+ * @param r The dictionary of open api objects.
+ */
 export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
   objectToArray<OpenAPIObject>()
   .composeTraversal(fromTraversable(array)())
@@ -162,6 +225,15 @@ export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject
             .reduce((i, [n, o]) =>
               ({ ...i, ...(matchUrls(req.protocol, req.host, o).length > 0 ? {[n]: o} : {})}), {}));
 
+/**
+ * When transformers are provided to services, the service only
+ * knows its own schema, not the full dictionary of schemas.
+ * This function "hoists" a transformer from OpenAPI to a record of OpenAPI
+ * schemas so that it can be used as a top-level transformer.
+ * This way, it will ignore all requests to URLs that are not server URLs
+ * for the schema (see the filter operation).
+ * @param f A function from openAPI to openAPI.
+ */
 export const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) => OpenAPIObject) =>
     (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
   objectToArray<OpenAPIObject>()

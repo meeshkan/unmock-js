@@ -46,9 +46,5 @@
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "xregexp": "^4.2.4"
-  },
-  "devDependencies": {
-    "@types/deep-equal": "^1.0.1",
-    "deep-equal": "^1.1.0"
   }
 }

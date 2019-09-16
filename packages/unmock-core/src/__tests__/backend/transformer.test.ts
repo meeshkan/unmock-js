@@ -1,5 +1,5 @@
 import axios from "axios";
-const equal = require("deep-equal");
+import { isEqual } from "lodash";
 import * as path from "path";
 import { Service, UnmockPackage } from "../..";
 import NodeBackend from "../../backend";
@@ -196,7 +196,7 @@ describe("Node.js interceptor", () => {
     test("t fails setting an array size for non-array elements", async () => {
       const throwIfUnchanged = (f: (o: OpenAPIObject) => OpenAPIObject) => (o: OpenAPIObject): OpenAPIObject => {
         const out = f(o);
-        if (equal(out, o)) {
+        if (isEqual(out, o)) {
           throw Error("Array item setting did not work");
         }
         return out;

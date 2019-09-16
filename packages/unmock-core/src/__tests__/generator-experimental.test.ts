@@ -1,5 +1,4 @@
 import {
-  without,
   matchUrls,
   prunePathItem,
   matches,
@@ -19,11 +18,6 @@ interface ITest {
     a?: string;
     b?: string;
 }
-
-test("without correctly removes key", () => {
-  const a: ITest = { a: "a", b: "b" };
-  expect(without(a, "a")).toEqual({b: "b"});
-});
 
 test("hasUrl works", () => {
   expect(matchUrls(
