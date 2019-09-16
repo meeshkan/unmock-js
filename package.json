@@ -54,6 +54,7 @@
     "@types/xregexp": "^3.0.30",
     "axios": "^0.19.0",
     "codecov": "^3.3.0",
+    "deep-equal": "^1.1.0",
     "del-cli": "^1.1.0",
     "dotenv": "^7.0.0",
     "express": "^4.16.4",

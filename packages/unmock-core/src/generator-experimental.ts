@@ -154,7 +154,7 @@ export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject
           ...(oai.paths ? {
               paths: Object.entries(oai.paths)
                 .reduce((i, [n, o]) =>
-                  ({ ...i, ...(matches(truncatePath(req.path, oai, req), n) ? {[n]: o} : {})}), {}),
+                  ({ ...i, ...(matches(truncatePath(req.pathname, oai, req), n) ? {[n]: o} : {})}), {}),
               } : {}),
         }))(
           Object.entries(r)
