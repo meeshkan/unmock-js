@@ -463,7 +463,6 @@ export function responseCreatorFactory({
   store: ServiceStore;
 }): CreateResponse {
     return (req: ISerializedRequest) => {
-      // console.log("STARTING TRANSFORMER BLEND");
       const transformers = [
         // first transformer is the matcher
         matcher,
@@ -496,7 +495,6 @@ export function responseCreatorFactory({
         ...([...operationLevelHeaders, ...responseLevelHeaders]
             .reduce((a, b) => ({...a, [b[0]]: b[1]}), {})),
       };
-      // console.log("GENERATING MOCK", JSON.stringify(bodySchema, null, 2));
       const res = generateMockFromTemplate2(
         statusCode,
         // headers as an object for generation

@@ -50,8 +50,8 @@ function withOrWithoutCodes(
       ? path : true,
       method !== undefined && !isResponsesKey(method) && !isCodeAsInt(method)
       ? method : true, [
-        ...(isResponsesKey(path) ? [path] : isCodeAsInt(path) ? [path] : []),
         ...(isResponsesKey(method) ? [method] : isCodeAsInt(method) ? [method] : []),
+        ...(isResponsesKey(path) ? [path] : isCodeAsInt(path) ? [path] : []),
         ...(codes instanceof Array ? codes : codes === undefined ? [] : [codes]),
         ...otherCodes].map(i => codeConvert(i)))(o);
 }
@@ -183,12 +183,9 @@ export const gen = {
     const counter = { c: 0 };
     return (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject => {
       counter.c = counter.c + 1;
-      // console.log("CALLING", counter.c, n, req);
       if (counter.c > n) {
-        // console.log("WILL NOT INVOKE", f);
         return o;
       }
-      // console.log("WILL INVOKE", f);
       return f(req, o);
     }
   },

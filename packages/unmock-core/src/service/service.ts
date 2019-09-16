@@ -13,13 +13,11 @@ export class Service implements IService {
   }
 
   public state(a0: IStateTransformer, ...i: IStateTransformer[]): void {
-    // console.log("SETTING STATE");
     this.core.transformer = (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject =>
       i.reduce((a, b) => b(req, a), a0(req, o));
   }
 
   public reset(): void {
-    // console.log("RESETTING STATE");
     this.spy.resetHistory();
     this.core.transformer = (_, b) => b;
   }
