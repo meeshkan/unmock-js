@@ -30,63 +30,17 @@ import { OpenAPIObject, Reference, Responses, Schema } from "./service/interface
 const codeConvert = (c: CodeAsInt | keyof Responses): keyof Responses =>
   `${c}` as (keyof Responses);
 
-const isCodeAsInt = (u: unknown): u is CodeAsInt =>
-  typeof u === "number" &&
-  new Array(500).fill(null).map((_, i) => i + 100).indexOf(u) !== -1;
-
-const isResponsesKey = (u: unknown): u is keyof Responses =>
-  typeof u === "string" &&
-    ["default", ...new Array(500).fill(null).map((_, i) => `${i + 100}`)].indexOf(u) !== -1;
-function withOrWithoutCodes(
-  withOrWithout: boolean,
-  codes?: keyof Responses | CodeAsInt | Array<keyof Responses> | CodeAsInt[],
-  path?: keyof Responses | CodeAsInt | string | RegExp | boolean,
-  method?: keyof Responses | CodeAsInt | MethodNames | MethodNames[] | boolean,
-  ...otherCodes: Array<keyof Responses | CodeAsInt>
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject {
-  return (_: ISerializedRequest, o: OpenAPIObject) =>
+const withOrWithoutCodes = (withOrWithout: boolean) => (
+  codes: keyof Responses | CodeAsInt | Array<keyof Responses | CodeAsInt>,
+  path?: string | RegExp | boolean,
+  method?: MethodNames | MethodNames[] | boolean,
+) => (_: ISerializedRequest, o: OpenAPIObject) =>
     (withOrWithout ? includeCodes : removeCodes)(
-      path !== undefined && !isResponsesKey(path) && !isCodeAsInt(path)
-      ? path : true,
-      method !== undefined && !isResponsesKey(method) && !isCodeAsInt(method)
-      ? method : true, [
-        ...(isResponsesKey(method) ? [method] : isCodeAsInt(method) ? [method] : []),
-        ...(isResponsesKey(path) ? [path] : isCodeAsInt(path) ? [path] : []),
-        ...(codes instanceof Array ? codes : codes === undefined ? [] : [codes]),
-        ...otherCodes].map(i => codeConvert(i)))(o);
-}
-function withCodes(
-  codes: keyof Responses | CodeAsInt | Array<keyof Responses> | CodeAsInt[],
-  path?: string | RegExp | boolean,
-  method?: MethodNames | MethodNames[] | boolean,
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
-function withCodes(
-  ...codes: Array<keyof Responses | CodeAsInt>
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
-function withCodes(
-  codes?: keyof Responses | CodeAsInt | Array<keyof Responses> | CodeAsInt[],
-  path?: keyof Responses | CodeAsInt | string | RegExp | boolean,
-  method?: keyof Responses | CodeAsInt | MethodNames | MethodNames[] | boolean,
-  ...otherCodes: Array<keyof Responses | CodeAsInt>
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject {
-  return withOrWithoutCodes(true, codes, path, method, ...otherCodes);
-}
-function withoutCodes(
-  codes: keyof Responses | CodeAsInt | Array<keyof Responses> | CodeAsInt[],
-  path?: string | RegExp | boolean,
-  method?: MethodNames | MethodNames[] | boolean,
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
-function withoutCodes(
-  ...codes: Array<keyof Responses | CodeAsInt>
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
-function withoutCodes(
-  codes?: keyof Responses | CodeAsInt | Array<keyof Responses> | CodeAsInt[],
-  path?: keyof Responses | CodeAsInt | string | RegExp | boolean,
-  method?: keyof Responses | CodeAsInt | MethodNames | MethodNames[] | boolean,
-  ...otherCodes: Array<keyof Responses | CodeAsInt>
-): (_: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject {
-  return withOrWithoutCodes(false, codes, path, method, ...otherCodes);
-}
+      path !== undefined ? path : true,
+      method !== undefined ? method : true, (codes instanceof Array ? codes : [codes]).map(codeConvert))(o);
+
+const withCodes = withOrWithoutCodes(true);
+const withoutCodes = withOrWithoutCodes(false);
 
 interface ISchemaAddress {
   address?: Array<string | number | typeof Arr | typeof Addl>;
