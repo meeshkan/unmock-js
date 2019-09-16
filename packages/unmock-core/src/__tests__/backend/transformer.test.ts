@@ -1,12 +1,12 @@
 import axios from "axios";
-import equal from "deep-equal";
+const equal = require("deep-equal");
 import * as path from "path";
-import { dsl, Service, UnmockPackage, UnmockRequest } from "../..";
+import { Service, UnmockPackage } from "../..";
 import NodeBackend from "../../backend";
 import { USE_EXPERIMENTAL_GENERATOR } from "../../generator";
 import { includeCodes, changeToConst, responseBody, Arr, changeSingleSchema, changeMinItems, changeMaxItems, changeRequiredStatus } from "openapi-refinements";
-import { OpenAPIObject, Response } from "loas3/dist/generated/full";
-import { ISerializedRequest } from "packages/unmock-core/dist/interfaces";
+import { OpenAPIObject } from "loas3/dist/generated/full";
+import { ISerializedRequest } from "../../interfaces";
 USE_EXPERIMENTAL_GENERATOR.yes = true;
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
