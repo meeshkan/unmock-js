@@ -5,6 +5,10 @@ import * as xmlBuilder from "xmlbuilder";
 import { IReportInput } from "./types";
 
 // const md = new Remarkable();
+const stylesheet = `
+h1 {
+  font-size: 16px;
+}`;
 
 const createHtmlBase = () => {
   const htmlBase = {
@@ -12,6 +16,7 @@ const createHtmlBase = () => {
       head: {
         meta: { "@charset": "utf-8" },
         title: { "#text": "Unmock report" },
+        style: { "@type": "text/css", "#text": stylesheet },
       },
     },
   };
