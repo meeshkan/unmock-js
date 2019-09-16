@@ -1,9 +1,6 @@
 import { assert } from "sinon";
 import {
-  PetstoreServiceWithDynamicPaths,
   PetStoreServiceWithEmptyPaths,
-  PetStoreServiceWithEmptyResponses,
-  PetStoreServiceWithPseudoResponses,
   testRequest,
   testResponse,
 } from "./utils";
