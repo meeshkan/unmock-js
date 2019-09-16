@@ -1,10 +1,10 @@
 // @ts-ignore
-import { Remarkable } from "remarkable";
+// import { Remarkable } from "remarkable";
 import { ISnapshot } from "unmock";
 import * as xmlBuilder from "xmlbuilder";
 import { IReportInput } from "./types";
 
-const md = new Remarkable();
+// const md = new Remarkable();
 
 const createHtmlBase = () => {
   const htmlBase = {
@@ -19,7 +19,30 @@ const createHtmlBase = () => {
   return xmlBuilder.create(htmlBase);
 };
 
-const renderBodyHtml = (_: IReportInput) => md.render("# TITLE ");
+export const PAGE_TITLE = "Unmock Jest report";
+
+const renderBody = (input: IReportInput): string => {
+  const reportBody = xmlBuilder
+    .begin()
+    .element("div", { id: "report-content" });
+
+  // Header
+  reportBody.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
+
+  // Timestamp
+  reportBody.ele("div", { class: "timestamp" }, new Date().toString());
+
+  const aggregatedResult = input.jestData.aggregatedResult;
+
+  // Test run metadata
+  reportBody.ele(
+    "div",
+    { class: "metadata" },
+    `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
+  );
+
+  return reportBody.end({ pretty: true });
+};
 
 export const buildBody = (input: IReportInput): string => {
   const snapshots: ISnapshot[] = input.snapshots;
@@ -61,7 +84,7 @@ export const buildBody = (input: IReportInput): string => {
 
 export const createReport = (input: IReportInput) => {
   const htmlOutput = createHtmlBase();
-  const body = renderBodyHtml(input);
+  const body = renderBody(input);
   htmlOutput.ele("body").raw(body);
   return htmlOutput.end({ pretty: true });
 };

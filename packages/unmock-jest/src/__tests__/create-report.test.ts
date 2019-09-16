@@ -8,8 +8,13 @@ describe("Report creator for given data", () => {
   const report = createReport(exampleInput);
   expect(report).toBeDefined();
   const dom = new JSDOM(report);
-  it("should have title", () => {
-    const title = dom.window.document.querySelector("h1");
+  it("should have header", () => {
+    const title = dom.window.document.querySelector(".header");
     expect(title).toBeInTheDocument();
+  });
+
+  it("should have metadata", () => {
+    const metadata = dom.window.document.querySelector(".metadata");
+    expect(metadata).toBeInTheDocument();
   });
 });
