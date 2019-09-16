@@ -1,7 +1,12 @@
+// @ts-ignore
+import { Remarkable } from "remarkable";
 import { ISnapshot } from "unmock";
 import { IReportInput } from "./types";
 
-const buildBody = (input: IReportInput): string => {
+const md = new Remarkable();
+const buildBody2 = (_: IReportInput) => md.render("# Hello!");
+
+export const buildBody = (input: IReportInput): string => {
   const snapshots: ISnapshot[] = input.snapshots;
 
   const snapshotHeaders = `
@@ -40,7 +45,7 @@ const buildBody = (input: IReportInput): string => {
 };
 
 export const createReport = (input: IReportInput) => {
-  const body = buildBody(input);
+  const body = buildBody2(input);
   return `
 <!DOCTYPE html>
   <html>
