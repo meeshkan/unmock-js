@@ -1,4 +1,4 @@
-import program from "commander";
+import * as program from "commander";
 
 export default () => {
   program.usage("unmock <command>");

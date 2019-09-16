@@ -1,4 +1,4 @@
-import Ajv from "ajv";
+import Ajv = require("ajv");
 import debug from "debug";
 import { ISerializedRequest } from "../../interfaces";
 import { DSL, filterTopLevelDSL, getTopLevelDSL, ITopLevelDSL } from "../dsl";
@@ -140,14 +140,17 @@ const matchWithConcreteValue = (
   schema: Schema,
   value: any,
   key: string,
-): ISpreadState => ({
-  [key]:
-    isSchema(schema) && ajv.validate(schema, value)
-      ? { ...schema, const: value }
-      : typeof value === "function"
-      ? { ...schema, "x-unmock-function": value }
-      : null,
-});
+): ISpreadState => {
+  const { faker, ...rest } = schema as Schema & { faker: string }; // attempt to remove faker from schema if it exists
+  return {
+    [key]:
+      isSchema(rest) && ajv.validate(rest, value)
+        ? { ...schema, const: value }
+        : typeof value === "function"
+        ? { ...schema, "x-unmock-function": value }
+        : null,
+  };
+};
 
 /**
  * Matches between partial `state` and `schema` when given `state[key]` is not a concrete value.

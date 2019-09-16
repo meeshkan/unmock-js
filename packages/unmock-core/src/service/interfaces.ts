@@ -89,6 +89,16 @@ export interface IService {
 
 export type ServiceStoreType = Record<string, IService>;
 
+// Used to programmatically define/update a service
+export interface IObjectToService {
+  baseUrl: string;
+  method: HTTPMethod;
+  endpoint: string;
+  statusCode: number;
+  response: string | Schema;
+  name?: string;
+}
+
 export interface IServiceCore {
   /**
    * Name for the service.

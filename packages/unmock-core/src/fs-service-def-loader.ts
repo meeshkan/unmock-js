@@ -1,7 +1,7 @@
 import debug from "debug";
-import fs from "fs";
+import * as fs from "fs";
 import { flatMap } from "lodash";
-import path from "path";
+import * as path from "path";
 import { IServiceDef } from "./interfaces";
 
 const debugLog = debug("unmock:fs-service-def-loader");

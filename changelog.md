@@ -1,5 +1,17 @@
 # CHANGELOG.md
 
+## 0.2.2 (2019-09-16)
+
+Fixes:
+
+  - Disabled `esModuleInterop` in `tsconfig.json` so that the package can be used without `esModuleInterop`
+
+Features:
+
+  - Added initial `nock`-like syntax for declaring services
+  - Added `unmock-jest` package for Unmock Jest reporter
+  - Added snapshotting of requests to local disk so they're available for the Jest reporter
+
 ## 0.2.1 (2019-08-30)
 
 Breaking changes:

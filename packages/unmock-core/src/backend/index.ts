@@ -5,9 +5,9 @@ import {
   RequestOptions,
   ServerResponse,
 } from "http";
-import _ from "lodash";
-import Mitm from "mitm";
-import net from "net";
+import * as _ from "lodash";
+import Mitm = require("mitm");
+import * as net from "net";
 import { CustomConsole } from "../console";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
@@ -15,11 +15,16 @@ import {
   CreateResponse,
   ISerializedRequest,
   ISerializedResponse,
+  IServiceDef,
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
+import FSSnapshotter from "../loggers/snapshotter";
+import { ServiceParser } from "../parser";
 import { serializeRequest } from "../serialize";
+import { IServiceCore } from "../service/interfaces";
+import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
 
@@ -92,16 +97,38 @@ interface IBypassableSocket extends net.Socket {
 }
 
 export default class NodeBackend {
-  private serviceStore: ServiceStoreType = {};
+  public serviceStore: ServiceStore = new ServiceStore([]);
   private readonly config: INodeBackendOptions;
   private mitm: any;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
+    this.loadServices();
+  }
+
+  public loadServices() {
+    // Resolve where services can live
+    const unmockDirectories = this.config.servicesDirectory
+      ? [this.config.servicesDirectory]
+      : resolveUnmockDirectories();
+
+    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
+
+    // Prepare the request-response mapping by bootstrapping all dependencies here
+    const serviceDefLoader = new FsServiceDefLoader({
+      unmockDirectories,
+    });
+
+    const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
+    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
+      ServiceParser.parse(serviceDef),
+    );
+
+    this.serviceStore = new ServiceStore(coreServices);
   }
 
   public get services(): ServiceStoreType {
-    return this.serviceStore;
+    return (this.serviceStore && this.serviceStore.services) || {};
   }
 
   /**
@@ -125,28 +152,18 @@ export default class NodeBackend {
       this.mitmOnConnect(options, socket, opts),
     );
 
-    // Resolve where services can live
-    const unmockDirectories = this.config.servicesDirectory
-      ? [this.config.servicesDirectory]
-      : resolveUnmockDirectories();
-
-    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
-
-    // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
-    });
-
-    const { services, createResponse } = responseCreatorFactory({
-      listeners: [new FSLogger({ directory: this.config.servicesDirectory })],
+    const createResponse = responseCreatorFactory({
+      listeners: [
+        new FSLogger({ directory: this.config.servicesDirectory }),
+        FSSnapshotter.getOrUpdateSnapshotter({}),
+      ],
       options,
-      serviceDefLoader,
+      store: this.serviceStore,
     });
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
       this.mitmOnRequest(createResponse, req, res),
     );
-    this.serviceStore = services;
   }
 
   public reset() {
@@ -154,8 +171,12 @@ export default class NodeBackend {
       this.mitm.disable();
       this.mitm = undefined;
     }
-    Object.values(this.serviceStore).forEach(service => service.state.reset());
-    this.serviceStore = {};
+    if (this.serviceStore) {
+      // TODO - this is quite ugly :shrug:
+      Object.values(this.serviceStore.services).forEach(service =>
+        service.reset(),
+      );
+    }
     ClientRequestTracker.stop();
   }
 

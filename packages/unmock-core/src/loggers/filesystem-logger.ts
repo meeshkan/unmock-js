@@ -1,6 +1,6 @@
-import fs from "fs";
-import yaml from "js-yaml";
-import path from "path";
+import * as fs from "fs";
+import * as yaml from "js-yaml";
+import * as path from "path";
 import {
   IListener,
   ISerializedRequest,

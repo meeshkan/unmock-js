@@ -2,12 +2,19 @@
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
+import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
+import { nockify } from "./nock";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./types";
 export { sinon };
 export { default as dsl } from "./service/state/transformers";
+export { u } from "./nock";
+
+export { ISnapshot };
+const utils = { snapshotter: FsSnapshotter };
+export { utils };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
@@ -15,7 +22,6 @@ export class UnmockPackage implements IUnmockPackage {
   public useInProduction: BooleanSetting;
   protected readonly backend: NodeBackend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
-
   constructor(
     backend: NodeBackend,
     options?: {
@@ -54,9 +60,21 @@ export class UnmockPackage implements IUnmockPackage {
   public get services() {
     return this.backend.services;
   }
+
+  public nock(baseUrl: string, name?: string) {
+    return nockify({ backend: this.backend, baseUrl, name });
+  }
+
+  public reloadServices() {
+    this.backend.loadServices();
+  }
+
+  public reset() {
+    Object.values(this.backend.services).forEach(service => service.reset());
+  }
 }
 
-const unmock: IUnmockPackage = new UnmockPackage(new NodeBackend(), {
+const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 

@@ -58,15 +58,15 @@ export const getValidStatesForOperationWithState = (
   //    default response object for all HTTP codes that are not covered individually by the specification"
   // (see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#responsesObject)
   const { responses, error } =
-    code !== undefined
-      ? validStatesForStateWithCode(
+    typeof code === "number"
+      ? getValidStatesWithSingle$code(
           resps[String(code) as codeType] || resps.default,
           state,
           code,
           deref,
         )
       : // Otherwise, iterate over all status codes and find the ones matching the given state
-        validStatesForStateWithoutCode(resps, state, deref);
+        getValidStates(resps, code, state, deref);
   return { responses, error };
 };
 
@@ -77,7 +77,7 @@ export const getValidStatesForOperationWithState = (
  * @param state
  * @param code
  */
-const validStatesForStateWithCode = (
+const getValidStatesWithSingle$code = (
   response: Reference | Response | undefined,
   state: IStateInputGenerator,
   code: number | string,
@@ -114,8 +114,9 @@ const validStatesForStateWithCode = (
  * @param operationResponses
  * @param state
  */
-const validStatesForStateWithoutCode = (
+const getValidStates = (
   operationResponses: Responses,
+  codes: number[] | undefined,
   state: IStateInputGenerator,
   deref: Dereferencer,
 ): IValidState => {
@@ -125,14 +126,17 @@ const validStatesForStateWithoutCode = (
     )} with ${JSON.stringify(operationResponses)}`,
   );
 
-  const mapped = Object.keys(operationResponses).map(code => {
+  const codesToUse =
+    (codes && codes.map(c => c.toString())) || Object.keys(operationResponses);
+
+  const mapped = codesToUse.map(code => {
     debugLog(
       `validStatesForStateWithoutCode: Testing against status code ${code}`,
     );
     return {
       code,
-      ...validStatesForStateWithCode(
-        operationResponses[code as codeType],
+      ...getValidStatesWithSingle$code(
+        operationResponses[code as codeType] || operationResponses.default,
         state,
         code,
         deref,

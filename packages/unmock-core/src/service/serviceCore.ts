@@ -1,11 +1,14 @@
+import { defaultsDeep, unionBy } from "lodash";
 import { HTTPMethod, ISerializedRequest } from "../interfaces";
 import { DEFAULT_STATE_ENDPOINT } from "./constants";
 import {
   Dereferencer,
+  IObjectToService,
   IServiceCore,
   IStateInput,
   MatcherResponse,
   OpenAPIObject,
+  PathItem,
 } from "./interfaces";
 import { OASMatcher } from "./matcher";
 import {
@@ -18,6 +21,49 @@ import { State } from "./state/state";
 import { derefIfNeeded } from "./util";
 
 export class ServiceCore implements IServiceCore {
+  public static from(
+    baseSchema: OpenAPIObject,
+    {
+      baseUrl,
+      method,
+      endpoint,
+      statusCode,
+      response,
+      name,
+    }: IObjectToService & { name: string },
+  ): IServiceCore {
+    // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
+    const mediaType =
+      typeof response === "string" ? "text/*" : "application/json";
+    // TODO: Decouple from ServiceCore :( - this is nasty
+    const newPath: PathItem = {
+      [endpoint]: {
+        [method]: {
+          responses: {
+            [statusCode]: {
+              description: "Automatically added",
+              content: {
+                [mediaType]: { schema: response },
+              },
+            },
+          },
+        },
+      },
+    };
+    const newUrls = [{ url: baseUrl }];
+
+    const newPaths = defaultsDeep(newPath, baseSchema.paths);
+    const newServers = unionBy(
+      newUrls.concat(baseSchema.servers || []),
+      e => e.url,
+    );
+    const finalSchema = { ...baseSchema, paths: newPaths, servers: newServers };
+    return new ServiceCore({
+      schema: finalSchema,
+      name,
+    });
+  }
+
   public readonly name: string;
   public readonly absPath: string;
   public readonly dereferencer: Dereferencer;

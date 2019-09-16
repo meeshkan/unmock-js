@@ -1,5 +1,5 @@
-import path from "path";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
+import * as path from "path";
+import NodeBackend from "../backend/index";
 import { responseCreatorFactory } from "../generator";
 
 const mockOptions = {
@@ -9,38 +9,16 @@ const mockOptions = {
   useInProduction: () => false,
 };
 
-const serviceDefLoader = new FsServiceDefLoader({
-  unmockDirectories: [path.join(__dirname, "__unmock__")],
+const backend = new NodeBackend({
+  servicesDirectory: path.join(__dirname, "__unmock__"),
 });
+const services = backend.services;
 
 describe("Tests generator", () => {
-  it("loads all paths in __unmock__", () => {
-    const { services } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.slack.state({}); // should pass
-    services.petstore.state({}); // should pass
-    expect(() => services.github.state({})).toThrow(
-      "property 'state' of undefined",
-    ); // no github service
-  });
-
-  it("sets a state for swagger api converted to openapi", () => {
-    const { services } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.slack.state("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
-    expect(() =>
-      services.slack.state("/bots.info", { bot: { app_id: "A123456789" } }),
-    ).toThrow("type is incorrect"); // Does not match the specified pattern
-  });
-
   it("in non-flaky mode", () => {
-    const { createResponse } = responseCreatorFactory({
-      serviceDefLoader,
+    const createResponse = responseCreatorFactory({
       options: mockOptions,
+      store: backend.serviceStore,
     });
     for (let i = 0; i < 50; i++) {
       const resp = createResponse({
@@ -60,9 +38,9 @@ describe("Tests generator", () => {
   });
 
   it("in flaky mode", () => {
-    const { createResponse } = responseCreatorFactory({
-      serviceDefLoader,
+    const createResponse = responseCreatorFactory({
       options: { ...mockOptions, flaky: () => true },
+      store: backend.serviceStore,
     });
     const counters: { [code: number]: number } = { 200: 0, 201: 0 };
     for (let i = 0; i < 100; i++) {
@@ -86,9 +64,9 @@ describe("Tests generator", () => {
   });
 
   it("Generates correct response from differing status codes", () => {
-    const { services, createResponse } = responseCreatorFactory({
-      serviceDefLoader,
+    const createResponse = responseCreatorFactory({
       options: mockOptions,
+      store: backend.serviceStore,
     });
     services.filestackApi.state("/prefetch", "prefetch");
     let resp = createResponse({
@@ -121,9 +99,9 @@ describe("Tests generator", () => {
   });
 
   it("Sets a state with a function and generates accordingly", () => {
-    const { services, createResponse } = responseCreatorFactory({
-      serviceDefLoader,
+    const createResponse = responseCreatorFactory({
       options: mockOptions,
+      store: backend.serviceStore,
     });
     services.petstore.state({ id: () => "foo", $size: 5, $code: 200 });
     let resp = createResponse({

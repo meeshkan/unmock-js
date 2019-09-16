@@ -4,27 +4,22 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { defaultsDeep } from "lodash";
-import { FsServiceDefLoader } from "./fs-service-def-loader";
 import {
   CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
-  IServiceDef,
   IUnmockOptions,
 } from "./interfaces";
-import { ServiceParser } from "./parser";
 import {
   codeToMedia,
   Dereferencer,
   Header,
-  IServiceCore,
   MatcherResponse,
   Operation,
   Response,
   Responses,
   Schema,
-  ServiceStoreType,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
@@ -39,56 +34,49 @@ function firstOrRandomOrUndefined<T>(arr: T[]): T | undefined {
 }
 
 export function responseCreatorFactory({
-  serviceDefLoader,
   listeners = [],
   options,
+  store,
 }: {
-  serviceDefLoader: FsServiceDefLoader;
   listeners?: IListener[];
   options: IUnmockOptions;
-}): { services: ServiceStoreType; createResponse: CreateResponse } {
-  const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-  const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-    ServiceParser.parse(serviceDef),
-  );
-
+  store: ServiceStore;
+}): CreateResponse {
   const match = (sreq: ISerializedRequest) =>
-    coreServices
+    Object.values(store.cores)
       .map(service => service.match(sreq))
       .filter(res => res !== undefined)
       .shift();
-  const services = ServiceStore(coreServices);
 
-  return {
-    services,
-    createResponse: (req: ISerializedRequest) => {
-      // Setup the unmock properties for jsf parsing of x-unmock-*
-      setupJSFUnmockProperties(req);
-      const matcherResponse: MatcherResponse = match(req);
+  return (req: ISerializedRequest) => {
+    // Setup the unmock properties for jsf parsing of x-unmock-*
+    setupJSFUnmockProperties(req);
+    const matcherResponse: MatcherResponse = match(req);
 
-      const res = generateMockFromTemplate(options, matcherResponse);
+    const res = generateMockFromTemplate(options, matcherResponse);
 
-      // Notify call tracker
-      if (
-        typeof matcherResponse !== "undefined" &&
-        typeof res !== "undefined"
-      ) {
-        matcherResponse.service.track({ req, res });
-      }
+    // Notify call tracker
+    if (typeof matcherResponse !== "undefined" && typeof res !== "undefined") {
+      matcherResponse.service.track({ req, res });
+    }
 
-      listeners.forEach((listener: IListener) => listener.notify({ req, res }));
-      jsf.reset(); // removes unmock-properties
-      return res;
-    },
+    listeners.forEach((listener: IListener) => listener.notify({ req, res }));
+    jsf.reset(); // removes unmock-properties
+    return res;
   };
 }
 
-const normalizeHeaders = (headers: Headers | undefined): Headers | undefined =>
+const normalizeHeaders = (
+  headers: Headers | undefined,
+): Record<string, Schema> | undefined =>
   // Removes the 'schema' from each headers so it can generate a proper response
   headers === undefined
     ? undefined
     : Object.keys(headers).reduce(
-        (acc: Headers, h: string) => ({ ...acc, [h]: headers[h].schema }),
+        (acc: Record<string, Schema>, h: string) => ({
+          ...acc,
+          [h]: headers[h].schema as Schema, // TODO: Could be reference / undefined?
+        }),
         {},
       );
 
@@ -100,6 +88,7 @@ const toJSONSchemaType = (input: any) =>
     : typeof input;
 
 const setupJSFUnmockProperties = (sreq: ISerializedRequest) => {
+  jsf.extend("faker", () => require("faker"));
   // Handle post-generation references, etc
   jsf.define(
     "unmock-function",
@@ -157,9 +146,8 @@ const getStateForOperation = (
       return undefined;
     }
     operationStatusCode = "default";
-    stateStatusCode = genOptions.isFlaky
-      ? firstOrRandomOrUndefined(stateCodes)
-      : chooseResponseCode(stateCodes);
+    // If we have multiple state codes to choose from for this operation, choose one at random
+    stateStatusCode = firstOrRandomOrUndefined(stateCodes);
   } else {
     stateStatusCode = operationStatusCode = genOptions.isFlaky
       ? firstOrRandomOrUndefined(possibleResponseCodes)
