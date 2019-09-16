@@ -247,6 +247,117 @@ export const hoistTransformer = (f: (req: ISerializedRequest, r: OpenAPIObject) 
     pathname: truncatePath(req.pathname, oai, req),
   }, oai))(r);
 
+const toSchemas = objectToArray<OpenAPIObject>()
+  .composeOptional(firstElementOptional());
+const toSchema = toSchemas
+  .composeLens(valueLens());
+
+/**
+ * Retrieves an operation from a path item from a schema
+ * in a record of open api schemas.
+ * Only makes sense if the matcher has been one, which guarantees:
+ * - there is at most one schema in the record
+ * - there is at most one path item in the schema
+ * - there is at most one operation in the path item
+ * It will still work if this is not the case, but it will
+ * just pick a random schema, path item and operation, which
+ * will lead to nonsensical results.
+ * @param schemaRecord the Record<string, OpenAPISchema> that we
+ *   are getting the operation from.
+ */
+const drillDownToOperation = (schemaRecord: Record<string, OpenAPIObject>) =>
+  toSchema
+    .composeOptional(Optional.fromNullableProp<OpenAPIObject>()("paths"))
+    .composeIso(objectToArray())
+    .composeOptional(firstElementOptional())
+    .composeLens(valueLens())
+    .composeOptional(operationOptional)
+    .composeLens(valueLens())
+    .getOption(schemaRecord);
+
+/**
+ * Gets headers from the parameters of an operations
+ * @param schema A schema to get any definitions from for references.
+ * @param operation An operation that may or may not contain parameters
+ */
+const headersFromOperation = (schema: OpenAPIObject, operation: Operation) => Optional.fromNullableProp<Operation>()("parameters")
+  .composeTraversal(fromTraversable(array)())
+  .composePrism(new Prism(
+    s =>
+      isParameter(s)
+        ? some(s)
+        : isReference(s)
+        ? getParameterFromRef(schema, refName(s))
+        : none,
+    a => a,
+  ))
+  .composeOptional(parameterSchema(schema))
+  .composeGetter(identityGetter())
+  .getAll(operation);
+
+/**
+ * Makes lense to a single response from an operation
+ * @param schema A schema containing definitions of responses
+ * @param code The response code corresponding to the response we want
+ */
+const makeLensToResponseStartingFromOperation = (schema: OpenAPIObject, code: keyof Responses) =>
+  Optional.fromNullableProp<Operation>()("responses")
+.composeOptional(Optional.fromNullableProp<Responses>()(code))
+.composePrism(
+  new Prism(
+    s =>
+      isResponse(s)
+        ? some(s)
+        : isReference(s)
+        ? getResponseFromRef(schema, refName(s))
+        : none,
+    a => a,
+  ),
+);
+
+const stringHeader = (n: string, o: Option<Header>): Option<[string, Header]> =>
+  isNone(o) ? none : some([n, o.value]);
+
+/**
+ * Gets headers from a response
+ * @param schema A schema to get any definitions from for references.
+ * @param operation An operation that may or may not contain parameters
+ * @param code The response code corresponding to the response we want
+ */
+const headersFromResponse = (schema: OpenAPIObject, operation: Operation, code: keyof Responses) =>
+  makeLensToResponseStartingFromOperation(schema, code)
+  .composeOptional(Optional.fromNullableProp<Response>()("headers"))
+  .composeIso(objectToArray())
+  .composeTraversal(fromTraversable(array)())
+  .composePrism(new Prism<[string, Reference | Header], [string, Header]>(
+    a => isReference(a[1])
+      ? stringHeader(a[0], getHeaderFromRef(schema, refName(a[1])))
+      : some([a[0], a[1]]),
+    a => a,
+  ))
+  .composeIso(new Iso<[string, Header], Parameter>(
+    a => ({ ...a[1], name: a[0], in: "header"}),
+    a => [a.name, a],
+  ))
+  .composeOptional(parameterSchema(schema))
+  .composeGetter(identityGetter())
+  .getAll(operation);
+
+/**
+ * Gets a body schema from a response
+ * @param schema A schema to get any definitions from for references.
+ * @param operation An operation that may or may not contain parameters
+ * @param code The response code corresponding to the response we want
+ */
+const bodyFromResponse = (schema: OpenAPIObject, operation: Operation, code: keyof Responses) =>
+  makeLensToResponseStartingFromOperation(schema, code)
+    .composeOptional(Optional.fromNullableProp<Response>()("content"))
+    .composeIso(objectToArray())
+    .composeOptional(firstElementOptional())
+    .composeLens(valueLens())
+    .composeOptional(Optional.fromNullableProp<MediaType>()("schema"))
+    .getOption(operation);
+
 export function responseCreatorFactory2({
   listeners = [],
   store,
@@ -267,20 +378,9 @@ export function responseCreatorFactory2({
         .reduce((a, [n, x]) => ({ ...a, [n]: x.schema}), {});
       const schemaRecord = transformers
         .reduce((a, b) => b(req, a), schemas);
-      const toSchemas = objectToArray<OpenAPIObject>()
-        .composeOptional(firstElementOptional());
-      const toSchema = toSchemas
-        .composeLens(valueLens());
       const schema: Option<OpenAPIObject> = toSchema
         .getOption(schemaRecord);
-      const operation: Option<Operation> = toSchema
-        .composeOptional(Optional.fromNullableProp<OpenAPIObject>()("paths"))
-        .composeIso(objectToArray())
-        .composeOptional(firstElementOptional())
-        .composeLens(valueLens())
-        .composeOptional(operationOptional)
-        .composeLens(valueLens())
-        .getOption(schemaRecord);
+      const operation: Option<Operation> = drillDownToOperation(schemaRecord);
       if (isNone(operation) || isNone(schema)) {
         throw Error(`Cannot find a matcher for this request: ${JSON.stringify(req, null, 2)}`);
       }
@@ -291,71 +391,24 @@ export function responseCreatorFactory2({
         ? Object.entries(schema.value.components.schemas)
             .reduce((a, b) => ({...a, [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1])}), {})
         : {};
-      const headerSchema0 = Optional.fromNullableProp<Operation>()("parameters")
-        .composeTraversal(fromTraversable(array)())
-        .composePrism(new Prism(
-          s =>
-            isParameter(s)
-              ? some(s)
-              : isReference(s)
-              ? getParameterFromRef(schema.value, refName(s))
-              : none,
-          a => a,
-        ))
-        .composeOptional(parameterSchema(schema.value))
-        .composeGetter(identityGetter())
-        .getAll(operation.value);
-      const path1 = Optional.fromNullableProp<Operation>()("responses")
-      .composeOptional(Optional.fromNullableProp<Responses>()(code))
-      .composePrism(
-        new Prism(
-          s =>
-            isResponse(s)
-              ? some(s)
-              : isReference(s)
-              ? getResponseFromRef(schema.value, refName(s))
-              : none,
-          a => a,
-        ),
-      );
-      const stringHeader = (n: string, o: Option<Header>): Option<[string, Header]> =>
-        isNone(o) ? none : some([n, o.value]);
-      const headerSchema1 = path1
-        .composeOptional(Optional.fromNullableProp<Response>()("headers"))
-        .composeIso(objectToArray())
-        .composeTraversal(fromTraversable(array)())
-        .composePrism(new Prism<[string, Reference | Header], [string, Header]>(
-          a => isReference(a[1])
-            ? stringHeader(a[0], getHeaderFromRef(schema.value, refName(a[1])))
-            : some([a[0], a[1]]),
-          a => a,
-        ))
-        .composeIso(new Iso<[string, Header], Parameter>(
-          a => ({ ...a[1], name: a[0], in: "header"}),
-          a => [a.name, a],
-        ))
-        .composeOptional(parameterSchema(schema.value))
-        .composeGetter(identityGetter())
-        .getAll(operation.value);
-      const bodySchema = path1
-        .composeOptional(Optional.fromNullableProp<Response>()("content"))
-        .composeIso(objectToArray())
-        .composeOptional(firstElementOptional())
-        .composeLens(valueLens())
-        .composeOptional(Optional.fromNullableProp<MediaType>()("schema"))
-        .getOption(operation.value);
+      const operationLevelHeaders = headersFromOperation(schema.value, operation.value);
+      const responseLevelHeaders = headersFromResponse(schema.value, operation.value, code);
+      const bodySchema = bodyFromResponse(schema.value, operation.value, code);
+      // all headers as properties in an object
       const headerProperties = {
-        ...([...headerSchema0, ...headerSchema1]
+        ...([...operationLevelHeaders, ...responseLevelHeaders]
             .reduce((a, b) => ({...a, [b[0]]: b[1]}), {})),
       };
       const res = generateMockFromTemplate2(
         statusCode,
+        // headers as an object for generation
         {
           definitions,
           type: "object",
           properties: headerProperties,
           required: Object.keys(headerProperties),
         },
+        // body as an object for generation
         isNone(bodySchema)
           ? undefined
           : {
