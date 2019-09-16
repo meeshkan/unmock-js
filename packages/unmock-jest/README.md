@@ -45,5 +45,5 @@ Following options are available:
 
 | Reporter Config Name| Description | Default |
 |--|--|--|
-| `outputDirectory` | Directory to save the output | "__unmock__/" |
+| `outputDirectory` | Directory to save the output | "\_\_unmock\_\_/" |
 | `outputFilename` | File name for the output | "unmock-report.html" |
