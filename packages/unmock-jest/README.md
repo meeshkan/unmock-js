@@ -1,6 +1,8 @@
 # unmock-jest
 
-Jest reporter for Unmock.
+Jest reporter for [Unmock](https://unmock.io).
+
+Read full documentation at [unmock.io](https://unmock.io).
 
 ## Installation
 
