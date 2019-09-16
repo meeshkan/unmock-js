@@ -36,7 +36,7 @@ You can define options in the reporter configuration:
 {
     reporters: [
       "default",
-        [ "unmock-jest", { outputDirectory: "reports" } ]
+      [ "unmock-jest", { outputDirectory: "reports" } ]
   ]
 }
 ```
