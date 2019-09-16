@@ -193,7 +193,7 @@ describe("Node.js interceptor", () => {
     });
 
     // this is just a no-op in the new version
-    test.skip("t fails setting an array size for non-array elements", async () => {
+    test("t fails setting an array size for non-array elements", async () => {
       const throwIfUnchanged = (f: (o: OpenAPIObject) => OpenAPIObject) => (o: OpenAPIObject): OpenAPIObject => {
         const out = f(o);
         if (equal(out, o)) {
@@ -206,7 +206,11 @@ describe("Node.js interceptor", () => {
         throwIfUnchanged(changeMinItems(5)(responseBody(true), [Arr, "id"])),
         throwIfUnchanged(changeMaxItems(5)(responseBody(true), [Arr, "id"])),
       ].reduce((a, b) => b(a), o));
-      expect(() => petstore.state({ id: { $size: 5 } })).toThrow("Array item setting did not work");
+      try {
+        await axios("http://petstore.swagger.io/v1/pets");
+      } catch (err) {
+        expect(err.message).toBe("unmock error: Array item setting did not work");
+      }
     });
 
     test("t updates times correctly", async () => {
@@ -252,7 +256,7 @@ describe("Node.js interceptor", () => {
       expect(resp.data.properties.isCat).toBeFalsy();
     });
 
-    test.skip("Works with multiple codes", async () => {
+    test("t works with multiple codes", async () => {
       petstore.transformer((_, __) => ({
         openapi: "",
         info: { title: "", version: ""},

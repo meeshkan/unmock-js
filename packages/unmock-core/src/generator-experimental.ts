@@ -20,6 +20,7 @@ import {
   objectToArray,
   valueLens,
 } from "openapi-refinements";
+import * as url from "url";
 import {
   CreateResponse,
   IListener,
@@ -49,7 +50,7 @@ export const without = <T>(p: T, m: keyof T): T => {
 
 export const matchUrls = (protocol: string, host: string, o: OpenAPIObject): string[] =>
   o.servers
-    ? o.servers.map(m => m.url).filter(i => new URL(i).host === host && new URL(i).protocol === `${protocol}:`)
+    ? o.servers.map(m => m.url).filter(i => new url.URL(i).host === host && new url.URL(i).protocol === `${protocol}:`)
     : [];
 
 const prunePathItemInternal = (m: MethodNames, a: MethodNames[], p: PathItem): PathItem =>
@@ -137,7 +138,7 @@ const cutPath = (paths: string[], path: string): string =>
 const removeTrailingSlash = (s: string) => s.length === 0 ? s : s.slice(-1) === "/" ? s.slice(0, -1) : s;
 
 export const truncatePath = (path: string, o: OpenAPIObject, i: ISerializedRequest) =>
-  cutPath(matchUrls(i.protocol, i.host, o).map(u => removeTrailingSlash(new URL(u).pathname)), path);
+  cutPath(matchUrls(i.protocol, i.host, o).map(u => removeTrailingSlash(new url.URL(u).pathname)), path);
 
 // const trace = <T>(t: T, m?: string): T => { console.log("TRACE", t, m); return t };
 export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject>): Record<string, OpenAPIObject> =>
