@@ -1,4 +1,5 @@
 import axios from "axios";
+import { removeCodes } from "openapi-refinements";
 import * as path from "path";
 import { Service, sinon, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
@@ -8,23 +9,11 @@ const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 describe("Loads services properly", () => {
   it("loads all paths in __unmock__", () => {
     const backend = new NodeBackend({ servicesDirectory });
-    backend.services.slack.state({}); // should pass
-    backend.services.petstore.state({}); // should pass
-    expect(() => backend.services.github.state({})).toThrow(
+    backend.services.slack.state((_, __) => __); // should pass
+    backend.services.petstore.state((_, __) => __); // should pass
+    expect(() => backend.services.github.state((_, __) => __)).toThrow(
       "property 'state' of undefined",
     ); // no github service
-  });
-
-  it("sets a state for swagger api converted to openapi", () => {
-    const backend = new NodeBackend({ servicesDirectory });
-    backend.services.slack.state("/bots.info", {
-      bot: { app_id: "A12345678" },
-    }); // should pass
-    expect(() =>
-      backend.services.slack.state("/bots.info", {
-        bot: { app_id: "A123456789" },
-      }),
-    ).toThrow("type is incorrect"); // Does not match the specified pattern
   });
 });
 
@@ -40,6 +29,8 @@ describe("Node.js interceptor", () => {
         log: (_: string) => undefined,
         useInProduction: () => false,
       });
+      const petstore = nodeInterceptor.services.petstore;
+      petstore.state((_, o) => removeCodes(true, true, ["default"])(o));
     });
 
     afterAll(() => {
@@ -80,7 +71,7 @@ describe("Node.js interceptor", () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toContain("No matching template");
+        expect(err.message).toContain("unmock error: Cannot find a matcher for this request");
         return;
       }
       throw new Error("Should not get here");
@@ -115,6 +106,7 @@ describe("Unmock node package", () => {
     });
     beforeEach(() => {
       petstore.reset();
+      petstore.state((_, o) => removeCodes(true, true, ["default"])(o));
     });
     test("should track a successful request-response pair", async () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});

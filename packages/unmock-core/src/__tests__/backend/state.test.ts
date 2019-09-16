@@ -3,11 +3,9 @@ import { isEqual } from "lodash";
 import * as path from "path";
 import { Service, UnmockPackage } from "../..";
 import NodeBackend from "../../backend";
-import { USE_EXPERIMENTAL_GENERATOR } from "../../generator";
 import { includeCodes, changeToConst, responseBody, Arr, changeSingleSchema, changeMinItems, changeMaxItems, changeRequiredStatus } from "openapi-refinements";
 import { OpenAPIObject } from "loas3/dist/generated/full";
 import { ISerializedRequest } from "../../interfaces";
-USE_EXPERIMENTAL_GENERATOR.yes = true;
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
@@ -41,7 +39,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t gets correct code upon request without other state", async () => {
-      petstore.transformer((_, o) => includeCodes(true, true, ["200"])(o));
+      petstore.state((_, o) => includeCodes(true, true, ["200"])(o));
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(
@@ -53,7 +51,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t gets correct state after setting state with status code", async () => {
-      petstore.transformer((_, o) => [
+      petstore.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst(5)(responseBody(true), [Arr, "id"]),
       ].reduce((a, b) => b(a), o));
@@ -66,7 +64,7 @@ describe("Node.js interceptor", () => {
     // there is no message field on 200...
     // also, we need to be explicit about 200 as there is also a default response
     test("t gets correct state after setting state without status code", async () => {
-      petstore.transformer((_, o) => [
+      petstore.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeSingleSchema(__ => ___ => ({
           type: "object",
@@ -80,7 +78,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t gets correct state after multiple overriden state requests", async () => {
-      petstore.transformer((_, o) => [
+      petstore.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst(5)(responseBody(new RegExp("/pets")), [Arr, "id"]),
         changeToConst(-1)(responseBody(new RegExp("/pets/{[a-zA-Z0-9/]+}")), ["id"]),
@@ -94,7 +92,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t gets correct state when setting textual response", async () => {
-      filestackApi.transformer((_, o) => [
+      filestackApi.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst("foo")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["200"], ["text/plain"]), []),
       ].reduce((a, b) => b(a), o));
@@ -104,7 +102,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("gets correct state with query parameter when setting textual response", async () => {
-      filestackApi.transformer((_, o) => [
+      filestackApi.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst("foo")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["200"], ["text/plain"]), []),
       ].reduce((a, b) => b(a), o));
@@ -116,7 +114,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t gets correct state when setting textual response with path", async () => {
-      filestackApi.transformer((_, o) => [
+      filestackApi.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst("bar")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["200"], ["text/plain"]), []),
       ].reduce((a, b) => b(a), o));
@@ -126,7 +124,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t default response turns into 500", async () => {
-      filestackApi.transformer((_, o) => [
+      filestackApi.state((_, o) => [
         includeCodes(true, true, ["default"]),
         changeToConst("foo")(responseBody(new RegExp("[a-zA-Z0-9/]*"), true, ["default"], ["text/plain"]), []),
       ].reduce((a, b) => b(a), o));
@@ -140,7 +138,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t sets an entire response from function", async () => {
-      petstore.transformer((_, o) => [
+      petstore.state((_, o) => [
         includeCodes(true, true, ["200"]),
         changeToConst([{id: 1, name: "Fluffy"}])(responseBody("/pets", true, ["200"]), []),
       ].reduce((a, b) => b(a), o));
@@ -149,7 +147,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("t sets an entire response from with request object", async () => {
-      petstore.transformer((req, o) => [
+      petstore.state((req, o) => [
         includeCodes(true, true, ["200"]),
         changeSingleSchema(__ => ___ => ({ type: "string", enum: [req.host]}))
           (responseBody("/pets", true, ["200"]), []),
@@ -159,7 +157,7 @@ describe("Node.js interceptor", () => {
     });
 
     test("sets an entire response from function with DSL", async () => {
-      petstore.transformer((_, __) => ({
+      petstore.state((_, __) => ({
         openapi: "",
         info: { title: "", version: ""},
         paths: {
@@ -201,7 +199,7 @@ describe("Node.js interceptor", () => {
         }
         return out;
       };
-      petstore.transformer((_, o) => [
+      petstore.state((_, o) => [
         includeCodes(true, true, ["200"]),
         throwIfUnchanged(changeMinItems(5)(responseBody(true), [Arr, "id"])),
         throwIfUnchanged(changeMaxItems(5)(responseBody(true), [Arr, "id"])),
@@ -221,7 +219,7 @@ describe("Node.js interceptor", () => {
         });
       const { slack } = unmock.services;
       const counter = { n: 0 };
-      slack.transformer((_, o) => {
+      slack.state((_, o) => {
         counter.n += 1;
         return  [
           includeCodes(true, true, ["200"]),
@@ -248,16 +246,16 @@ describe("Node.js interceptor", () => {
         changeRequiredStatus("isCat")(responseBody(new RegExp("/pets/{[a-zA-Z0-9/]+}")), ["properties"]),
         changeToConst(isCat)(responseBody(new RegExp("/pets/{[a-zA-Z0-9/]+}")), ["properties", "isCat"]),
       ].reduce((a, b) => b(a), o);
-      petstore.transformer(makeTransformer(true));
+      petstore.state(makeTransformer(true));
       let resp = await axios("http://petstore.swagger.io/v1/pets/54");
       expect(resp.data.properties.isCat).toBeTruthy();
-      petstore.transformer(makeTransformer(false));
+      petstore.state(makeTransformer(false));
       resp = await axios("http://petstore.swagger.io/v1/pets/3");
       expect(resp.data.properties.isCat).toBeFalsy();
     });
 
     test("t works with multiple codes", async () => {
-      petstore.transformer((_, __) => ({
+      petstore.state((_, __) => ({
         openapi: "",
         info: { title: "", version: ""},
         paths: {

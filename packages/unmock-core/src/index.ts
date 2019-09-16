@@ -9,7 +9,6 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./types";
 export { sinon };
-export { default as dsl } from "./service/state/transformers";
 export { u } from "./nock";
 
 export { ISnapshot };
