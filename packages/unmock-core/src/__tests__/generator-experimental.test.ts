@@ -70,10 +70,24 @@ test("prune path item works", () => {
 });
 
 test("matches works", () => {
-  expect(matches("/a/b", "/a/b")).toBe(true);
-  expect(matches("/a/", "/a/b")).toBe(false);
-  expect(matches("/a/b", "/a")).toBe(false);
-  expect(matches("/a/b/c", "/a/{fewfwef}/c")).toBe(true);
+  const bfoo = {
+    parameters: [
+      { in: "path", name: "foo", schema: { type: "string", pattern: "^[abc]+$" }},
+    ],
+  };
+  const oai: OpenAPIObject = {
+    openapi: "",
+    info: { title: "", version: "" },
+    paths: {
+      "/b/{foo}": bfoo,
+    },
+  };
+  expect(matches("/a/b", "/a/b", bfoo, "get", oai)).toBe(true);
+  expect(matches("/a/", "/a/b", bfoo, "get", oai)).toBe(false);
+  expect(matches("/a/b", "/a", bfoo, "get", oai)).toBe(false);
+  expect(matches("/a/b/c", "/a/{fewfwef}/c", bfoo, "get", oai)).toBe(true);
+  expect(matches("/b/ccaaca", "/b/{foo}", bfoo, "get", oai)).toBe(true);
+  expect(matches("/b/ccaacda", "/b/{foo}", bfoo, "get", oai)).toBe(false);
 });
 
 test("non empty prism works", () => {

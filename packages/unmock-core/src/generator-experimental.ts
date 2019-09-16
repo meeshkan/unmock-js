@@ -5,9 +5,10 @@
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { array } from "fp-ts/lib/Array";
 import { isNone, none, Option, some } from "fp-ts/lib/Option";
+import * as jsonschema from "jsonschema";
 import { isParameter, isResponse, MediaType } from "loas3/dist/generated/full";
 import { omit } from "lodash";
-import { fromTraversable, Getter, Iso, Lens, Optional, Prism } from "monocle-ts";
+import { fromTraversable, Getter, Iso, Lens, Optional, Prism, Traversal } from "monocle-ts";
 import {
   allMethods,
   changeRef,
@@ -66,22 +67,108 @@ const prunePathItemInternal = (m: MethodNames, a: MethodNames[], p: PathItem): P
  */
 export const prunePathItem = (m: MethodNames, p: PathItem) => prunePathItemInternal(m, allMethods, p);
 
-export const matchesInternal = (path: string[], pathItemKey: string[]): boolean =>
+const maybeAddStringSchema = (s: Array<Reference | Schema>): Array<Reference | Schema> => s.length === 0 ? [{type: "string"}] : s;
+
+const discernName = (o: Option<Parameter>, n: string): Option<Parameter>  =>
+  isNone(o) ? o : o.value.name === n && o.value.in === "path" ? o : none;
+
+const internalGetParameter = (
+  t: Traversal<PathItem, Reference | Parameter>,
+  vname: string,
+  pathItem: PathItem,
+  oas: OpenAPIObject,
+) =>
+  t
+    .composePrism(new Prism(
+      i => isReference(i)
+        ? discernName(getParameterFromRef(oas, refName(i)), vname)
+        : discernName(some(i), vname),
+      a => a,
+    ))
+    .composeOptional(Optional.fromNullableProp<Parameter>()("schema"))
+    .composeGetter(identityGetter())
+    .getAll(pathItem);
+
+const pathItemPathParameter = (vname: string, pathItem: PathItem, oas: OpenAPIObject) =>
+  internalGetParameter(
+    Optional.fromNullableProp<PathItem>()("parameters")
+      .composeTraversal(fromTraversable(array)<Reference | Parameter>()),
+    vname,
+    pathItem,
+    oas);
+
+const operationPathParameter = (vname: string, pathItem: PathItem, operation: MethodNames, oas: OpenAPIObject) =>
+internalGetParameter(
+  Optional.fromNullableProp<PathItem>()(operation)
+    .composeOptional(Optional.fromNullableProp<Operation>()("parameters"))
+    .composeTraversal(fromTraversable(array)<Reference | Parameter>()),
+  vname,
+  pathItem,
+  oas);
+
+const getMatchingParameters = (vname: string, pathItem: PathItem, operation: MethodNames, oas: OpenAPIObject) =>
+  maybeAddStringSchema([
+    ...pathItemPathParameter(vname, pathItem, oas),
+    ...operationPathParameter(vname, pathItem, operation, oas)]);
+
+/**
+ * Matches part of a path against a path parameter with name vname
+ * @param part part of a path, ie an id
+ * @param vname name of a parameter
+ * @param pathItem a path item maybe containing the parameter
+ * @param operation the name of the operation to check in case the parameter is in the operation
+ * @param oas the schema to traverse to find definitions
+ */
+const pathParameterMatch = (
+  part: string,
+  vname: string,
+  pathItem: PathItem,
+  operation: MethodNames,
+  oas: OpenAPIObject,
+) =>
+  getMatchingParameters(
+    vname,
+    pathItem,
+    operation,
+    oas,
+  ).filter(i => jsonschema.validate(part, {
+    ...i,
+    definitions: oas.components && oas.components.schemas
+      ? Object.entries(oas.components.schemas)
+        .reduce((a, b) => ({ ...a, [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1])}), {})
+      : {},
+  } ).valid).length > 0;
+
+export const matchesInternal = (
+  path: string[],
+  pathItemKey: string[],
+  pathItem: PathItem,
+  operation: MethodNames,
+  o: OpenAPIObject): boolean =>
   // only a match if same length
   path.length === pathItemKey.length
   && (path.length === 0 // terminal condition
     || (((path[0] === pathItemKey[0]) // either they are equal, or...
-      || /* is wild card, ie {} */ (pathItemKey[0].length > 2 && pathItemKey[0][0] === "{"
-            && pathItemKey[0].slice(-1) === "}"))
-        /* recursion over the path */ && matchesInternal(path.slice(1), pathItemKey.slice(1))));
+      || /* is wild card, ie {} */ (
+        pathItemKey[0].length > 2
+            && pathItemKey[0][0] === "{"
+            && pathItemKey[0].slice(-1) === "}"
+            && pathParameterMatch(path[0], pathItemKey[0].slice(1, -1), pathItem, operation, o)))
+        /* recursion over path */ && matchesInternal(path.slice(1), pathItemKey.slice(1), pathItem, operation, o)));
 
 /**
  * Tests if a path matches an openAPI PathItem key
  * @param path path
  * @param pathItemKey path item key
  */
-export const matches = (path: string, pathItemKey: string): boolean =>
-  matchesInternal(path.split("/"), pathItemKey.split("/"));
+export const matches = (
+  path: string,
+  pathItemKey: string,
+  pathItem: PathItem,
+  method: MethodNames,
+  oas: OpenAPIObject,
+): boolean =>
+  matchesInternal(path.split("/"), pathItemKey.split("/"), pathItem, method, oas);
 
 /**
  * Gets the name of a reference from a reference.
@@ -218,7 +305,16 @@ export const matcher = (req: ISerializedRequest, r: Record<string, OpenAPIObject
           ...(oai.paths ? {
               paths: Object.entries(oai.paths)
                 .reduce((i, [n, o]) =>
-                  ({ ...i, ...(matches(truncatePath(req.pathname, oai, req), n) ? {[n]: o} : {})}), {}),
+                  ({
+                      ...i,
+                      ...(
+                          matches(
+                            truncatePath(req.pathname, oai, req),
+                            n,
+                            o,
+                            req.method,
+                            oai,
+                          ) ? {[n]: o} : {})}), {}),
               } : {}),
         }))(
           Object.entries(r)
