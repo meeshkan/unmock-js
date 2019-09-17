@@ -51,9 +51,9 @@ describe("Report creator for real test data", () => {
   });
 
   /**
-   * Test for easier development, writes to file
+   * Write to file for development
    */
-  it("should write HTML to file metadata", () => {
+  it("should write HTML to file for inspection", () => {
     const targetDirectory = path.resolve(__dirname, "output");
     writeToDirectory(report, {
       outputDirectory: targetDirectory,
