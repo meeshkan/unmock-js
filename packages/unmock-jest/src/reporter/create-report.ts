@@ -109,7 +109,7 @@ const createTestSuiteNode = (
   return element;
 };
 
-const renderBody = (input: IReportInput): string => {
+const renderBody = (input: IReportInput): xmlBuilder.XMLDocument => {
   const reportBody = xmlBuilder.begin().element("div", { class: "report" });
 
   // Header
@@ -140,13 +140,13 @@ const renderBody = (input: IReportInput): string => {
     block.importDocument(node);
   });
 
-  return reportBody.end({ pretty: true });
+  return reportBody;
 };
 
 export const createReport = (input: IReportInput) => {
   const htmlOutput = createHtmlBase();
   const body = renderBody(input);
-  htmlOutput.ele("body").raw(body);
+  htmlOutput.ele("body").importDocument(body);
   return htmlOutput.end({ pretty: true });
 };
 
