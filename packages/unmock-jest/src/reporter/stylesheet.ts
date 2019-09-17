@@ -34,15 +34,17 @@ body {
 
 .header__text-box {
   position: relative;
-  top: 40%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -20%);
+  margin-right: -50%;
+  transform: translate(-50%, -0%);
   text-align: center;
 }
 
 .test-suite {
   border-style: dotted;
   padding: 1rem;
+  margin-top: 3rem;
 }
 
 .test-suite__title {
