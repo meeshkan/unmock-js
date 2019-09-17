@@ -73,11 +73,20 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
+// hack until we get around to doing full typing :-(
 const removeDynamicSymbol = (
-  schema: ExtendedJSONSchema,
+  schema: any,
 ): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
-  const { dynamic, ...rest } = schema;
-  return rest;
+  if (schema instanceof Array) {
+    return schema.map(removeDynamicSymbol) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+  }
+  if (typeof schema === "object") {
+    const { dynamic, ...rest } = schema;
+    return Object.entries(rest)
+      .reduce((a, b) =>
+        ({ ...a, [b[0]]: removeDynamicSymbol(b[1])}), {}) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+  }
+  return schema;
 };
 
 const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>

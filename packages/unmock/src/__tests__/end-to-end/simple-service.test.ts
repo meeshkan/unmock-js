@@ -25,5 +25,14 @@ describe("Simple service test", () => {
     );
     const response0 = await axios("https://api.foo.com/v1/users");
     expect(response0.data.length).toBeGreaterThanOrEqual(56);
+    foo.state(
+      responseBody().listToTuple(5),
+      responseBody({ address: [2, "id"]}).const(55),
+      responseBody({ address: [3, "id"]}).const(56),
+    );
+    const response1 = await axios("https://api.foo.com/v1/users");
+    expect(response1.data.length).toBe(5);
+    expect(response1.data[2].id).toBe(55);
+    expect(response1.data[3].id).toBe(56);
   });
 });
