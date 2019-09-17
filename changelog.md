@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 0.3.0 (2019-09-17)
+
+Features:
+
+  - New state mananagement system using `monocle-ts` and functional programming conventions. To set the state of any service, you use a function that accepts a request and an OpenAPI schema and returns a modified schema.
+  - A new runner for fuzz testing.
+
 ## 0.2.2 (2019-09-16)
 
 Fixes:
