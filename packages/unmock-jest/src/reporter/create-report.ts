@@ -2,9 +2,8 @@
 // import { Remarkable } from "remarkable";
 import { Dictionary, forEach, groupBy, map } from "lodash";
 import { ISnapshot } from "unmock";
-import * as xmlBuilder from "xmlbuilder";
+import xmlBuilder = require("xmlbuilder");
 import { IReportInput } from "./types";
-import xmlbuilder = require("xmlbuilder");
 
 // const md = new Remarkable();
 const stylesheet = `
@@ -59,7 +58,7 @@ const renderBody = (input: IReportInput): string => {
   const grouped = sortTests(input);
 
   const testSuitesNodes = map(grouped, (_, filename) =>
-    xmlbuilder.begin().ele("p", filename),
+    xmlBuilder.begin().ele("p", filename),
   );
 
   forEach(testSuitesNodes, value => {

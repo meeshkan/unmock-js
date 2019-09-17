@@ -1,0 +1,156 @@
+{
+  "numFailedTestSuites": 1,
+  "numFailedTests": 1,
+  "numPassedTestSuites": 1,
+  "numPassedTests": 6,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 2,
+  "numTotalTests": 7,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1568704238185,
+  "success": false,
+  "testResults": [
+    {
+      "failureMessage": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[1mI can also set a specific method\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n    Expected: not \u001b[32m\"foo\"\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 71 | \u001b[39m  \u001b[36mconst\u001b[39m channelsCreateResponse \u001b[33m=\u001b[39m await slackApi\u001b[33m.\u001b[39mchannelsCreate()\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 72 | \u001b[39m  expect(channelsCreateResponse\u001b[33m.\u001b[39mok)\u001b[33m.\u001b[39mtoBeTruthy()\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m\u001b[31m\u001b[1m>\u001b[2m\u001b[39m\u001b[90m 73 | \u001b[39m  expect(channelsCreateResponse\u001b[33m.\u001b[39mchannel\u001b[33m.\u001b[39mname)\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoEqual(\u001b[32m\"foo\"\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m    | \u001b[39m                                                  \u001b[31m\u001b[1m^\u001b[2m\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 74 | \u001b[39m})\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 75 | \u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[2m\u001b[0m\u001b[36mbasic.test.ts\u001b[39m\u001b[0m\u001b[2m:73:51)\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat fulfilled (\u001b[2m\u001b[0m\u001b[36mbasic.test.ts\u001b[39m\u001b[0m\u001b[2m:4:58)\u001b[2m\u001b[22m\n",
+      "numFailingTests": 1,
+      "numPassingTests": 3,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "perfStats": {
+        "end": 1568704241611,
+        "start": 1568704238518
+      },
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "unmatched": 0,
+        "updated": 0,
+        "uncheckedKeys": []
+      },
+      "testFilePath": "/Users/kimmo/git/meeshkan/unmock-examples/slack-typescript/basic.test.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [],
+          "duration": 565,
+          "failureMessages": [],
+          "fullName": "I can list some fake channels",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can list some fake channels"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 601,
+          "failureMessages": [],
+          "fullName": "I can force an error on all responses",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can force an error on all responses"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 41,
+          "failureMessages": [],
+          "fullName": "I can set force a response for specific endpoints",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can set force a response for specific endpoints"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 42,
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\nExpected: not \u001b[32m\"foo\"\u001b[39m\n\n    at Object.<anonymous> (/Users/kimmo/git/meeshkan/unmock-examples/slack-typescript/basic.test.ts:73:51)\n    at Generator.next (<anonymous>)\n    at fulfilled (/Users/kimmo/git/meeshkan/unmock-examples/slack-typescript/basic.test.ts:4:58)\n    at process._tickCallback (internal/process/next_tick.js:68:7)"
+          ],
+          "fullName": "I can also set a specific method",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "failed",
+          "title": "I can also set a specific method"
+        }
+      ],
+      "skipped": false,
+      "leaks": false
+    },
+    {
+      "failureMessage": null,
+      "numFailingTests": 0,
+      "numPassingTests": 3,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "perfStats": {
+        "end": 1568704241792,
+        "start": 1568704238517
+      },
+      "snapshot": {
+        "added": 0,
+        "fileDeleted": false,
+        "matched": 0,
+        "unchecked": 0,
+        "unmatched": 0,
+        "updated": 0,
+        "uncheckedKeys": []
+      },
+      "testFilePath": "/Users/kimmo/git/meeshkan/unmock-examples/slack-typescript/dsl.test.ts",
+      "testResults": [
+        {
+          "ancestorTitles": [],
+          "duration": 1108,
+          "failureMessages": [],
+          "fullName": "I can enforce a response code",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can enforce a response code"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 120,
+          "failureMessages": [],
+          "fullName": "I can also force specific response for N times",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can also force specific response for N times"
+        },
+        {
+          "ancestorTitles": [],
+          "duration": 243,
+          "failureMessages": [],
+          "fullName": "I can determine how many users are in my channel",
+          "location": null,
+          "numPassingAsserts": 0,
+          "status": "passed",
+          "title": "I can determine how many users are in my channel"
+        }
+      ],
+      "skipped": false,
+      "leaks": false
+    }
+  ],
+  "wasInterrupted": false
+}
