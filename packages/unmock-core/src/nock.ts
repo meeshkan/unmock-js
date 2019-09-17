@@ -1,5 +1,5 @@
 import * as io from "io-ts";
-import { cnst_, extendT, string_, tuple_, type_ } from "json-schema-poet";
+import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
 import {
   JSONArray,
   JSONObject,
