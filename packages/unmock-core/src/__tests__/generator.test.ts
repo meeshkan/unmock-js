@@ -14,7 +14,7 @@ import { PathItem, OpenAPIObject } from "loas3/dist/generated/full";
 import { some, none } from "fp-ts/lib/Option";
 import { ISerializedRequest } from "../interfaces";
 
-test("hasUrl works", () => {
+test("matchUrls returns all the urls from a schema's servers that match a given protocol and host", () => {
   expect(matchUrls(
     "https",
     "api.foo.com",
@@ -48,7 +48,7 @@ test("hasUrl works", () => {
   ).length).toEqual(0);
 });
 
-test("prune path item works", () => {
+test("prune path item keeps the path item we ask for and discards the rest", () => {
   const o: PathItem = {
     get: { responses: { 100: { description: "hello"} }},
     post: { responses: { 101: { description: "hello"} }},
@@ -69,7 +69,7 @@ test("prune path item works", () => {
   );
 });
 
-test("matches works", () => {
+test("path matcher takes string schema into account", () => {
   const bfoo = {
     parameters: [
       { in: "path", name: "foo", schema: { type: "string", pattern: "^[abc]+$" }},
@@ -90,21 +90,21 @@ test("matches works", () => {
   expect(matches("/b/ccaacda", "/b/{foo}", bfoo, "get", oai)).toBe(false);
 });
 
-test("non empty prism works", () => {
+test("firstElementOptional returns the first element of an array or none if the array is empty", () => {
   expect(firstElementOptional().getOption([1])).toEqual(some(1));
   expect(firstElementOptional().getOption([55, 2])).toEqual(some(55));
   expect(firstElementOptional().getOption([])).toEqual(none);
 });
 
-test("ref name works", () => {
+test("refName gets the name of a reference", () => {
   expect(refName({ $ref: "#/components/schemas/Foo"})).toBe("Foo");
 });
 
-test("key lens works", () => {
+test("keyLens provides a lens into the key of a [key, value] pair", () => {
   expect(keyLens().get([1, 2])).toBe(1);
 });
 
-test("operation optional works", () => {
+test("operation optional gets a random operation from a path item", () => {
   expect(operationOptional.getOption({
     get: { responses: { 100: { description: "hello"} }},
     description: "foo",
@@ -121,7 +121,7 @@ const baseO: OpenAPIObject = {
   paths: {},
 };
 
-test("use if header works", () => {
+test("use if header only returns valid headers", () => {
   expect(useIfHeader(baseO, { name: "foo", in: "query"})).toEqual(none);
   expect(useIfHeader(baseO, { name: "foo", in: "header"})).toEqual(some(["foo", {type: "string"}]));
   expect(useIfHeader(baseO, { name: "foo", in: "header", schema: { type: "number" }}))
@@ -133,11 +133,11 @@ test("use if header works", () => {
     .toEqual(some(["foo", {type: "boolean"}]));
 });
 
-test("identity getter works", () => {
+test("identity getter gets whatever you give it as input", () => {
   expect(identityGetter().get(1)).toBe(1);
 });
 
-test("hoist transformer works", () => {
+test("hoist transformer brings a transformer from OpenAPIObject to Record<string, OpenAPIObject>", () => {
   const foo = (_: ISerializedRequest, o: OpenAPIObject) => ({ ...o, openapi: "foobar" });
   const hoisted = hoistTransformer(foo);
   expect(hoisted({
