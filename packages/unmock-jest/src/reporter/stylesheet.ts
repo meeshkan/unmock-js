@@ -25,15 +25,12 @@ body {
 }
 
 .header {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .header__text-box {
-  position: relative;
-  top: 50%;
-  left: 50%;
-  # margin-right: -50%;
-  transform: translate(-50%, -0%);
   text-align: center;
 }
 
