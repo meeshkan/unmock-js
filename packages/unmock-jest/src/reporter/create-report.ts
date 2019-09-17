@@ -1,32 +1,8 @@
 import { Dictionary, forEach, groupBy, mapValues } from "lodash";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
+import stylesheet from "./stylesheet";
 import { IReportInput } from "./types";
-
-const stylesheet = `
-h1 {
-  font-size: 1rem;
-}
-.test-suite {
-  padding: 1rem;
-}
-
-.test-suite__title {
-  background-color: #eee;
-}
-
-.test-suite__results {
-}
-
-.test-suite__results--success {
-  background-color: #77dd77;
-}
-
-.test-suite__results--failure {
-  background-color: #ff6961;
-}
-
-`;
 
 const createHtmlBase = () => {
   const htmlBase = {
