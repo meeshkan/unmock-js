@@ -158,7 +158,7 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   headerTextBoxDiv.ele(
     "div",
     { class: "timestamp" },
-    new Date().toLocaleString(),
+    new Date(input.jestData.aggregatedResult.startTime).toLocaleString(),
   );
 
   const aggregatedResult = input.jestData.aggregatedResult;
