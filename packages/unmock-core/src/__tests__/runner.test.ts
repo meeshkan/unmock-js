@@ -1,7 +1,8 @@
 import axios from "axios";
-import path from "path";
-import { runner, Service, UnmockPackage } from "..";
+import * as path from "path";
+import { runner, Service, UnmockPackage, gen } from "..";
 import NodeBackend from "../backend";
+const { withCodes } = gen;
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
@@ -22,13 +23,14 @@ describe("Node.js interceptor", () => {
     });
 
     test("runner loop works", runner(async () => {
+      petstore.state(withCodes(200));
       const resp = await axios("http://petstore.swagger.io/v1/pets/54");
       expect(typeof resp.data.name).toBe("string");
     }));
 
-    // TODO: I cannot get this to work with expect.toThrow()...
     test("runner loop fails properly without callback", async () => {
       let threw = false;
+      petstore.state(withCodes(200));
       try {
         await runner(async () => {
           const resp = await axios("http://petstore.swagger.io/v1/pets/54");
@@ -45,6 +47,7 @@ describe("Node.js interceptor", () => {
       const failure = [];
       const cb: jest.DoneCallback = () => { /**/ };
       cb.fail = (error: string | {message: string}) => { failure.push(error); };
+      petstore.state(withCodes(200));
       await runner(async (c) => {
         try {
           const resp = await axios("http://petstore.swagger.io/v1/pets/54");

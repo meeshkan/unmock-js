@@ -22,6 +22,7 @@ import {
   objectToArray,
   valueLens,
 } from "openapi-refinements";
+import * as seedrandom from "seedrandom";
 import * as url from "url";
 import {
   CreateResponse,

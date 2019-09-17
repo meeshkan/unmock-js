@@ -4,8 +4,8 @@ import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
-import runner from "./runner";
 import { nockify } from "./nock";
+import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export { runner };
