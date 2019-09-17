@@ -19,6 +19,11 @@ const stylesheet = `h1 {
 .test-suite__results--failure {
   background-color: #ff6961;
 }
+
+.test-suite__test {
+  padding: 1rem;
+}
+
 `;
 
 export default stylesheet;

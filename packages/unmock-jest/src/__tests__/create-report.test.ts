@@ -53,7 +53,7 @@ describe("Report creator for real test data", () => {
   /**
    * Write to file for development
    */
-  it.skip("should write HTML to file for inspection", () => {
+  it("should write HTML to file for inspection", () => {
     const targetDirectory = path.resolve(__dirname, "output");
     writeToDirectory(report, {
       outputDirectory: targetDirectory,

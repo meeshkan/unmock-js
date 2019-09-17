@@ -1,10 +1,11 @@
-import { Dictionary, forEach, groupBy, mapValues } from "lodash";
+import { forEach, map, mapValues } from "lodash";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import stylesheet from "./stylesheet";
-import { IReportInput } from "./types";
+import { IReportInput, ITestSuite } from "./types";
+import { groupTestsByFilePath } from "./utils";
 
-const createHtmlBase = () => {
+const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
     html: {
       head: {
@@ -20,39 +21,25 @@ const createHtmlBase = () => {
 
 export const PAGE_TITLE = "Unmock Jest report";
 
-export interface ITestSuite {
-  suiteResults: jest.TestResult;
-  snapshots: ISnapshot[];
-}
+const buildTestTitle = (assertionResult: jest.AssertionResult) =>
+  assertionResult.ancestorTitles
+    .map(ancestorTitle => `${ancestorTitle} > `)
+    .join(" ") + assertionResult.title;
 
-const groupTestsByFilePath = (input: IReportInput): Dictionary<ITestSuite> => {
-  const groupedResultsByFilePath = groupBy(
-    input.jestData.aggregatedResult.testResults,
-    testResult => testResult.testFilePath,
+const buildTestBlock = (
+  assertionResult: jest.AssertionResult,
+  snapshots: ISnapshot[],
+): xmlBuilder.XMLDocument => {
+  const testDiv = xmlBuilder.begin().ele("div", { class: "test-suite__test" });
+  const testTitle = buildTestTitle(assertionResult);
+
+  testDiv.ele("div", { class: "test-suite__test-title" }, testTitle);
+  testDiv.ele(
+    "div",
+    { class: "test-suite__test-snapshots" },
+    `${snapshots.length} snapshot(s)`,
   );
-
-  const testResultByFilePath = mapValues(groupedResultsByFilePath, results => {
-    if (results.length > 1) {
-      // TODO What does this mean and is this possible?
-      throw Error(
-        "Did not expect to get multiple test results for a single file",
-      );
-    }
-
-    return results[0];
-  });
-
-  const snapshotsByFilePath = groupBy(
-    input.snapshots,
-    snapshot => snapshot.testPath,
-  );
-
-  const combined = mapValues(testResultByFilePath, (value, filepath) => ({
-    suiteResults: value,
-    snapshots: snapshotsByFilePath[filepath] || [],
-  }));
-
-  return combined;
+  return testDiv;
 };
 
 const createTestSuiteNode = (
@@ -74,13 +61,27 @@ const createTestSuiteNode = (
       ? " test-suite__results--success"
       : " test-suite__results--failure";
 
-  element.ele(
+  const testResults = element.ele(
     "div",
     {
       class: "test-suite__results" + classFlag,
     },
     `Passing: ${numPassingTests}, failing: ${numFailingTests}, snapshots: ${snapshots.length}`,
   );
+
+  const testBlocks: xmlBuilder.XMLDocument[] = map(
+    suiteResult.testResults,
+    assertionResult => {
+      const snapshotsForTest = snapshots.filter(
+        snapshot => snapshot.currentTestName === assertionResult.title,
+      );
+      return buildTestBlock(assertionResult, snapshotsForTest);
+    },
+  );
+
+  forEach(testBlocks, testBlock => {
+    testResults.importDocument(testBlock);
+  });
 
   return element;
 };
