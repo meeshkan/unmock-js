@@ -1,11 +1,8 @@
-// @ts-ignore
-// import { Remarkable } from "remarkable";
-import { Dictionary, forEach, groupBy, map } from "lodash";
+import { Dictionary, forEach, groupBy, mapValues } from "lodash";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import { IReportInput } from "./types";
 
-// const md = new Remarkable();
 const stylesheet = `
 h1 {
   font-size: 16px;
@@ -27,12 +24,38 @@ const createHtmlBase = () => {
 
 export const PAGE_TITLE = "Unmock Jest report";
 
-const sortTests = (input: IReportInput): Dictionary<jest.TestResult[]> => {
-  const groupedByFilePath = groupBy(
+export interface ITestSuite {
+  testResults: jest.TestResult[];
+  snapshots: ISnapshot[];
+}
+
+const sortTests = (input: IReportInput): Dictionary<ITestSuite> => {
+  const testResultsByFilePath = groupBy(
     input.jestData.aggregatedResult.testResults,
-    "testFilePath",
+    testResult => testResult.testFilePath,
   );
-  return groupedByFilePath;
+
+  const snapshotsByFilePath = groupBy(
+    input.snapshots,
+    snapshot => snapshot.testPath,
+  );
+
+  const sorted = mapValues(testResultsByFilePath, (value, key) => ({
+    testResults: value,
+    snapshots: snapshotsByFilePath[key] || [],
+  }));
+
+  return sorted;
+};
+
+const createTestSuiteNode = (
+  filename: string,
+  testSuite: ITestSuite,
+): xmlBuilder.XMLDocument => {
+  const element = xmlBuilder.begin().ele("div", { class: "test-suite" });
+  element.ele("p", {}, filename);
+  element.ele("p", {}, JSON.stringify(testSuite));
+  return element;
 };
 
 const renderBody = (input: IReportInput): string => {
@@ -53,58 +76,20 @@ const renderBody = (input: IReportInput): string => {
     `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
   );
 
-  const testSuites = reportBody.ele("div", { class: "test-results" });
+  const testResultsElement = reportBody.ele("div", { class: "test-results" });
 
   const grouped = sortTests(input);
 
-  const testSuitesNodes = map(grouped, (_, filename) =>
-    xmlBuilder.begin().ele("p", filename),
+  const testSuitesNodes = mapValues(grouped, (testResults, filename) =>
+    createTestSuiteNode(filename, testResults),
   );
 
   forEach(testSuitesNodes, value => {
-    const block = testSuites.ele("div");
+    const block = testResultsElement.ele("div", { class: "test-suite" });
     block.importDocument(value);
   });
 
   return reportBody.end({ pretty: true });
-};
-
-export const buildBody = (input: IReportInput): string => {
-  const snapshots: ISnapshot[] = input.snapshots;
-
-  const snapshotHeaders = `
-<tr>
-  <th>
-    Timestamp
-  </th>
-  <th>
-    Test name
-  </th>
-  <th>
-    Request host
-  </th>
-</tr>`;
-  const snapshotRows = snapshots.map(snapshot => {
-    return `
-<tr>
-  <td>
-    ${snapshot.timestamp.toISOString()}
-  </td>
-  <td>
-    ${snapshot.currentTestName}
-  </td>
-  <td>
-    ${snapshot.data.req.host}
-  </td>
-</tr>`;
-  });
-
-  return `
-<table>
-  <tbody>
-    ${snapshotHeaders}${snapshotRows.join("")}
-  </tbody>
-</table>`;
 };
 
 export const createReport = (input: IReportInput) => {
