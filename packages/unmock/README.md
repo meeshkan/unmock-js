@@ -9,7 +9,7 @@
 [build]: https://circleci.com/gh/unmock/unmock-js
 [coverage]: https://coveralls.io/github/unmock/unmock-js
 
-Integration mocking in Node.js
+Integration mocking in Node.js.
 
 ## Installation
 
@@ -25,20 +25,4 @@ npm install --save-dev unmock
 
 ## Usage
 
-```bash
-$ unmock --help
-Usage: unmock unmock <command>
-
-Options:
-  -h, --help             output usage information
-
-Commands:
-  init
-```
-
-## init
-
-```bash
-$ unmock init --help
-Usage: init
-```
+Please see the [documentation](https://unmock.io).
