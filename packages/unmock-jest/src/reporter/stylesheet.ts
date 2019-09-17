@@ -24,10 +24,6 @@ body {
   box-sizing: border-box;
 }
 
-.header h1 {
-  font-size: 2rem;
-}
-
 .header {
   position: relative;
 }
@@ -52,9 +48,11 @@ body {
   display: flex;
   justify-content: space-between;
   padding: 1rem 2rem;
+  border-radius: 2rem;
 }
 
 .test-suite__title-filename {
+  font-size: 2rem;
 }
 
 .test-suite__title-summary {
@@ -86,6 +84,11 @@ body {
   margin: 1rem;
   border-radius: 2rem;
   border-color: green;
+}
+
+.test-suite__test-title {
+  font-size: 2rem;
+  font-weight: 700;
 }
 
 .test-suite__test--success {
