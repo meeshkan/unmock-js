@@ -29,12 +29,11 @@ body {
 
 .header {
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .header__text-box {
   text-align: center;
+  margin: auto;
 }
 
 .test-suite {
