@@ -87,7 +87,6 @@
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
-    "unmock-jest": "file:packages/unmock-jest",
     "openapi-refinements": "file:packages/openapi-refinements"
   },
   "name": "unmock",
