@@ -22,6 +22,7 @@ import {
   objectToArray,
   valueLens,
 } from "openapi-refinements";
+import * as seedrandom from "seedrandom";
 import * as url from "url";
 import {
   CreateResponse,
@@ -43,7 +44,9 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-
+export const seedHack = {
+  seed: 0,
+};
 /**
  * Finds server URLs that match a given protocol and host
  * @param protocol like http or https
@@ -535,6 +538,7 @@ const generateMockFromTemplate2 = (
 
   jsf.option("alwaysFakeOptionals", false);
   jsf.option("useDefaultValue", false);
+  jsf.option("random", seedrandom(`${seedHack.seed}`));
 
   const body = bodySchema ? JSON.stringify(jsf.generate(bodySchema)) : undefined;
   jsf.option("useDefaultValue", true);

@@ -33,7 +33,7 @@ describe("Node.js interceptor", () => {
       slack.reset();
     });
 
-    test("t throws when asking for non existing method/path", async () => {
+    test("throws when asking for non existing method/path", async () => {
       try {
         await axios.post("http://petstore.swagger.io/v1/pets/3");
       } catch (e) {
@@ -43,7 +43,7 @@ describe("Node.js interceptor", () => {
       throw new Error("Shouldn't be here :(");
     });
 
-    test("t gets correct code upon request without other state", async () => {
+    test("gets correct code upon request without other state", async () => {
       petstore.state(withCodes(200));
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
@@ -55,7 +55,7 @@ describe("Node.js interceptor", () => {
       ).toBeTruthy();
     });
 
-    test("t gets correct state after setting state with status code", async () => {
+    test("gets correct state after setting state with status code", async () => {
       petstore.state(
         withCodes(200),
         responseBody({ address: [Arr, "id"] }).const(5),
@@ -68,7 +68,7 @@ describe("Node.js interceptor", () => {
     // not sure what this test in the original was trying to accomplish
     // there is no message field on 200...
     // also, we need to be explicit about 200 as there is also a default response
-    test("t gets correct state after setting state without status code", async () => {
+    test("gets correct state after setting state without status code", async () => {
       petstore.state(
         withCodes(200),
         responseBody({ path: "/pets" }).schema({
@@ -81,7 +81,7 @@ describe("Node.js interceptor", () => {
       expect(response.data.message).toEqual("Hello World");
     });
 
-    test("t gets correct state after multiple overriden state requests", async () => {
+    test("gets correct state after multiple overriden state requests", async () => {
       petstore.state(
         withCodes(200),
         responseBody({ path: "/pets", address: [Arr, "id"] }).const(5),
@@ -95,7 +95,7 @@ describe("Node.js interceptor", () => {
       expect(response2.data.id).toEqual(-1);
     });
 
-    test("t gets correct state when setting textual response", async () => {
+    test("gets correct state when setting textual response", async () => {
       filestackApi.state(
         withCodes(200),
         responseBody().const("foo"),
@@ -117,7 +117,7 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("foo");
     });
 
-    test("t gets correct state when setting textual response with path", async () => {
+    test("gets correct state when setting textual response with path", async () => {
       filestackApi.state(
         withCodes(200),
         responseBody({ path: "/prefetch" }).const("bar"),
@@ -127,7 +127,7 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("bar");
     });
 
-    test("t default response turns into 500", async () => {
+    test("default response turns into 500", async () => {
       filestackApi.state(
         withCodes("default"),
         responseBody().const("foo"),
@@ -141,7 +141,7 @@ describe("Node.js interceptor", () => {
       }
     });
 
-    test("t sets an entire response from function", async () => {
+    test("sets an entire response from function", async () => {
       petstore.state(
         withCodes(200),
         responseBody({ path: "/pets" }).const([{id: 1, name: "Fluffy"}]),
@@ -150,7 +150,7 @@ describe("Node.js interceptor", () => {
       expect(response.data).toEqual([{id: 1, name: "Fluffy"}]);
     });
 
-    test("t sets an entire response from with request object", async () => {
+    test("sets an entire response from with request object", async () => {
       petstore.state(
         withCodes(200),
         (req: ISerializedRequest, o: OpenAPIObject) =>
@@ -196,7 +196,7 @@ describe("Node.js interceptor", () => {
     });
 
     // this is just a no-op in the new version
-    test("t fails setting an array size for non-array elements", async () => {
+    test("fails setting an array size for non-array elements", async () => {
       petstore.state(
         withCodes(200),
         noopThrows(responseBody({ path: "/pets", address: [Arr, "id"] }).minItems(5)),
@@ -209,7 +209,7 @@ describe("Node.js interceptor", () => {
       }
     });
 
-    test("t updates times correctly", async () => {
+    test("updates times correctly", async () => {
       const text = "foo";
       const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {
@@ -247,7 +247,7 @@ describe("Node.js interceptor", () => {
       expect(resp.data.properties.isCat).toBeFalsy();
     });
 
-    test("t works with multiple codes", async () => {
+    test("works with multiple codes", async () => {
       petstore.state((_, __) => ({
         openapi: "",
         info: { title: "", version: ""},

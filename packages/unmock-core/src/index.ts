@@ -5,8 +5,10 @@ import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
 import { nockify } from "./nock";
+import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
+export { runner };
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
