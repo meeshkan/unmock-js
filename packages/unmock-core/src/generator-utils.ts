@@ -16,6 +16,10 @@ import {
   oneOfReject,
   removeCodes,
   responseBody,
+  pathParameter,
+  methodParameter,
+  header,
+  requestBody,
 } from "openapi-refinements";
 export {
   Arr,
@@ -46,42 +50,116 @@ interface ISchemaAddress {
   address?: Array<string | number | typeof Arr | typeof Addl>;
 }
 
-interface ISchemaChangeOptions extends ISchemaAddress {
+interface IResponseBodyOptions extends ISchemaAddress {
   path: string | RegExp | boolean;
   method: MethodNames | MethodNames[] | boolean;
   code: CodeAsInt | keyof Responses | Array<CodeAsInt | keyof Responses> | boolean;
   mediaTypes: boolean | string[];
 }
 
-/*
-interface IMethodParameterChangeOptions extends ISchemaAddress {
-  path?: string | RegExp | boolean;
-  method?: MethodNames | MethodNames[] | boolean;
-  name: string;
-  in: string;
+interface IRequestBodyOptions extends ISchemaAddress {
+  path: string | RegExp | boolean;
+  method: MethodNames | MethodNames[] | boolean;
+  mediaTypes: boolean | string[];
 }
-*/
 
-type TraversalSignature = [
+interface IPathParameterOptions extends ISchemaAddress {
+  path: string | RegExp | boolean;
+  name: string | boolean;
+  in: string | boolean;
+}
+
+interface IMethodParameterOptions extends ISchemaAddress {
+  path: string | RegExp | boolean;
+  method: MethodNames | MethodNames[] | boolean;
+  name: string | boolean;
+  in: string | boolean;
+}
+
+interface IHeaderOptions extends ISchemaAddress {
+  path: string | RegExp | boolean;
+  method: MethodNames | MethodNames[] | boolean;
+  code: CodeAsInt | keyof Responses | Array<CodeAsInt | keyof Responses> | boolean;
+  name: string | boolean;
+}
+
+type ResponseBodySignature = [
   string | boolean | RegExp,
   boolean | MethodNames | MethodNames[],
   boolean | Array<(keyof Responses)>,
   boolean | string[]
 ];
 
+type RequestBodySignature = [
+  string | boolean | RegExp,
+  boolean | MethodNames | MethodNames[],
+  boolean | string[]
+];
+
+type PathParameterSignature = [
+  string | boolean | RegExp,
+  string | boolean,
+  string | boolean
+];
+
+type MethodParameterSignature = [
+  string | RegExp | boolean,
+  MethodNames | MethodNames[] | boolean,
+  string | boolean,
+  string | boolean
+];
+
+type HeaderSignature = [
+  string | RegExp | boolean,
+  MethodNames | MethodNames[] | boolean,
+  boolean | Array<(keyof Responses)>,
+  string | boolean
+];
+
 type TraversalFunction<T extends ISchemaAddress> = (options?: T) =>
   (o: OpenAPIObject) =>
   Traversal<OpenAPIObject, Schema | Reference>;
 
-const schemaChangeOptionsToResponseBodySignature = (options?: Partial<ISchemaChangeOptions>): TraversalSignature => [
-  options && options.path ? options.path : true,
-  options && options.method ? options.method : true,
-  options && options.code
+const pathParameterSignatureFromOptions = (options?: Partial<IPathParameterOptions>): PathParameterSignature => [
+  options && options.path !== undefined ? options.path : true,
+  options && options.name !== undefined ? options.name : true,
+  options && options.in !== undefined ? options.in : true
+];
+const methodParameterSignatureFromOptions = (options?: Partial<IMethodParameterOptions>): MethodParameterSignature => [
+  options && options.path !== undefined ? options.path : true,
+  options && options.method !== undefined ? options.method : true,
+  options && options.name !== undefined ? options.name : true,
+  options && options.in !== undefined ? options.in : true
+];
+const headerSignatureFromOptions = (options?: Partial<IHeaderOptions>): HeaderSignature => [
+  options && options.path !== undefined ? options.path : true,
+  options && options.method !== undefined ? options.method : true,
+  options && options.code !== undefined
     ? typeof options.code === "boolean"
       ? options.code
       : (options.code instanceof Array ? options.code : [options.code]).map(codeConvert)
     : true,
-  options && options.mediaTypes
+  options && options.name !== undefined ? options.name : true,
+];
+const responseBodySignatureFromOptions = (options?: Partial<IResponseBodyOptions>): ResponseBodySignature => [
+  options && options.path !== undefined ? options.path : true,
+  options && options.method !== undefined ? options.method : true,
+  options && options.code !== undefined
+    ? typeof options.code === "boolean"
+      ? options.code
+      : (options.code instanceof Array ? options.code : [options.code]).map(codeConvert)
+    : true,
+  options && options.mediaTypes !== undefined
+    ? typeof options.mediaTypes === "string"
+      ? [options.mediaTypes]
+      : options.mediaTypes
+    : true,
+];
+
+const requestBodySignatureFromOptions = (options?: Partial<IRequestBodyOptions>): RequestBodySignature => [
+  options && options.path !== undefined ? options.path : true,
+  options && options.method !== undefined ? options.method : true,
+  options && options.mediaTypes !== undefined
     ? typeof options.mediaTypes === "string"
       ? [options.mediaTypes]
       : options.mediaTypes
@@ -145,7 +223,19 @@ export const gen = {
   },
   withCodes,
   withoutCodes,
-  responseBody: makeSchemaTraversalStructure<Partial<ISchemaChangeOptions>>(
-    (options?: Partial<ISchemaChangeOptions>) =>
-      responseBody(...schemaChangeOptionsToResponseBodySignature(options))),
+  responseBody: makeSchemaTraversalStructure<Partial<IResponseBodyOptions>>(
+    (options?: Partial<IResponseBodyOptions>) =>
+      responseBody(...responseBodySignatureFromOptions(options))),
+  requestBody: makeSchemaTraversalStructure<Partial<IRequestBodyOptions>>(
+        (options?: Partial<IRequestBodyOptions>) =>
+          requestBody(...requestBodySignatureFromOptions(options))),
+  pathParameter: makeSchemaTraversalStructure<Partial<IPathParameterOptions>>(
+    (options?: Partial<IPathParameterOptions>) =>
+      pathParameter(...pathParameterSignatureFromOptions(options))),
+  methodParameter: makeSchemaTraversalStructure<Partial<IMethodParameterOptions>>(
+    (options?: Partial<IMethodParameterOptions>) =>
+      methodParameter(...methodParameterSignatureFromOptions(options))),
+  header: makeSchemaTraversalStructure<Partial<IHeaderOptions>>(
+    (options?: Partial<IHeaderOptions>) =>
+      header(...headerSignatureFromOptions(options))),
 };
