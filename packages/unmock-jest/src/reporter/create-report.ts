@@ -12,6 +12,11 @@ const createHtmlBase = (): xmlBuilder.XMLDocument => {
       head: {
         meta: { "@charset": "utf-8" },
         title: { "#text": "Unmock report" },
+        link: {
+          "@href":
+            "https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900",
+          "@rel": "stylesheet",
+        },
         style: { "@type": "text/css", "#text": stylesheet },
       },
     },
@@ -123,15 +128,18 @@ const buildTestSuiteDiv = (
  */
 const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   const headerDiv = xmlBuilder.begin().ele("div", { class: "header" });
-  headerDiv.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
+
+  const headerTextBoxDiv = headerDiv.ele("div", { class: "header__text-box" });
+
+  headerTextBoxDiv.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
 
   // Timestamp
-  headerDiv.ele("div", { class: "timestamp" }, new Date().toString());
+  headerTextBoxDiv.ele("div", { class: "timestamp" }, new Date().toString());
 
   const aggregatedResult = input.jestData.aggregatedResult;
 
   // Test run metadata
-  headerDiv.ele(
+  headerTextBoxDiv.ele(
     "div",
     { class: "metadata" },
     `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
