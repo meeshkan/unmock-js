@@ -1,5 +1,5 @@
 {
-  "version": "0.2.2",
+  "version": "0.3.0",
   "name": "unmock-jest",
   "displayName": "unmock-jest",
   "main": "dist/index.js",
@@ -14,8 +14,15 @@
   },
   "dependencies": {
     "chalk": "^2.4.2",
-    "debug": "^4.1.1"
+    "debug": "^4.1.1",
+    "lodash": "^4.17.15",
+    "xmlbuilder": "^13.0.2"
   },
+  "keywords": [
+    "unmock",
+    "jest",
+    "reporter"
+  ],
   "peerDependencies": {
     "jest": ">= 22.0.0",
     "unmock": ">= 0.2.2"

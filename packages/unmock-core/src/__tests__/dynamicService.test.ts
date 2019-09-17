@@ -8,7 +8,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("/foo")
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
@@ -17,14 +17,13 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
     const service = unmock.services["foo.com"];
     if (service === undefined) {
       // type-checking mostly...
       throw new Error("Service was undefined??");
     }
-    expect(() => service.state.get("/foo", { foo: "abc" })).not.toThrow();
   });
 
   it("Adds a service and updates it on consecutive calls", () => {
@@ -32,7 +31,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { foo: u.city() });
+      .reply(200, { foo: u.string("address.city") });
     unmock
       .nock("https://foo.com")
       .post("/foo")
@@ -43,9 +42,6 @@ describe("Tests dynamic path tests", () => {
       // type-checking mostly...
       throw new Error("Service was undefined??");
     }
-    expect(() =>
-      service.state("/foo", { $code: 201 }).get("/foo", { $code: 200 }),
-    ).not.toThrow();
   });
 
   it("Adds a named service", () => {
@@ -53,11 +49,8 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
-    expect(() =>
-      unmock.services.foo.state.get("/abc", { $code: 200 }),
-    ).not.toThrow();
   });
 
   it("Chains multiple endpoints", () => {
@@ -65,13 +58,10 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
-      .reply(200, { foo: u.str() })
+      .reply(200, { foo: u.string() })
       .post("bar")
       .reply(404);
     expect(Object.keys(unmock.services).length).toEqual(1);
-    expect(() =>
-      unmock.services.foo.state.post("/bar", { $code: 404 }),
-    ).not.toThrow();
   });
 
   it("Chains multiple endpoints in multiple calls", () => {
@@ -79,10 +69,9 @@ describe("Tests dynamic path tests", () => {
     const dynamicSpec = unmock
       .nock("https://abc.com", "foo")
       .get("foo")
-      .reply(200, { city: u.city() });
-    dynamicSpec.get("foo").reply(404, { msg: u.str() });
-    const service = unmock.services.foo;
-    expect(() => service.state.get("/foo", { $code: 404 })).not.toThrow();
+      .reply(200, { city: u.string("address.city") });
+    dynamicSpec.get("foo").reply(404, { msg: u.string("address.city") });
+    expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
   it("Allows using same name with multiple servers", () => {
@@ -90,16 +79,14 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("foo")
-      .reply(200, { city: u.city() });
+      .reply(200, { city: u.string("address.city") });
     unmock
       .nock("https://def.com", "foo")
       .get("foo")
-      .reply(404, { msg: u.str() });
+      .reply(404, { msg: u.string("address.city") });
     unmock
       .nock("https://abc.com", "foo")
       .get("foo")
       .reply(500);
-    const service = unmock.services.foo;
-    expect(() => service.state.get("/foo", { $code: 500 })).not.toThrow();
   });
 });

@@ -5,12 +5,14 @@ import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
 import { nockify } from "./nock";
+import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
+export { runner };
 export * from "./types";
 export { sinon };
-export { default as dsl } from "./service/state/transformers";
 export { u } from "./nock";
+export { gen, Addl, Arr } from "./generator-utils";
 
 export { ISnapshot };
 const utils = { snapshotter: FsSnapshotter };

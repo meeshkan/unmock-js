@@ -1,12 +1,9 @@
 {
   "version": "0.3.0",
-  "name": "unmock-cli",
-  "displayName": "unmock-cli",
-  "license": "MIT",
+  "name": "openapi-refinements",
+  "displayName": "openapi-refinements",
   "main": "dist/index.js",
-  "bin": {
-    "unmock": "./index.js"
-  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -15,9 +12,13 @@
   "bugs": {
     "url": "https://github.com/unmock/unmock-js/issues"
   },
+  "peerDependencies": {
+    "fp-ts": "^2.0.5",
+    "json-schema-strictly-typed": "^0.0.14",
+    "loas3": "^0.1.4",
+    "monocle-ts": "^2.0.0"
+  },
   "dependencies": {
-    "commander": "^2.20.0",
-    "glob": "^7.1.3",
-    "unmock-core": "file:../unmock-core"
+    "jsonschema": "^1.2.4"
   }
 }
