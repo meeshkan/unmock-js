@@ -7,3 +7,5 @@ tsconfig.tsbuildinfo
 coverage
 .DS_Store
 unmock.log
+# Reports
+*.html

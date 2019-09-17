@@ -8,8 +8,8 @@ module.exports = {
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
   moduleNameMapper: {
-    "^(unmock|unmock-cli|unmock-core)(?:/dist)?((?:/.*)|$)":
-      "<rootDir>/../../packages/$1/src$2"
+    "^(unmock(?:-[A-Za-z]+)?|openapi-refinements)(?:/dist)?((?:/.*)|$)":
+      "<rootDir>/../../packages/$1/src"
   },
   clearMocks: true,
   transformIgnorePatterns: [

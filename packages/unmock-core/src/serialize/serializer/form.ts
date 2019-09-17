@@ -1,4 +1,4 @@
-import querystring from "querystring";
+import * as querystring from "querystring";
 import { ISerializer } from "../interfaces";
 
 export default class FormSerializer implements ISerializer {

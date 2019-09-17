@@ -1,6 +1,6 @@
 import debug from "debug";
 import { isLeft } from "fp-ts/lib/Either";
-import jsYaml from "js-yaml";
+import * as jsYaml from "js-yaml";
 import loas3 from "loas3";
 import { IServiceDef, IServiceDefFile } from "./interfaces";
 import { ServiceCore } from "./service/serviceCore";

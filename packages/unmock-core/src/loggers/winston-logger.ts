@@ -1,4 +1,4 @@
-import winston from "winston";
+import * as winston from "winston";
 import { ILogger } from "../interfaces";
 
 const logger = winston.createLogger({

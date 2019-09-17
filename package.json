@@ -11,7 +11,8 @@
     "format-check": "prettier-check '**/*.{js,ts}'",
     "format": "prettier '**/*.{js,ts}' --write",
     "lint": "npm run lint-ts",
-    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json",
+    "lint-ts": "tslint --project packages/openapi-refinements/ --config tslint.json && tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json",
+    "lint-ts-fix": "tslint --fix --project packages/openapi-refinements/ --config tslint.json && tslint --fix --project packages/unmock/ --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json",
     "test": "jest --verbose",
     "test:debug": "DEBUG=unmock* jest --verbose",
     "test:clean": "jest --clearCache",
@@ -36,6 +37,7 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^4.1.0",
     "@types/app-root-path": "^1.2.4",
     "@types/content-type": "^1.1.3",
     "@types/debug": "^4.1.4",
@@ -43,6 +45,7 @@
     "@types/ini": "^1.3.30",
     "@types/jest": "^24.0.11",
     "@types/js-yaml": "^3.12.1",
+    "@types/jsdom": "^12.2.4",
     "@types/json-pointer": "^1.0.30",
     "@types/lodash": "^4.14.136",
     "@types/mitm": "^1.3.2",
@@ -59,6 +62,7 @@
     "express": "^4.16.4",
     "jest": "^24.7.1",
     "jest-junit": "^6.4.0",
+    "jsdom": "^15.1.1",
     "lerna": "^3.13.4",
     "lodash.template": "^4.5.0",
     "prettier": "^1.18.2",
@@ -68,7 +72,8 @@
     "ts-node": "^8.3.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.4.4"
+    "typescript": "^3.6.3",
+    "xmlbuilder": "^13.0.2"
   },
   "repository": {
     "type": "git",
@@ -81,7 +86,9 @@
   "dependencies": {
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
-    "unmock-core": "file:packages/unmock-core"
+    "unmock-core": "file:packages/unmock-core",
+    "unmock-jest": "file:packages/unmock-jest",
+    "openapi-refinements": "file:packages/openapi-refinements"
   },
   "name": "unmock",
   "jest": {

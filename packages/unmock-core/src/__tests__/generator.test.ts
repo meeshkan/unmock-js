@@ -1,162 +1,164 @@
-import path from "path";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
-import { responseCreatorFactory } from "../generator";
+import {
+  matchUrls,
+  prunePathItem,
+  matches,
+  refName,
+  firstElementOptional,
+  keyLens,
+  operationOptional,
+  useIfHeader,
+  identityGetter,
+  hoistTransformer,
+} from "../generator";
+import { PathItem, OpenAPIObject } from "loas3/dist/generated/full";
+import { some, none } from "fp-ts/lib/Option";
+import { ISerializedRequest } from "../interfaces";
 
-const mockOptions = {
-  flaky: () => false,
-  isWhitelisted: (_: string) => false,
-  log: (_: string) => undefined,
-  useInProduction: () => false,
-};
+test("matchUrls returns all the urls from a schema's servers that match a given protocol and host", () => {
+  expect(matchUrls(
+    "https",
+    "api.foo.com",
+    {
+      openapi: "",
+      paths: {},
+      info: { title: "", version: "" },
+      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.com" }],
+    },
+  )).toEqual(["https://api.foo.com"]);
+  expect(matchUrls(
+    "https",
+    "api.foo.com",
+    {
+      openapi: "",
+      paths: {},
+      info: { title: "", version: "" },
+      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.com/v2/a/b/c" }],
+    },
+  )).toEqual(["https://api.foo.com/v2/a/b/c"]);
 
-const serviceDefLoader = new FsServiceDefLoader({
-  unmockDirectories: [path.join(__dirname, "__unmock__")],
+  expect(matchUrls(
+    "https",
+    "api.foo.com/v2",
+    {
+      openapi: "",
+      paths: {},
+      info: { title: "", version: "" },
+      servers: [{ url: "https://api.foo.commm/v2" }, { url: "https://api.foo.cooom/v2" }]
+    },
+  ).length).toEqual(0);
 });
 
-describe("Tests generator", () => {
-  it("loads all paths in __unmock__", () => {
-    const { services } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.slack.state({}); // should pass
-    services.petstore.state({}); // should pass
-    expect(() => services.github.state({})).toThrow(
-      "property 'state' of undefined",
-    ); // no github service
+test("prune path item keeps the path item we ask for and discards the rest", () => {
+  const o: PathItem = {
+    get: { responses: { 100: { description: "hello"} }},
+    post: { responses: { 101: { description: "hello"} }},
+    delete: { responses: { 102: { description: "hello"} }},
+    description: "foo",
+  };
+  expect(prunePathItem("get", o)).toEqual(
+    {
+      get: { responses: { 100: { description: "hello"} }},
+      description: "foo",
+    },
+  );
+  expect(prunePathItem("post", o)).toEqual(
+    {
+      post: { responses: { 101: { description: "hello"} }},
+      description: "foo",
+    },
+  );
+});
+
+test("path matcher takes string schema into account", () => {
+  const bfoo = {
+    parameters: [
+      { in: "path", name: "foo", schema: { type: "string", pattern: "^[abc]+$" }},
+    ],
+  };
+  const oai: OpenAPIObject = {
+    openapi: "",
+    info: { title: "", version: "" },
+    paths: {
+      "/b/{foo}": bfoo,
+    },
+  };
+  expect(matches("/a/b", "/a/b", bfoo, "get", oai)).toBe(true);
+  expect(matches("/a/", "/a/b", bfoo, "get", oai)).toBe(false);
+  expect(matches("/a/b", "/a", bfoo, "get", oai)).toBe(false);
+  expect(matches("/a/b/c", "/a/{fewfwef}/c", bfoo, "get", oai)).toBe(true);
+  expect(matches("/b/ccaaca", "/b/{foo}", bfoo, "get", oai)).toBe(true);
+  expect(matches("/b/ccaacda", "/b/{foo}", bfoo, "get", oai)).toBe(false);
+});
+
+test("firstElementOptional returns the first element of an array or none if the array is empty", () => {
+  expect(firstElementOptional().getOption([1])).toEqual(some(1));
+  expect(firstElementOptional().getOption([55, 2])).toEqual(some(55));
+  expect(firstElementOptional().getOption([])).toEqual(none);
+});
+
+test("refName gets the name of a reference", () => {
+  expect(refName({ $ref: "#/components/schemas/Foo"})).toBe("Foo");
+});
+
+test("keyLens provides a lens into the key of a [key, value] pair", () => {
+  expect(keyLens().get([1, 2])).toBe(1);
+});
+
+test("operation optional gets a random operation from a path item", () => {
+  expect(operationOptional.getOption({
+    get: { responses: { 100: { description: "hello"} }},
+    description: "foo",
+  })).toEqual(some(["get", { responses: { 100: { description: "hello"} }}]));
+  expect(operationOptional.getOption({
+    description: "foo",
+  })).toEqual(none);
+});
+
+const baseO: OpenAPIObject = {
+  openapi: "hello",
+  info: { title: "", version: ""},
+  servers: [{url: "https://hello.api.com"}],
+  paths: {},
+};
+
+test("use if header only returns valid headers", () => {
+  expect(useIfHeader(baseO, { name: "foo", in: "query"})).toEqual(none);
+  expect(useIfHeader(baseO, { name: "foo", in: "header"})).toEqual(some(["foo", {type: "string"}]));
+  expect(useIfHeader(baseO, { name: "foo", in: "header", schema: { type: "number" }}))
+    .toEqual(some(["foo", {type: "number"}]));
+  expect(useIfHeader({
+    ...baseO,
+    components: { schemas: { Foo: { type: "boolean" }}},
+  }, { name: "foo", in: "header", schema: { $ref: "#/components/schemas/Foo" }}))
+    .toEqual(some(["foo", {type: "boolean"}]));
+});
+
+test("identity getter gets whatever you give it as input", () => {
+  expect(identityGetter().get(1)).toBe(1);
+});
+
+test("hoist transformer brings a transformer from OpenAPIObject to Record<string, OpenAPIObject>", () => {
+  const foo = (_: ISerializedRequest, o: OpenAPIObject) => ({ ...o, openapi: "foobar" });
+  const hoisted = hoistTransformer(foo);
+  expect(hoisted({
+    host: "hello.api.com", // will match
+    path: "/users",
+    pathname: "/users",
+    protocol: "https",
+    method: "get",
+    query: {},
+   }, { baseO })).toEqual({
+     baseO: {
+        ...baseO,
+        openapi: "foobar",
+     },
   });
-
-  it("sets a state for swagger api converted to openapi", () => {
-    const { services } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.slack.state("/bots.info", { bot: { app_id: "A12345678" } }); // should pass
-    expect(() =>
-      services.slack.state("/bots.info", { bot: { app_id: "A123456789" } }),
-    ).toThrow("type is incorrect"); // Does not match the specified pattern
-  });
-
-  it("in non-flaky mode", () => {
-    const { createResponse } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    for (let i = 0; i < 50; i++) {
-      const resp = createResponse({
-        host: "petstore.swagger.io",
-        method: "post",
-        path: "/v1/pets",
-        pathname: "/v1/pets",
-        protocol: "http",
-        query: {},
-      });
-      expect(resp).toBeDefined();
-      if (resp !== undefined) {
-        // Only used for type-checking...
-        expect(resp.statusCode).toEqual(201);
-      }
-    }
-  });
-
-  it("in flaky mode", () => {
-    const { createResponse } = responseCreatorFactory({
-      serviceDefLoader,
-      options: { ...mockOptions, flaky: () => true },
-    });
-    const counters: { [code: number]: number } = { 200: 0, 201: 0 };
-    for (let i = 0; i < 100; i++) {
-      const resp = createResponse({
-        host: "petstore.swagger.io",
-        method: "post",
-        path: "/v1/pets",
-        pathname: "/v1/pets",
-        protocol: "http",
-        query: {},
-      });
-      expect(resp).toBeDefined();
-      if (resp !== undefined) {
-        // Only used for type-checking...
-        const code: number = resp.statusCode;
-        counters[code] += 1;
-      }
-    }
-    expect(counters[200]).toBeGreaterThan(0);
-    expect(counters[201]).toBeGreaterThan(0);
-  });
-
-  it("Generates correct response from differing status codes", () => {
-    const { services, createResponse } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.filestackApi.state("/prefetch", "prefetch");
-    let resp = createResponse({
-      host: "cloud.filestackapi.com",
-      method: "options",
-      path: "/prefetch",
-      pathname: "/prefetch",
-      protocol: "https",
-      query: {},
-    });
-    expect(resp).toBeDefined();
-    if (resp !== undefined) {
-      expect(resp.statusCode).toEqual(204);
-      expect(resp.body).toEqual('"prefetch"');
-    }
-
-    resp = createResponse({
-      host: "cloud.filestackapi.com",
-      method: "get",
-      path: "/prefetch",
-      pathname: "/prefetch",
-      protocol: "https",
-      query: {},
-    });
-    expect(resp).toBeDefined();
-    if (resp !== undefined) {
-      expect(resp.statusCode).toEqual(200);
-      expect(resp.body).toEqual('"prefetch"');
-    }
-  });
-
-  it("Sets a state with a function and generates accordingly", () => {
-    const { services, createResponse } = responseCreatorFactory({
-      serviceDefLoader,
-      options: mockOptions,
-    });
-    services.petstore.state({ id: () => "foo", $size: 5, $code: 200 });
-    let resp = createResponse({
-      host: "petstore.swagger.io",
-      method: "get",
-      path: "/v1/pets",
-      pathname: "/v1/pets",
-      protocol: "http",
-      query: {},
-    });
-    expect(resp).toBeDefined();
-    if (resp && resp.body !== undefined) {
-      JSON.parse(resp.body).forEach((pet: any) =>
-        expect(pet.id).toEqual("foo"),
-      );
-    } else {
-      throw new Error("Response body was undefined?");
-    }
-
-    services.petstore.state({ id: () => 1 });
-    resp = createResponse({
-      host: "petstore.swagger.io",
-      method: "get",
-      path: "/v1/pets",
-      pathname: "/v1/pets",
-      protocol: "http",
-      query: {},
-    });
-    expect(resp).toBeDefined();
-    if (resp && resp.body !== undefined) {
-      JSON.parse(resp.body).forEach((pet: any) => expect(pet.id).toEqual(1));
-    } else {
-      throw new Error("Response body was undefined?");
-    }
-  });
+  expect(hoisted({
+    host: "helloooooo.api.com", // will result in no-op
+    path: "/users",
+    pathname: "/users",
+    protocol: "https",
+    method: "get",
+    query: {},
+  }, { baseO })).toEqual({ baseO });
 });

@@ -1,9 +1,21 @@
 import axios from "axios";
-import path from "path";
+import { removeCodes } from "openapi-refinements";
+import * as path from "path";
 import { Service, sinon, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
+
+describe("Loads services properly", () => {
+  it("loads all paths in __unmock__", () => {
+    const backend = new NodeBackend({ servicesDirectory });
+    backend.services.slack.state((_, __) => __); // should pass
+    backend.services.petstore.state((_, __) => __); // should pass
+    expect(() => backend.services.github.state((_, __) => __)).toThrow(
+      "property 'state' of undefined",
+    ); // no github service
+  });
+});
 
 describe("Node.js interceptor", () => {
   describe("with petstore in place", () => {
@@ -17,6 +29,8 @@ describe("Node.js interceptor", () => {
         log: (_: string) => undefined,
         useInProduction: () => false,
       });
+      const petstore = nodeInterceptor.services.petstore;
+      petstore.state((_, o) => removeCodes(true, true, ["default"])(o));
     });
 
     afterAll(() => {
@@ -57,7 +71,7 @@ describe("Node.js interceptor", () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toContain("No matching template");
+        expect(err.message).toContain("unmock error: Cannot find a matcher for this request");
         return;
       }
       throw new Error("Should not get here");
@@ -92,6 +106,7 @@ describe("Unmock node package", () => {
     });
     beforeEach(() => {
       petstore.reset();
+      petstore.state((_, o) => removeCodes(true, true, ["default"])(o));
     });
     test("should track a successful request-response pair", async () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});
@@ -100,6 +115,12 @@ describe("Unmock node package", () => {
       expect(petstore.spy.firstCall.returnValue).toEqual(
         expect.objectContaining({ statusCode: 201 }),
       );
+    });
+    test("should reset spies with unmock.reset()", async () => {
+      await axios.post("http://petstore.swagger.io/v1/pets", {});
+      sinon.assert.calledOnce(petstore.spy);
+      unmock.reset();
+      sinon.assert.notCalled(petstore.spy);
     });
     test("should not have tracked calls after reset", async () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});
