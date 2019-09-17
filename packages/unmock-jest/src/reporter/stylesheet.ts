@@ -1,7 +1,10 @@
-const stylesheet = `h1 {
-  font-size: 1rem;
+const stylesheet = `
+.header h1 {
+  font-size: 2rem;
 }
+
 .test-suite {
+  border-style: dotted;
   padding: 1rem;
 }
 
@@ -10,6 +13,7 @@ const stylesheet = `h1 {
 }
 
 .test-suite__results {
+  border-style: solid;
 }
 
 .test-suite__results--success {
@@ -21,6 +25,7 @@ const stylesheet = `h1 {
 }
 
 .test-suite__test {
+  border-style: dashed;
   padding: 1rem;
 }
 
