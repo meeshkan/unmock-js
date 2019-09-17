@@ -102,23 +102,7 @@ const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
   dynamic: DynamicJSONSymbol,
 });
 
-// TODO add more built-in types like this
-export const u = {
-  str() {
-    return jspt.string();
-  },
-  number() {
-    return jspt.number();
-  },
-  int() {
-    return jspt.integer();
-  },
-  city() {
-    return string_<IDynamicJSONValue>({ dynamic: DynamicJSONSymbol })(
-      "address.city",
-    );
-  },
-};
+export const u = jspt;
 
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({

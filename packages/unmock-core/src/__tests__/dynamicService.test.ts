@@ -8,7 +8,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("/foo")
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
@@ -17,7 +17,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
     const service = unmock.services["foo.com"];
     if (service === undefined) {
@@ -31,7 +31,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
-      .reply(200, { foo: u.city() });
+      .reply(200, { foo: u.string("address.city") });
     unmock
       .nock("https://foo.com")
       .post("/foo")
@@ -49,7 +49,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
-      .reply(200, { foo: u.str() });
+      .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
@@ -58,7 +58,7 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
-      .reply(200, { foo: u.str() })
+      .reply(200, { foo: u.string() })
       .post("bar")
       .reply(404);
     expect(Object.keys(unmock.services).length).toEqual(1);
@@ -69,8 +69,8 @@ describe("Tests dynamic path tests", () => {
     const dynamicSpec = unmock
       .nock("https://abc.com", "foo")
       .get("foo")
-      .reply(200, { city: u.city() });
-    dynamicSpec.get("foo").reply(404, { msg: u.str() });
+      .reply(200, { city: u.string("address.city") });
+    dynamicSpec.get("foo").reply(404, { msg: u.string("address.city") });
   });
 
   it("Allows using same name with multiple servers", () => {
@@ -78,11 +78,11 @@ describe("Tests dynamic path tests", () => {
     unmock
       .nock("https://abc.com", "foo")
       .get("foo")
-      .reply(200, { city: u.city() });
+      .reply(200, { city: u.string("address.city") });
     unmock
       .nock("https://def.com", "foo")
       .get("foo")
-      .reply(404, { msg: u.str() });
+      .reply(404, { msg: u.string("address.city") });
     unmock
       .nock("https://abc.com", "foo")
       .get("foo")
