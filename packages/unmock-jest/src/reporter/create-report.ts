@@ -5,8 +5,28 @@ import { IReportInput } from "./types";
 
 const stylesheet = `
 h1 {
-  font-size: 16px;
-}`;
+  font-size: 1rem;
+}
+.test-suite {
+  padding: 1rem;
+}
+
+.test-suite__title {
+  background-color: #eee;
+}
+
+.test-suite__results {
+}
+
+.test-suite__results--success {
+  background-color: #77dd77;
+}
+
+.test-suite__results--failure {
+  background-color: #ff6961;
+}
+
+`;
 
 const createHtmlBase = () => {
   const htmlBase = {
@@ -25,27 +45,38 @@ const createHtmlBase = () => {
 export const PAGE_TITLE = "Unmock Jest report";
 
 export interface ITestSuite {
-  testResults: jest.TestResult[];
+  suiteResults: jest.TestResult;
   snapshots: ISnapshot[];
 }
 
-const sortTests = (input: IReportInput): Dictionary<ITestSuite> => {
-  const testResultsByFilePath = groupBy(
+const groupTestsByFilePath = (input: IReportInput): Dictionary<ITestSuite> => {
+  const groupedResultsByFilePath = groupBy(
     input.jestData.aggregatedResult.testResults,
     testResult => testResult.testFilePath,
   );
+
+  const testResultByFilePath = mapValues(groupedResultsByFilePath, results => {
+    if (results.length > 1) {
+      // TODO What does this mean and is this possible?
+      throw Error(
+        "Did not expect to get multiple test results for a single file",
+      );
+    }
+
+    return results[0];
+  });
 
   const snapshotsByFilePath = groupBy(
     input.snapshots,
     snapshot => snapshot.testPath,
   );
 
-  const sorted = mapValues(testResultsByFilePath, (value, key) => ({
-    testResults: value,
-    snapshots: snapshotsByFilePath[key] || [],
+  const combined = mapValues(testResultByFilePath, (value, filepath) => ({
+    suiteResults: value,
+    snapshots: snapshotsByFilePath[filepath] || [],
   }));
 
-  return sorted;
+  return combined;
 };
 
 const createTestSuiteNode = (
@@ -53,8 +84,28 @@ const createTestSuiteNode = (
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
   const element = xmlBuilder.begin().ele("div", { class: "test-suite" });
-  element.ele("p", {}, filename);
-  element.ele("p", {}, JSON.stringify(testSuite));
+  element.ele("div", { class: "test-suite__title" }, filename);
+
+  const suiteResult = testSuite.suiteResults;
+
+  const snapshots = testSuite.snapshots;
+
+  const numPassingTests = suiteResult.numPassingTests;
+  const numFailingTests = suiteResult.numFailingTests;
+
+  const classFlag =
+    numFailingTests === 0
+      ? " test-suite__results--success"
+      : " test-suite__results--failure";
+
+  element.ele(
+    "div",
+    {
+      class: "test-suite__results" + classFlag,
+    },
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, snapshots: ${snapshots.length}`,
+  );
+
   return element;
 };
 
@@ -78,15 +129,15 @@ const renderBody = (input: IReportInput): string => {
 
   const testResultsElement = reportBody.ele("div", { class: "test-results" });
 
-  const grouped = sortTests(input);
+  const grouped = groupTestsByFilePath(input);
 
   const testSuitesNodes = mapValues(grouped, (testResults, filename) =>
     createTestSuiteNode(filename, testResults),
   );
 
-  forEach(testSuitesNodes, value => {
-    const block = testResultsElement.ele("div", { class: "test-suite" });
-    block.importDocument(value);
+  forEach(testSuitesNodes, node => {
+    const block = testResultsElement.ele("div");
+    block.importDocument(node);
   });
 
   return reportBody.end({ pretty: true });
