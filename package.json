@@ -11,8 +11,8 @@
     "format-check": "prettier-check '**/*.{js,ts}'",
     "format": "prettier '**/*.{js,ts}' --write",
     "lint": "npm run lint-ts",
-    "lint-ts": "tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json",
-    "lint-ts-fix": "tslint --fix --project packages/unmock/ --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json",
+    "lint-ts": "tslint --project packages/openapi-refinements/ --config tslint.json && tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json",
+    "lint-ts-fix": "tslint --fix --project packages/openapi-refinements/ --config tslint.json && tslint --fix --project packages/unmock/ --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json",
     "test": "jest --verbose",
     "test:debug": "DEBUG=unmock* jest --verbose",
     "test:clean": "jest --clearCache",
@@ -71,7 +71,7 @@
     "ts-node": "^8.3.0",
     "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.4.4",
+    "typescript": "^3.6.3",
     "xmlbuilder": "^13.0.2"
   },
   "repository": {
@@ -85,7 +85,8 @@
   "dependencies": {
     "unmock": "file:packages/unmock",
     "unmock-cli": "file:packages/unmock-cli",
-    "unmock-core": "file:packages/unmock-core"
+    "unmock-core": "file:packages/unmock-core",
+    "openapi-refinements": "file:packages/openapi-refinements"
   },
   "name": "unmock",
   "jest": {

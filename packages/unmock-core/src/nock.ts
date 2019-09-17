@@ -1,5 +1,5 @@
 import * as io from "io-ts";
-import { cnst_, extendT, string_, tuple_, type_ } from "json-schema-poet";
+import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
 import {
   JSONArray,
   JSONObject,
@@ -73,11 +73,20 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
+// hack until we get around to doing full typing :-(
 const removeDynamicSymbol = (
-  schema: ExtendedJSONSchema,
+  schema: any,
 ): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
-  const { dynamic, ...rest } = schema;
-  return rest;
+  if (schema instanceof Array) {
+    return schema.map(removeDynamicSymbol) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+  }
+  if (typeof schema === "object") {
+    const { dynamic, ...rest } = schema;
+    return Object.entries(rest)
+      .reduce((a, b) =>
+        ({ ...a, [b[0]]: removeDynamicSymbol(b[1])}), {}) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+  }
+  return schema;
 };
 
 const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
@@ -102,23 +111,7 @@ const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
   dynamic: DynamicJSONSymbol,
 });
 
-// TODO add more built-in types like this
-export const u = {
-  str() {
-    return jspt.string();
-  },
-  number() {
-    return jspt.number();
-  },
-  int() {
-    return jspt.integer();
-  },
-  city() {
-    return string_<IDynamicJSONValue>({ dynamic: DynamicJSONSymbol })(
-      "address.city",
-    );
-  },
-};
+export const u = jspt;
 
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({
