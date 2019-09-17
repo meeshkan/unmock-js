@@ -1,5 +1,8 @@
-const pastelGreen = "#77dd77";
-const pastelRed = `#ff6961`;
+const successGreen = "#77dd77";
+const failureRed = `#ff6961`;
+
+const darkGreen = `#228B22`;
+const darkRed = `#8b0000`;
 
 const stylesheet = `
 *,
@@ -60,19 +63,19 @@ body {
 }
 
 .test-suite--success {
-  # background-color: ${pastelGreen};
+  # background-color: ${successGreen};
 }
 
 .test-suite--failure {
-  # background-color: ${pastelRed};
+  # background-color: ${failureRed};
 }
 
 .test-suite__results--success {
-  background-color: ${pastelGreen};
+  background-color: ${successGreen};
 }
 
 .test-suite__results--failure {
-  background-color: ${pastelRed};
+  background-color: ${failureRed};
 }
 
 .test-suite__test {
@@ -80,7 +83,6 @@ body {
   padding: 1rem;
   margin: 1rem;
   border-radius: 2rem;
-  border-color: green;
 }
 
 .test-suite__test-title {
@@ -89,11 +91,13 @@ body {
 }
 
 .test-suite__test--success {
-  background-color: ${pastelGreen};
+  border-color: ${darkGreen};
+  background-color: ${successGreen};
 }
 
 .test-suite__test--failure {
-  background-color: ${pastelRed};
+  border-color: ${darkRed};
+  background-color: ${failureRed};
 }
 
 `;
