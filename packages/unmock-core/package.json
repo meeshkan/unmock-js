@@ -38,7 +38,7 @@
     "mitm": "^1.7.0",
     "mkdirp": "^0.5.1",
     "monocle-ts": "^2.0.0",
-    "openapi-refinements": "^0.0.18",
+    "openapi-refinements": "file:../openapi-refinements",
     "querystring": "^0.2.0",
     "readable-stream": "^3.4.0",
     "shimmer": "^1.2.1",
