@@ -36,23 +36,40 @@ body {
   position: relative;
   top: 50%;
   left: 50%;
-  margin-right: -50%;
+  # margin-right: -50%;
   transform: translate(-50%, -0%);
   text-align: center;
 }
 
 .test-suite {
-  border-style: dotted;
+  # border-style: dotted;
   padding: 1rem;
   margin-top: 3rem;
 }
 
 .test-suite__title {
   background-color: #eee;
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+}
+
+.test-suite__title-filename {
+}
+
+.test-suite__title-summary {
 }
 
 .test-suite__results {
-  border-style: solid;
+  # border-style: solid;
+}
+
+.test-suite--success {
+  # background-color: ${pastelGreen};
+}
+
+.test-suite--failure {
+  # background-color: ${pastelRed};
 }
 
 .test-suite__results--success {
@@ -64,8 +81,11 @@ body {
 }
 
 .test-suite__test {
-  border-style: dashed;
+  border-style: solid;
   padding: 1rem;
+  margin: 1rem;
+  border-radius: 2rem;
+  border-color: green;
 }
 
 .test-suite__test--success {

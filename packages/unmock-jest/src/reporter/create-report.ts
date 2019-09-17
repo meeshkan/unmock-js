@@ -67,11 +67,36 @@ const buildTestDiv = (
   // Snapshots
   testDiv.ele(
     "div",
-    { class: "test-suite__test-snapshots" },
-    `${snapshots.length} snapshot(s)`,
+    { class: "test-suite__test-requests" },
+    `${snapshots.length} HTTP request(s)`,
   );
 
   return testDiv;
+};
+
+/**
+ * Build title div for test suite
+ */
+const buildTestSuiteTitleDiv = (
+  filename: string,
+  testSuite: ITestSuite,
+): xmlBuilder.XMLDocument => {
+  const suiteResult = testSuite.suiteResults;
+  const numFailingTests = suiteResult.numFailingTests;
+  const snapshots = testSuite.snapshots;
+  const numPassingTests = suiteResult.numPassingTests;
+  const div = xmlBuilder.begin().ele("div", {
+    class: "test-suite__title",
+  });
+
+  div.ele("div", { class: "test-suite__title-filename" }, filename);
+
+  div.ele(
+    "div",
+    { class: "test-suite__title-summary" },
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+  );
+  return div;
 };
 
 /**
@@ -83,28 +108,24 @@ const buildTestSuiteDiv = (
   filename: string,
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
-  const element = xmlBuilder.begin().ele("div", { class: "test-suite" });
-  element.ele("div", { class: "test-suite__title" }, filename);
-
   const suiteResult = testSuite.suiteResults;
-
+  const numFailingTests = suiteResult.numFailingTests;
   const snapshots = testSuite.snapshots;
 
-  const numPassingTests = suiteResult.numPassingTests;
-  const numFailingTests = suiteResult.numFailingTests;
+  const suiteSuccessClass =
+    numFailingTests === 0 ? " test-suite--success" : " test-suite--failure";
 
-  const classFlag =
-    numFailingTests === 0
-      ? " test-suite__results--success"
-      : " test-suite__results--failure";
+  const element = xmlBuilder
+    .begin()
+    .ele("div", { class: `test-suite ${suiteSuccessClass}` });
 
-  const testResults = element.ele(
-    "div",
-    {
-      class: "test-suite__results" + classFlag,
-    },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, snapshots: ${snapshots.length}`,
-  );
+  const testSuiteTitleDiv = buildTestSuiteTitleDiv(filename, testSuite);
+
+  element.importDocument(testSuiteTitleDiv);
+
+  const testResults = element.ele("div", {
+    class: "test-suite__results" + suiteSuccessClass,
+  });
 
   const testElements: xmlBuilder.XMLDocument[] = map(
     suiteResult.testResults,
