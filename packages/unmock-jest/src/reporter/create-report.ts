@@ -81,7 +81,7 @@ const createTestSuiteNode = (
     suiteResult.testResults,
     assertionResult => {
       const snapshotsForTest = snapshots.filter(
-        snapshot => snapshot.currentTestName === assertionResult.title,
+        snapshot => snapshot.currentTestName === assertionResult.fullName,
       );
       return buildTestDiv(assertionResult, snapshotsForTest);
     },
