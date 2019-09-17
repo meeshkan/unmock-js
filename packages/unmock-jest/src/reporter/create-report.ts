@@ -1,4 +1,5 @@
 import { Dictionary, forEach, map } from "lodash";
+import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import stylesheet from "./stylesheet";
@@ -33,15 +34,38 @@ const buildTestDiv = (
   assertionResult: jest.AssertionResult,
   snapshots: ISnapshot[],
 ): xmlBuilder.XMLDocument => {
-  const testDiv = xmlBuilder.begin().ele("div", { class: "test-suite__test" });
-  const testTitle = buildTestTitle(assertionResult);
+  const statusClass =
+    assertionResult.failureMessages.length > 0
+      ? "test-suite__test--failure"
+      : "test-suite__test--success";
 
+  const testDiv = xmlBuilder
+    .begin()
+    .ele("div", { class: `test-suite__test ${statusClass}` });
+
+  // Title
+  const testTitle = buildTestTitle(assertionResult);
   testDiv.ele("div", { class: "test-suite__test-title" }, testTitle);
+
+  // Failure messages
+  if (assertionResult.failureMessages.length > 0) {
+    const failureDiv = testDiv.ele("div", {
+      class: "test-suite__test-failure-messages",
+    });
+    failureDiv.raw(
+      `Failure message: ${stripAnsi(
+        assertionResult.failureMessages.join(", "),
+      )}`,
+    );
+  }
+
+  // Snapshots
   testDiv.ele(
     "div",
     { class: "test-suite__test-snapshots" },
     `${snapshots.length} snapshot(s)`,
   );
+
   return testDiv;
 };
 
@@ -50,7 +74,7 @@ const buildTestDiv = (
  * @param filename Test file path
  * @param testSuite Test suite results
  */
-const createTestSuiteNode = (
+const buildTestSuiteDiv = (
   filename: string,
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
@@ -126,7 +150,7 @@ const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   const testSuiteElements: xmlBuilder.XMLDocument[] = map(
     grouped,
-    (testResults, filename) => createTestSuiteNode(filename, testResults),
+    (testResults, filename) => buildTestSuiteDiv(filename, testResults),
   );
 
   forEach(testSuiteElements, node => {

@@ -29,6 +29,14 @@ const stylesheet = `
   padding: 1rem;
 }
 
+.test-suite__test--success {
+  background-color: green;
+}
+
+.test-suite__test--failure {
+  background-color: red;
+}
+
 `;
 
 export default stylesheet;
