@@ -71,6 +71,7 @@ describe("Tests dynamic path tests", () => {
       .get("foo")
       .reply(200, { city: u.string("address.city") });
     dynamicSpec.get("foo").reply(404, { msg: u.string("address.city") });
+    expect(Object.keys(unmock.services).length).toEqual(1);
   });
 
   it("Allows using same name with multiple servers", () => {
