@@ -152,6 +152,15 @@ body {
   font-size: 2rem;
 }
 
+.call__response-body {
+  width: 100%;
+  height: auto;
+}
+
+.call__response-body-area {
+  width: 100%;
+}
+
 `;
 
 export default stylesheet;

@@ -11,6 +11,12 @@ const Request = ({ request }: { request: UnmockRequest}) => {
     <p>
         {`Hostname: ${request.host}`}
     </p>
+    <p>
+        {`Path: ${request.path}`}
+    </p>
+    <p>
+        {`Protocol: ${request.protocol}`}
+    </p>
   </div>)
 }
 
@@ -21,7 +27,10 @@ const Response = ({ response }: { response: UnmockResponse }) => {
         {`Status: ${response.statusCode}`}
     </p>
     <p>
-      {`Body: ${JSON.stringify(response.body)}`}
+      {`Body:`}
+      <div className={"call__response-body"}>
+        <textarea rows={5} className={"call__response-body-area"} readOnly value={response.body} />
+      </div>
     </p>
   </div>)
 }
