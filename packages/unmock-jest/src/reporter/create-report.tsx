@@ -72,9 +72,9 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
+  const callsElement = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
 
-  testDiv.raw(renderReact(requestsDiv));
+  testDiv.raw(renderReact(callsElement));
 
   return testDiv;
 };
@@ -99,7 +99,7 @@ const buildTestSuiteTitleDiv = (
   div.ele(
     "div",
     { class: "test-suite__title-summary" },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${snapshots.length}`,
   );
   return div;
 };
