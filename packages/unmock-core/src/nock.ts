@@ -40,17 +40,28 @@ const DynamicJSONValue: io.Type<
 );
 
 const RecursiveUnion: io.Type<
-RecursiveUnionType,
-RecursiveUnionType
-> = io.recursion("JSO", () => io.union([
-  JSONPrimitive, JSONObject, JSONArray, ExtendedArray, ExtendedObject
-]));
-const JSO: io.Type<
-ExtendedJSONSchema,
-ExtendedJSONSchema
-> = io.recursion("JSO", () => JSONSchemaObject(RecursiveUnion, DynamicJSONValue));
+  RecursiveUnionType,
+  RecursiveUnionType
+> = io.recursion("JSO", () =>
+  io.union([
+    JSONPrimitive,
+    JSONObject,
+    JSONArray,
+    ExtendedArray,
+    ExtendedObject,
+  ]),
+);
+const JSO: io.Type<ExtendedJSONSchema, ExtendedJSONSchema> = io.recursion(
+  "JSO",
+  () => JSONSchemaObject(RecursiveUnion, DynamicJSONValue),
+);
 
-type RecursiveUnionType = JSONPrimitive | JSONObject | JSONArray | IExtendedArrayType | IExtendedObjectType;
+type RecursiveUnionType =
+  | JSONPrimitive
+  | JSONObject
+  | JSONArray
+  | IExtendedArrayType
+  | IExtendedObjectType;
 
 // Define json schema types extended with the dynamic json value property
 type ExtendedJSONSchema = JSONSchemaObject<
@@ -95,13 +106,17 @@ const removeDynamicSymbol = (
   schema: any,
 ): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
   if (schema instanceof Array) {
-    return schema.map(removeDynamicSymbol) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return (schema.map(removeDynamicSymbol) as unknown) as JSONSchemaObject<
+      JSSTEmpty<{}>,
+      {}
+    >;
   }
   if (typeof schema === "object") {
     const { dynamic, ...rest } = schema;
-    return Object.entries(rest)
-      .reduce((a, b) =>
-        ({ ...a, [b[0]]: removeDynamicSymbol(b[1])}), {}) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return (Object.entries(rest).reduce(
+      (a, b) => ({ ...a, [b[0]]: removeDynamicSymbol(b[1]) }),
+      {},
+    ) as unknown) as JSONSchemaObject<JSSTEmpty<{}>, {}>;
   }
   return schema;
 };
@@ -126,16 +141,32 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
           : JSSTObject(RecursiveUnion, DynamicJSONValue).is(e)
           ? {
               ...e,
-              ...(e.additionalProperties ? {additionalProperties: JSONSchemify(e.additionalProperties)} : {}),
-              ...(e.patternProperties ? {patternProperties: Object.entries(e.patternProperties).reduce((a,b) => ({ ...a, [b[0]]: JSONSchemify(b[1])}), {})} : {}),
-              ...(e.properties ? {properties: Object.entries(e.properties).reduce((a,b) => ({ ...a, [b[0]]: JSONSchemify(b[1])}), {})} : {})
+              ...(e.additionalProperties
+                ? { additionalProperties: JSONSchemify(e.additionalProperties) }
+                : {}),
+              ...(e.patternProperties
+                ? {
+                    patternProperties: Object.entries(
+                      e.patternProperties,
+                    ).reduce(
+                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+                      {},
+                    ),
+                  }
+                : {}),
+              ...(e.properties
+                ? {
+                    properties: Object.entries(e.properties).reduce(
+                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+                      {},
+                    ),
+                  }
+                : {}),
             }
-          : e
+          : e,
       )
     : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<JSSTEmpty<{}>, {}>({})(
-        e.map(JSONSchemify),
-      )
+    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(JSONSchemify))
     : ExtendedObject.is(e) || JSONObject.is(e)
     ? type_<JSSTEmpty<{}>, {}>({})(
         Object.entries(e).reduce(
