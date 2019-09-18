@@ -5,6 +5,7 @@ import xmlBuilder = require("xmlbuilder");
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
+import { request } from "http";
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -32,8 +33,21 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
+const buildRequestsDiv = (
+  assertionResult: jest.AssertionResult,
+  snapshots: ISnapshot[],
+): xmlBuilder.XMLDocument => {
+  const requestsDiv = xmlBuilder.begin().ele("div", { class: `requests` });
+
+  requestsDiv.text(`${snapshots.length} HTTP requests!`);
+
+  return requestsDiv;
+};
+
 /**
  * Build a div containing the results for a single test ("assertion")
+ * @param assertionResult Jest results for the test
+ * @param snapshots All unmock snapshots for **this test**
  */
 const buildTestDiv = (
   assertionResult: jest.AssertionResult,
@@ -64,12 +78,9 @@ const buildTestDiv = (
     );
   }
 
-  // Snapshots
-  testDiv.ele(
-    "div",
-    { class: "test-requests" },
-    `${snapshots.length} HTTP request(s)`,
-  );
+  const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
+
+  testDiv.importDocument(requestsDiv);
 
   return testDiv;
 };
