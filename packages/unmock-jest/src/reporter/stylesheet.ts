@@ -99,10 +99,6 @@ body {
   background-color: ${failureRed};
 }
 
-.animal {
-  font-size: 3rem;
-}
-
 `;
 
 export default stylesheet;

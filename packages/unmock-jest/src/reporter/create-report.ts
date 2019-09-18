@@ -34,6 +34,17 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
+const buildRequestDiv = (
+  snapshot: ISnapshot,
+  key: number,
+): React.ReactElement => {
+  return React.createElement(
+    "div",
+    { className: "request", key },
+    `HTTP request: ${snapshot.data.req.host}`,
+  );
+};
+
 const buildRequestsDiv = (
   _: jest.AssertionResult,
   snapshots: ISnapshot[],
@@ -41,7 +52,7 @@ const buildRequestsDiv = (
   const requestsElement: React.ReactElement = React.createElement(
     "div",
     { className: "requests" },
-    `${snapshots.length} HTTP requests!`,
+    ...snapshots.map((snapshot, i) => buildRequestDiv(snapshot, i)),
   );
 
   return requestsElement;
@@ -215,14 +226,6 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   // Header
   reportBody.importDocument(buildHeaderDiv(input));
-
-  // React
-  const Animal = (props: any) =>
-    React.createElement("div", props, "I'm an animal!");
-  const elementXML = ReactDomServer.renderToStaticMarkup(
-    Animal({ className: "animal" }),
-  );
-  reportBody.raw(elementXML);
 
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
