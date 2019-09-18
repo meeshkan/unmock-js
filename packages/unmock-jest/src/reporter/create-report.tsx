@@ -1,4 +1,6 @@
 import { Dictionary, forEach, map } from "lodash";
+import * as React from "react";
+import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
@@ -32,8 +34,26 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
+const buildRequestElement = (snapshot: ISnapshot, i: number) => {
+  return (<div className={"request"} key={i}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
+};
+
+const buildRequestsDiv = (
+  _: jest.AssertionResult,
+  snapshots: ISnapshot[],
+): React.ReactElement => {
+  return (<div>
+    {snapshots.map((snapshot, i) => buildRequestElement(snapshot, i))}
+  </div>);
+};
+
+const renderReact = (element: React.ReactElement): string =>
+  ReactDomServer.renderToStaticMarkup(element);
+
 /**
  * Build a div containing the results for a single test ("assertion")
+ * @param assertionResult Jest results for the test
+ * @param snapshots All unmock snapshots for **this test**
  */
 const buildTestDiv = (
   assertionResult: jest.AssertionResult,
@@ -41,21 +61,21 @@ const buildTestDiv = (
 ): xmlBuilder.XMLDocument => {
   const statusClass =
     assertionResult.failureMessages.length > 0
-      ? "test-suite__test--failure"
-      : "test-suite__test--success";
+      ? "test--failure"
+      : "test--success";
 
   const testDiv = xmlBuilder
     .begin()
-    .ele("div", { class: `test-suite__test ${statusClass}` });
+    .ele("div", { class: `test ${statusClass}` });
 
   // Title
   const testTitle = buildTestTitle(assertionResult);
-  testDiv.ele("div", { class: "test-suite__test-title" }, testTitle);
+  testDiv.ele("div", { class: "test-title" }, testTitle);
 
   // Failure messages
   if (assertionResult.failureMessages.length > 0) {
     const failureDiv = testDiv.ele("div", {
-      class: "test-suite__test-failure-messages",
+      class: "test-failure-messages",
     });
     failureDiv.raw(
       `Failure message: ${stripAnsi(
@@ -64,12 +84,9 @@ const buildTestDiv = (
     );
   }
 
-  // Snapshots
-  testDiv.ele(
-    "div",
-    { class: "test-suite__test-requests" },
-    `${snapshots.length} HTTP request(s)`,
-  );
+  const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
+
+  testDiv.raw(renderReact(requestsDiv));
 
   return testDiv;
 };
