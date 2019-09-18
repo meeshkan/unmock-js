@@ -1,4 +1,6 @@
 import { Dictionary, forEach, map } from "lodash";
+import * as React from "react";
+import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
@@ -209,6 +211,14 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   // Header
   reportBody.importDocument(buildHeaderDiv(input));
+
+  // React
+  const Animal = (props: any) =>
+    React.createElement("div", props, "I'm an animal!");
+  const elementXML = ReactDomServer.renderToStaticMarkup(
+    Animal({ className: "animal" }),
+  );
+  reportBody.raw(elementXML);
 
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
