@@ -4,10 +4,10 @@ import { Service, UnmockPackage } from "../..";
 import NodeBackend from "../../backend";
 import { Arr } from "openapi-refinements";
 import { OpenAPIObject } from "loas3/dist/generated/full";
-import { gen } from "../../generator-utils";
+import { transform } from "../../generator-utils";
 import { ISerializedRequest } from "../../interfaces";
 
-const { withCodes, responseBody, noopThrows, compose, times } = gen;
+const { withCodes, responseBody, noopThrows, compose, times } = transform;
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
@@ -58,7 +58,7 @@ describe("Node.js interceptor", () => {
     test("gets correct state after setting state with status code", async () => {
       petstore.state(
         withCodes(200),
-        responseBody({ address: [Arr, "id"] }).const(5),
+        responseBody({ lens: [Arr, "id"] }).const(5),
       );
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
@@ -84,8 +84,8 @@ describe("Node.js interceptor", () => {
     test("gets correct state after multiple overriden state requests", async () => {
       petstore.state(
         withCodes(200),
-        responseBody({ path: "/pets", address: [Arr, "id"] }).const(5),
-        responseBody({ path: /\/pets\/{[a-zA-Z0-9/]+}/, address: ["id"] }).const(-1),
+        responseBody({ path: "/pets", lens: [Arr, "id"] }).const(5),
+        responseBody({ path: /\/pets\/{[a-zA-Z0-9/]+}/, lens: ["id"] }).const(-1),
       );
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
@@ -199,8 +199,8 @@ describe("Node.js interceptor", () => {
     test("fails setting an array size for non-array elements", async () => {
       petstore.state(
         withCodes(200),
-        noopThrows(responseBody({ path: "/pets", address: [Arr, "id"] }).minItems(5)),
-        noopThrows(responseBody({ path: "/pets", address: [Arr, "id"] }).maxItems(5)),
+        noopThrows(responseBody({ path: "/pets", lens: [Arr, "id"] }).minItems(5)),
+        noopThrows(responseBody({ path: "/pets", lens: [Arr, "id"] }).maxItems(5)),
       );
       try {
         await axios("http://petstore.swagger.io/v1/pets");
@@ -219,7 +219,7 @@ describe("Node.js interceptor", () => {
         withCodes(200),
         times(3)(responseBody({
           path: "/chat.postMessage",
-          address: ["message", "text"],
+          lens: ["message", "text"],
         }).const(text)));
       let resp = await postMessage();
 
@@ -236,8 +236,8 @@ describe("Node.js interceptor", () => {
       const makeTransformer = (isCat: boolean) => compose(
         withCodes(200),
         responseBody().required("properties"),
-        responseBody({address: ["properties"]}).required("isCat"),
-        responseBody({address: ["properties", "isCat"]}).const(isCat),
+        responseBody({lens: ["properties"]}).required("isCat"),
+        responseBody({lens: ["properties", "isCat"]}).const(isCat),
       );
       petstore.state(makeTransformer(true));
       let resp = await axios("http://petstore.swagger.io/v1/pets/54");
