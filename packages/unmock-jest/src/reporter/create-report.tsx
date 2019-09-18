@@ -2,7 +2,7 @@ import { Dictionary, forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
-import styled from "styled-components";
+import styled, { ServerStyleSheet, StyleSheetManager } from "styled-components";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
@@ -10,11 +10,17 @@ import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
 
+
+
 const ExampleComponent = ({ className }: any) => {
   return <div className={className}>{"Some text here"}</div>;
 }
 
 const StyledExample = styled(ExampleComponent)`font-size: 5rem`;
+
+const createHtmlBase2 = ({ styles, body }: { styles: string, body: string}): string => {
+  return `<html><head>${styles}</head><body>${body}</body></html>`
+};
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -222,6 +228,18 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   return reportBody;
 };
 
+const sheet = new ServerStyleSheet()
+
+const html = ReactDomServer.renderToString(sheet.collectStyles(<StyledExample />));
+const styleTags = sheet.getStyleTags(); // or sheet.getStyleElement();
+console.log(styleTags);  // tslint:disable-line
+const html2 = ReactDomServer.renderToStaticMarkup(
+  <StyleSheetManager sheet={sheet.instance}>
+    <StyledExample />
+  </StyleSheetManager>
+)
+const styleTags2 = sheet.getStyleTags() // or sheet.getStyleElement();
+
 export const createReport = (input: IReportInput) => {
   const htmlOutput: xmlBuilder.XMLDocument = createHtmlBase();
   const body: xmlBuilder.XMLDocument = buildBodyDiv(input);
@@ -229,4 +247,9 @@ export const createReport = (input: IReportInput) => {
   return htmlOutput.end({ pretty: true });
 };
 
-export default createReport;
+export const createReportWithStyled = (input: IReportInput) => {
+  const htmlOutput = createHtmlBase2({ styles: styleTags2, body: html });
+  return htmlOutput;
+};
+
+export default createReportWithStyled;
