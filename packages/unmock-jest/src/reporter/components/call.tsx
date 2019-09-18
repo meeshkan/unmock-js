@@ -17,7 +17,17 @@ const Request = ({ request }: { request: UnmockRequest}) => {
     <p>
         {`Protocol: ${request.protocol}`}
     </p>
+    <p>
+      {`Body:`}
+      <div className={"call__request-body"}>
+        <Body contents={typeof request.body === "object" ? JSON.stringify(request.body) : request.body || ""} />
+      </div>
+    </p>
   </div>)
+}
+
+const Body = ({ contents }: { contents: string}) => {
+  return <textarea rows={5} className={"call__body"} readOnly value={contents} />;
 }
 
 const Response = ({ response }: { response: UnmockResponse }) => {
@@ -29,7 +39,7 @@ const Response = ({ response }: { response: UnmockResponse }) => {
     <p>
       {`Body:`}
       <div className={"call__response-body"}>
-        <textarea rows={5} className={"call__response-body-area"} readOnly value={response.body} />
+        <Body contents={response.body || ""} />
       </div>
     </p>
   </div>)
