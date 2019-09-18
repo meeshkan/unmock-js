@@ -5,8 +5,15 @@ import {
   JSONObject,
   JSONPrimitive,
   JSONSchemaObject,
+  JSSTAllOf,
+  JSSTAnyOf,
   JSSTAnything,
   JSSTEmpty,
+  JSSTList,
+  JSSTNot,
+  JSSTObject,
+  JSSTOneOf,
+  JSSTTuple,
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
@@ -32,10 +39,33 @@ const DynamicJSONValue: io.Type<
   io.identity,
 );
 
-const JSO = JSONSchemaObject(JSSTEmpty(DynamicJSONValue), DynamicJSONValue);
+const RecursiveUnion: io.Type<
+  RecursiveUnionType,
+  RecursiveUnionType
+> = io.recursion("JSO", () =>
+  io.union([
+    JSONPrimitive,
+    JSONObject,
+    JSONArray,
+    ExtendedArray,
+    ExtendedObject,
+  ]),
+);
+const JSO: io.Type<ExtendedJSONSchema, ExtendedJSONSchema> = io.recursion(
+  "JSO",
+  () => JSONSchemaObject(RecursiveUnion, DynamicJSONValue),
+);
+
+type RecursiveUnionType =
+  | JSONPrimitive
+  | JSONObject
+  | JSONArray
+  | IExtendedArrayType
+  | IExtendedObjectType;
+
 // Define json schema types extended with the dynamic json value property
 type ExtendedJSONSchema = JSONSchemaObject<
-  JSSTEmpty<IDynamicJSONValue>,
+  RecursiveUnionType,
   IDynamicJSONValue
 >;
 type ExtendedPrimitiveType = JSONPrimitive | ExtendedJSONSchema;
@@ -45,9 +75,7 @@ type ExtendedValueType =
   | IExtendedObjectType
   | JSONArray
   | JSONObject;
-interface IExtendedObjectType {
-  [k: string]: ExtendedValueType;
-}
+interface IExtendedObjectType extends Record<string, ExtendedValueType> {} // Defined as interface due to circular reasons
 interface IExtendedArrayType extends Array<ExtendedValueType> {} // Defined as interface due to circular reference
 
 // Define matching codecs for the above types
@@ -94,12 +122,51 @@ const removeDynamicSymbol = (
 };
 
 const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
-  JSO.is(e)
-    ? removeDynamicSymbol(e)
-    : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<JSSTEmpty<{}>, {}>({})(
-        e.map((i: ExtendedValueType) => JSONSchemify(i)),
+  isDynamic(e)
+    ? removeDynamicSymbol(
+        // we cover all of the nested cases,
+        // followed by un-nested cases
+        JSSTAllOf(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, allOf: e.allOf.map(JSONSchemify) }
+          : JSSTAnyOf(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, anyOf: e.anyOf.map(JSONSchemify) }
+          : JSSTOneOf(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, oneOf: e.oneOf.map(JSONSchemify) }
+          : JSSTNot(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, not: JSONSchemify(e.not) }
+          : JSSTList(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, items: JSONSchemify(e.items) }
+          : JSSTTuple(RecursiveUnion, DynamicJSONValue).is(e)
+          ? { ...e, oneOf: e.items.map(JSONSchemify) }
+          : JSSTObject(RecursiveUnion, DynamicJSONValue).is(e)
+          ? {
+              ...e,
+              ...(e.additionalProperties
+                ? { additionalProperties: JSONSchemify(e.additionalProperties) }
+                : {}),
+              ...(e.patternProperties
+                ? {
+                    patternProperties: Object.entries(
+                      e.patternProperties,
+                    ).reduce(
+                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+                      {},
+                    ),
+                  }
+                : {}),
+              ...(e.properties
+                ? {
+                    properties: Object.entries(e.properties).reduce(
+                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+                      {},
+                    ),
+                  }
+                : {}),
+            }
+          : e,
       )
+    : ExtendedArray.is(e) || JSONArray.is(e)
+    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(JSONSchemify))
     : ExtendedObject.is(e) || JSONObject.is(e)
     ? type_<JSSTEmpty<{}>, {}>({})(
         Object.entries(e).reduce(
@@ -111,7 +178,7 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
     : cnst_<{}>({})(e);
 
 // Define poet to recognize the new "dynamic type"
-const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
+const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
   dynamic: DynamicJSONSymbol,
 });
 
