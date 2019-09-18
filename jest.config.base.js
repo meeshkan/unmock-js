@@ -22,6 +22,7 @@ module.exports = {
   globals: {
     "ts-jest": {
       tsConfig: "<rootDir>/src/__tests__/tsconfig.json",
+      babelConfig: true,
       diagnostics: false
     }
   }
