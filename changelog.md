@@ -1,5 +1,16 @@
 # CHANGELOG.md
 
+## 0.3.2 (2019-09-18)
+
+Features:
+
+  - Added `mapDefaultTo` to the transformer in order to map a default OpenAPI response to another code.
+  - Made it possible for JSON schema objects created by `u` to contain plain JSON objects that will be turned into constants.
+
+Fixes:
+
+  - Made prettier work in each repo of the monorepo, resulting in a lot of changes. The whole thing is more readable now.
+
 ## 0.3.1 (2019-09-18)
 
 Breaking changes:
