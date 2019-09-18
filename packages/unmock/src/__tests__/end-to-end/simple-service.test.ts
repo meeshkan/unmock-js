@@ -1,5 +1,5 @@
 import axios from "axios";
-import unmock, { Arr, transform, u, } from "../../";
+import unmock, { Arr, transform, u } from "../../";
 const { responseBody } = transform;
 
 unmock
