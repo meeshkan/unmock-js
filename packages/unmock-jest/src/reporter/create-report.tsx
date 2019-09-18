@@ -2,12 +2,19 @@ import { Dictionary, forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
+import styled from "styled-components";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
+
+const ExampleComponent = ({ className }: any) => {
+  return <div className={className}>{"Some text here"}</div>;
+}
+
+const StyledExample = styled(ExampleComponent)`font-size: 5rem`;
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -203,6 +210,11 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   // Header
   reportBody.importDocument(buildHeaderDiv(input));
+
+  // Example
+
+  reportBody.raw(renderReact(<ExampleComponent />));
+  reportBody.raw(renderReact(<StyledExample />));
 
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
