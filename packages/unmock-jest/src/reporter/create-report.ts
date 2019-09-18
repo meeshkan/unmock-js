@@ -1,39 +1,22 @@
-import { Dictionary, forEach, groupBy, mapValues } from "lodash";
+import { Dictionary, forEach, map } from "lodash";
+import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
-import { IReportInput } from "./types";
+import stylesheet from "./stylesheet";
+import { IReportInput, ITestSuite } from "./types";
+import { groupTestsByFilePath } from "./utils";
 
-const stylesheet = `
-h1 {
-  font-size: 1rem;
-}
-.test-suite {
-  padding: 1rem;
-}
-
-.test-suite__title {
-  background-color: #eee;
-}
-
-.test-suite__results {
-}
-
-.test-suite__results--success {
-  background-color: #77dd77;
-}
-
-.test-suite__results--failure {
-  background-color: #ff6961;
-}
-
-`;
-
-const createHtmlBase = () => {
+const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
     html: {
       head: {
         meta: { "@charset": "utf-8" },
         title: { "#text": "Unmock report" },
+        link: {
+          "@href":
+            "https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900",
+          "@rel": "stylesheet",
+        },
         style: { "@type": "text/css", "#text": stylesheet },
       },
     },
@@ -44,108 +27,187 @@ const createHtmlBase = () => {
 
 export const PAGE_TITLE = "Unmock Jest report";
 
-export interface ITestSuite {
-  suiteResults: jest.TestResult;
-  snapshots: ISnapshot[];
-}
+const buildTestTitle = (assertionResult: jest.AssertionResult) =>
+  assertionResult.ancestorTitles
+    .map(ancestorTitle => `${ancestorTitle} > `)
+    .join(" ") + assertionResult.title;
 
-const groupTestsByFilePath = (input: IReportInput): Dictionary<ITestSuite> => {
-  const groupedResultsByFilePath = groupBy(
-    input.jestData.aggregatedResult.testResults,
-    testResult => testResult.testFilePath,
+/**
+ * Build a div containing the results for a single test ("assertion")
+ */
+const buildTestDiv = (
+  assertionResult: jest.AssertionResult,
+  snapshots: ISnapshot[],
+): xmlBuilder.XMLDocument => {
+  const statusClass =
+    assertionResult.failureMessages.length > 0
+      ? "test-suite__test--failure"
+      : "test-suite__test--success";
+
+  const testDiv = xmlBuilder
+    .begin()
+    .ele("div", { class: `test-suite__test ${statusClass}` });
+
+  // Title
+  const testTitle = buildTestTitle(assertionResult);
+  testDiv.ele("div", { class: "test-suite__test-title" }, testTitle);
+
+  // Failure messages
+  if (assertionResult.failureMessages.length > 0) {
+    const failureDiv = testDiv.ele("div", {
+      class: "test-suite__test-failure-messages",
+    });
+    failureDiv.raw(
+      `Failure message: ${stripAnsi(
+        assertionResult.failureMessages.join(", "),
+      )}`,
+    );
+  }
+
+  // Snapshots
+  testDiv.ele(
+    "div",
+    { class: "test-suite__test-requests" },
+    `${snapshots.length} HTTP request(s)`,
   );
 
-  const testResultByFilePath = mapValues(groupedResultsByFilePath, results => {
-    if (results.length > 1) {
-      // TODO What does this mean and is this possible?
-      throw Error(
-        "Did not expect to get multiple test results for a single file",
-      );
-    }
-
-    return results[0];
-  });
-
-  const snapshotsByFilePath = groupBy(
-    input.snapshots,
-    snapshot => snapshot.testPath,
-  );
-
-  const combined = mapValues(testResultByFilePath, (value, filepath) => ({
-    suiteResults: value,
-    snapshots: snapshotsByFilePath[filepath] || [],
-  }));
-
-  return combined;
+  return testDiv;
 };
 
-const createTestSuiteNode = (
+/**
+ * Build title div for test suite
+ */
+const buildTestSuiteTitleDiv = (
   filename: string,
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
-  const element = xmlBuilder.begin().ele("div", { class: "test-suite" });
-  element.ele("div", { class: "test-suite__title" }, filename);
-
   const suiteResult = testSuite.suiteResults;
+  const numFailingTests = suiteResult.numFailingTests;
+  const snapshots = testSuite.snapshots;
+  const numPassingTests = suiteResult.numPassingTests;
+  const div = xmlBuilder.begin().ele("div", {
+    class: "test-suite__title",
+  });
 
+  div.ele("div", { class: "test-suite__title-filename" }, filename);
+
+  div.ele(
+    "div",
+    { class: "test-suite__title-summary" },
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+  );
+  return div;
+};
+
+/**
+ * Build a div for showing the results for a single test suite (a single test file).
+ * @param filename Test file path
+ * @param testSuite Test suite results
+ */
+const buildTestSuiteDiv = (
+  filename: string,
+  testSuite: ITestSuite,
+): xmlBuilder.XMLDocument => {
+  const suiteResult = testSuite.suiteResults;
+  const numFailingTests = suiteResult.numFailingTests;
   const snapshots = testSuite.snapshots;
 
-  const numPassingTests = suiteResult.numPassingTests;
-  const numFailingTests = suiteResult.numFailingTests;
+  const suiteSuccessClass =
+    numFailingTests === 0 ? " test-suite--success" : " test-suite--failure";
 
-  const classFlag =
-    numFailingTests === 0
-      ? " test-suite__results--success"
-      : " test-suite__results--failure";
+  const element = xmlBuilder
+    .begin()
+    .ele("div", { class: `test-suite ${suiteSuccessClass}` });
 
-  element.ele(
-    "div",
-    {
-      class: "test-suite__results" + classFlag,
+  const testSuiteTitleDiv = buildTestSuiteTitleDiv(filename, testSuite);
+
+  element.importDocument(testSuiteTitleDiv);
+
+  const testResults = element.ele("div", {
+    class: "test-suite__results" + suiteSuccessClass,
+  });
+
+  const testElements: xmlBuilder.XMLDocument[] = map(
+    suiteResult.testResults,
+    assertionResult => {
+      const snapshotsForTest = snapshots.filter(
+        snapshot => snapshot.currentTestName === assertionResult.fullName,
+      );
+      return buildTestDiv(assertionResult, snapshotsForTest);
     },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, snapshots: ${snapshots.length}`,
   );
+
+  forEach(testElements, testBlock => {
+    testResults.importDocument(testBlock);
+  });
 
   return element;
 };
 
-const renderBody = (input: IReportInput): xmlBuilder.XMLDocument => {
-  const reportBody = xmlBuilder.begin().element("div", { class: "report" });
+/**
+ * Build the header div containing title, timestamp, summary, etc.
+ */
+const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
+  const headerDiv = xmlBuilder.begin().ele("div", { class: "header" });
 
-  // Header
-  reportBody.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
+  const headerTextBoxDiv = headerDiv.ele("div", { class: "header__text-box" });
+
+  headerTextBoxDiv.ele("header").ele("h1", { class: "header" }, PAGE_TITLE);
 
   // Timestamp
-  reportBody.ele("div", { class: "timestamp" }, new Date().toString());
+  headerTextBoxDiv.ele(
+    "div",
+    { class: "timestamp" },
+    new Date(input.jestData.aggregatedResult.startTime).toLocaleString(),
+  );
 
   const aggregatedResult = input.jestData.aggregatedResult;
 
   // Test run metadata
-  reportBody.ele(
+  headerTextBoxDiv.ele(
     "div",
     { class: "metadata" },
     `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
   );
 
-  const testResultsElement = reportBody.ele("div", { class: "test-results" });
+  return headerDiv;
+};
 
-  const grouped = groupTestsByFilePath(input);
+/**
+ * Build div containing results for all test files (excluding header etc.)
+ */
+const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
+  const root = xmlBuilder.begin().ele("div", { class: "test-results" });
 
-  const testSuitesNodes = mapValues(grouped, (testResults, filename) =>
-    createTestSuiteNode(filename, testResults),
+  const grouped: Dictionary<ITestSuite> = groupTestsByFilePath(input);
+
+  const testSuiteElements: xmlBuilder.XMLDocument[] = map(
+    grouped,
+    (testResults, filename) => buildTestSuiteDiv(filename, testResults),
   );
 
-  forEach(testSuitesNodes, node => {
-    const block = testResultsElement.ele("div");
+  forEach(testSuiteElements, node => {
+    const block = root.ele("div");
     block.importDocument(node);
   });
+  return root;
+};
+
+const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
+  const reportBody = xmlBuilder.begin().element("div", { class: "report" });
+
+  // Header
+  reportBody.importDocument(buildHeaderDiv(input));
+
+  // Test results
+  reportBody.importDocument(buildTestResultsDiv(input));
 
   return reportBody;
 };
 
 export const createReport = (input: IReportInput) => {
-  const htmlOutput = createHtmlBase();
-  const body = renderBody(input);
+  const htmlOutput: xmlBuilder.XMLDocument = createHtmlBase();
+  const body: xmlBuilder.XMLDocument = buildBodyDiv(input);
   htmlOutput.ele("body").importDocument(body);
   return htmlOutput.end({ pretty: true });
 };
