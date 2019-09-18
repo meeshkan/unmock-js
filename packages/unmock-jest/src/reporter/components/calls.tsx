@@ -8,7 +8,7 @@ const Calls = ({ snapshots }:
 ) => {
   return (<div className={"calls"}>
     <div className={"calls__title"}>{`${snapshots.length} HTTP request(s)`}</div>
-    {snapshots.map((snapshot, i) => (<Call snapshot={snapshot} key={i} />))}
+    {snapshots.map((snapshot, i) => (<Call snapshot={snapshot} key={i}/>))}
   </div>);
 };
 

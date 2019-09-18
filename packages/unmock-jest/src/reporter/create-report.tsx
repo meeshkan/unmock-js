@@ -4,7 +4,7 @@ import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
-import Requests from "./components/calls";
+import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
@@ -72,7 +72,7 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = <Requests assertionResult={assertionResult}  snapshots={snapshots}/>;
+  const requestsDiv = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
 
   testDiv.raw(renderReact(requestsDiv));
 
