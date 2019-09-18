@@ -106,7 +106,7 @@ export default class FsSnapshotter implements IListener {
 
   public static removeExtendExpect() {
     expect.extend({
-      unmockSnapshot() {} // tslint:disable-line:no-empty
+      unmockSnapshot() {}
     });
   }
 

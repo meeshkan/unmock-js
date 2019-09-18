@@ -4,7 +4,7 @@ import { ISpyDecoration } from "./generated";
 
 export type SinonSpy = SinonSpyType<[ISerializedRequest], ISerializedResponse>;
 
-export interface ServiceSpy extends SinonSpy, ISpyDecoration {} // tslint:disable-line:interface-name
+export interface ServiceSpy extends SinonSpy, ISpyDecoration {}
 
 export interface IRequestResponsePair {
   req: ISerializedRequest;

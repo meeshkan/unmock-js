@@ -3,7 +3,6 @@ import { AllowedHosts } from "./settings/allowedHosts";
 
 export { ServiceStoreType };
 
-// tslint:disable-next-line:max-line-length
 export type CodeAsInt =
   | 100
   | 101

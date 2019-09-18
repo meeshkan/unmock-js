@@ -42,6 +42,6 @@ export default class UnmockJestReporter implements jest.Reporter {
     results: jest.AggregatedResult
   ): jest.Maybe<Promise<void>> {
     const writtenFilePath = write({ aggregatedResult: results }, this.options);
-    console.log(formatLogString(writtenFilePath)); // tslint:disable-line:no-console
+    console.log(formatLogString(writtenFilePath));
   }
 }

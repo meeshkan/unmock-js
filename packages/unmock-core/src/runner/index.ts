@@ -14,7 +14,6 @@ const errorHandler = (
   intermediaryErrors: Array<string | { message: string }>,
   cb?: jest.DoneCallback
 ) => {
-  // tslint:disable-next-line:max-line-length
   const msg = (rest: string) =>
     `${chalk.red("@unmock")} - ${
       allFailed ? "all" : "some"
@@ -74,7 +73,6 @@ export default (
   } else if (errors.length + intermediaryErrors.length > 0) {
     errorHandler(false, errors, intermediaryErrors, cb);
   } else {
-    // tslint:disable-next-line:no-unused-expression
     cb && cb();
   }
 };

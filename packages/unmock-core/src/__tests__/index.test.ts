@@ -1,4 +1,4 @@
-const unmockRequireDefault = require("../").default; // tslint:disable-line:no-var-requires
+const unmockRequireDefault = require("../").default;
 import unmockDefaultImport from "../";
 import { sinon, UnmockRequest, UnmockResponse } from "../";
 

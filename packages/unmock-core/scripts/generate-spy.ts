@@ -1,5 +1,5 @@
-const prettier = require("prettier"); // tslint:disable-line:no-var-requires
-const path = require("path"); // tslint:disable-line:no-var-requires
+const prettier = require("prettier");
+const path = require("path");
 
 type HTTPMethod =
   | "get"
@@ -89,4 +89,4 @@ ${decoratorInterface}
 ${decorators}
 `;
 
-console.log(prettier.format(sourceText, { parser: "typescript" })); // tslint:disable-line:no-console
+console.log(prettier.format(sourceText, { parser: "typescript" }));

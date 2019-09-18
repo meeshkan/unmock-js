@@ -2,7 +2,7 @@
  * Implements the logic for generating a response from a service file
  */
 // Try fixing broken imports in Node <= 8 by using require instead of default import
-const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
+const jsf = require("json-schema-faker");
 import { array } from "fp-ts/lib/Array";
 import { isNone, none, Option, some } from "fp-ts/lib/Option";
 import * as jsonschema from "jsonschema";
