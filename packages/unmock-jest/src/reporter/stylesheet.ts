@@ -100,6 +100,34 @@ body {
   background-color: ${failureRed};
 }
 
+.calls {
+  background-color: #eee;
+  border-color: black;
+  border-style: solid;
+  border-radius: 2rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.calls__title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.call {
+  border-color: black;
+  border-style: solid;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 1rem;
+}
+
+.call:last-child {
+  margin-bottom: 0rem;
+}
+
 `;
 
 export default stylesheet;
