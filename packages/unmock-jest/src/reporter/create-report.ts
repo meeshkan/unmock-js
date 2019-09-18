@@ -7,7 +7,6 @@ import xmlBuilder = require("xmlbuilder");
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
-import { request } from "http";
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -36,15 +35,20 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .join(" ") + assertionResult.title;
 
 const buildRequestsDiv = (
-  assertionResult: jest.AssertionResult,
+  _: jest.AssertionResult,
   snapshots: ISnapshot[],
-): xmlBuilder.XMLDocument => {
-  const requestsDiv = xmlBuilder.begin().ele("div", { class: `requests` });
+): React.ReactElement => {
+  const requestsElement: React.ReactElement = React.createElement(
+    "div",
+    { className: "requests" },
+    `${snapshots.length} HTTP requests!`,
+  );
 
-  requestsDiv.text(`${snapshots.length} HTTP requests!`);
-
-  return requestsDiv;
+  return requestsElement;
 };
+
+const renderReact = (element: React.ReactElement): string =>
+  ReactDomServer.renderToStaticMarkup(element);
 
 /**
  * Build a div containing the results for a single test ("assertion")
@@ -82,7 +86,7 @@ const buildTestDiv = (
 
   const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
 
-  testDiv.importDocument(requestsDiv);
+  testDiv.raw(renderReact(requestsDiv));
 
   return testDiv;
 };
