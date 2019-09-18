@@ -112,8 +112,7 @@ body {
 
 .calls__title {
   font-size: 2rem;
-  margin-bottom: 1rem;
-  margin: auto;
+  margin: 0 auto 1rem auto;
 }
 
 .call {

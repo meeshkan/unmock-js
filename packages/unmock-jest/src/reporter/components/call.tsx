@@ -17,12 +17,12 @@ const Request = ({ request }: { request: UnmockRequest}) => {
     <p>
         {`Protocol: ${request.protocol}`}
     </p>
-    <p>
+    { request.body? (<p>
       {`Body:`}
       <div className={"call__request-body"}>
         <Body contents={typeof request.body === "object" ? JSON.stringify(request.body) : request.body || ""} />
       </div>
-    </p>
+    </p>): undefined }
   </div>)
 }
 
