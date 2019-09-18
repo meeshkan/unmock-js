@@ -12,7 +12,7 @@ export { runner };
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
-export { gen, Addl, Arr } from "./generator-utils";
+export { transform, Addl, Arr } from "./generator-utils";
 
 export { ISnapshot };
 const utils = { snapshotter: FsSnapshotter };

@@ -47,7 +47,7 @@ const withCodes = withOrWithoutCodes(true);
 const withoutCodes = withOrWithoutCodes(false);
 
 interface ISchemaAddress {
-  address?: Array<string | number | typeof Arr | typeof Addl>;
+  lens?: Array<string | number | typeof Arr | typeof Addl>;
 }
 
 interface IResponseBodyOptions extends ISchemaAddress {
@@ -178,7 +178,7 @@ const expandCurriedTraversal =
 (_: ISerializedRequest, o: OpenAPIObject) =>
   c(
     tf(options),
-    options && options.address ? options.address : [],
+    options && options.lens ? options.lens : [],
   )(o);
 
 const makeSchemaTraversalStructure = <T extends ISchemaAddress>(tf: TraversalFunction<T>) => (options?: T) => ({
@@ -201,7 +201,7 @@ const makeSchemaTraversalStructure = <T extends ISchemaAddress>(tf: TraversalFun
         : (_: OpenAPIObject) => (__: Schema) => schemaOrFunction), options)(tf),
 });
 
-export const gen = {
+export const transform = {
   compose: (...transformers: IStateTransformer[]) =>
     (req: ISerializedRequest, o: OpenAPIObject) => transformers.reduce((a, b) => b(req, a), o),
   noopThrows: (f: IStateTransformer) => (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject => {

@@ -1,8 +1,8 @@
 import axios from "axios";
 import * as path from "path";
-import { runner, Service, UnmockPackage, gen } from "..";
+import { runner, Service, UnmockPackage, transform } from "..";
 import NodeBackend from "../backend";
-const { withCodes } = gen;
+const { withCodes } = transform;
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
