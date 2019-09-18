@@ -71,7 +71,9 @@ describe("Node.js interceptor", () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toContain("unmock error: Cannot find a matcher for this request");
+        expect(err.message).toContain(
+          "unmock error: Cannot find a matcher for this request",
+        );
         return;
       }
       throw new Error("Should not get here");

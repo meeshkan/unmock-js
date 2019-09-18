@@ -6,7 +6,7 @@ import { ServiceSpy, SinonSpy } from "./types";
  * @param spy Sinon spy (NOTE: modified in-place!)
  */
 export const decorateSpy = (spy: SinonSpy): ServiceSpy => {
-  return Object.assign(spy, decorators);
+  return { ...spy, ...decorators };
 };
 
 export const verifyOnlyOneCall = ({

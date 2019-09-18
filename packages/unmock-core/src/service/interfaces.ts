@@ -4,7 +4,11 @@ import {
   PathItem,
   Schema,
 } from "loas3/dist/generated/full";
-import { HTTPMethod, ISerializedRequest, IStateTransformer } from "../interfaces";
+import {
+  HTTPMethod,
+  ISerializedRequest,
+  IStateTransformer,
+} from "../interfaces";
 import { DEFAULT_STATE_HTTP_METHOD } from "./constants";
 import { IRequestResponsePair, ServiceSpy } from "./spy";
 
@@ -66,7 +70,6 @@ export interface IObjectToService {
 }
 
 export interface IServiceCore {
-
   transformer: (req: ISerializedRequest, o: OpenAPIObject) => OpenAPIObject;
 
   /**
