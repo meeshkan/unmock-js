@@ -34,16 +34,16 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
-const buildRequestElement = (snapshot: ISnapshot, i: number) => {
-  return (<div className={"request"} key={i}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
+const buildRequestElement = ({ snapshot, key }: { snapshot: ISnapshot, key: number }) => {
+  return (<div className={"request"} key={key}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
 };
 
-const buildRequestsDiv = (
-  _: jest.AssertionResult,
-  snapshots: ISnapshot[],
-): React.ReactElement => {
+const buildRequestsDiv = ({ snapshots }:
+  { assertionResult: jest.AssertionResult,
+  snapshots: ISnapshot[] },
+) => {
   return (<div>
-    {snapshots.map((snapshot, i) => buildRequestElement(snapshot, i))}
+    {snapshots.map((snapshot, i) => buildRequestElement({ snapshot,  key: i}))}
   </div>);
 };
 
@@ -84,7 +84,7 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
+  const requestsDiv = buildRequestsDiv({ assertionResult, snapshots });
 
   testDiv.raw(renderReact(requestsDiv));
 
