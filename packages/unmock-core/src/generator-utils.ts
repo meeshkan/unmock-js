@@ -12,6 +12,7 @@ import {
   changeToConst,
   header,
   includeCodes,
+  mapDefaultToCodes,
   MethodNames,
   methodParameter,
   oneOfKeep,
@@ -20,7 +21,6 @@ import {
   removeCodes,
   requestBody,
   responseBody,
-  mapDefaultToCodes,
 } from "openapi-refinements";
 export {
   Arr,
