@@ -4,6 +4,8 @@ import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
+import Request from "./components/request-component";
+import Requests from "./components/requests-component";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
@@ -35,7 +37,13 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .join(" ") + assertionResult.title;
 
 const buildRequestElement = ({ snapshot, key }: { snapshot: ISnapshot, key: number }) => {
-  return (<div className={"request"} key={key}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
+  const request = snapshot.data.req;
+  const url = `${request.method.toUpperCase()} ${request.protocol}://${request.host}${request.path}`;
+  return (<div className={"request"} key={key}>
+    <p>
+        {`URL: ${url}`}
+    </p>
+    </div>);
 };
 
 const buildRequestsDiv = ({ snapshots }:
@@ -84,7 +92,7 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = buildRequestsDiv({ assertionResult, snapshots });
+  const requestsDiv = <Requests assertionResult={assertionResult}  snapshots={snapshots}/>;
 
   testDiv.raw(renderReact(requestsDiv));
 
