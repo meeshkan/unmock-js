@@ -34,17 +34,17 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
+const buildRequestElement = (snapshot: ISnapshot, i: number) => {
+  return (<div className={"request"} key={i}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
+};
+
 const buildRequestsDiv = (
   _: jest.AssertionResult,
   snapshots: ISnapshot[],
 ): React.ReactElement => {
-  const requestsElement: React.ReactElement = React.createElement(
-    "div",
-    { className: "requests" },
-    `${snapshots.length} HTTP requests!`,
-  );
-
-  return requestsElement;
+  return (<div>
+    {snapshots.map((snapshot, i) => buildRequestElement(snapshot, i))}
+  </div>);
 };
 
 const renderReact = (element: React.ReactElement): string =>

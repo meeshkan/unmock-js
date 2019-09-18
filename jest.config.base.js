@@ -6,7 +6,7 @@ module.exports = {
   testMatch: null,
   testRegex: "/__tests__/.*\\.test\\.(js|ts)$",
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
-  moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
+  moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx", "jsx"],
   moduleNameMapper: {
     "^(unmock(?:-[A-Za-z]+)?|openapi-refinements)(?:/dist)?((?:/.*)|$)":
       "<rootDir>/../../packages/$1/src"
@@ -22,6 +22,7 @@ module.exports = {
   globals: {
     "ts-jest": {
       tsConfig: "<rootDir>/src/__tests__/tsconfig.json",
+      babelConfig: true,
       diagnostics: false
     }
   }
