@@ -4,8 +4,7 @@ import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
-import Request from "./components/request-component";
-import Requests from "./components/requests-component";
+import Requests from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
@@ -35,25 +34,6 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
   assertionResult.ancestorTitles
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
-
-const buildRequestElement = ({ snapshot, key }: { snapshot: ISnapshot, key: number }) => {
-  const request = snapshot.data.req;
-  const url = `${request.method.toUpperCase()} ${request.protocol}://${request.host}${request.path}`;
-  return (<div className={"request"} key={key}>
-    <p>
-        {`URL: ${url}`}
-    </p>
-    </div>);
-};
-
-const buildRequestsDiv = ({ snapshots }:
-  { assertionResult: jest.AssertionResult,
-  snapshots: ISnapshot[] },
-) => {
-  return (<div>
-    {snapshots.map((snapshot, i) => buildRequestElement({ snapshot,  key: i}))}
-  </div>);
-};
 
 const renderReact = (element: React.ReactElement): string =>
   ReactDomServer.renderToStaticMarkup(element);
