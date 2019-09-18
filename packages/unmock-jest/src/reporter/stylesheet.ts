@@ -77,24 +77,24 @@ body {
   background-color: ${failureRed};
 }
 
-.test-suite__test {
+.test {
   border-style: solid;
   padding: 1rem;
   margin: 1rem;
   border-radius: 2rem;
 }
 
-.test-suite__test-title {
+.test-title {
   font-size: 2rem;
   font-weight: 700;
 }
 
-.test-suite__test--success {
+.test--success {
   border-color: ${darkGreen};
   background-color: ${successGreen};
 }
 
-.test-suite__test--failure {
+.test--failure {
   border-color: ${darkRed};
   background-color: ${failureRed};
 }

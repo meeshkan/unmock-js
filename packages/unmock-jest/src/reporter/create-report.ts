@@ -41,21 +41,21 @@ const buildTestDiv = (
 ): xmlBuilder.XMLDocument => {
   const statusClass =
     assertionResult.failureMessages.length > 0
-      ? "test-suite__test--failure"
-      : "test-suite__test--success";
+      ? "test--failure"
+      : "test--success";
 
   const testDiv = xmlBuilder
     .begin()
-    .ele("div", { class: `test-suite__test ${statusClass}` });
+    .ele("div", { class: `test ${statusClass}` });
 
   // Title
   const testTitle = buildTestTitle(assertionResult);
-  testDiv.ele("div", { class: "test-suite__test-title" }, testTitle);
+  testDiv.ele("div", { class: "test-title" }, testTitle);
 
   // Failure messages
   if (assertionResult.failureMessages.length > 0) {
     const failureDiv = testDiv.ele("div", {
-      class: "test-suite__test-failure-messages",
+      class: "test-failure-messages",
     });
     failureDiv.raw(
       `Failure message: ${stripAnsi(
@@ -67,7 +67,7 @@ const buildTestDiv = (
   // Snapshots
   testDiv.ele(
     "div",
-    { class: "test-suite__test-requests" },
+    { class: "test-requests" },
     `${snapshots.length} HTTP request(s)`,
   );
 
