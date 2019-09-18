@@ -20,6 +20,7 @@ import {
   removeCodes,
   requestBody,
   responseBody,
+  mapDefaultToCodes,
 } from "openapi-refinements";
 export {
   Arr,
@@ -45,6 +46,16 @@ const withOrWithoutCodes = (withOrWithout: boolean) => (
 
 const withCodes = withOrWithoutCodes(true);
 const withoutCodes = withOrWithoutCodes(false);
+const mapDefaultTo = (
+  codes: keyof Responses | CodeAsInt | Array<keyof Responses | CodeAsInt>,
+  path?: string | RegExp | boolean,
+  method?: MethodNames | MethodNames[] | boolean,
+) => (_: ISerializedRequest, o: OpenAPIObject) =>
+    mapDefaultToCodes(
+      path !== undefined ? path : true,
+      method !== undefined ? method : true,
+      (codes instanceof Array ? codes : [codes]).map(codeConvert))(o);
+
 
 interface ISchemaAddress {
   lens?: Array<string | number | typeof Arr | typeof Addl>;
@@ -226,6 +237,7 @@ export const transform = {
   },
   withCodes,
   withoutCodes,
+  mapDefaultTo,
   responseBody: makeSchemaTraversalStructure<Partial<IResponseBodyOptions>>(
     (options?: Partial<IResponseBodyOptions>) =>
       responseBody(...responseBodySignatureFromOptions(options))),

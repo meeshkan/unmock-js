@@ -1,6 +1,7 @@
 import {
 removeCodes,
 includeCodes,
+mapDefaultToCodes,
 changeMinItems,
 Arr,
 changeMaxItems,
@@ -113,6 +114,7 @@ const responses =
 expect(Object.keys(responses)).toEqual(["200", "default"]);
 });
 
+
 test("everything is composeable", () => {
 const refined = [
     includeCodes("/pets", "get", ["200"]),
@@ -142,6 +144,16 @@ expect(Object.keys(refinedResponsesGet)).toEqual(["200"]);
 expect(refinedResponsesGet["200"]).toEqual(responsesGet["200"]);
 expect(Object.keys(refinedResponsesPost)).toEqual(["default"]);
 expect(refinedResponsesPost.default).toEqual(responsesPost.default);
+});
+
+test("map default to codes correctly maps default to 200", () => {
+  const refined = [
+      mapDefaultToCodes("/pets", "get", ["200"]),
+      includeCodes("/pets", "get", ["200"]),
+  ].reduce((a, b) => b(a), petstore);
+  expect((<any>refined).paths["/pets"].get.responses["200"].content[
+    "application/json"
+    ].schema.$ref).toBe("#/components/schemas/Error");
 });
 
 test("changeMinItems changes min items", () => {

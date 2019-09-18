@@ -7,7 +7,7 @@ import { OpenAPIObject } from "loas3/dist/generated/full";
 import { transform } from "../../generator-utils";
 import { ISerializedRequest } from "../../interfaces";
 
-const { withCodes, responseBody, noopThrows, compose, times } = transform;
+const { withCodes, mapDefaultTo, responseBody, noopThrows, compose, times } = transform;
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
@@ -53,6 +53,17 @@ describe("Node.js interceptor", () => {
             typeof pet.id === "number" && typeof pet.name === "string",
         ),
       ).toBeTruthy();
+    });
+
+    test("maps default correctly", async () => {
+      petstore.state(
+        mapDefaultTo(200),
+        withCodes(200),
+      );
+      const response = await axios("http://petstore.swagger.io/v1/pets");
+      expect(response.status).toBe(200);
+      expect(typeof response.data.message).toBe("string");
+      expect(typeof response.data.code).toBe("number");
     });
 
     test("gets correct state after setting state with status code", async () => {

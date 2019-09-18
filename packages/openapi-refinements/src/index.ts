@@ -745,3 +745,28 @@ operations: MethodNames | MethodNames[] | boolean = true,
 r: Array<keyof Responses> | boolean = true
 ) => (o: OpenAPIObject): OpenAPIObject =>
 removeCodesInternal(o, coaxPath(path), coaxMethods(operations), r);
+
+const mapDefaultToCodesFunction = (b: Array<keyof Responses>) => (r: Responses): Responses =>
+  Object.entries(r)
+    .concat(r.default ? b.map(i => [i, r.default]) : [])
+    .reduce((a, z) => ({ ...a, [z[0]]: z[1]}), {});
+
+const mapDefaultToCodesInternal = (
+o: OpenAPIObject,
+path: RegExp | boolean,
+operations: MethodNames[] | boolean,
+r: Array<keyof Responses>
+) =>
+  codesInternal(
+    o,
+    path,
+    operations,
+    mapDefaultToCodesFunction(r),
+  );
+
+export const mapDefaultToCodes = (
+path: string | RegExp | boolean = true,
+operations: MethodNames | MethodNames[] | boolean = true,
+r: Array<keyof Responses> = []
+) => (o: OpenAPIObject): OpenAPIObject =>
+mapDefaultToCodesInternal(o, coaxPath(path), coaxMethods(operations), r);
