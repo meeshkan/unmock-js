@@ -11,34 +11,50 @@ const defaultRunnerOptions: IRunnerOptions = {
 const errorHandler = (
   allFailed: boolean,
   errors: Error[],
-  intermediaryErrors: Array<(string | { message: string})>,
-  cb?: jest.DoneCallback) => {
-    // tslint:disable-next-line:max-line-length
-    const msg = (rest: string) => `${chalk.red("@unmock")} - ${allFailed ? "all" : "some"} tests failed. Here's the first error.\n${rest}`;
-    if (errors.length) {
-      errors[0].message = msg(errors[0].message);
-    } else {
-      intermediaryErrors[0] = typeof intermediaryErrors[0] === "string"
+  intermediaryErrors: Array<string | { message: string }>,
+  cb?: jest.DoneCallback,
+) => {
+  // tslint:disable-next-line:max-line-length
+  const msg = (rest: string) =>
+    `${chalk.red("@unmock")} - ${
+      allFailed ? "all" : "some"
+    } tests failed. Here's the first error.\n${rest}`;
+  if (errors.length) {
+    errors[0].message = msg(errors[0].message);
+  } else {
+    intermediaryErrors[0] =
+      typeof intermediaryErrors[0] === "string"
         ? msg(intermediaryErrors[0] as string)
-        : { message: msg((intermediaryErrors[0] as { message: string}).message) };
-    }
-    if (cb) {
-      cb.fail(intermediaryErrors.length ? intermediaryErrors[0] : errors[0].message);
-    } else {
-      throw errors[0];
-    }
+        : {
+            message: msg(
+              (intermediaryErrors[0] as { message: string }).message,
+            ),
+          };
+  }
+  if (cb) {
+    cb.fail(
+      intermediaryErrors.length ? intermediaryErrors[0] : errors[0].message,
+    );
+  } else {
+    throw errors[0];
+  }
 };
 
-export default
-  (fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) =>
-  async (cb?: jest.DoneCallback) => {
+export default (
+  fn?: jest.ProvidesCallback,
+  options?: Partial<IRunnerOptions>,
+) => async (cb?: jest.DoneCallback) => {
   const realOptions = {
     ...defaultRunnerOptions,
     ...options,
   };
-  const intermediaryErrors: Array<(string | { message: string})> = [];
-  const intermediaryDoneCallback: jest.DoneCallback = () => { /**/ };
-  intermediaryDoneCallback.fail = (error: string | {message: string}) => { intermediaryErrors.push(error); };
+  const intermediaryErrors: Array<string | { message: string }> = [];
+  const intermediaryDoneCallback: jest.DoneCallback = () => {
+    /**/
+  };
+  intermediaryDoneCallback.fail = (error: string | { message: string }) => {
+    intermediaryErrors.push(error);
+  };
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {

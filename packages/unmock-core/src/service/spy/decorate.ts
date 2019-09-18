@@ -6,6 +6,7 @@ import { ServiceSpy, SinonSpy } from "./types";
  * @param spy Sinon spy (NOTE: modified in-place!)
  */
 export const decorateSpy = (spy: SinonSpy): ServiceSpy => {
+  // prettier-ignore
   return Object.assign(spy, decorators);
 };
 

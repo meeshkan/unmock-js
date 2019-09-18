@@ -6,13 +6,13 @@ const petstore: OpenAPIObject = {
     version: "1.0.0",
     title: "Swagger Petstore",
     license: {
-      name: "MIT"
-    }
+      name: "MIT",
+    },
   },
   servers: [
     {
-      url: "http://petstore.swagger.io/v1"
-    }
+      url: "http://petstore.swagger.io/v1",
+    },
   ],
   paths: {
     "/pets": {
@@ -28,9 +28,9 @@ const petstore: OpenAPIObject = {
             required: false,
             schema: {
               type: "integer",
-              format: "int32"
-            }
-          }
+              format: "int32",
+            },
+          },
         ],
         responses: {
           "200": {
@@ -39,17 +39,17 @@ const petstore: OpenAPIObject = {
               "x-next": {
                 description: "A link to the next page of responses",
                 schema: {
-                  type: "string"
-                }
-              }
+                  type: "string",
+                },
+              },
             },
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/Pets"
-                }
-              }
-            }
+                  $ref: "#/components/schemas/Pets",
+                },
+              },
+            },
           },
           default: {
             description: "unexpected error",
@@ -156,7 +156,7 @@ const petstore: OpenAPIObject = {
       Pets: {
         type: "array",
         items: {
-          $ref: "#/components/schemas/Pet"
+          $ref: "#/components/schemas/Pet",
         },
       },
       Error: {
@@ -165,10 +165,10 @@ const petstore: OpenAPIObject = {
         properties: {
           code: {
             type: "integer",
-            format: "int32"
+            format: "int32",
           },
           message: {
-            type: "string"
+            type: "string",
           },
         },
       },
@@ -191,10 +191,10 @@ const petstore: OpenAPIObject = {
         properties: {
           code: {
             type: "integer",
-            format: "int32"
+            format: "int32",
           },
           message: {
-            type: "string"
+            type: "string",
           },
         },
       },
