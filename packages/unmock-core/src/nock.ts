@@ -5,15 +5,15 @@ import {
   JSONObject,
   JSONPrimitive,
   JSONSchemaObject,
-  JSSTAnything,
-  JSSTEmpty,
   JSSTAllOf,
   JSSTAnyOf,
-  JSSTOneOf,
+  JSSTAnything,
+  JSSTEmpty,
   JSSTList,
   JSSTNot,
-  JSSTTuple,
   JSSTObject,
+  JSSTOneOf,
+  JSSTTuple,
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
