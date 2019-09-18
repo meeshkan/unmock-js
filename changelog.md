@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 0.3.1 (2019-09-18)
+
+Breaking changes:
+
+  - Renamed `unmock.gen` package as `unmock.transform`
+  - Renamed `unmock.transform.<method>.address` package as `unmock.transform.<method>.lens`
+
 ## 0.3.0 (2019-09-17)
 
 Features:
