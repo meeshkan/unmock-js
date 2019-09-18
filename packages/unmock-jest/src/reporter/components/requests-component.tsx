@@ -6,7 +6,7 @@ const Requests = ({ snapshots }:
   { assertionResult: jest.AssertionResult,
   snapshots: ISnapshot[] },
 ) => {
-  return (<div>
+  return (<div className={"requests"}>
     {snapshots.map((snapshot, i) => (<Request snapshot={snapshot} key={i} />))}
   </div>);
 };
