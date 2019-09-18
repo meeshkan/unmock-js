@@ -10,12 +10,6 @@ import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
 
-const ExampleComponent = ({ className }: any) => {
-  return <div className={className}>{"Some text here"}</div>;
-}
-
-const StyledExample = styled(ExampleComponent)`font-size: 5rem`;
-
 const createHtmlBase2 = ({ styles, body }: { styles: string, body: string}): string => {
   return `<html>
   <head>
@@ -56,8 +50,8 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
 
-const renderReact = (element: React.ReactElement): string =>
-  ReactDomServer.renderToStaticMarkup(element);
+/* const renderReact = (element: React.ReactElement): string =>
+  ReactDomServer.renderToStaticMarkup(element); */
 
 // Style tags hack
 let styleTags: any;
