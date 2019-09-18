@@ -18,7 +18,7 @@ export const unmockSnapshot = (writer: ISnapshotWriterReader) => {
       testPath: this.testPath || "",
       currentTestName: this.currentTestName || "",
       data: obj,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
     debugLog(`Snapshotting: ${JSON.stringify(snapshotInput)}`);
     writer.write(snapshotInput);
@@ -29,5 +29,5 @@ export const unmockSnapshot = (writer: ISnapshotWriterReader) => {
 expect.addSnapshotSerializer({
   print: (val: any) => JSON.stringify(val, undefined, 2),
   // Smoke test for a value that is a request-response pair
-  test: (val: any) => val.req && val.req.method,
+  test: (val: any) => val.req && val.req.method
 });

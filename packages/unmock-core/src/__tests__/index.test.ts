@@ -23,7 +23,7 @@ describe("Imports", () => {
         path: "/v1",
         pathname: "/v1",
         protocol: "http",
-        query: {},
+        query: {}
       };
       const response: UnmockResponse = { body: "asdf", statusCode: 200 };
       expect(request).toBeDefined();

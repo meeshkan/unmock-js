@@ -27,8 +27,8 @@ describe("Report writer", () => {
       { jestData: { aggregatedResult }, snapshots },
       {
         outputDirectory: OUTPUT_FOLDER,
-        outputFilename: TEST_FILE_NAME,
-      },
+        outputFilename: TEST_FILE_NAME
+      }
     );
 
     const contents = fs.readFileSync(TEST_FILE_PATH, { encoding: "utf-8" });
@@ -38,7 +38,7 @@ describe("Report writer", () => {
   it("should write given string to the filename given by options", () => {
     writeToDirectory(RANDOM_STRING, {
       outputDirectory: OUTPUT_FOLDER,
-      outputFilename: TEST_FILE_NAME,
+      outputFilename: TEST_FILE_NAME
     });
 
     const contents = fs.readFileSync(TEST_FILE_PATH, { encoding: "utf-8" });

@@ -3,7 +3,7 @@ import {
   ClientRequest,
   IncomingMessage,
   RequestOptions,
-  ServerResponse,
+  ServerResponse
 } from "http";
 import * as _ from "lodash";
 import Mitm = require("mitm");
@@ -17,7 +17,7 @@ import {
   ISerializedResponse,
   IServiceDef,
   IUnmockOptions,
-  ServiceStoreType,
+  ServiceStoreType
 } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
@@ -32,7 +32,7 @@ const debugLog = debug("unmock:node");
 
 const respondFromSerializedResponse = (
   serializedResponse: ISerializedResponse,
-  res: ServerResponse,
+  res: ServerResponse
 ) => {
   res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
   res.end(serializedResponse.body);
@@ -63,13 +63,13 @@ async function handleRequestAndResponse(
   createResponse: CreateResponse,
   req: IncomingMessage,
   res: ServerResponse,
-  clientRequest: ClientRequest, // For emitting errors
+  clientRequest: ClientRequest // For emitting errors
 ) {
   try {
     const serializedRequest: ISerializedRequest = await serializeRequest(req);
     debugLog("Serialized request", JSON.stringify(serializedRequest));
     const serializedResponse: ISerializedResponse | undefined = createResponse(
-      serializedRequest,
+      serializedRequest
     );
 
     if (serializedResponse === undefined) {
@@ -116,12 +116,12 @@ export default class NodeBackend {
 
     // Prepare the request-response mapping by bootstrapping all dependencies here
     const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
+      unmockDirectories
     });
 
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-      ServiceParser.parse(serviceDef),
+      ServiceParser.parse(serviceDef)
     );
 
     this.serviceStore = new ServiceStore(coreServices);
@@ -149,20 +149,20 @@ export default class NodeBackend {
 
     // Client-side socket connect, use to bypass connections
     this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
-      this.mitmOnConnect(options, socket, opts),
+      this.mitmOnConnect(options, socket, opts)
     );
 
     const createResponse = responseCreatorFactory({
       listeners: [
         new FSLogger({ directory: this.config.servicesDirectory }),
-        FSSnapshotter.getOrUpdateSnapshotter({}),
+        FSSnapshotter.getOrUpdateSnapshotter({})
       ],
       options,
-      store: this.serviceStore,
+      store: this.serviceStore
     });
 
     this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
-      this.mitmOnRequest(createResponse, req, res),
+      this.mitmOnRequest(createResponse, req, res)
     );
   }
 
@@ -174,7 +174,7 @@ export default class NodeBackend {
     if (this.serviceStore) {
       // TODO - this is quite ugly :shrug:
       Object.values(this.serviceStore.services).forEach(service =>
-        service.reset(),
+        service.reset()
       );
     }
     ClientRequestTracker.stop();
@@ -183,21 +183,21 @@ export default class NodeBackend {
   private mitmOnRequest(
     createResponse: CreateResponse,
     req: IncomingMessage,
-    res: ServerResponse,
+    res: ServerResponse
   ) {
     debugLog("Handling incoming message...");
     req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
     req.on("abort", () => debugLog("Intercepted request aborted"));
     const clientRequest = ClientRequestTracker.pop(req);
     setImmediate(() =>
-      handleRequestAndResponse(createResponse, req, res, clientRequest),
+      handleRequestAndResponse(createResponse, req, res, clientRequest)
     );
   }
 
   private mitmOnConnect(
     { isWhitelisted }: IUnmockOptions,
     socket: IBypassableSocket,
-    opts: RequestOptions,
+    opts: RequestOptions
   ) {
     if (isWhitelisted(opts.host || "")) {
       socket.bypass();

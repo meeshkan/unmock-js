@@ -8,12 +8,12 @@ const fakeRequest: ISerializedRequest = {
   protocol: "https",
   path: "/v3",
   pathname: "/v3",
-  query: {},
+  query: {}
 };
 
 const fakeResponse: ISerializedResponse = {
   statusCode: 200,
-  body: JSON.stringify({ foo: "bar" }),
+  body: JSON.stringify({ foo: "bar" })
 };
 
 describe("Creating a spy", () => {
@@ -38,8 +38,8 @@ const postRequest: ISerializedRequest = {
   pathname: "/v3/",
   query: {},
   body: {
-    hello: "foo",
-  },
+    hello: "foo"
+  }
 };
 
 describe("Decorated spy", () => {
@@ -53,19 +53,19 @@ describe("Decorated spy", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(
-        callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
+        callTracker.spy.postRequestBody(match({ body: { hello: "foo" } }))
       ).toBe(postRequest.body);
     });
     it("should throw when called with non-matching matcher", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(() =>
-        callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
+        callTracker.spy.postRequestBody(match({ body: { hello: "bar" } }))
       ).toThrowError("postRequestBody: Expected");
     });
     it("should throw when nothing tracked", () => {
       expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
-        "postRequestBody: Expected",
+        "postRequestBody: Expected"
       );
     });
     it("should throw when two matching calls tracked", () => {
@@ -73,7 +73,7 @@ describe("Decorated spy", () => {
       callTracker.track({ req: postRequest, res: fakeResponse });
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
-        "postRequestBody: Expected",
+        "postRequestBody: Expected"
       );
     });
   });

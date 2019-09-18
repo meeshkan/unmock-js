@@ -1,7 +1,7 @@
 import { escapeRegExp } from "lodash";
 
 export const whitelistToRegex = (
-  whitelist?: Array<string | RegExp>,
+  whitelist?: Array<string | RegExp>
 ): RegExp[] =>
   whitelist === undefined
     ? []
@@ -12,6 +12,6 @@ export const whitelistToRegex = (
               `^${item
                 .split(/\*+/)
                 .map(escapeRegExp)
-                .join(".*")}$`,
-            ),
+                .join(".*")}$`
+            )
       );

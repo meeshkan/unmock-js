@@ -6,18 +6,18 @@ test("composite deserializer 1", () => {
   expect(
     new CompositeDeserializer(
       new JSONDeserializer(),
-      new FormDeserializer(),
+      new FormDeserializer()
     ).deserialize({
       body: { foo: "1", bar: "2" },
       headers: {
-        ["content-type"]: "application/x-www-form-urlencoded",
-      },
-    }),
+        ["content-type"]: "application/x-www-form-urlencoded"
+      }
+    })
   ).toEqual({
     body: "foo=1&bar=2",
     headers: {
-      ["content-type"]: "application/x-www-form-urlencoded",
-    },
+      ["content-type"]: "application/x-www-form-urlencoded"
+    }
   });
 });
 
@@ -25,17 +25,17 @@ test("composite deserializer 2", () => {
   expect(
     new CompositeDeserializer(
       new JSONDeserializer(),
-      new FormDeserializer(),
+      new FormDeserializer()
     ).deserialize({
       body: { foo: 1 },
       headers: {
-        ["content-type"]: "application/json",
-      },
-    }),
+        ["content-type"]: "application/json"
+      }
+    })
   ).toEqual({
     body: '{"foo":1}',
     headers: {
-      ["content-type"]: "application/json",
-    },
+      ["content-type"]: "application/json"
+    }
   });
 });

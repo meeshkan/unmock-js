@@ -8,7 +8,7 @@ import {
   derefIfNeeded,
   getAtLevel,
   getPathParametersFromPath,
-  getPathParametersFromSchema,
+  getPathParametersFromSchema
 } from "../service/util";
 
 describe("Tests deref", () => {
@@ -20,7 +20,7 @@ describe("Tests deref", () => {
   it("Dereferences local file references", () => {
     schema.components.schemas.Pets.items.$ref = `spec.yaml${schema.components.schemas.Pets.items.$ref}`;
     const derefed = derefIfNeeded({ schema, absPath })(
-      schema.components.schemas.Pets,
+      schema.components.schemas.Pets
     );
     expect(derefed).toEqual({
       type: "array",
@@ -29,23 +29,23 @@ describe("Tests deref", () => {
         properties: {
           id: {
             type: "integer",
-            format: "int64",
+            format: "int64"
           },
           name: { type: "string" },
           tag: { type: "string" },
           properties: {
             type: "object",
-            properties: { isCat: { type: "boolean" } },
-          },
-        },
-      },
+            properties: { isCat: { type: "boolean" } }
+          }
+        }
+      }
     });
   });
 
   it("Derefences internal references", () => {
     const derefed = derefIfNeeded({ schema, absPath })(
       schema.paths["/pets"].get.responses["200"].content["application/json"]
-        .schema,
+        .schema
     );
     expect(derefed).toEqual({
       type: "array",
@@ -54,16 +54,16 @@ describe("Tests deref", () => {
         properties: {
           id: {
             type: "integer",
-            format: "int64",
+            format: "int64"
           },
           name: { type: "string" },
           tag: { type: "string" },
           properties: {
             type: "object",
-            properties: { isCat: { type: "boolean" } },
-          },
-        },
-      },
+            properties: { isCat: { type: "boolean" } }
+          }
+        }
+      }
     });
   });
 });
@@ -73,8 +73,8 @@ describe("Tests getAtLevel", () => {
     "/pet/{petId}": { get: { 200: {}, default: {} } },
     "/pets": {
       get: { 200: {}, default: {} },
-      post: { 201: {}, default: {} },
-    },
+      post: { 201: {}, default: {} }
+    }
   };
   it("different levels without filter returns all nested items at requested level", () => {
     expect(getAtLevel(schema, 0).length).toBe(2); // Only 2 items at first level
@@ -100,13 +100,13 @@ describe("Tests getAtLevel", () => {
     let got = getAtLevel(
       schema,
       0,
-      (k: string | undefined, _: any) => k === "/pets",
+      (k: string | undefined, _: any) => k === "/pets"
     );
     expect(got.length).toBe(1);
     got = getAtLevel(
       schema,
       1,
-      (k: string | undefined, _: any) => k === "post",
+      (k: string | undefined, _: any) => k === "post"
     );
     expect(got.length).toBe(1);
     got = getAtLevel(schema, 2, (k: string | undefined, _: any) => k === "200");
@@ -144,11 +144,11 @@ describe("Tests getPathParametersFromPath", () => {
 
 describe("Tests getPathParametersFromSchema", () => {
   const baseSchema = (params: Parameter[]) => ({
-    get: { parameters: params, responses: {} },
+    get: { parameters: params, responses: {} }
   });
   it("static path without parameters returns empty list", () => {
     const schema = {
-      "/pets": { ...baseSchema([{ in: "path", name: "foo" }]) },
+      "/pets": { ...baseSchema([{ in: "path", name: "foo" }]) }
     };
     expect(getPathParametersFromSchema(schema, "/pets").length).toBe(0);
   });
@@ -158,16 +158,16 @@ describe("Tests getPathParametersFromSchema", () => {
       "/pets/{petId}": {
         ...baseSchema([
           { in: "path", name: "petId" },
-          { in: "query", name: "foo" },
-        ]),
-      },
+          { in: "query", name: "foo" }
+        ])
+      }
     };
     expect(getPathParametersFromSchema(schema, "/pets/{petId}").length).toBe(1);
   });
 
   it("static path without schema returns empty list", () => {
     const schema = {
-      "/pets/{petId}": { ...baseSchema([{ in: "path", name: "foo" }]) },
+      "/pets/{petId}": { ...baseSchema([{ in: "path", name: "foo" }]) }
     };
     expect(getPathParametersFromSchema(schema, "/pets/").length).toBe(0);
   });
@@ -175,7 +175,7 @@ describe("Tests getPathParametersFromSchema", () => {
   it("dynamic path without parameters throws", () => {
     const schema = { "/pets/{petId}": { ...baseSchema([]) } };
     expect(() => getPathParametersFromSchema(schema, "/pets/{petId}")).toThrow(
-      "no description for path parameters",
+      "no description for path parameters"
     );
   });
 });
@@ -184,31 +184,31 @@ describe("Tests buildPathRegexStringFromParameters", () => {
   const emptySchema: any[] = [];
   const schemaWithMatchingParams: Parameter[] = [
     { in: "path", name: "petId" },
-    { in: "query", name: "foo" },
+    { in: "query", name: "foo" }
   ];
   const schemaWithMissingParams: Parameter[] = [
     { in: "path", name: "id" },
-    { in: "query", name: "foo" },
+    { in: "query", name: "foo" }
   ];
 
   describe("static path", () => {
     it("without schema nor parameters stays the same", () => {
       expect(buildPathRegexStringFromParameters("/pets", emptySchema, [])).toBe(
-        "/pets",
+        "/pets"
       );
     });
 
     it("empty schema with non-empty parameter list stays the same", () => {
       expect(
-        buildPathRegexStringFromParameters("/pets", emptySchema, ["petId"]),
+        buildPathRegexStringFromParameters("/pets", emptySchema, ["petId"])
       ).toBe("/pets");
     });
 
     it("non-empty schema with non-empty parameter list stays the same", () => {
       expect(
         buildPathRegexStringFromParameters("/pets", schemaWithMatchingParams, [
-          "petId",
-        ]),
+          "petId"
+        ])
       ).toBe("/pets");
     });
 
@@ -216,8 +216,8 @@ describe("Tests buildPathRegexStringFromParameters", () => {
       // Expected to fail as we still have a path parameter that was unresolved
       expect(() =>
         buildPathRegexStringFromParameters("/pets", schemaWithMissingParams, [
-          "petId",
-        ]),
+          "petId"
+        ])
       ).toThrow("following path parameters have not been described");
     });
   });
@@ -225,15 +225,15 @@ describe("Tests buildPathRegexStringFromParameters", () => {
   describe("dynamic path", () => {
     it("empty schema with empty parameter list stays the same", () => {
       expect(
-        buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, []),
+        buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, [])
       ).toBe("/pets/{petId}");
     });
 
     it("empty schema with non-empty parameter list stays the same", () => {
       expect(
         buildPathRegexStringFromParameters("/pets/{petId}", emptySchema, [
-          "petId",
-        ]),
+          "petId"
+        ])
       ).toBe("/pets/{petId}");
     });
 
@@ -241,7 +241,7 @@ describe("Tests buildPathRegexStringFromParameters", () => {
       const newPath = buildPathRegexStringFromParameters(
         "/pets/{petId}",
         schemaWithMatchingParams,
-        ["petId"],
+        ["petId"]
       );
       expect(newPath).toBe("/pets/(?<petId>[^/]+)");
       expect(XRegExp(newPath).test("/pets/2")).toBeTruthy();
@@ -252,8 +252,8 @@ describe("Tests buildPathRegexStringFromParameters", () => {
         buildPathRegexStringFromParameters(
           "/pets/{petId}",
           schemaWithMissingParams,
-          ["petId"],
-        ),
+          ["petId"]
+        )
       ).toThrow("following path parameters have not been described");
     });
   });

@@ -5,13 +5,13 @@ test("json serializer", () => {
     new JSONSerializer().serialize({
       body: '{"foo":1}',
       headers: {
-        ["content-type"]: "application/json",
-      },
-    }),
+        ["content-type"]: "application/json"
+      }
+    })
   ).toEqual({
     body: { foo: 1 },
     headers: {
-      ["content-type"]: "application/json",
-    },
+      ["content-type"]: "application/json"
+    }
   });
 });

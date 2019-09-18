@@ -19,17 +19,17 @@ export default class FormSerializer implements ISerializer {
                 .split("&")
                 .map((kv: string) => kv.split("="))
                 .map(([k, v]: [string, string]) => ({
-                  [querystring.unescape(k)]: querystring.unescape(v),
+                  [querystring.unescape(k)]: querystring.unescape(v)
                 }))
                 .reduce(
                   (
                     a: { [key: string]: string },
-                    b: { [key: string]: string },
+                    b: { [key: string]: string }
                   ) => ({ ...a, ...b }),
-                  {},
-                ),
+                  {}
+                )
             }
-          : {}),
+          : {})
       };
     }
     return json;

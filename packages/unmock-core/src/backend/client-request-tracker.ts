@@ -25,12 +25,12 @@ export default abstract class ClientRequestTracker {
         function(this: ClientRequest, socket: net.Socket) {
           const requestId = uuidv4();
           debugLog(
-            `New socket assigned to client request, assigned ID: ${requestId}`,
+            `New socket assigned to client request, assigned ID: ${requestId}`
           );
           ClientRequestTracker.clientRequests[requestId] = this;
           this.setHeader(UNMOCK_INTERNAL_HTTP_HEADER, requestId);
           return original.apply(this, [socket]);
-        },
+        }
     );
   }
 
@@ -54,11 +54,11 @@ export default abstract class ClientRequestTracker {
     const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
     debugLog(
       `Intercepted incoming request with ID ${reqId}, matching to existing IDs:`,
-      Object.keys(ClientRequestTracker.clientRequests),
+      Object.keys(ClientRequestTracker.clientRequests)
     );
     if (typeof reqId !== "string") {
       throw Error(
-        `Expected to find a string request ID in request header, got type: ${typeof reqId}`,
+        `Expected to find a string request ID in request header, got type: ${typeof reqId}`
       );
     }
     const clientRequest = ClientRequestTracker.clientRequests[reqId];

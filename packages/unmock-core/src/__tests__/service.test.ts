@@ -2,7 +2,7 @@ import { assert } from "sinon";
 import {
   PetStoreServiceWithEmptyPaths,
   testRequest,
-  testResponse,
+  testResponse
 } from "./utils";
 
 import { Service } from "../service";
@@ -12,7 +12,7 @@ describe("Service spy", () => {
   const service = new Service(PetStoreServiceWithEmptyPaths);
   const requestResponsePair: IRequestResponsePair = {
     req: testRequest,
-    res: testResponse,
+    res: testResponse
   };
   beforeEach(() => {
     service.reset();

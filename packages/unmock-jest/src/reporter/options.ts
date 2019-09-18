@@ -2,7 +2,7 @@ import * as path from "path";
 
 export const DEFAULT_OUTPUT_DIRECTORY = path.resolve(
   process.cwd(),
-  "__unmock__",
+  "__unmock__"
 );
 
 export const DEFAULT_OUTPUT_FILENAME = "unmock-report.html";
@@ -14,10 +14,10 @@ export interface IReporterOptions {
 
 const DEFAULT_OPTIONS: IReporterOptions = {
   outputDirectory: DEFAULT_OUTPUT_DIRECTORY,
-  outputFilename: DEFAULT_OUTPUT_FILENAME,
+  outputFilename: DEFAULT_OUTPUT_FILENAME
 };
 
 export const resolveOptions = (reporterOptions: Partial<IReporterOptions>) => ({
   ...DEFAULT_OPTIONS,
-  ...reporterOptions,
+  ...reporterOptions
 });

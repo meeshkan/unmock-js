@@ -4,7 +4,7 @@ import {
   format,
   FsSnapshotWriterReader,
   ISnapshot,
-  parseSnapshot,
+  parseSnapshot
 } from "../loggers/snapshotter/snapshot-writer-reader";
 import { testRequest, testResponse } from "./utils";
 const outputFolder = pathResolve(__filename, "..", "__snapshots__");
@@ -16,7 +16,7 @@ describe("Snapshotter", () => {
 
   it("should snapshot on notify and read it", () => {
     snapshotter = FsSnapshotter.getOrUpdateSnapshotter({
-      outputFolder,
+      outputFolder
     });
 
     snapshotter.notify(exampleListenerInput);
@@ -29,7 +29,7 @@ describe("Snapshotter", () => {
 
   it("should delete snapshots", () => {
     snapshotter = FsSnapshotter.getOrUpdateSnapshotter({
-      outputFolder,
+      outputFolder
     });
     const exampleSnapshot = { req: testRequest, res: testResponse };
 
@@ -56,7 +56,7 @@ const exampleSnapshotInput: ISnapshot = {
   currentTestName: "blah",
   data: exampleListenerInput,
   testPath: "blah",
-  timestamp,
+  timestamp
 };
 
 describe("Snapshot writer/reader", () => {
@@ -98,7 +98,7 @@ describe("Snapshot writer/reader", () => {
 
       const exampleSnapshotInputWithEarlyTimestamp = {
         ...exampleSnapshotInput,
-        timestamp: new Date(0),
+        timestamp: new Date(0)
       };
 
       snapshotWriterReader.write(exampleSnapshotInput);
@@ -107,7 +107,7 @@ describe("Snapshot writer/reader", () => {
       const parsedSnapshots = snapshotWriterReader.read();
       expect(parsedSnapshots).toHaveLength(2);
       expect(parsedSnapshots[0]).toEqual(
-        exampleSnapshotInputWithEarlyTimestamp,
+        exampleSnapshotInputWithEarlyTimestamp
       );
       expect(parsedSnapshots[1]).toEqual(exampleSnapshotInput);
     });

@@ -9,5 +9,5 @@ export const Chalks: Record<
   Chalk & { supportsColor: ColorSupport }
 > = {
   error,
-  instruct,
+  instruct
 };

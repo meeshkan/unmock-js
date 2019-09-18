@@ -5,13 +5,13 @@ test("form deserializer", () => {
     new FormDeserializer().deserialize({
       body: { foo: "1", bar: "2" },
       headers: {
-        ["content-type"]: "application/x-www-form-urlencoded",
-      },
-    }),
+        ["content-type"]: "application/x-www-form-urlencoded"
+      }
+    })
   ).toEqual({
     body: "foo=1&bar=2",
     headers: {
-      ["content-type"]: "application/x-www-form-urlencoded",
-    },
+      ["content-type"]: "application/x-www-form-urlencoded"
+    }
   });
 });

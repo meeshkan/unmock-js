@@ -1,303 +1,303 @@
 import {
-removeCodes,
-includeCodes,
-changeMinItems,
-Arr,
-changeMaxItems,
-changeRequiredStatus,
-changeToConst,
-changeListToTuple,
-oneOfKeep,
-oneOfReject,
-responseBody,
-methodParameter,
-changeEnum,
+  removeCodes,
+  includeCodes,
+  changeMinItems,
+  Arr,
+  changeMaxItems,
+  changeRequiredStatus,
+  changeToConst,
+  changeListToTuple,
+  oneOfKeep,
+  oneOfReject,
+  responseBody,
+  methodParameter,
+  changeEnum
 } from "../";
 import petstore from "./petstore";
 
 test("removeCodes removes 200 and 201 everywhere", () => {
-const refined = removeCodes("/pets", true, ["200", "201"])(petstore);
-const refinedResponsesGet =
+  const refined = removeCodes("/pets", true, ["200", "201"])(petstore);
+  const refinedResponsesGet =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-const refinedResponsesPost =
+  const refinedResponsesPost =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].post &&
-    refined.paths["/pets"].post.responses) ||
+      refined.paths["/pets"].post &&
+      refined.paths["/pets"].post.responses) ||
     {};
-const responsesGet =
+  const responsesGet =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].get &&
-    petstore.paths["/pets"].get.responses) ||
+      petstore.paths["/pets"].get &&
+      petstore.paths["/pets"].get.responses) ||
     {};
-const responsesPost =
+  const responsesPost =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].post &&
-    petstore.paths["/pets"].post.responses) ||
+      petstore.paths["/pets"].post &&
+      petstore.paths["/pets"].post.responses) ||
     {};
-expect(Object.keys(refinedResponsesGet)).toEqual(["default"]);
-expect(refinedResponsesGet.default).toEqual(responsesGet.default);
-expect(Object.keys(refinedResponsesPost)).toEqual(["default"]);
-expect(refinedResponsesPost.default).toEqual(responsesPost.default);
+  expect(Object.keys(refinedResponsesGet)).toEqual(["default"]);
+  expect(refinedResponsesGet.default).toEqual(responsesGet.default);
+  expect(Object.keys(refinedResponsesPost)).toEqual(["default"]);
+  expect(refinedResponsesPost.default).toEqual(responsesPost.default);
 });
 
 test("removeCodes removes 200", () => {
-const refined = removeCodes("/pets", "get", ["200"])(petstore);
-const refinedResponses =
+  const refined = removeCodes("/pets", "get", ["200"])(petstore);
+  const refinedResponses =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-const resposnes =
+  const resposnes =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].get &&
-    petstore.paths["/pets"].get.responses) ||
+      petstore.paths["/pets"].get &&
+      petstore.paths["/pets"].get.responses) ||
     {};
-expect(Object.keys(refinedResponses)).toEqual(["default"]);
-expect(refinedResponses.default).toEqual(resposnes.default);
+  expect(Object.keys(refinedResponses)).toEqual(["default"]);
+  expect(refinedResponses.default).toEqual(resposnes.default);
 });
 
 test("removeCodes removes all codes", () => {
-const refined = removeCodes("/pets", "get", ["200", "default"])(petstore);
-const refinedResponses =
+  const refined = removeCodes("/pets", "get", ["200", "default"])(petstore);
+  const refinedResponses =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-expect(Object.keys(refinedResponses)).toEqual([]);
+  expect(Object.keys(refinedResponses)).toEqual([]);
 });
 
 test("includeCodes includes 200", () => {
-const refined = includeCodes("/pets", "get", ["200"])(petstore);
-const responses =
+  const refined = includeCodes("/pets", "get", ["200"])(petstore);
+  const responses =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-const refinedResponses =
+  const refinedResponses =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].get &&
-    petstore.paths["/pets"].get.responses) ||
+      petstore.paths["/pets"].get &&
+      petstore.paths["/pets"].get.responses) ||
     {};
-expect(Object.keys(responses)).toEqual(["200"]);
-expect(refinedResponses["200"]).toEqual(responses["200"]);
+  expect(Object.keys(responses)).toEqual(["200"]);
+  expect(refinedResponses["200"]).toEqual(responses["200"]);
 });
 
 test("includeCodes works on regex", () => {
-const refined = includeCodes(new RegExp("[a-zA-Z0-9/{}]*"), true, [
+  const refined = includeCodes(new RegExp("[a-zA-Z0-9/{}]*"), true, [
     "default"
-])(petstore);
-const petsResponses =
+  ])(petstore);
+  const petsResponses =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-expect(Object.keys(petsResponses)).toEqual(["default"]);
-const petsIdResponses =
+  expect(Object.keys(petsResponses)).toEqual(["default"]);
+  const petsIdResponses =
     (refined.paths["/pets/{petId}"] &&
-    refined.paths["/pets/{petId}"].get &&
-    refined.paths["/pets/{petId}"].get.responses) ||
+      refined.paths["/pets/{petId}"].get &&
+      refined.paths["/pets/{petId}"].get.responses) ||
     {};
-expect(Object.keys(petsIdResponses)).toEqual(["default"]);
+  expect(Object.keys(petsIdResponses)).toEqual(["default"]);
 });
 
 test("includeCodes includes all codes", () => {
-const refined = includeCodes("/pets", "get", ["200", "default"])(petstore);
-const responses =
+  const refined = includeCodes("/pets", "get", ["200", "default"])(petstore);
+  const responses =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-expect(Object.keys(responses)).toEqual(["200", "default"]);
+  expect(Object.keys(responses)).toEqual(["200", "default"]);
 });
 
 test("everything is composeable", () => {
-const refined = [
+  const refined = [
     includeCodes("/pets", "get", ["200"]),
     removeCodes("/pets", "post", ["201"])
-].reduce((a, b) => b(a), petstore);
-const refinedResponsesGet =
+  ].reduce((a, b) => b(a), petstore);
+  const refinedResponsesGet =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].get &&
-    refined.paths["/pets"].get.responses) ||
+      refined.paths["/pets"].get &&
+      refined.paths["/pets"].get.responses) ||
     {};
-const refinedResponsesPost =
+  const refinedResponsesPost =
     (refined.paths["/pets"] &&
-    refined.paths["/pets"].post &&
-    refined.paths["/pets"].post.responses) ||
+      refined.paths["/pets"].post &&
+      refined.paths["/pets"].post.responses) ||
     {};
-const responsesGet =
+  const responsesGet =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].get &&
-    petstore.paths["/pets"].get.responses) ||
+      petstore.paths["/pets"].get &&
+      petstore.paths["/pets"].get.responses) ||
     {};
-const responsesPost =
+  const responsesPost =
     (petstore.paths["/pets"] &&
-    petstore.paths["/pets"].post &&
-    petstore.paths["/pets"].post.responses) ||
+      petstore.paths["/pets"].post &&
+      petstore.paths["/pets"].post.responses) ||
     {};
-expect(Object.keys(refinedResponsesGet)).toEqual(["200"]);
-expect(refinedResponsesGet["200"]).toEqual(responsesGet["200"]);
-expect(Object.keys(refinedResponsesPost)).toEqual(["default"]);
-expect(refinedResponsesPost.default).toEqual(responsesPost.default);
+  expect(Object.keys(refinedResponsesGet)).toEqual(["200"]);
+  expect(refinedResponsesGet["200"]).toEqual(responsesGet["200"]);
+  expect(Object.keys(refinedResponsesPost)).toEqual(["default"]);
+  expect(refinedResponsesPost.default).toEqual(responsesPost.default);
 });
 
 test("changeMinItems changes min items", () => {
-const refined = changeMinItems(5)(responseBody("/pets", true, ["200"]), [])(
+  const refined = changeMinItems(5)(responseBody("/pets", true, ["200"]), [])(
     petstore
-);
-expect(
+  );
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.minItems
-).toBe(5);
+  ).toBe(5);
 });
 
 test("changeMaxItems changes max items on nested object", () => {
-const refined = changeMaxItems(63)(responseBody("/pets", true, ["200"]), [
+  const refined = changeMaxItems(63)(responseBody("/pets", true, ["200"]), [
     Arr,
     "tags"
-])(petstore);
-expect(
+  ])(petstore);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items.properties.tags.maxItems
-).toBe(63);
-expect(
+  ).toBe(63);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.maxItems
-).toBe(undefined);
+  ).toBe(undefined);
 });
 
 test("changing an enum is possible", () => {
-const refined = changeEnum(["cute"], true)(
+  const refined = changeEnum(["cute"], true)(
     responseBody("/pets", true, ["200"]),
     [Arr, "tags", Arr]
-)(petstore);
-expect(
+  )(petstore);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items.properties.tags.items.enum
-).toEqual(["cute"]);
+  ).toEqual(["cute"]);
 });
 
 test("changeRequiredStatus changes required status on nested object", () => {
-const refined = changeRequiredStatus("tags")(
+  const refined = changeRequiredStatus("tags")(
     responseBody("/pets", true, ["200"]),
     [Arr]
-)(petstore);
-expect(
+  )(petstore);
+  expect(
     new Set(
-    (<any>refined).paths["/pets"].get.responses["200"].content[
+      (<any>refined).paths["/pets"].get.responses["200"].content[
         "application/json"
-    ].schema.items.required
+      ].schema.items.required
     )
-).toEqual(new Set(["id", "name", "tags"]));
+  ).toEqual(new Set(["id", "name", "tags"]));
 });
 
 test("changeToConst accepts const with empty array", () => {
-const refined = changeToConst([])(responseBody("/pets", true, ["200"]), [])(
+  const refined = changeToConst([])(responseBody("/pets", true, ["200"]), [])(
     petstore
-);
-expect(
+  );
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items
-).toEqual([]);
+  ).toEqual([]);
 });
 
 test("changeToConst accepts const with full array", () => {
-const refined = changeToConst([
+  const refined = changeToConst([
     { id: 0, name: "Fluffy" },
     { id: 1, name: "Trix", tags: ["cute", "sad"] }
-])(responseBody("/pets", true, ["200"]), [])(petstore);
-expect(
+  ])(responseBody("/pets", true, ["200"]), [])(petstore);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[0].properties.id.enum[0]
-).toBe(0);
-expect(
+  ).toBe(0);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[1].properties.id.enum[0]
-).toBe(1);
-expect(
+  ).toBe(1);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[1].properties.name.enum[0]
-).toBe("Trix");
-expect(
+  ).toBe("Trix");
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[1].properties.tags.items[0].enum[0]
-).toBe("cute");
-expect(
+  ).toBe("cute");
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[1].required
-).toEqual(["id", "name", "tags"]);
+  ).toEqual(["id", "name", "tags"]);
 });
 
 test("changeListToTuple length is correct", () => {
-const refined = [
+  const refined = [
     changeListToTuple(5)(responseBody("/pets", true, ["200"]), []),
     changeToConst(42)(responseBody("/pets", true), [2, "id"])
-].reduce((a, b) => b(a), petstore);
-expect(
+  ].reduce((a, b) => b(a), petstore);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items.length
-).toEqual(5);
-expect(
+  ).toEqual(5);
+  expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
-    "application/json"
+      "application/json"
     ].schema.items[2].properties.id.enum[0]
-).toEqual(42);
+  ).toEqual(42);
 });
 
 test("whittling oneOf with keep is correct", () => {
-const refined = oneOfKeep([0, 3, 4])(
+  const refined = oneOfKeep([0, 3, 4])(
     responseBody("/pets/{petId}", true, ["default"]),
     []
-)(petstore);
-expect(
+  )(petstore);
+  expect(
     (<any>refined).paths["/pets/{petId}"].get.responses["default"].content[
-    "application/json"
+      "application/json"
     ].schema.oneOf.length
-).toEqual(3);
-expect(
+  ).toEqual(3);
+  expect(
     (<any>refined).paths["/pets/{petId}"].get.responses["default"].content[
-    "application/json"
+      "application/json"
     ].schema.oneOf[2].$ref
-).toEqual("#/components/schemas/Error5");
+  ).toEqual("#/components/schemas/Error5");
 });
 
 test("whittling oneOf with reject is correct", () => {
-const refined = oneOfReject([0, 3, 4])(
+  const refined = oneOfReject([0, 3, 4])(
     responseBody("/pets/{petId}", true, ["default"]),
     []
-)(petstore);
-expect(
+  )(petstore);
+  expect(
     (<any>refined).paths["/pets/{petId}"].get.responses["default"].content[
-    "application/json"
+      "application/json"
     ].schema.oneOf.length
-).toEqual(2);
-expect(
+  ).toEqual(2);
+  expect(
     (<any>refined).paths["/pets/{petId}"].get.responses["default"].content[
-    "application/json"
+      "application/json"
     ].schema.oneOf[1].$ref
-).toEqual("#/components/schemas/Error3");
+  ).toEqual("#/components/schemas/Error3");
 });
 
 test("changing a parameter is possible", () => {
-const refined = changeToConst(42)(
+  const refined = changeToConst(42)(
     methodParameter("/pets", true, "limit", "query"),
     []
-)(petstore);
-expect((<any>refined).paths["/pets"].get.parameters[0].schema.enum[0]).toBe(
+  )(petstore);
+  expect((<any>refined).paths["/pets"].get.parameters[0].schema.enum[0]).toBe(
     42
-);
+  );
 });

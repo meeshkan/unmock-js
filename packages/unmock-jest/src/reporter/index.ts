@@ -27,7 +27,7 @@ export default class UnmockJestReporter implements jest.Reporter {
   public readonly options: IReporterOptions;
   constructor(
     public globalConfig: jest.GlobalConfig,
-    public reporterOptions: Partial<IReporterOptions>,
+    public reporterOptions: Partial<IReporterOptions>
   ) {
     this.options = resolveOptions(reporterOptions);
     this.rootDir = globalConfig.rootDir;
@@ -39,7 +39,7 @@ export default class UnmockJestReporter implements jest.Reporter {
 
   public onRunComplete(
     _: Set<jest.Context>,
-    results: jest.AggregatedResult,
+    results: jest.AggregatedResult
   ): jest.Maybe<Promise<void>> {
     const writtenFilePath = write({ aggregatedResult: results }, this.options);
     console.log(formatLogString(writtenFilePath)); // tslint:disable-line:no-console

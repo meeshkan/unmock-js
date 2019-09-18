@@ -9,7 +9,7 @@ import { unmockSnapshot } from "./expect-extend";
 import {
   FsSnapshotWriterReader,
   ISnapshot,
-  ISnapshotWriterReader,
+  ISnapshotWriterReader
 } from "./snapshot-writer-reader";
 
 const debugLog = debug("unmock:snapshotter");
@@ -20,17 +20,17 @@ export interface IFsSnapshotterOptions {
 
 export const DEFAULT_SNAPSHOT_DIRECTORY = pathResolve(
   osTmpdir(), // TODO Resolve if symlink?
-  ".unmock",
+  ".unmock"
 );
 
 const DEFAULT_OPTIONS: IFsSnapshotterOptions = {
-  outputFolder: DEFAULT_SNAPSHOT_DIRECTORY,
+  outputFolder: DEFAULT_SNAPSHOT_DIRECTORY
 };
 
 export { ISnapshot };
 
 export const resolveOptions = (
-  userOptions: Partial<IFsSnapshotterOptions>,
+  userOptions: Partial<IFsSnapshotterOptions>
 ): IFsSnapshotterOptions => {
   return merge({}, DEFAULT_OPTIONS, userOptions);
 };
@@ -64,7 +64,7 @@ export default class FsSnapshotter implements IListener {
    * If undefined and an instance exists, its options are not changed.
    */
   public static getOrUpdateSnapshotter(
-    newOptions?: Partial<IFsSnapshotterOptions>,
+    newOptions?: Partial<IFsSnapshotterOptions>
   ): FsSnapshotter {
     // Only allow singleton instantiation.
     // Instantiating multiple snapshotters would have unexpected behaviour
@@ -90,7 +90,7 @@ export default class FsSnapshotter implements IListener {
       return;
     }
     expect.extend({
-      unmockSnapshot: unmockSnapshot(writer),
+      unmockSnapshot: unmockSnapshot(writer)
     });
   }
 
@@ -106,7 +106,7 @@ export default class FsSnapshotter implements IListener {
 
   public static removeExtendExpect() {
     expect.extend({
-      unmockSnapshot() {}, // tslint:disable-line:no-empty
+      unmockSnapshot() {} // tslint:disable-line:no-empty
     });
   }
 

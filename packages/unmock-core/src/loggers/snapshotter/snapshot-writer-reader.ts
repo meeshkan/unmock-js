@@ -23,7 +23,7 @@ export interface ISnapshotWriterReader {
 export const format = (snapshot: ISnapshot): string => {
   const withStringTs = {
     ...snapshot,
-    timestamp: snapshot.timestamp.toISOString(),
+    timestamp: snapshot.timestamp.toISOString()
   };
   return JSON.stringify(withStringTs);
 };
@@ -69,12 +69,12 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
     if (!fs.existsSync(this.outputFile)) {
       debugLog(`Writing to new file ${this.outputFile}`);
       fs.writeFileSync(this.outputFile, contents + os.EOL, {
-        encoding: ENCODING,
+        encoding: ENCODING
       });
     } else {
       debugLog(`Appending to file ${this.outputFile}`);
       fs.appendFileSync(this.outputFile, contents + os.EOL, {
-        encoding: ENCODING,
+        encoding: ENCODING
       });
     }
   }
@@ -86,7 +86,7 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
       .filter(file => fs.lstatSync(file).isDirectory())
       .map(dir => path.join(dir, SNAPSHOT_FILENAME))
       .filter(
-        filename => fs.existsSync(filename) && fs.lstatSync(filename).isFile(),
+        filename => fs.existsSync(filename) && fs.lstatSync(filename).isFile()
       );
   }
 
@@ -97,10 +97,10 @@ export class FsSnapshotWriterReader implements ISnapshotWriterReader {
 
     const snapshotFiles = this.findSnapshotFiles();
     const snapshots: ISnapshot[][] = snapshotFiles.map(filename =>
-      FsSnapshotWriterReader.readFileContents(filename),
+      FsSnapshotWriterReader.readFileContents(filename)
     );
     return sortBy(flatten(snapshots), (snapshot: ISnapshot) =>
-      snapshot.timestamp.getTime(),
+      snapshot.timestamp.getTime()
     );
   }
 

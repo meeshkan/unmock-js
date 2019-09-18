@@ -22,12 +22,12 @@ export const resolveUnmockDirectories = (): string[] => {
     // where app-root-path fails due to a symlink
     // without using APP_ROOT_PATH=`pwd`
     path.resolve(`${process.cwd()}/__unmock__`),
-    path.resolve(`${process.cwd()}/node_modules/@unmock`),
+    path.resolve(`${process.cwd()}/node_modules/@unmock`)
   ];
 
   const triedDirectories = process.env.UNMOCK_SERVICES_DIRECTORY
     ? defaultUnmockDirectories.concat(
-        path.resolve(process.env.UNMOCK_SERVICES_DIRECTORY),
+        path.resolve(process.env.UNMOCK_SERVICES_DIRECTORY)
       )
     : defaultUnmockDirectories;
 
@@ -37,6 +37,6 @@ export const resolveUnmockDirectories = (): string[] => {
 
   return uniqueTriedDirectories.filter(
     (directory: string) =>
-      fs.existsSync(directory) && fs.statSync(directory).isDirectory(),
+      fs.existsSync(directory) && fs.statSync(directory).isDirectory()
   );
 };

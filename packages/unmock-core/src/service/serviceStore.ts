@@ -16,11 +16,11 @@ export class ServiceStore {
   constructor(coreServices: IServiceCore[]) {
     this.cores = coreServices.reduce(
       (o, core) => ({ ...o, [core.name]: core }),
-      {},
+      {}
     );
     this.services = coreServices.reduce(
       (o, core) => ({ ...o, [core.name]: new Service(core) }),
-      {},
+      {}
     );
   }
 
@@ -36,11 +36,11 @@ export class ServiceStore {
           {
             openapi: "3.0.0",
             info: { title: "Internally built by unmock", version: "0.0.0" },
-            paths: {},
+            paths: {}
           };
     const newServiceCore = ServiceCore.from(baseSchema, {
       ...input,
-      name: serviceName,
+      name: serviceName
     });
     this.cores[serviceName] = newServiceCore;
     this.services[serviceName] = new Service(newServiceCore);

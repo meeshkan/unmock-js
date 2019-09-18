@@ -20,19 +20,19 @@ export abstract class ServiceParser {
 
     const matchingFiles = serviceFiles.filter(
       (serviceDefFile: IServiceDefFile) =>
-        ServiceParser.KNOWN_FILENAMES.test(serviceDefFile.basename),
+        ServiceParser.KNOWN_FILENAMES.test(serviceDefFile.basename)
     );
 
     if (matchingFiles.length === 0) {
       throw new Error(
         `Cannot find known service specification from: ${JSON.stringify(
-          serviceFiles,
-        )}`,
+          serviceFiles
+        )}`
       );
     }
 
     debugLog(
-      `Found ${matchingFiles.length} service specifications for folder ${serviceDef.directoryName}`,
+      `Found ${matchingFiles.length} service specifications for folder ${serviceDef.directoryName}`
     );
 
     const serviceFile = matchingFiles[0];
@@ -49,8 +49,8 @@ export abstract class ServiceParser {
       throw new Error(
         [
           "The following errors occured while parsing your loas3 schema",
-          ...schema.left.map(i => `  ${i.message}`),
-        ].join("\n"),
+          ...schema.left.map(i => `  ${i.message}`)
+        ].join("\n")
       );
     }
 
@@ -60,7 +60,7 @@ export abstract class ServiceParser {
     return new ServiceCore({
       absPath: serviceDef.absolutePath,
       name,
-      schema: schema.right,
+      schema: schema.right
     });
   }
   private static KNOWN_FILENAMES: RegExp = /^(?:index|spec|openapi)\.ya?ml$/i;

@@ -5,9 +5,9 @@ export class AllowedHosts {
     private whitelist: Array<string | RegExp> = [
       "127.0.0.1",
       "127.0.0.0",
-      "localhost",
+      "localhost"
     ],
-    private regexWhitelist = whitelistToRegex(whitelist),
+    private regexWhitelist = whitelistToRegex(whitelist)
   ) {}
 
   public set(urls: Array<string | RegExp> | string | RegExp): void {
@@ -22,7 +22,7 @@ export class AllowedHosts {
   }
   public get() {
     return this.whitelist.map((url: string | RegExp) =>
-      url instanceof RegExp ? url.source : url,
+      url instanceof RegExp ? url.source : url
     );
   }
   public isWhitelisted(host: string) {

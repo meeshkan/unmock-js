@@ -7,34 +7,34 @@ const RESOURCES_DIR = path.join(__dirname, "__unmock__");
 describe("File system service def loader", () => {
   it("loads serviceDefs from existing directory", () => {
     const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories: [RESOURCES_DIR],
+      unmockDirectories: [RESOURCES_DIR]
     });
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     expect(serviceDefs).toHaveLength(3);
     expect(serviceDefs.map((def: IServiceDef) => def.directoryName)).toEqual([
       "filestackApi",
       "petstore",
-      "slack",
+      "slack"
     ]);
   });
   it("loads serviceDefs from existing directory asynchronously", async () => {
     const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories: [RESOURCES_DIR],
+      unmockDirectories: [RESOURCES_DIR]
     });
     const serviceDefs: IServiceDef[] = await serviceDefLoader.load();
     expect(serviceDefs).toHaveLength(3);
     expect(serviceDefs.map((def: IServiceDef) => def.directoryName)).toEqual([
       "filestackApi",
       "petstore",
-      "slack",
+      "slack"
     ]);
   });
 
   it("throws for a non-existing directory", () => {
     expect(() =>
       new FsServiceDefLoader({
-        unmockDirectories: ["DEFINITELY_DOES_NOT_EXIST_I_HOPE"],
-      }).loadSync(),
+        unmockDirectories: ["DEFINITELY_DOES_NOT_EXIST_I_HOPE"]
+      }).loadSync()
     ).toThrow(/does not exist/);
   });
 
@@ -47,7 +47,7 @@ describe("File system service def loader", () => {
     const serviceFile = serviceDef.serviceFiles[0];
     expect(serviceFile.basename).toBe("spec.yaml");
     expect(serviceFile.contents).toEqual(
-      expect.stringContaining('openapi: "3.0.0"'),
+      expect.stringContaining('openapi: "3.0.0"')
     );
   });
 });

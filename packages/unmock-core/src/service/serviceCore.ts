@@ -4,13 +4,13 @@ import {
   IObjectToService,
   IServiceCore,
   OpenAPIObject,
-  PathItem,
+  PathItem
 } from "./interfaces";
 import {
   createCallTracker,
   ICallTracker,
   IRequestResponsePair,
-  ServiceSpy,
+  ServiceSpy
 } from "./spy";
 
 export class ServiceCore implements IServiceCore {
@@ -22,8 +22,8 @@ export class ServiceCore implements IServiceCore {
       endpoint,
       statusCode,
       response,
-      name,
-    }: IObjectToService & { name: string },
+      name
+    }: IObjectToService & { name: string }
   ): IServiceCore {
     // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
     const mediaType =
@@ -36,24 +36,24 @@ export class ServiceCore implements IServiceCore {
             [statusCode]: {
               description: "Automatically added",
               content: {
-                [mediaType]: { schema: response },
-              },
-            },
-          },
-        },
-      },
+                [mediaType]: { schema: response }
+              }
+            }
+          }
+        }
+      }
     };
     const newUrls = [{ url: baseUrl }];
 
     const newPaths = defaultsDeep(newPath, baseSchema.paths);
     const newServers = unionBy(
       newUrls.concat(baseSchema.servers || []),
-      e => e.url,
+      e => e.url
     );
     const finalSchema = { ...baseSchema, paths: newPaths, servers: newServers };
     return new ServiceCore({
       schema: finalSchema,
-      name,
+      name
     });
   }
 

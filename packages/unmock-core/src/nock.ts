@@ -6,7 +6,7 @@ import {
   JSONPrimitive,
   JSONSchemaObject,
   JSSTAnything,
-  JSSTEmpty,
+  JSSTEmpty
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { HTTPMethod } from "./interfaces";
@@ -29,7 +29,7 @@ const DynamicJSONValue: io.Type<
   isDynamic,
   (input, context) =>
     isDynamic(input) ? io.success(input) : io.failure(input, context),
-  io.identity,
+  io.identity
 );
 
 const JSO = JSONSchemaObject(JSSTEmpty(DynamicJSONValue), DynamicJSONValue);
@@ -61,8 +61,8 @@ const ExtendedValue: io.Type<
     JSONArray,
     JSONObject,
     ExtendedObject,
-    ExtendedArray,
-  ]),
+    ExtendedArray
+  ])
 );
 const ExtendedObject: io.Type<
   IExtendedObjectType,
@@ -75,16 +75,20 @@ const ExtendedArray: io.Type<
 
 // hack until we get around to doing full typing :-(
 const removeDynamicSymbol = (
-  schema: any,
+  schema: any
 ): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
   if (schema instanceof Array) {
-    return schema.map(removeDynamicSymbol) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return (schema.map(removeDynamicSymbol) as unknown) as JSONSchemaObject<
+      JSSTEmpty<{}>,
+      {}
+    >;
   }
   if (typeof schema === "object") {
     const { dynamic, ...rest } = schema;
-    return Object.entries(rest)
-      .reduce((a, b) =>
-        ({ ...a, [b[0]]: removeDynamicSymbol(b[1])}), {}) as unknown as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return (Object.entries(rest).reduce(
+      (a, b) => ({ ...a, [b[0]]: removeDynamicSymbol(b[1]) }),
+      {}
+    ) as unknown) as JSONSchemaObject<JSSTEmpty<{}>, {}>;
   }
   return schema;
 };
@@ -94,21 +98,21 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
     ? removeDynamicSymbol(e)
     : ExtendedArray.is(e) || JSONArray.is(e)
     ? tuple_<JSSTEmpty<{}>, {}>({})(
-        e.map((i: ExtendedValueType) => JSONSchemify(i)),
+        e.map((i: ExtendedValueType) => JSONSchemify(i))
       )
     : ExtendedObject.is(e) || JSONObject.is(e)
     ? type_<JSSTEmpty<{}>, {}>({})(
         Object.entries(e).reduce(
           (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-          {},
+          {}
         ),
-        {},
+        {}
       )
     : cnst_<{}>({})(e);
 
 // Define poet to recognize the new "dynamic type"
 const jspt = extendT<JSSTEmpty<IDynamicJSONValue>, IDynamicJSONValue>({
-  dynamic: DynamicJSONSymbol,
+  dynamic: DynamicJSONSymbol
 });
 
 export const u = jspt;
@@ -116,7 +120,7 @@ export const u = jspt;
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({
   statusCode,
-  data,
+  data
 }: {
   statusCode: number;
   data: Schema;
@@ -135,18 +139,18 @@ export class DynamicServiceSpec {
     private updater: UpdateCallback,
     private statusCode: number = 200,
     private baseUrl: string,
-    private name?: string,
+    private name?: string
   ) {}
 
   // TODO: Should this allow fluency for consecutive .get, .post, etc on the same service?
   public reply(
     statusCode: number,
-    data?: InputToPoet | InputToPoet[],
+    data?: InputToPoet | InputToPoet[]
   ): FluentDynamicService;
   public reply(data: InputToPoet | InputToPoet[]): FluentDynamicService;
   public reply(
     maybeStatusCode: number | InputToPoet | InputToPoet[],
-    maybeData?: InputToPoet | InputToPoet[],
+    maybeData?: InputToPoet | InputToPoet[]
   ): FluentDynamicService {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
@@ -163,7 +167,7 @@ export class DynamicServiceSpec {
     }
     const store = this.updater({
       data: this.data,
-      statusCode: this.statusCode,
+      statusCode: this.statusCode
     });
 
     return buildFluentNock(store, this.baseUrl, this.name);
@@ -177,11 +181,11 @@ type FluentDynamicService = {
 const buildFluentNock = (
   store: ServiceStore,
   baseUrl: string,
-  name?: string,
+  name?: string
 ): FluentDynamicService => {
   const dynFn = (method: HTTPMethod, endpoint: string) => ({
     statusCode,
-    data,
+    data
   }: {
     statusCode: number;
     data: Schema;
@@ -192,7 +196,7 @@ const buildFluentNock = (
       endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
       statusCode,
       response: data,
-      name,
+      name
     });
   return Object.entries({
     get: 200,
@@ -202,7 +206,7 @@ const buildFluentNock = (
     patch: 204,
     delete: 200,
     options: 200,
-    trace: 200,
+    trace: 200
   }).reduce(
     (o, [method, code]) => ({
       ...o,
@@ -211,17 +215,17 @@ const buildFluentNock = (
           dynFn(method as HTTPMethod, endpoint),
           code,
           baseUrl,
-          name,
-        ),
+          name
+        )
     }),
-    {},
+    {}
   ) as FluentDynamicService;
 };
 
 export const nockify = ({
   backend,
   baseUrl,
-  name,
+  name
 }: {
   backend: NodeBackend;
   baseUrl: string;

@@ -12,7 +12,7 @@ describe("Loads services properly", () => {
     backend.services.slack.state((_, __) => __); // should pass
     backend.services.petstore.state((_, __) => __); // should pass
     expect(() => backend.services.github.state((_, __) => __)).toThrow(
-      "property 'state' of undefined",
+      "property 'state' of undefined"
     ); // no github service
   });
 });
@@ -27,7 +27,7 @@ describe("Node.js interceptor", () => {
         flaky: () => false,
         isWhitelisted: (_: string) => false,
         log: (_: string) => undefined,
-        useInProduction: () => false,
+        useInProduction: () => false
       });
       const petstore = nodeInterceptor.services.petstore;
       petstore.state((_, o) => removeCodes(true, true, ["default"])(o));
@@ -53,8 +53,8 @@ describe("Node.js interceptor", () => {
         expect(
           data.every(
             (pet: any) =>
-              typeof pet.id === "number" && typeof pet.name === "string",
-          ),
+              typeof pet.id === "number" && typeof pet.name === "string"
+          )
         ).toBeTruthy();
       }
     });
@@ -62,7 +62,7 @@ describe("Node.js interceptor", () => {
     test("should get successful response for post request", async () => {
       const response = await axios.post(
         "http://petstore.swagger.io/v1/pets",
-        {},
+        {}
       );
       expect(response.data).toBe("");
     });
@@ -71,7 +71,9 @@ describe("Node.js interceptor", () => {
       try {
         await axios("http://example.org");
       } catch (err) {
-        expect(err.message).toContain("unmock error: Cannot find a matcher for this request");
+        expect(err.message).toContain(
+          "unmock error: Cannot find a matcher for this request"
+        );
         return;
       }
       throw new Error("Should not get here");
@@ -82,7 +84,7 @@ describe("Node.js interceptor", () => {
       setImmediate(() => cancelTokenSource.cancel());
       try {
         await axios("http://example.org", {
-          cancelToken: cancelTokenSource.token,
+          cancelToken: cancelTokenSource.token
         });
       } catch (err) {
         expect(axios.isCancel(err)).toBe(true);
@@ -113,7 +115,7 @@ describe("Unmock node package", () => {
       sinon.assert.calledOnce(petstore.spy);
       sinon.assert.calledWith(petstore.spy, sinon.match({ method: "post" }));
       expect(petstore.spy.firstCall.returnValue).toEqual(
-        expect.objectContaining({ statusCode: 201 }),
+        expect.objectContaining({ statusCode: 201 })
       );
     });
     test("should reset spies with unmock.reset()", async () => {

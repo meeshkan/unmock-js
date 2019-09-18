@@ -14,7 +14,7 @@ const debugLog = debug("unmock-jest:writer");
  */
 export const writeToDirectory = (
   contents: string,
-  options: IReporterOptions,
+  options: IReporterOptions
 ): string => {
   const filepath = path.join(options.outputDirectory, options.outputFilename);
 

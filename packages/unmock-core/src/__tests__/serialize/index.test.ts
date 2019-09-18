@@ -33,7 +33,7 @@ describe("Request serializer", () => {
   function sendHttpsPostRequest(host: string, body: any) {
     const postHeaders = {
       "Content-Length": Buffer.byteLength(body, "utf8"),
-      "Content-Type": "application/json",
+      "Content-Type": "application/json"
     };
 
     const postOptions = {
@@ -41,7 +41,7 @@ describe("Request serializer", () => {
       host,
       method: "POST",
       path: "/",
-      port: 443,
+      port: 443
     };
 
     // do the POST call
@@ -58,7 +58,7 @@ describe("Request serializer", () => {
     const message = "Hello post!";
 
     const body = JSON.stringify({
-      message,
+      message
     });
 
     mitm.on("request", async (req: http.IncomingMessage) => {

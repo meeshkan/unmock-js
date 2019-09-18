@@ -14,9 +14,9 @@ describe("Service parser", () => {
       serviceFiles: [
         {
           basename: "index.yaml",
-          contents: petStoreYamlString,
-        },
-      ],
+          contents: petStoreYamlString
+        }
+      ]
     };
     const service = ServiceParser.parse(serviceDef);
     expect(service).toBeDefined();
@@ -33,9 +33,9 @@ describe("Service parser", () => {
       serviceFiles: [
         {
           basename: "something.json",
-          contents: `{ "openapi": "3.0.0" }`,
-        },
-      ],
+          contents: `{ "openapi": "3.0.0" }`
+        }
+      ]
     };
     expect(() => ServiceParser.parse(serviceDef)).toThrow(/Cannot find known/);
   });

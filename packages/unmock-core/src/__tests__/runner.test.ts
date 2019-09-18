@@ -22,11 +22,14 @@ describe("Node.js interceptor", () => {
       petstore.reset();
     });
 
-    test("runner loop works", runner(async () => {
-      petstore.state(withCodes(200));
-      const resp = await axios("http://petstore.swagger.io/v1/pets/54");
-      expect(typeof resp.data.name).toBe("string");
-    }));
+    test(
+      "runner loop works",
+      runner(async () => {
+        petstore.state(withCodes(200));
+        const resp = await axios("http://petstore.swagger.io/v1/pets/54");
+        expect(typeof resp.data.name).toBe("string");
+      })
+    );
 
     test("runner loop fails properly without callback", async () => {
       let threw = false;
@@ -45,13 +48,19 @@ describe("Node.js interceptor", () => {
     });
     test("runner loop fails properly with callback", async () => {
       const failure = [];
-      const cb: jest.DoneCallback = () => { /**/ };
-      cb.fail = (error: string | {message: string}) => { failure.push(error); };
+      const cb: jest.DoneCallback = () => {
+        /**/
+      };
+      cb.fail = (error: string | { message: string }) => {
+        failure.push(error);
+      };
       petstore.state(withCodes(200));
-      await runner(async (c) => {
+      await runner(async c => {
         try {
           const resp = await axios("http://petstore.swagger.io/v1/pets/54");
-          if (resp.data.name !== "id") { throw Error(); }
+          if (resp.data.name !== "id") {
+            throw Error();
+          }
         } catch {
           c.fail("testing failure in callback...");
         }

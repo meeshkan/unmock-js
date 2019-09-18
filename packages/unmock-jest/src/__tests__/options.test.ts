@@ -5,7 +5,7 @@ describe("Reporter options", () => {
     const resolvedOptions = resolveOptions({});
     expect(resolvedOptions).toHaveProperty(
       "outputDirectory",
-      DEFAULT_OUTPUT_DIRECTORY,
+      DEFAULT_OUTPUT_DIRECTORY
     );
   });
   it("should resolve to given output directory", () => {

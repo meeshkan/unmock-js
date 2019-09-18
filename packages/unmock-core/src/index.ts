@@ -28,7 +28,7 @@ export class UnmockPackage implements IUnmockPackage {
     backend: NodeBackend,
     options?: {
       logger?: ILogger;
-    },
+    }
   ) {
     this.backend = backend;
     this.logger = (options && options.logger) || this.logger;
@@ -43,7 +43,7 @@ export class UnmockPackage implements IUnmockPackage {
       useInProduction: () => this.useInProduction.get(),
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
-      flaky: () => this.flaky.get(),
+      flaky: () => this.flaky.get()
     };
     this.backend.initialize(opts);
     return this;
@@ -77,7 +77,7 @@ export class UnmockPackage implements IUnmockPackage {
 }
 
 const unmock = new UnmockPackage(new NodeBackend(), {
-  logger: new WinstonLogger(),
+  logger: new WinstonLogger()
 });
 
 export type UnmockNode = typeof unmock;

@@ -9,7 +9,7 @@ import {
   IIncomingHeaders,
   IIncomingQuery,
   ISerializedRequest,
-  isRESTMethod,
+  isRESTMethod
 } from "../interfaces";
 
 /**
@@ -45,7 +45,7 @@ class BodySerializer extends readable.Transform {
 }
 
 function extractVars(
-  interceptedRequest: http.IncomingMessage,
+  interceptedRequest: http.IncomingMessage
 ): {
   headers: IIncomingHeaders;
   method: HTTPMethod;
@@ -95,7 +95,7 @@ function extractVars(
     method,
     path,
     pathname,
-    query,
+    query
   };
 }
 
@@ -117,10 +117,10 @@ const safelyParseJson = (body: string): string | object => {
  * @param interceptedRequest Incoming request
  */
 export const serializeRequest = async (
-  interceptedRequest: http.IncomingMessage,
+  interceptedRequest: http.IncomingMessage
 ): Promise<ISerializedRequest> => {
   const { headers, host, method, path, pathname, query } = extractVars(
-    interceptedRequest,
+    interceptedRequest
   );
 
   const isEncrypted = (interceptedRequest.connection as any).encrypted;
@@ -141,7 +141,7 @@ export const serializeRequest = async (
     path,
     pathname,
     protocol,
-    query,
+    query
   };
   return serializedRequest;
 };

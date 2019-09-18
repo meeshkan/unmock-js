@@ -25,15 +25,15 @@ const boxenOptions: BoxenOptions = {
     bottomLeft: "-",
     bottomRight: "-",
     horizontal: "-",
-    vertical: " ",
-  },
+    vertical: " "
+  }
 };
 
 const formatLogType: Format = (type: LogType, message: LogMessage): string =>
   flow(
     (m: string) => "unmock: " + m,
     (m: string) => (type === "instruct" ? boxen(m, boxenOptions) : message),
-    (m: string) => Chalks[type](m),
+    (m: string) => Chalks[type](m)
   )(message);
 
 export class CustomConsole extends Console {
@@ -66,7 +66,7 @@ export class CustomConsole extends Console {
   private logError(type: LogType, message: string) {
     clearLine(this.stderr);
     super.error(
-      indentString(CustomConsole.format(type, message), this.nIndent),
+      indentString(CustomConsole.format(type, message), this.nIndent)
     );
   }
 }

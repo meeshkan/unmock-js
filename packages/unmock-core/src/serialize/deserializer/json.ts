@@ -14,7 +14,7 @@ export default class JSONDeserializer implements IDeserializer {
         ...json,
         ...(json.body && typeof json.body === "object"
           ? { body: JSON.stringify(json.body) }
-          : {}),
+          : {})
       };
     }
     return json;

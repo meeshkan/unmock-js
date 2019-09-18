@@ -8,7 +8,7 @@ export default class CompositeDeserializer implements IDeserializer {
   public deserialize(json: any) {
     return this.deserializers.reduce(
       (prev, cur) => cur.deserialize(prev),
-      json,
+      json
     );
   }
 }

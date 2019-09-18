@@ -56,12 +56,12 @@ const petstore: OpenAPIObject = {
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/Error",
-                },
-              },
-            },
-          },
-        },
+                  $ref: "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
       },
       post: {
         summary: "Create a pet",
@@ -69,20 +69,20 @@ const petstore: OpenAPIObject = {
         tags: ["pets"],
         responses: {
           201: {
-            description: "Null response",
+            description: "Null response"
           },
           default: {
             description: "unexpected error",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/Error",
-                },
-              },
-            },
-          },
-        },
-      },
+                  $ref: "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "/pets/{petId}": {
       get: {
@@ -96,9 +96,9 @@ const petstore: OpenAPIObject = {
             required: true,
             description: "The id of the pet to retrieve",
             schema: {
-              type: "string",
-            },
-          },
+              type: "string"
+            }
+          }
         ],
         responses: {
           200: {
@@ -106,10 +106,10 @@ const petstore: OpenAPIObject = {
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/Pet",
-                },
-              },
-            },
+                  $ref: "#/components/schemas/Pet"
+                }
+              }
+            }
           },
           default: {
             description: "unexpected error",
@@ -121,15 +121,15 @@ const petstore: OpenAPIObject = {
                     { $ref: "#/components/schemas/Error2" },
                     { $ref: "#/components/schemas/Error3" },
                     { $ref: "#/components/schemas/Error4" },
-                    { $ref: "#/components/schemas/Error5" },
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+                    { $ref: "#/components/schemas/Error5" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   },
   components: {
     schemas: {
@@ -139,25 +139,25 @@ const petstore: OpenAPIObject = {
         properties: {
           id: {
             type: "integer",
-            format: "int64",
+            format: "int64"
           },
           name: {
-            type: "string",
+            type: "string"
           },
           tags: {
             type: "array",
             items: {
               type: "string",
-              enum: ["cute", "happy", "sad"],
-            },
-          },
-        },
+              enum: ["cute", "happy", "sad"]
+            }
+          }
+        }
       },
       Pets: {
         type: "array",
         items: {
           $ref: "#/components/schemas/Pet"
-        },
+        }
       },
       Error: {
         type: "object",
@@ -169,8 +169,8 @@ const petstore: OpenAPIObject = {
           },
           message: {
             type: "string"
-          },
-        },
+          }
+        }
       },
       Error2: {
         type: "object",
@@ -178,12 +178,12 @@ const petstore: OpenAPIObject = {
         properties: {
           code: {
             type: "integer",
-            format: "int32",
+            format: "int32"
           },
           message: {
-            type: "string",
-          },
-        },
+            type: "string"
+          }
+        }
       },
       Error3: {
         type: "object",
@@ -195,8 +195,8 @@ const petstore: OpenAPIObject = {
           },
           message: {
             type: "string"
-          },
-        },
+          }
+        }
       },
       Error4: {
         type: "object",
@@ -204,12 +204,12 @@ const petstore: OpenAPIObject = {
         properties: {
           code: {
             type: "integer",
-            format: "int32",
+            format: "int32"
           },
           message: {
-            type: "string",
-          },
-        },
+            type: "string"
+          }
+        }
       },
       Error5: {
         type: "object",
@@ -217,14 +217,14 @@ const petstore: OpenAPIObject = {
         properties: {
           code: {
             type: "integer",
-            format: "int32",
+            format: "int32"
           },
           message: {
-            type: "string",
-          },
-        },
-      },
-    },
-  },
+            type: "string"
+          }
+        }
+      }
+    }
+  }
 };
 export default petstore;

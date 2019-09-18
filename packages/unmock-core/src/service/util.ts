@@ -12,7 +12,7 @@ import { OpenAPIObject, Parameter, Paths } from "./interfaces";
  */
 export function derefIfNeeded({
   schema,
-  absPath,
+  absPath
 }: {
   schema: OpenAPIObject;
   absPath: string;
@@ -31,9 +31,9 @@ export function derefIfNeeded({
       : Object.keys(mightHaveReference).reduce(
           (obj, childKey) => ({
             ...obj,
-            [childKey]: selfDeref(mightHaveReference[childKey]),
+            [childKey]: selfDeref(mightHaveReference[childKey])
           }),
-          mightHaveReference,
+          mightHaveReference
         );
     const refValue = noReferences.$ref; // There would be no '$ref' in arrays ofc
     if (refValue === undefined) {
@@ -72,7 +72,7 @@ export const getPathParametersFromPath = (path: string): string[] => {
 
 export const getPathParametersFromSchema = (
   schema: Paths,
-  path: string,
+  path: string
 ): Parameter[] => {
   if (!path.includes("{") || schema[path] === undefined) {
     // No parameters in this path... Why bother looking?
@@ -82,12 +82,11 @@ export const getPathParametersFromSchema = (
     schema[path],
     2,
     // v could be "null" if specifically designed in schema
-    (_: string | undefined, v: any) =>
-      v !== null && v.in === OAS_PATH_PARAMS_KW,
+    (_: string | undefined, v: any) => v !== null && v.in === OAS_PATH_PARAMS_KW
   ) as Parameter[];
   if (schemaPathParameters.length === 0) {
     throw new Error(
-      `Found a dynamic path '${path}' but no description for path parameters!`,
+      `Found a dynamic path '${path}' but no description for path parameters!`
     );
   }
   return schemaPathParameters;
@@ -96,7 +95,7 @@ export const getPathParametersFromSchema = (
 export const buildPathRegexStringFromParameters = (
   path: string,
   schemaParameters: Parameter[],
-  pathParameters: string[],
+  pathParameters: string[]
 ): string => {
   if (schemaParameters.length === 0) {
     return path;
@@ -118,7 +117,7 @@ export const buildPathRegexStringFromParameters = (
     // not all elements have been replaced!
     throw new Error(
       `Found a dynamic path '${path}' but the following path ` +
-        `parameters have not been described: ${pathParameters}!`,
+        `parameters have not been described: ${pathParameters}!`
     );
   }
   return newPath;
@@ -131,14 +130,14 @@ export const buildPathRegexStringFromParameters = (
 export const getAtLevel = (
   nestedObj: any,
   level: number,
-  filterFn?: (key: string | undefined, value: any) => boolean,
+  filterFn?: (key: string | undefined, value: any) => boolean
 ) => {
   if (level < 0) {
     throw new Error(`Not sure what should I find at nested level ${level}...`);
   }
   if (nestedObj === undefined || Object.keys(nestedObj).length === 0) {
     throw new Error(
-      `Empty 'nestedObj' received - ${JSON.stringify(nestedObj)}`,
+      `Empty 'nestedObj' received - ${JSON.stringify(nestedObj)}`
     );
   }
   let i = 0;

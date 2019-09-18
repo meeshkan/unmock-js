@@ -11,7 +11,7 @@ export const decorateSpy = (spy: SinonSpy): ServiceSpy => {
 
 export const verifyOnlyOneCall = ({
   spy,
-  errPrefix,
+  errPrefix
 }: {
   spy: ServiceSpy;
   errPrefix: string;
@@ -19,7 +19,7 @@ export const verifyOnlyOneCall = ({
   const callCount = spy.callCount;
   if (callCount !== 1) {
     throw Error(
-      `${errPrefix}: Expected one matching call, got ${callCount} calls`,
+      `${errPrefix}: Expected one matching call, got ${callCount} calls`
     );
   }
   return spy;

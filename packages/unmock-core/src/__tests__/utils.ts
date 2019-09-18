@@ -9,12 +9,12 @@ export const PetStoreSpecLocation = path.join(
   __dirname,
   "__unmock__",
   "petstore",
-  "spec.yaml",
+  "spec.yaml"
 );
 
 const petStoreYamlString: string = fs.readFileSync(
   PetStoreSpecLocation,
-  "utf-8",
+  "utf-8"
 );
 
 export const PetStoreSchema = jsYaml.safeLoad(petStoreYamlString);
@@ -24,20 +24,20 @@ export const schemaBase: OpenAPIObject = {
   info: {
     version: "1.0.0",
     title: "Swagger Petstore",
-    license: { name: "MIT" },
+    license: { name: "MIT" }
   },
-  paths: {},
+  paths: {}
 };
 
 // define some service populators that match IOASMappingGenerator type
 export const PetStoreServiceWithEmptyPaths = new ServiceCore({
   schema: schemaBase,
-  name: "petstore",
+  name: "petstore"
 });
 
 export const PetStoreServiceWithEmptyResponses = new ServiceCore({
   name: "petstore",
-  schema: { ...schemaBase, paths: { "/pets": { get: { responses: {} } } } },
+  schema: { ...schemaBase, paths: { "/pets": { get: { responses: {} } } } }
 });
 
 export const PetStoreServiceWithPseudoResponses = new ServiceCore({
@@ -52,15 +52,15 @@ export const PetStoreServiceWithPseudoResponses = new ServiceCore({
               description: "Mock response",
               content: {
                 "application/json": {
-                  schema: {},
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+                  schema: {}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 });
 
 export const PetstoreServiceWithDynamicPaths = (
@@ -82,16 +82,16 @@ export const PetstoreServiceWithDynamicPaths = (
               200: {
                 content: {
                   "application/json": {
-                    schema: {},
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+                    schema: {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    name: "petstore",
+    name: "petstore"
   });
 };
 
@@ -101,10 +101,10 @@ export const testRequest: ISerializedRequest = {
   pathname: "/v3",
   host: "api.github.com",
   protocol: "https",
-  query: {},
+  query: {}
 };
 
 export const testResponse: ISerializedResponse = {
   statusCode: 200,
-  body: "OK",
+  body: "OK"
 };

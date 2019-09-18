@@ -14,7 +14,7 @@ export default class JSONSerializer implements ISerializer {
         ...json,
         ...(json.body && typeof json.body === "string"
           ? { body: JSON.parse(json.body) }
-          : {}),
+          : {})
       };
     }
     return json;

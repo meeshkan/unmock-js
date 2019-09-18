@@ -13,7 +13,7 @@ class CallTracker {
    * @param gen Response generator
    */
   private static buildSpy(
-    gen: (req: ISerializedRequest) => ISerializedResponse,
+    gen: (req: ISerializedRequest) => ISerializedResponse
   ) {
     const bareSpy = sinonSpy(gen);
     return decorateSpy(bareSpy);
@@ -27,7 +27,7 @@ class CallTracker {
 
   public track({
     req,
-    res,
+    res
   }: {
     req: ISerializedRequest;
     res: ISerializedResponse;

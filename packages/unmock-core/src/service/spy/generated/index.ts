@@ -113,5 +113,5 @@ export const decorators = {
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
-  },
+  }
 };

@@ -15,11 +15,11 @@ const createHtmlBase = (): xmlBuilder.XMLDocument => {
         link: {
           "@href":
             "https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900",
-          "@rel": "stylesheet",
+          "@rel": "stylesheet"
         },
-        style: { "@type": "text/css", "#text": stylesheet },
-      },
-    },
+        style: { "@type": "text/css", "#text": stylesheet }
+      }
+    }
   };
 
   return xmlBuilder.create(htmlBase);
@@ -37,7 +37,7 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
  */
 const buildTestDiv = (
   assertionResult: jest.AssertionResult,
-  snapshots: ISnapshot[],
+  snapshots: ISnapshot[]
 ): xmlBuilder.XMLDocument => {
   const statusClass =
     assertionResult.failureMessages.length > 0
@@ -55,12 +55,12 @@ const buildTestDiv = (
   // Failure messages
   if (assertionResult.failureMessages.length > 0) {
     const failureDiv = testDiv.ele("div", {
-      class: "test-suite__test-failure-messages",
+      class: "test-suite__test-failure-messages"
     });
     failureDiv.raw(
       `Failure message: ${stripAnsi(
-        assertionResult.failureMessages.join(", "),
-      )}`,
+        assertionResult.failureMessages.join(", ")
+      )}`
     );
   }
 
@@ -68,7 +68,7 @@ const buildTestDiv = (
   testDiv.ele(
     "div",
     { class: "test-suite__test-requests" },
-    `${snapshots.length} HTTP request(s)`,
+    `${snapshots.length} HTTP request(s)`
   );
 
   return testDiv;
@@ -79,14 +79,14 @@ const buildTestDiv = (
  */
 const buildTestSuiteTitleDiv = (
   filename: string,
-  testSuite: ITestSuite,
+  testSuite: ITestSuite
 ): xmlBuilder.XMLDocument => {
   const suiteResult = testSuite.suiteResults;
   const numFailingTests = suiteResult.numFailingTests;
   const snapshots = testSuite.snapshots;
   const numPassingTests = suiteResult.numPassingTests;
   const div = xmlBuilder.begin().ele("div", {
-    class: "test-suite__title",
+    class: "test-suite__title"
   });
 
   div.ele("div", { class: "test-suite__title-filename" }, filename);
@@ -94,7 +94,7 @@ const buildTestSuiteTitleDiv = (
   div.ele(
     "div",
     { class: "test-suite__title-summary" },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`
   );
   return div;
 };
@@ -106,7 +106,7 @@ const buildTestSuiteTitleDiv = (
  */
 const buildTestSuiteDiv = (
   filename: string,
-  testSuite: ITestSuite,
+  testSuite: ITestSuite
 ): xmlBuilder.XMLDocument => {
   const suiteResult = testSuite.suiteResults;
   const numFailingTests = suiteResult.numFailingTests;
@@ -124,17 +124,17 @@ const buildTestSuiteDiv = (
   element.importDocument(testSuiteTitleDiv);
 
   const testResults = element.ele("div", {
-    class: "test-suite__results" + suiteSuccessClass,
+    class: "test-suite__results" + suiteSuccessClass
   });
 
   const testElements: xmlBuilder.XMLDocument[] = map(
     suiteResult.testResults,
     assertionResult => {
       const snapshotsForTest = snapshots.filter(
-        snapshot => snapshot.currentTestName === assertionResult.fullName,
+        snapshot => snapshot.currentTestName === assertionResult.fullName
       );
       return buildTestDiv(assertionResult, snapshotsForTest);
-    },
+    }
   );
 
   forEach(testElements, testBlock => {
@@ -158,7 +158,7 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   headerTextBoxDiv.ele(
     "div",
     { class: "timestamp" },
-    new Date(input.jestData.aggregatedResult.startTime).toLocaleString(),
+    new Date(input.jestData.aggregatedResult.startTime).toLocaleString()
   );
 
   const aggregatedResult = input.jestData.aggregatedResult;
@@ -167,7 +167,7 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   headerTextBoxDiv.ele(
     "div",
     { class: "metadata" },
-    `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`,
+    `${aggregatedResult.numTotalTests} tests -- ${aggregatedResult.numPassedTests} passed / ${aggregatedResult.numFailedTests} failed / ${aggregatedResult.numPendingTests} pending`
   );
 
   return headerDiv;
@@ -183,7 +183,7 @@ const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   const testSuiteElements: xmlBuilder.XMLDocument[] = map(
     grouped,
-    (testResults, filename) => buildTestSuiteDiv(filename, testResults),
+    (testResults, filename) => buildTestSuiteDiv(filename, testResults)
   );
 
   forEach(testSuiteElements, node => {

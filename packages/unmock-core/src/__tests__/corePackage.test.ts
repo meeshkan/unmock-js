@@ -42,7 +42,7 @@ describe("Tests core package", () => {
       expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(false);
       expect(pkg.allowedHosts.isWhitelisted("foobar.com")).toEqual(true);
       expect(pkg.allowedHosts.isWhitelisted("https://foo.bar.com")).toEqual(
-        true,
+        true
       );
     });
 
@@ -54,7 +54,7 @@ describe("Tests core package", () => {
       expect(pkg.allowedHosts.isWhitelisted("127.0.0.1")).toEqual(true);
       expect(pkg.allowedHosts.isWhitelisted("foobar.com")).toEqual(true);
       expect(pkg.allowedHosts.isWhitelisted("https://foo.bar.com")).toEqual(
-        true,
+        true
       );
     });
   });

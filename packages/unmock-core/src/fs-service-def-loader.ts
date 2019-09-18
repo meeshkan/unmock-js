@@ -25,13 +25,13 @@ export class FsServiceDefLoader {
       .filter((fileName: string) => fs.statSync(fileName).isFile())
       .map((f: string) => ({
         basename: path.basename(f),
-        contents: fs.readFileSync(f).toString("utf-8"),
+        contents: fs.readFileSync(f).toString("utf-8")
       }));
 
     return {
       absolutePath: absoluteDirectory,
       directoryName: path.basename(absoluteDirectory),
-      serviceFiles,
+      serviceFiles
     };
   }
 
@@ -50,10 +50,10 @@ export class FsServiceDefLoader {
       .map((f: string) => path.join(unmockDirectory, f))
       .filter((f: string) => fs.statSync(f).isDirectory());
     debugLog(
-      `Found ${serviceDirectories.length} services in ${unmockDirectory}`,
+      `Found ${serviceDirectories.length} services in ${unmockDirectory}`
     );
     const serviceDefs = serviceDirectories.map((dir: string) =>
-      FsServiceDefLoader.readServiceDirectory(dir),
+      FsServiceDefLoader.readServiceDirectory(dir)
     );
     return serviceDefs;
   }
@@ -76,7 +76,7 @@ export class FsServiceDefLoader {
    */
   public loadSync(): IServiceDef[] {
     return flatMap(this.unmockDirectories, (directory: string) =>
-      FsServiceDefLoader.loadSyncUnmockDirectory(directory),
+      FsServiceDefLoader.loadSyncUnmockDirectory(directory)
     );
   }
 }

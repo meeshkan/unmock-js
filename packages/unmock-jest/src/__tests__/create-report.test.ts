@@ -36,7 +36,7 @@ describe("Report creator for given data", () => {
 describe("Report creator for real test data", () => {
   const report = createReport({
     jestData: { aggregatedResult: jestResults },
-    snapshots: unmockSnapshots,
+    snapshots: unmockSnapshots
   });
   const dom = new JSDOM(report);
 
@@ -57,7 +57,7 @@ describe("Report creator for real test data", () => {
     const targetDirectory = path.resolve(__dirname, "output");
     writeToDirectory(report, {
       outputDirectory: targetDirectory,
-      outputFilename: "report.html",
+      outputFilename: "report.html"
     });
   });
 });

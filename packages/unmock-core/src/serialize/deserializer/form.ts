@@ -18,11 +18,11 @@ export default class FormDeserializer implements IDeserializer {
               body: Object.entries(json.body)
                 .map(
                   ([k, v]) =>
-                    `${querystring.escape(k)}=${querystring.escape(`${v}`)}`,
+                    `${querystring.escape(k)}=${querystring.escape(`${v}`)}`
                 )
-                .join("&"),
+                .join("&")
             }
-          : {}),
+          : {})
       };
     }
     return json;

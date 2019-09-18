@@ -9,7 +9,7 @@ const testResult: jest.TestResult = {
   numPassingTests: 0,
   perfStats: {
     start: 0,
-    end: 0,
+    end: 0
   },
   skipped: false,
   snapshot: {} as any,
@@ -22,9 +22,9 @@ const testResult: jest.TestResult = {
       fullName: "Test name",
       numPassingAsserts: 1,
       status: "passed",
-      title: "Test title",
-    },
-  ],
+      title: "Test title"
+    }
+  ]
 };
 
 export const aggregatedResult: jest.AggregatedResult = {
@@ -42,11 +42,11 @@ export const aggregatedResult: jest.AggregatedResult = {
   startTime: 0,
   success: true,
   wasInterrupted: false,
-  testResults: [testResult],
+  testResults: [testResult]
 };
 
 export const jestData: IJestData = {
-  aggregatedResult,
+  aggregatedResult
 };
 
 export const timestamp = new Date();
@@ -57,12 +57,12 @@ export const testRequest: UnmockRequest = {
   pathname: "/v3",
   host: "api.github.com",
   protocol: "https",
-  query: {},
+  query: {}
 };
 
 export const testResponse: UnmockResponse = {
   statusCode: 200,
-  body: "OK",
+  body: "OK"
 };
 
 export const exampleSnapshot: ISnapshot = {
@@ -71,8 +71,8 @@ export const exampleSnapshot: ISnapshot = {
   timestamp,
   data: {
     req: testRequest,
-    res: testResponse,
-  },
+    res: testResponse
+  }
 };
 
 export const snapshots: ISnapshot[] = [exampleSnapshot];
