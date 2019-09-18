@@ -2,7 +2,7 @@ import { Dictionary, forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
-import styled, { ServerStyleSheet, StyleSheetManager } from "styled-components";
+import styled, { ServerStyleSheet } from "styled-components";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
@@ -22,6 +22,7 @@ const createHtmlBase2 = ({ styles, body }: { styles: string, body: string}): str
     <title>Unmock report</title>
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
     ${styles}
+    <style type="text/css">${stylesheet}</style>
   </head>
   <body>
     ${body}
@@ -58,6 +59,9 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
 const renderReact = (element: React.ReactElement): string =>
   ReactDomServer.renderToStaticMarkup(element);
 
+// Style tags hack
+let styleTags: any;
+
 /**
  * Build a div containing the results for a single test ("assertion")
  * @param assertionResult Jest results for the test
@@ -92,9 +96,22 @@ const buildTestDiv = (
     );
   }
 
-  const callsElement = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
+  const StyledCalls = styled(Calls)`background-color: #eee;
+  border-color: black;
+  border-style: solid;
+  border-radius: 2rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;`;
 
-  testDiv.raw(renderReact(callsElement));
+  const callsElement = <StyledCalls assertionResult={assertionResult} snapshots={snapshots}/>;
+
+  const sheet = new ServerStyleSheet()
+
+  const callsHtml = ReactDomServer.renderToString(sheet.collectStyles(callsElement));
+  styleTags = sheet.getStyleTags();
+
+  testDiv.raw(callsHtml);
 
   return testDiv;
 };
@@ -224,28 +241,11 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   // Header
   reportBody.importDocument(buildHeaderDiv(input));
 
-  // Example
-
-  reportBody.raw(renderReact(<ExampleComponent />));
-  reportBody.raw(renderReact(<StyledExample />));
-
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
 
   return reportBody;
 };
-
-const sheet = new ServerStyleSheet()
-
-const html = ReactDomServer.renderToString(sheet.collectStyles(<StyledExample />));
-const styleTags = sheet.getStyleTags(); // or sheet.getStyleElement();
-console.log(styleTags);  // tslint:disable-line
-const html2 = ReactDomServer.renderToStaticMarkup(
-  <StyleSheetManager sheet={sheet.instance}>
-    <StyledExample />
-  </StyleSheetManager>
-)
-const styleTags2 = sheet.getStyleTags() // or sheet.getStyleElement();
 
 export const createReport = (input: IReportInput) => {
   const htmlOutput: xmlBuilder.XMLDocument = createHtmlBase();
@@ -255,7 +255,9 @@ export const createReport = (input: IReportInput) => {
 };
 
 export const createReportWithStyled = (input: IReportInput) => {
-  const htmlOutput = createHtmlBase2({ styles: styleTags, body: html });
+  const body: xmlBuilder.XMLDocument = buildBodyDiv(input);
+  const bodyString = body.end({ pretty: true });
+  const htmlOutput = createHtmlBase2({ styles: styleTags, body: bodyString });
   return htmlOutput;
 };
 
