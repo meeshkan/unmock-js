@@ -216,14 +216,6 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   // Header
   reportBody.importDocument(buildHeaderDiv(input));
 
-  // React
-  const Animal = (props: any) =>
-    React.createElement("div", props, "I'm an animal!");
-  const elementXML = ReactDomServer.renderToStaticMarkup(
-    Animal({ className: "animal" }),
-  );
-  reportBody.raw(elementXML);
-
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
 
