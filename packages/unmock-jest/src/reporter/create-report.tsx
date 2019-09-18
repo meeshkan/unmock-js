@@ -10,8 +10,6 @@ import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
 
-
-
 const ExampleComponent = ({ className }: any) => {
   return <div className={className}>{"Some text here"}</div>;
 }
@@ -19,7 +17,16 @@ const ExampleComponent = ({ className }: any) => {
 const StyledExample = styled(ExampleComponent)`font-size: 5rem`;
 
 const createHtmlBase2 = ({ styles, body }: { styles: string, body: string}): string => {
-  return `<html><head>${styles}</head><body>${body}</body></html>`
+  return `<html>
+  <head>
+    <title>Unmock report</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    ${styles}
+  </head>
+  <body>
+    ${body}
+  </body>
+</html>`
 };
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
@@ -248,7 +255,7 @@ export const createReport = (input: IReportInput) => {
 };
 
 export const createReportWithStyled = (input: IReportInput) => {
-  const htmlOutput = createHtmlBase2({ styles: styleTags2, body: html });
+  const htmlOutput = createHtmlBase2({ styles: styleTags, body: html });
   return htmlOutput;
 };
 
