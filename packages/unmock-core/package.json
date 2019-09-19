@@ -46,7 +46,6 @@
     "sinon": "^7.4.1",
     "swagger2openapi": "^5.3.0",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1",
-    "xregexp": "^4.2.4"
+    "winston": "^3.2.1"
   }
 }
