@@ -230,19 +230,48 @@ unmock. nock('http://myapp.iriscouch.com')
   })
 ```
 
+### Passthrough
+
+For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `passthrough`.
+
+```js
+unmock
+  .nock("https://my-analytics-api.vendor.com)
+  .passthrough();
+```
+
 ## Expectations
 
 Unmock uses [`sinon`](https://sinonjs.org) spies to help you compose (great) expectations.
 
 > In general, try to write expectations using spies instead of hardcoded values. Instead of `expect(res).toEqual({foo: "bar", baz: true })`, favor `expect(res).toEqual({ ...spy.getRequestBody(), baz: true })`
 
-Assuming you have defined a service using 
+Assuming you have defined a service using unmock, you can use spies following the `<verb><Request|Response><Thing>` convention. For example, `getResponseBody` or `deleteRequestPath`.
+
+```js
+test("analytics API was called", async () => {
+  await myFunction()
+  expect(analyticsService.spy.postRequestBody)
+    .toMatchObject({ event: "VISITED" })
+})
+```
+
+The following values are defined on the spy object.
+
+In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found here, and more information on sinon can be found here.
 
 ## OpenAPI
 
 ## Recording
 
 In unmock, you can record either JSON fixtures *or* `json-schema-poet` fixtures. We recommend the latter, or converting the former to the latter.
+
+```
+unmock.record('/tmp/session', { output: typescript })
+axios('https://zodiac.com/libra')
+```
+
+This will yield a typescript file that writes the resposne in `json-schema-poet` with commented-out default values. From there, you can include this in your project.
 
 ## Contributing
 
