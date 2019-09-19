@@ -193,8 +193,6 @@ const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
     (testSuite) => buildTestSuiteDiv(testSuite)
   );
 
-  // Sort test suites by failure count and/or HTTP request count
-
   forEach(testSuiteElements, node => {
     const block = root.ele("div");
     block.importDocument(node);
