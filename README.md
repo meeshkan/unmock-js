@@ -373,7 +373,7 @@ Unmock supports the reading of OpenAPI specifications out of the box. Simply pla
 
 In unmock, you can record either JSON fixtures *or* `json-schema-poet` fixtures. We recommend the latter, or converting the former to the latter.
 
-```
+```js
 unmock.record('/tmp/session', { output: typescript })
 axios('https://zodiac.com/libra')
 ```
