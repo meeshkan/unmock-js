@@ -1,12 +1,13 @@
-import { Dictionary, forEach, map } from "lodash";
+import { forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
+import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
-import { groupTestsByFilePath } from "./utils";
+import { sortTestSuites, toTestSuites } from "./utils";
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -33,19 +34,6 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
   assertionResult.ancestorTitles
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
-
-const buildRequestElement = (snapshot: ISnapshot, i: number) => {
-  return (<div className={"request"} key={i}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
-};
-
-const buildRequestsDiv = (
-  _: jest.AssertionResult,
-  snapshots: ISnapshot[],
-): React.ReactElement => {
-  return (<div>
-    {snapshots.map((snapshot, i) => buildRequestElement(snapshot, i))}
-  </div>);
-};
 
 const renderReact = (element: React.ReactElement): string =>
   ReactDomServer.renderToStaticMarkup(element);
@@ -84,9 +72,9 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
+  const callsElement = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
 
-  testDiv.raw(renderReact(requestsDiv));
+  testDiv.raw(renderReact(callsElement));
 
   return testDiv;
 };
@@ -111,7 +99,7 @@ const buildTestSuiteTitleDiv = (
   div.ele(
     "div",
     { class: "test-suite__title-summary" },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${snapshots.length}`,
   );
   return div;
 };
@@ -122,7 +110,6 @@ const buildTestSuiteTitleDiv = (
  * @param testSuite Test suite results
  */
 const buildTestSuiteDiv = (
-  filename: string,
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
   const suiteResult = testSuite.suiteResults;
@@ -136,7 +123,7 @@ const buildTestSuiteDiv = (
     .begin()
     .ele("div", { class: `test-suite ${suiteSuccessClass}` });
 
-  const testSuiteTitleDiv = buildTestSuiteTitleDiv(filename, testSuite);
+  const testSuiteTitleDiv = buildTestSuiteTitleDiv(testSuite.testFilePath, testSuite);
 
   element.importDocument(testSuiteTitleDiv);
 
@@ -190,17 +177,20 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   return headerDiv;
 };
 
+
 /**
  * Build div containing results for all test files (excluding header etc.)
  */
 const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   const root = xmlBuilder.begin().ele("div", { class: "test-results" });
 
-  const grouped: Dictionary<ITestSuite> = groupTestsByFilePath(input);
+  const testSuites: ITestSuite[] = toTestSuites(input);
+
+  const sortedSuites = sortTestSuites(testSuites);
 
   const testSuiteElements: xmlBuilder.XMLDocument[] = map(
-    grouped,
-    (testResults, filename) => buildTestSuiteDiv(filename, testResults),
+    sortedSuites,
+    (testSuite) => buildTestSuiteDiv(testSuite)
   );
 
   forEach(testSuiteElements, node => {

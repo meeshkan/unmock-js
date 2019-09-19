@@ -1,14 +1,15 @@
 import axios from "axios";
+import { OpenAPIObject } from "loas3/dist/generated/full";
+import { Arr } from "openapi-refinements";
 import * as path from "path";
 import { Service, UnmockPackage } from "../..";
 import NodeBackend from "../../backend";
-import { Arr } from "openapi-refinements";
-import { OpenAPIObject } from "loas3/dist/generated/full";
 import { transform } from "../../generator-utils";
 import { ISerializedRequest } from "../../interfaces";
 
 const {
   withCodes,
+  withoutCodes,
   mapDefaultTo,
   responseBody,
   noopThrows,
@@ -82,37 +83,35 @@ describe("Node.js interceptor", () => {
       expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
     });
 
-    // not sure what this test in the original was trying to accomplish
-    // there is no message field on 200...
-    // also, we need to be explicit about 200 as there is also a default response
+    // Making sure the state is set correctly even if a status code is not given
+    // (i.e. infering the correct operation from the responseBody without asking for a specific code)
     test("gets correct state after setting state without status code", async () => {
       petstore.state(
-        withCodes(200),
-        responseBody({ path: "/pets" }).schema({
-          type: "object",
-          required: ["message"],
-          properties: { message: { type: "string", enum: ["Hello World"] } },
-        }),
+        mapDefaultTo(200),
+        withoutCodes("default"),
+        responseBody({ lens: ["message"] }).const("Hello World"),
       );
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
       expect(response.data.message).toEqual("Hello World");
     });
 
-    test("gets correct state after multiple overriden state requests", async () => {
+    test.skip("gets correct state after multiple overriden state requests", async () => {
       petstore.state(
         withCodes(200),
-        responseBody({ path: "/pets", lens: [Arr, "id"] }).const(5),
-        responseBody({ path: /\/pets\/{[a-zA-Z0-9/]+}/, lens: ["id"] }).const(
-          -1,
-        ),
+        responseBody({ path: /\/pets\/{3}/, lens: ["id"] }).const(3),
+        responseBody({ path: /\/pets(\/\d+)/, lens: ["id"] }).const(5),
+        responseBody({ path: "/pets", lens: [Arr, "id"] }).const(-1),
       );
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.status).toBe(200);
-      expect(response.data.every((pet: any) => pet.id === 5)).toBeTruthy();
+      expect(response.data.every((pet: any) => pet.id === -1)).toBeTruthy();
       const response2 = await axios("http://petstore.swagger.io/v1/pets/3");
       expect(response2.status).toBe(200);
-      expect(response2.data.id).toEqual(-1);
+      expect(response2.data.id).toEqual(3);
+      const response3 = await axios("http://petstore.swagger.io/v1/pets/4");
+      expect(response3.status).toBe(200);
+      expect(response3.data.id).toEqual(5);
     });
 
     test("gets correct state when setting textual response", async () => {
@@ -152,15 +151,6 @@ describe("Node.js interceptor", () => {
       }
     });
 
-    test("sets an entire response from function", async () => {
-      petstore.state(
-        withCodes(200),
-        responseBody({ path: "/pets" }).const([{ id: 1, name: "Fluffy" }]),
-      );
-      const response = await axios("http://petstore.swagger.io/v1/pets");
-      expect(response.data).toEqual([{ id: 1, name: "Fluffy" }]);
-    });
-
     test("sets an entire response from with request object", async () => {
       petstore.state(
         withCodes(200),
@@ -172,40 +162,6 @@ describe("Node.js interceptor", () => {
       );
       const response = await axios("http://petstore.swagger.io/v1/pets");
       expect(response.data).toBe("petstore.swagger.io");
-    });
-
-    test("sets an entire response from function with DSL", async () => {
-      petstore.state((_, __) => ({
-        openapi: "",
-        info: { title: "", version: "" },
-        paths: {
-          "/pets": {
-            description: "",
-            get: {
-              responses: {
-                404: {
-                  description: "",
-                  content: {
-                    "text/plain": {
-                      schema: {
-                        type: "string",
-                        enum: ["baz"],
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      }));
-      try {
-        await axios("http://petstore.swagger.io/v1/pets");
-        throw new Error("Expected a 404 response");
-      } catch (err) {
-        expect(err.response.status).toBe(404);
-        expect(err.response.data).toBe("baz");
-      }
     });
 
     // this is just a no-op in the new version
@@ -271,41 +227,12 @@ describe("Node.js interceptor", () => {
     });
 
     test("works with multiple codes", async () => {
-      petstore.state((_, __) => ({
-        openapi: "",
-        info: { title: "", version: "" },
-        paths: {
-          "/pets": {
-            description: "",
-            get: {
-              responses: {
-                404: {
-                  description: "",
-                  content: {
-                    "text/plain": {
-                      schema: {
-                        type: "string",
-                        enum: ["baz"],
-                      },
-                    },
-                  },
-                },
-                500: {
-                  description: "",
-                  content: {
-                    "text/plain": {
-                      schema: {
-                        type: "string",
-                        enum: ["baz"],
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      }));
+      petstore.state(
+        mapDefaultTo([404, 500]),
+        withCodes([404, 500]),
+        withoutCodes("default"), // TODO maybe we can remove the default by default? :rolleyes:
+        responseBody().const("baz"),
+      );
       try {
         await axios("http://petstore.swagger.io/v1/pets");
         throw new Error("Expected a 404 response");

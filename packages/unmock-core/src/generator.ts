@@ -52,8 +52,15 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
-export const seedHack = {
+export const runnerConfiguration = {
   seed: 0,
+  optionalsProbability: 1.0,
+  minItems: 0,
+  reset() {
+    this.minItems = 0;
+    this.optionalsProbability = 1.0;
+    this.seed = 0;
+  },
 };
 /**
  * Finds server URLs that match a given protocol and host
@@ -698,9 +705,17 @@ const generateMockFromTemplate2 = (
   headerSchema?: any,
   bodySchema?: any,
 ): ISerializedResponse => {
-  jsf.option("alwaysFakeOptionals", false);
+  jsf.option("optionalsProbability", runnerConfiguration.optionalsProbability);
+  // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
+  // otherwise, generate up to optionalsProbability% of optionals
+  jsf.option(
+    "fixedProbabilities",
+    runnerConfiguration.optionalsProbability === 1,
+  );
+  jsf.option("minItems", runnerConfiguration.minItems);
+  jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", seedrandom(`${seedHack.seed}`));
+  jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
 
   const body = bodySchema
     ? JSON.stringify(jsf.generate(bodySchema))

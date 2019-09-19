@@ -100,6 +100,61 @@ body {
   background-color: ${failureRed};
 }
 
+.calls {
+  background-color: #eee;
+  border-color: black;
+  border-style: solid;
+  border-radius: 2rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.calls__title {
+  font-size: 2rem;
+  margin: 0 auto 1rem auto;
+}
+
+.call {
+  border-color: black;
+  border-style: solid;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  margin-bottom: 1rem;
+  flex-direction: row;
+}
+
+.call:last-child {
+  margin-bottom: 0rem;
+}
+
+.call__request {
+  flex: 1 1 0px;
+  # border-style: solid;
+  # border-radius: 2rem;
+  padding: 1rem;
+}
+
+.call__response {
+  flex: 1 1 0px;
+  # border-style: solid;
+  # border-radius: 2rem;
+  padding: 1rem;
+}
+
+.call__request-title {
+  font-size: 2rem;
+}
+
+.call__response-title {
+  font-size: 2rem;
+}
+
+.call__body {
+  width: 100%;
+}
+
 `;
 
 export default stylesheet;

@@ -1,4 +1,4 @@
-import unmock, { u } from "..";
+import unmock, { nock, u } from "..";
 
 describe("Tests dynamic path tests", () => {
   beforeEach(() => unmock.reloadServices());
@@ -7,6 +7,14 @@ describe("Tests dynamic path tests", () => {
     expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
     unmock
       .nock("https://foo.com")
+      .get("/foo")
+      .reply(200, { foo: u.string() });
+    expect(Object.keys(unmock.services).length).toEqual(1);
+  });
+
+  it("should add a service when used with named export", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0);
+    nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);
@@ -88,5 +96,25 @@ describe("Tests dynamic path tests", () => {
       .nock("https://abc.com", "foo")
       .get("foo")
       .reply(500);
+    // @ts-ignore // "private fields" heh...
+    expect(unmock.services.foo.core.oasSchema.servers).toEqual([
+      { url: "https://abc.com" },
+      { url: "https://def.com" },
+    ]);
+  });
+
+  it("Defines different responses on same endpoint and method", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    unmock
+      .nock("https://foo.com", "foo")
+      .get("bar")
+      .reply(200, { msg: u.string() })
+      .reply(404, { msg: "Page not found!" });
+    expect(
+      Object.keys(
+        // @ts-ignore // "private fields" heh...
+        unmock.services.foo.core.oasSchema.paths["/bar"].get.responses,
+      ),
+    ).toEqual(["200", "404"]);
   });
 });

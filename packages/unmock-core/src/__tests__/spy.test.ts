@@ -14,6 +14,9 @@ const fakeRequest: ISerializedRequest = {
 const fakeResponse: ISerializedResponse = {
   statusCode: 200,
   body: JSON.stringify({ foo: "bar" }),
+  headers: {
+    "x-unmock-response": "foobar",
+  },
 };
 
 describe("Creating a spy", () => {
@@ -30,35 +33,44 @@ describe("Creating a spy", () => {
   });
 });
 
-const postRequest: ISerializedRequest = {
-  method: "post",
-  host: "github.com",
-  protocol: "https",
-  path: "/v3",
-  pathname: "/v3/",
-  query: {},
-  body: {
-    hello: "foo",
-  },
-};
-
 describe("Decorated spy", () => {
+  const req: ISerializedRequest = {
+    method: "post",
+    host: "github.com",
+    protocol: "https",
+    path: "/v3",
+    pathname: "/v3",
+    query: {},
+    body: {
+      hello: "foo",
+    },
+    headers: {
+      "x-unmock": "bar",
+    },
+  };
+
+  const res: ISerializedResponse = fakeResponse;
+
   describe("postRequestBody", () => {
+    const callTracker: ICallTracker = createCallTracker();
+
+    beforeEach(() => {
+      callTracker.track({ req, res });
+    });
+
+    afterEach(() => {
+      callTracker.reset();
+    });
+
     it("should return request body when single one tracked", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
-      expect(callTracker.spy.postRequestBody()).toBe(postRequest.body);
+      expect(callTracker.spy.postRequestBody()).toBe(req.body);
     });
     it("should return request body when used with matching matcher", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
       expect(
         callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
-      ).toBe(postRequest.body);
+      ).toBe(req.body);
     });
     it("should throw when called with non-matching matcher", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
       expect(() =>
         callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
       ).toThrowError("postRequestBody: Expected");
@@ -69,40 +81,55 @@ describe("Decorated spy", () => {
       );
     });
     it("should throw when two matching calls tracked", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
-      callTracker.track({ req: postRequest, res: fakeResponse });
-      expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
+      callTracker.track({ req, res: fakeResponse });
+      expect(() => callTracker.spy.postRequestBody()).toThrowError(
         "postRequestBody: Expected",
       );
     });
   });
 
-  describe("postResponseBody", () => {
-    it("should return response body", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
-      expect(callTracker.spy.postResponseBody()).toBe(fakeResponse.body);
+  describe("accessors", () => {
+    const callTracker: ICallTracker = createCallTracker();
+    beforeAll(() => {
+      callTracker.track({ req, res });
     });
-  });
 
-  describe("postRequestHost", () => {
+    it("should return response body", () => {
+      expect(callTracker.spy.postResponseBody()).toBe(res.body);
+    });
+
     it("should return request host", () => {
-      const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
-      expect(callTracker.spy.postRequestHost()).toBe(fakeRequest.host);
+      expect(callTracker.spy.postRequestHost()).toBe(req.host);
+    });
+    it("should return request path", () => {
+      expect(callTracker.spy.postRequestPath()).toBe(req.path);
+    });
+    it("should return request pathname", () => {
+      expect(callTracker.spy.postRequestPathname()).toBe(req.pathname);
+    });
+    it("should return request protocol", () => {
+      expect(callTracker.spy.postRequestProtocol()).toBe(req.protocol);
+    });
+    it("should return request headers", () => {
+      expect(callTracker.spy.postRequestHeaders()).toEqual(req.headers);
+    });
+    it("should return response body", () => {
+      expect(callTracker.spy.postResponseBody()).toEqual(res.body);
+    });
+    it("should return response headers", () => {
+      expect(callTracker.spy.postResponseHeaders()).toEqual(res.headers);
     });
   });
 
   describe("withMethod", () => {
     it("should return one call when post request tracked", () => {
       const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
+      callTracker.track({ req, res });
       expect(callTracker.spy.withMethod("post").callCount).toBe(1);
     });
     it("should not return calls for get when post request tracked", () => {
       const callTracker: ICallTracker = createCallTracker();
-      callTracker.track({ req: postRequest, res: fakeResponse });
+      callTracker.track({ req, res });
       expect(callTracker.spy.withMethod("get").callCount).toBe(0);
     });
   });
