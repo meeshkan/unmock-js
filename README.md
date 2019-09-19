@@ -246,21 +246,128 @@ Unmock uses [`sinon`](https://sinonjs.org) spies to help you compose (great) exp
 
 > In general, try to write expectations using spies instead of hardcoded values. Instead of `expect(res).toEqual({foo: "bar", baz: true })`, favor `expect(res).toEqual({ ...spy.getRequestBody(), baz: true })`
 
-Assuming you have defined a service using unmock, you can use spies following the `<verb><Request|Response><Thing>` convention. For example, `getResponseBody` or `deleteRequestPath`.
+Assuming you have defined a service using unmock, you can use spies following the `<verb><Request|Response><Thing>` convention. For example, `getResponseBody` or `deleteRequestPath`. Nonsensical things like `getRequsetBody` are not defined.
 
 ```js
 test("analytics API was called", async () => {
   await myFunction()
-  expect(analyticsService.spy.postRequestBody)
+  expect(analyticsService.spy.postRequestBody())
     .toMatchObject({ event: "VISITED" })
 })
 ```
 
-The following values are defined on the spy object.
+The following getter functions are defined on the spy object.
 
-In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found here, and more information on sinon can be found here.
+- `getRequestPathname`
+- `getRequestPath`
+- `getRequestHeaders`
+- `getRequestQuery`
+- `getRequestProtocol`
+- `getResponseBody`
+- `getResponseCode`
+- `getResponseHeaders`
+- `headRequestPathname`
+- `headRequestPath`
+- `headRequestHeaders`
+- `headRequestQuery`
+- `headRequestProtocol`
+- `headResponseBody`
+- `headResponseCode`
+- `headResponseHeaders`
+- `postRequestBody`
+- `postRequestPathname`
+- `postRequestPath`
+- `postRequestHeaders`
+- `postRequestQuery`
+- `postRequestProtocol`
+- `postResponseBody`
+- `postResponseCode`
+- `postResponseHeaders`
+- `putRequestBody`
+- `putRequestPathname`
+- `putRequestPath`
+- `putRequestHeaders`
+- `putRequestQuery`
+- `putRequestProtocol`
+- `putResponseBody`
+- `putResponseCode`
+- `putResponseHeaders`
+- `patchRequestBody`
+- `patchRequestPathname`
+- `patchRequestPath`
+- `patchRequestHeaders`
+- `patchRequestQuery`
+- `patchRequestProtocol`
+- `patchResponseBody`
+- `patchResponseCode`
+- `patchResponseHeaders`
+- `deleteRequestPathname`
+- `deleteRequestPath`
+- `deleteRequestHeaders`
+- `deleteRequestQuery`
+- `deleteRequestProtocol`
+- `deleteResponseBody`
+- `deleteResponseCode`
+- `deleteResponseHeaders`
+- `optionsRequestPathname`
+- `optionsRequestPath`
+- `optionsRequestHeaders`
+- `optionsRequestQuery`
+- `optionsRequestProtocol`
+- `optionsResponseBody`
+- `optionsResponseCode`
+- `optionsResponseHeaders`
+- `traceRequestPathname`
+- `traceRequestPath`
+- `traceRequestHeaders`
+- `traceRequestQuery`
+- `traceRequestProtocol`
+- `traceResponseBody`
+- `traceResponseCode`
+- `traceResponseHeaders`
+
+In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
+
+## Runner
+
+The unmock runner runs the same test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
+
+```js
+const { runner } = "unmock";
+test("my API always works as expected", runner(async () => {
+  const res = await myApiFunction();
+  // some expectations
+}));
+```
+
+### Nasty testing
+
+The unmock runner can also be nasty, which means that it will randomly change the defined spec, dropping out values, changing the return value type, etc. Most APIs are nice, but some are not. Use `runner.nasty` to emulate the not-nice ones.
+
+```js
+const { runner } = "unmock";
+test("my API always works as expected", runner.nasty(async () => {
+  const res = await myApiFunction();
+  // some expectations
+}));
+```
+
+
+### Sadistic testing
+
+The unmock runner can, if you ask it, be downright cruel. JSON is no longer JSON, incomprehensible headers, dropped packets. This is effectively chaos engineering. Use this when stress-testing your code.
+
+```js
+const { runner } = "unmock";
+test("my API always works as expected", runner.sadistic(async () => {
+  const res = await myApiFunction();
+  // some expectations
+}));
+```
 
 ## OpenAPI
+
+Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
 
 ## Recording
 
@@ -271,7 +378,7 @@ unmock.record('/tmp/session', { output: typescript })
 axios('https://zodiac.com/libra')
 ```
 
-This will yield a typescript file that writes the resposne in `json-schema-poet` with commented-out default values. From there, you can include this in your project.
+This will yield a typescript file that writes the resposne in `json-schema-poet` with commented-out default values. From there, you can include this in your project however you see fit.
 
 ## Contributing
 
