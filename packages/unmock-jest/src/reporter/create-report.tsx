@@ -26,8 +26,24 @@ const createHtmlBase = (): xmlBuilder.XMLDocument => {
     },
   };
 
-  return xmlBuilder.create(htmlBase);
+  const doc = xmlBuilder.create(htmlBase);
+  return doc;
 };
+
+const createHtml = ({ css, body } : { css: string, body: string }) => {
+  return `<html>
+  <head>
+  <meta charset="utf-8">
+  <title>Unmock Report</title>
+  <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+  <style type="text/css">${stylesheet}</style>
+  <style type="text/css">${css}</style>
+  </head>
+  <body>
+  ${body}
+  </body>
+  </html>`;
+}
 
 export const PAGE_TITLE = "Unmock Jest report";
 
@@ -203,7 +219,7 @@ const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
 
 
-const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
+const buildBodyDiv = (input: IReportInput): [xmlBuilder.XMLDocument, string] => {
   const reportBody = xmlBuilder.begin().element("div", { class: "report" });
 
   // Header
@@ -214,16 +230,17 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   const testSuites: ITestSuite[] = sortTestSuites(toTestSuites(input));
 
-  reportBody.raw(renderReact(<TestSuites testSuites={testSuites} />));
+  const [css, TestSuitesComponent ] = TestSuites({testSuites });
 
-  return reportBody;
+  reportBody.raw(renderReact(<TestSuitesComponent />));
+
+  return [reportBody, css];
 };
 
 export const createReport = (input: IReportInput) => {
-  const htmlOutput: xmlBuilder.XMLDocument = createHtmlBase();
-  const body: xmlBuilder.XMLDocument = buildBodyDiv(input);
-  htmlOutput.ele("body").importDocument(body);
-  return htmlOutput.end({ pretty: true });
+  const [body, css] = buildBodyDiv(input);
+  const htmlOutput = createHtml({ css, body: body.end() });
+  return htmlOutput;
 };
 
 export default createReport;

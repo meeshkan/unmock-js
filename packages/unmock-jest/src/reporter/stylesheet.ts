@@ -155,6 +155,24 @@ body {
   width: 100%;
 }
 
+.test-suite-input {
+  display: none;
+}
+
+.test-suite {
+  display: none;
+  padding: 2rem;
+  text-align: center;
+}
+
+.test-suite-label {
+  display: inline-block;
+  background-color: red;
+  border-style: dashed;
+  border-radius: 2rem;
+  padding: 1rem;
+}
+
 `;
 
 export default stylesheet;
