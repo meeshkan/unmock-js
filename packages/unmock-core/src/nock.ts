@@ -77,6 +77,7 @@ type ExtendedValueType =
   | JSONObject;
 interface IExtendedObjectType extends Record<string, ExtendedValueType> {} // Defined as interface due to circular reasons
 interface IExtendedArrayType extends Array<ExtendedValueType> {} // Defined as interface due to circular reference
+type EJSEmpty = JSSTEmpty<{}>; // Used as a shortcut
 
 // Define matching codecs for the above types
 const ExtendedPrimitive = io.union([JSONPrimitive, JSO]);
@@ -101,27 +102,28 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
+const spreadAndSchemify = (
+  e?: IExtendedObjectType,
+  f: (e: ExtendedValueType) => JSSTAnything<EJSEmpty, {}> = JSONSchemify,
+) =>
+  e ? Object.entries(e).reduce((a, b) => ({ ...a, [b[0]]: f(b[1]) }), {}) : {};
+
 // hack until we get around to doing full typing :-(
-const removeDynamicSymbol = (
-  schema: any,
-): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
+const removeDynamicSymbol = (schema: any): JSONSchemaObject<EJSEmpty, {}> => {
   if (schema instanceof Array) {
-    return (schema.map(removeDynamicSymbol) as unknown) as JSONSchemaObject<
-      JSSTEmpty<{}>,
-      {}
-    >;
+    return (schema as unknown) as JSONSchemaObject<EJSEmpty, {}>;
   }
   if (typeof schema === "object") {
     const { dynamic, ...rest } = schema;
-    return (Object.entries(rest).reduce(
-      (a, b) => ({ ...a, [b[0]]: removeDynamicSymbol(b[1]) }),
-      {},
-    ) as unknown) as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return spreadAndSchemify(
+      dynamic === DynamicJSONSymbol ? rest : schema,
+      removeDynamicSymbol,
+    ) as JSONSchemaObject<EJSEmpty, {}>;
   }
   return schema;
 };
 
-const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
+const JSONSchemify = (e: ExtendedValueType): JSSTAnything<EJSEmpty, {}> =>
   isDynamic(e)
     ? removeDynamicSymbol(
         // we cover all of the nested cases,
@@ -144,37 +146,15 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
               ...(e.additionalProperties
                 ? { additionalProperties: JSONSchemify(e.additionalProperties) }
                 : {}),
-              ...(e.patternProperties
-                ? {
-                    patternProperties: Object.entries(
-                      e.patternProperties,
-                    ).reduce(
-                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-                      {},
-                    ),
-                  }
-                : {}),
-              ...(e.properties
-                ? {
-                    properties: Object.entries(e.properties).reduce(
-                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-                      {},
-                    ),
-                  }
-                : {}),
+              ...spreadAndSchemify(e.patternProperties),
+              ...spreadAndSchemify(e.properties),
             }
           : e,
       )
     : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(JSONSchemify))
+    ? tuple_<EJSEmpty, {}>({})(e.map(JSONSchemify))
     : ExtendedObject.is(e) || JSONObject.is(e)
-    ? type_<JSSTEmpty<{}>, {}>({})(
-        Object.entries(e).reduce(
-          (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-          {},
-        ),
-        {},
-      )
+    ? type_<EJSEmpty, {}>({})(spreadAndSchemify(e), {})
     : cnst_<{}>({})(e);
 
 // Define poet to recognize the new "dynamic type"
