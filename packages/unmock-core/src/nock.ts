@@ -173,7 +173,9 @@ export const u = jspt;
  *******************************
  */
 // Defined nock-like syntax to create/update a service on the fly
-type UpdateCallback = ({
+type UpdateCallback = (
+  store: ServiceStore,
+) => ({
   statusCode,
   data,
 }: {
@@ -216,6 +218,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
     private updater: UpdateCallback,
     private statusCode: CodeAsInt | "default" = 200,
     private baseUrl: string,
+    private serviceStore: ServiceStore,
     private name?: string,
   ) {}
 
@@ -224,7 +227,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
     maybeData?: InputToPoet | InputToPoet[],
   ): FluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
-      this.data = JSONSchemify(maybeData) as Schema;
+      this.data = JSONSchemify(maybeData) as Schema; // TODO should this be some JSSTX?
       this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else if (
       (typeof maybeStatusCode === "number" &&
@@ -237,7 +240,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
     } else {
       this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
-    const store = this.updater({
+    const store = this.updater(this.serviceStore)({
       data: this.data,
       statusCode: this.statusCode,
     });
@@ -247,34 +250,41 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       this.updater,
       this.statusCode,
       this.baseUrl,
+      store,
       this.name,
     );
     // Have to manually update the methods to match `IDynamicServiceSpec`
-    return { ...methods, reply: dss.reply };
+    return { ...methods, reply: dss.reply.bind(dss) };
   }
 }
+
+const updateStore = (
+  baseUrl: string,
+  method: HTTPMethod,
+  endpoint: string,
+  name?: string,
+) => (store: ServiceStore) => ({
+  statusCode,
+  data,
+}: {
+  statusCode: CodeAsInt | "default";
+  data: Schema;
+}) =>
+  store.updateOrAdd({
+    baseUrl,
+    method,
+    endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
+    statusCode,
+    response: data,
+    name,
+  });
 
 const buildFluentNock = (
   store: ServiceStore,
   baseUrl: string,
   name?: string,
-): FluentDynamicService => {
-  const dynFn = (method: HTTPMethod, endpoint: string) => ({
-    statusCode,
-    data,
-  }: {
-    statusCode: CodeAsInt | "default";
-    data: Schema;
-  }) =>
-    store.updateOrAdd({
-      baseUrl,
-      method,
-      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-      statusCode,
-      response: data,
-      name,
-    });
-  return Object.entries({
+): FluentDynamicService =>
+  Object.entries({
     get: 200,
     head: 200,
     post: 201,
@@ -288,15 +298,15 @@ const buildFluentNock = (
       ...o,
       [method]: (endpoint: string) =>
         new DynamicServiceSpec(
-          dynFn(method as HTTPMethod, endpoint),
+          updateStore(baseUrl, method as HTTPMethod, endpoint, name),
           code as CodeAsInt,
           baseUrl,
+          store,
           name,
         ),
     }),
     {},
   ) as FluentDynamicService;
-};
 
 export const nockify = ({
   backend,
