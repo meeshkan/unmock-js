@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { seedHack } from "../generator";
+import { runnerHack } from "../generator";
 export interface IRunnerOptions {
   maxLoop: number;
 }
@@ -58,8 +58,9 @@ export default (
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
-    seedHack.seed = i;
-    seedHack.optionalsProbability = Math.random();
+    runnerHack.seed = i;
+    runnerHack.optionalsProbability = Math.random();
+    runnerHack.minItems = Math.floor(Math.random() * 2 ** (i % 20)); // 2^19 seems enough for min items/length (upper bound of 500K items/length)
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
