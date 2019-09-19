@@ -35,7 +35,7 @@ const postRequest: ISerializedRequest = {
   host: "github.com",
   protocol: "https",
   path: "/v3",
-  pathname: "/v3/",
+  pathname: "/v3",
   query: {},
   body: {
     hello: "foo",
@@ -91,6 +91,30 @@ describe("Decorated spy", () => {
       const callTracker: ICallTracker = createCallTracker();
       callTracker.track({ req: postRequest, res: fakeResponse });
       expect(callTracker.spy.postRequestHost()).toBe(fakeRequest.host);
+    });
+  });
+
+  describe("postRequestPath", () => {
+    it("should return request path", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postRequestPath()).toBe(fakeRequest.path);
+    });
+  });
+
+  describe("postRequestPathname", () => {
+    it("should return request pathname", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postRequestPathname()).toBe(fakeRequest.pathname);
+    });
+  });
+
+  describe("postRequestProtocol", () => {
+    it("should return request protocol", () => {
+      const callTracker: ICallTracker = createCallTracker();
+      callTracker.track({ req: postRequest, res: fakeResponse });
+      expect(callTracker.spy.postRequestProtocol()).toBe(fakeRequest.protocol);
     });
   });
 
