@@ -85,12 +85,70 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
+  postRequestPath(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postRequestPath" });
+    return spyWithMatcher.firstCall.args[0].path;
+  },
+  postRequestPathname(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "postRequestPathname",
+    });
+    return spyWithMatcher.firstCall.args[0].pathname;
+  },
+  postRequestHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postRequestHeaders" });
+    return spyWithMatcher.firstCall.args[0].headers;
+  },
+  postRequestQuery(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postRequestQuery" });
+    return spyWithMatcher.firstCall.args[0].query;
+  },
+  postRequestProtocol(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "postRequestProtocol",
+    });
+    return spyWithMatcher.firstCall.args[0].protocol;
+  },
   postResponseBody(this: ServiceSpy, matcher?: SinonMatcher): any {
     const methodMatcher = match({ method: "post" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
+  },
+  postResponseCode(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "postResponseCode" });
+    return spyWithMatcher.firstCall.returnValue.statusCode;
+  },
+  postResponseHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "post" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "postResponseHeaders",
+    });
+    return spyWithMatcher.firstCall.returnValue.headers;
   },
   getRequestHost(this: ServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "get" });
@@ -106,12 +164,61 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
+  getRequestPath(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestPath" });
+    return spyWithMatcher.firstCall.args[0].path;
+  },
+  getRequestPathname(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestPathname" });
+    return spyWithMatcher.firstCall.args[0].pathname;
+  },
+  getRequestHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestHeaders" });
+    return spyWithMatcher.firstCall.args[0].headers;
+  },
+  getRequestQuery(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestQuery" });
+    return spyWithMatcher.firstCall.args[0].query;
+  },
+  getRequestProtocol(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getRequestProtocol" });
+    return spyWithMatcher.firstCall.args[0].protocol;
+  },
   getResponseBody(this: ServiceSpy, matcher?: SinonMatcher): any {
     const methodMatcher = match({ method: "get" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
+  },
+  getResponseCode(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getResponseCode" });
+    return spyWithMatcher.firstCall.returnValue.statusCode;
+  },
+  getResponseHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "get" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "getResponseHeaders" });
+    return spyWithMatcher.firstCall.returnValue.headers;
   },
   putRequestHost(this: ServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "put" });
@@ -127,12 +234,61 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
+  putRequestPath(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestPath" });
+    return spyWithMatcher.firstCall.args[0].path;
+  },
+  putRequestPathname(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestPathname" });
+    return spyWithMatcher.firstCall.args[0].pathname;
+  },
+  putRequestHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestHeaders" });
+    return spyWithMatcher.firstCall.args[0].headers;
+  },
+  putRequestQuery(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestQuery" });
+    return spyWithMatcher.firstCall.args[0].query;
+  },
+  putRequestProtocol(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putRequestProtocol" });
+    return spyWithMatcher.firstCall.args[0].protocol;
+  },
   putResponseBody(this: ServiceSpy, matcher?: SinonMatcher): any {
     const methodMatcher = match({ method: "put" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
+  },
+  putResponseCode(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putResponseCode" });
+    return spyWithMatcher.firstCall.returnValue.statusCode;
+  },
+  putResponseHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "put" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "putResponseHeaders" });
+    return spyWithMatcher.firstCall.returnValue.headers;
   },
   deleteRequestHost(this: ServiceSpy, matcher?: SinonMatcher): string {
     const methodMatcher = match({ method: "delete" });
@@ -148,11 +304,72 @@ export const decorators = {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteRequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
+  deleteRequestPath(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteRequestPath" });
+    return spyWithMatcher.firstCall.args[0].path;
+  },
+  deleteRequestPathname(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "deleteRequestPathname",
+    });
+    return spyWithMatcher.firstCall.args[0].pathname;
+  },
+  deleteRequestHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "deleteRequestHeaders",
+    });
+    return spyWithMatcher.firstCall.args[0].headers;
+  },
+  deleteRequestQuery(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteRequestQuery" });
+    return spyWithMatcher.firstCall.args[0].query;
+  },
+  deleteRequestProtocol(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "deleteRequestProtocol",
+    });
+    return spyWithMatcher.firstCall.args[0].protocol;
+  },
   deleteResponseBody(this: ServiceSpy, matcher?: SinonMatcher): any {
     const methodMatcher = match({ method: "delete" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
+  },
+  deleteResponseCode(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "deleteResponseCode" });
+    return spyWithMatcher.firstCall.returnValue.statusCode;
+  },
+  deleteResponseHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "delete" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({
+      spy: spyWithMatcher,
+      errPrefix: "deleteResponseHeaders",
+    });
+    return spyWithMatcher.firstCall.returnValue.headers;
   },
 };

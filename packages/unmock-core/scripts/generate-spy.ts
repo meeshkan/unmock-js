@@ -67,12 +67,61 @@ const decoratorsFor = (method: HTTPMethod): string => {
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestBody" });
     return spyWithMatcher.firstCall.args[0].body;
   },
+  ${method}RequestPath(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestPath" });
+    return spyWithMatcher.firstCall.args[0].path;
+  },
+  ${method}RequestPathname(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestPathname" });
+    return spyWithMatcher.firstCall.args[0].pathname;
+  },
+  ${method}RequestHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestHeaders" });
+    return spyWithMatcher.firstCall.args[0].headers;
+  },
+  ${method}RequestQuery(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestQuery" });
+    return spyWithMatcher.firstCall.args[0].query;
+  },
+  ${method}RequestProtocol(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}RequestProtocol" });
+    return spyWithMatcher.firstCall.args[0].protocol;
+  },
   ${method}ResponseBody(this: ServiceSpy, matcher?: SinonMatcher): any {
     const methodMatcher = match({ method: "${method}" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
     verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}ResponseBody" });
     return spyWithMatcher.firstCall.returnValue.body;
+  },
+  ${method}ResponseCode(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}ResponseCode" });
+    return spyWithMatcher.firstCall.returnValue.statusCode;
+  },
+  ${method}ResponseHeaders(this: ServiceSpy, matcher?: SinonMatcher): any {
+    const methodMatcher = match({ method: "${method}" });
+    const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
+    const spyWithMatcher = this.with(fullMatcher);
+    verifyOnlyOneCall({ spy: spyWithMatcher, errPrefix: "${method}ResponseHeaders" });
+    return spyWithMatcher.firstCall.returnValue.headers;
   }`;
 };
 
