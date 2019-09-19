@@ -14,6 +14,8 @@ $ npm install --save-dev unmock
 
 ## Usage
 
+Unmock has great [documentation](https://unmock.io/docs/introduction), but this README contains all the essential information.
+
 Here is a simple mock, a simple function, and a simple test in jest.
 
 ```js
@@ -233,6 +235,10 @@ unmock. nock('http://myapp.iriscouch.com')
 Unmock uses [`sinon`](https://sinonjs.org) spies to help you compose (great) expectations.
 
 > In general, try to write expectations using spies instead of hardcoded values. Instead of `expect(res).toEqual({foo: "bar", baz: true })`, favor `expect(res).toEqual({ ...spy.getRequestBody(), baz: true })`
+
+Assuming you have defined a service using 
+
+## OpenAPI
 
 ## Recording
 
