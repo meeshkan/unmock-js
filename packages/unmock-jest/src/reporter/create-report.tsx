@@ -5,6 +5,7 @@ import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
+import TestSuites from "./components/test-suites";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { sortTestSuites, toTestSuites } from "./utils";
@@ -200,6 +201,8 @@ const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   return root;
 };
 
+
+
 const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   const reportBody = xmlBuilder.begin().element("div", { class: "report" });
 
@@ -208,6 +211,10 @@ const buildBodyDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 
   // Test results
   reportBody.importDocument(buildTestResultsDiv(input));
+
+  const testSuites: ITestSuite[] = sortTestSuites(toTestSuites(input));
+
+  reportBody.raw(renderReact(<TestSuites testSuites={testSuites} />));
 
   return reportBody;
 };
