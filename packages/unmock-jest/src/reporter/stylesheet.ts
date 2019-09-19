@@ -168,9 +168,19 @@ body {
 .test-suite-label {
   display: inline-block;
   background-color: red;
-  border-style: dashed;
   border-radius: 2rem;
   padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.test-results-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+fieldset {
+  border-style: none;
 }
 
 `;
