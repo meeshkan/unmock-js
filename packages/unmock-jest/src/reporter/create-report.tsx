@@ -1,4 +1,4 @@
-import { Dictionary, forEach, map, toPairs } from "lodash";
+import { forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
@@ -7,7 +7,7 @@ import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
-import { toTestSuites, sortTestSuites } from "./utils";
+import { sortTestSuites, toTestSuites } from "./utils";
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
