@@ -16,7 +16,7 @@ import {
   JSSTTuple,
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
-import { HTTPMethod } from "./interfaces";
+import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
@@ -177,7 +177,7 @@ type UpdateCallback = ({
   statusCode,
   data,
 }: {
-  statusCode: number;
+  statusCode: CodeAsInt | "default";
   data: Schema;
 }) => ServiceStore;
 
@@ -194,8 +194,13 @@ type FluentDynamicService = {
 // How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
 //                                                      `replyWithFile(....)`
 interface IDynamicServiceSpec {
+  /**
+   * Sets the reply schema for the previous base URL, endpoint and HTTP method.
+   * @param statusCode
+   * @param data
+   */
   reply(
-    statusCode: number,
+    statusCode: CodeAsInt | "default",
     data?: InputToPoet | InputToPoet[],
   ): FluentDynamicService & IDynamicServiceSpec;
   reply(
@@ -209,25 +214,26 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
   // Default status code passed in constructor
   constructor(
     private updater: UpdateCallback,
-    private statusCode: number = 200,
+    private statusCode: CodeAsInt | "default" = 200,
     private baseUrl: string,
     private name?: string,
   ) {}
 
   public reply(
-    maybeStatusCode: number | InputToPoet | InputToPoet[],
+    maybeStatusCode: CodeAsInt | "default" | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
   ): FluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
-      this.statusCode = maybeStatusCode as number;
+      this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else if (
-      typeof maybeStatusCode === "number" &&
-      maybeStatusCode >= 100 &&
-      maybeStatusCode < 599
+      (typeof maybeStatusCode === "number" &&
+        maybeStatusCode >= 100 &&
+        maybeStatusCode <= 599) ||
+      maybeStatusCode === "default"
     ) {
       // we assume it's a status code
-      this.statusCode = maybeStatusCode;
+      this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else {
       this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
@@ -257,7 +263,7 @@ const buildFluentNock = (
     statusCode,
     data,
   }: {
-    statusCode: number;
+    statusCode: CodeAsInt | "default";
     data: Schema;
   }) =>
     store.updateOrAdd({
@@ -283,7 +289,7 @@ const buildFluentNock = (
       [method]: (endpoint: string) =>
         new DynamicServiceSpec(
           dynFn(method as HTTPMethod, endpoint),
-          code,
+          code as CodeAsInt,
           baseUrl,
           name,
         ),
