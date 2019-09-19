@@ -1,9 +1,16 @@
-import { Dictionary, groupBy, mapValues } from "lodash";
+import { groupBy, map, mapValues, reverse, sortBy } from "lodash";
 import { IReportInput, ITestSuite } from "./types";
 
-export const groupTestsByFilePath = (
-  input: IReportInput,
-): Dictionary<ITestSuite> => {
+export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
+  return reverse(
+    sortBy(testSuites, [
+      testSuite => testSuite.suiteResults.numFailingTests,
+      testSuite => testSuite.snapshots.length,
+    ]),
+  );
+};
+
+export const toTestSuites = (input: IReportInput): ITestSuite[] => {
   const groupedResultsByFilePath = groupBy(
     input.jestData.aggregatedResult.testResults,
     testResult => testResult.testFilePath,
@@ -25,7 +32,8 @@ export const groupTestsByFilePath = (
     snapshot => snapshot.testPath,
   );
 
-  const combined = mapValues(testResultByFilePath, (value, filepath) => ({
+  const combined = map(testResultByFilePath, (value, filepath) => ({
+    testFilePath: value.testFilePath,
     suiteResults: value,
     snapshots: snapshotsByFilePath[filepath] || [],
   }));

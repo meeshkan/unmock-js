@@ -1,4 +1,4 @@
-import { Dictionary, forEach, map } from "lodash";
+import { forEach, map } from "lodash";
 import * as React from "react";
 import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
@@ -7,7 +7,7 @@ import xmlBuilder = require("xmlbuilder");
 import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
-import { groupTestsByFilePath } from "./utils";
+import { sortTestSuites, toTestSuites } from "./utils";
 
 const createHtmlBase = (): xmlBuilder.XMLDocument => {
   const htmlBase = {
@@ -110,7 +110,6 @@ const buildTestSuiteTitleDiv = (
  * @param testSuite Test suite results
  */
 const buildTestSuiteDiv = (
-  filename: string,
   testSuite: ITestSuite,
 ): xmlBuilder.XMLDocument => {
   const suiteResult = testSuite.suiteResults;
@@ -124,7 +123,7 @@ const buildTestSuiteDiv = (
     .begin()
     .ele("div", { class: `test-suite ${suiteSuccessClass}` });
 
-  const testSuiteTitleDiv = buildTestSuiteTitleDiv(filename, testSuite);
+  const testSuiteTitleDiv = buildTestSuiteTitleDiv(testSuite.testFilePath, testSuite);
 
   element.importDocument(testSuiteTitleDiv);
 
@@ -178,17 +177,20 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   return headerDiv;
 };
 
+
 /**
  * Build div containing results for all test files (excluding header etc.)
  */
 const buildTestResultsDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
   const root = xmlBuilder.begin().ele("div", { class: "test-results" });
 
-  const grouped: Dictionary<ITestSuite> = groupTestsByFilePath(input);
+  const testSuites: ITestSuite[] = toTestSuites(input);
+
+  const sortedSuites = sortTestSuites(testSuites);
 
   const testSuiteElements: xmlBuilder.XMLDocument[] = map(
-    grouped,
-    (testResults, filename) => buildTestSuiteDiv(filename, testResults),
+    sortedSuites,
+    (testSuite) => buildTestSuiteDiv(testSuite)
   );
 
   forEach(testSuiteElements, node => {
