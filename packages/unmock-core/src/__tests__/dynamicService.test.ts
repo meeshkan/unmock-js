@@ -13,7 +13,7 @@ describe("Tests dynamic path tests", () => {
   });
 
   it("should add a service when used with named export", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expect(Object.keys(unmock.services).length).toEqual(0);
     nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
