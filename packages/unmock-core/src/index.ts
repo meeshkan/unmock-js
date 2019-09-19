@@ -76,10 +76,10 @@ export class UnmockPackage implements IUnmockPackage {
   }
 }
 
-const unmock = new UnmockPackage(new NodeBackend(), {
+export const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 
-export type UnmockNode = typeof unmock;
+export const nock = unmock.nock.bind(unmock);
 
 export default unmock;
