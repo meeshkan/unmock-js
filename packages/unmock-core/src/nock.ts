@@ -20,6 +20,10 @@ import { HTTPMethod } from "./interfaces";
 import { Schema } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
+/*************************************************
+ * (Extended, Dynamic) JSON Schema defined below *
+ *************************************************
+ */
 // Used to differentiate between e.g. `{ foo: { type: "string" } }` as a literal value
 // (i.e. key `foo` having the value of `{type: "string"}`) and a dynamic JSON schema
 const DynamicJSONSymbol: unique symbol = Symbol();
@@ -164,6 +168,10 @@ const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
 
 export const u = jspt;
 
+/*******************************
+ * Nock-like API defined below *
+ *******************************
+ */
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = ({
   statusCode,
@@ -178,7 +186,24 @@ type UpdateCallback = ({
 type Primitives = string | number | boolean;
 type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
-export class DynamicServiceSpec {
+// How the fluent dynamic service API looks like (e.g. specifies `get(endpoint: string) => DynamicServiceSpec`)
+type FluentDynamicService = {
+  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
+};
+
+// How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
+//                                                      `replyWithFile(....)`
+interface IDynamicServiceSpec {
+  reply(
+    statusCode: number,
+    data?: InputToPoet | InputToPoet[],
+  ): FluentDynamicService & IDynamicServiceSpec;
+  reply(
+    data: InputToPoet | InputToPoet[],
+  ): FluentDynamicService & IDynamicServiceSpec;
+}
+
+export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
 
   // Default status code passed in constructor
@@ -189,16 +214,10 @@ export class DynamicServiceSpec {
     private name?: string,
   ) {}
 
-  // TODO: Should this allow fluency for consecutive .get, .post, etc on the same service?
-  public reply(
-    statusCode: number,
-    data?: InputToPoet | InputToPoet[],
-  ): FluentDynamicService;
-  public reply(data: InputToPoet | InputToPoet[]): FluentDynamicService;
   public reply(
     maybeStatusCode: number | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
-  ): FluentDynamicService {
+  ): FluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema;
       this.statusCode = maybeStatusCode as number;
@@ -217,13 +236,17 @@ export class DynamicServiceSpec {
       statusCode: this.statusCode,
     });
 
-    return buildFluentNock(store, this.baseUrl, this.name);
+    const methods = buildFluentNock(store, this.baseUrl, this.name);
+    const dss = new DynamicServiceSpec(
+      this.updater,
+      this.statusCode,
+      this.baseUrl,
+      this.name,
+    );
+    // Have to manually update the methods to match `IDynamicServiceSpec`
+    return { ...methods, reply: dss.reply };
   }
 }
-
-type FluentDynamicService = {
-  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
-};
 
 const buildFluentNock = (
   store: ServiceStore,
