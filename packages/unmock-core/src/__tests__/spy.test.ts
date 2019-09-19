@@ -71,8 +71,6 @@ describe("Decorated spy", () => {
       ).toBe(req.body);
     });
     it("should throw when called with non-matching matcher", () => {
-      const newCallTracker: ICallTracker = createCallTracker();
-      newCallTracker.track({ req, res: fakeResponse });
       expect(() =>
         callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
       ).toThrowError("postRequestBody: Expected");
@@ -84,7 +82,7 @@ describe("Decorated spy", () => {
     });
     it("should throw when two matching calls tracked", () => {
       callTracker.track({ req, res: fakeResponse });
-      expect(() => createCallTracker().spy.postRequestBody()).toThrowError(
+      expect(() => callTracker.spy.postRequestBody()).toThrowError(
         "postRequestBody: Expected",
       );
     });
