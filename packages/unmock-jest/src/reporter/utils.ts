@@ -1,8 +1,13 @@
-import { groupBy, map, mapValues } from "lodash";
+import { groupBy, map, mapValues, reverse, sortBy } from "lodash";
 import { IReportInput, ITestSuite } from "./types";
 
 export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
-  return testSuites;
+  return reverse(
+    sortBy(testSuites, [
+      testSuite => testSuite.suiteResults.numFailingTests,
+      testSuite => testSuite.snapshots.length,
+    ]),
+  );
 };
 
 export const toTestSuites = (input: IReportInput): ITestSuite[] => {
