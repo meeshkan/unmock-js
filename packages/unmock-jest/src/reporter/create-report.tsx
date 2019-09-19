@@ -4,6 +4,7 @@ import * as ReactDomServer from "react-dom/server";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
 import xmlBuilder = require("xmlbuilder");
+import Calls from "./components/calls";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { groupTestsByFilePath } from "./utils";
@@ -33,19 +34,6 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
   assertionResult.ancestorTitles
     .map(ancestorTitle => `${ancestorTitle} > `)
     .join(" ") + assertionResult.title;
-
-const buildRequestElement = (snapshot: ISnapshot, i: number) => {
-  return (<div className={"request"} key={i}>{`HTTP request: ${snapshot.data.req.host}`}</div>);
-};
-
-const buildRequestsDiv = (
-  _: jest.AssertionResult,
-  snapshots: ISnapshot[],
-): React.ReactElement => {
-  return (<div>
-    {snapshots.map((snapshot, i) => buildRequestElement(snapshot, i))}
-  </div>);
-};
 
 const renderReact = (element: React.ReactElement): string =>
   ReactDomServer.renderToStaticMarkup(element);
@@ -84,9 +72,9 @@ const buildTestDiv = (
     );
   }
 
-  const requestsDiv = buildRequestsDiv(assertionResult, snapshots);
+  const callsElement = <Calls assertionResult={assertionResult}  snapshots={snapshots}/>;
 
-  testDiv.raw(renderReact(requestsDiv));
+  testDiv.raw(renderReact(callsElement));
 
   return testDiv;
 };
@@ -111,7 +99,7 @@ const buildTestSuiteTitleDiv = (
   div.ele(
     "div",
     { class: "test-suite__title-summary" },
-    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP requests: ${snapshots.length}`,
+    `Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${snapshots.length}`,
   );
   return div;
 };
