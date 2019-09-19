@@ -1,4 +1,4 @@
-import unmock, { u } from "..";
+import unmock, { nock, u } from "..";
 
 describe("Tests dynamic path tests", () => {
   beforeEach(() => unmock.reloadServices());
@@ -7,6 +7,14 @@ describe("Tests dynamic path tests", () => {
     expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
     unmock
       .nock("https://foo.com")
+      .get("/foo")
+      .reply(200, { foo: u.string() });
+    expect(Object.keys(unmock.services).length).toEqual(1);
+  });
+
+  it("should add a service when used with named export", () => {
+    expect(Object.keys(unmock.services).length).toEqual(0);
+    nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
     expect(Object.keys(unmock.services).length).toEqual(1);

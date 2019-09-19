@@ -1,4 +1,4 @@
-import { UnmockNode, UnmockPackage } from "..";
+import { UnmockPackage } from "..";
 import NodeBackend from "../backend/index";
 
 class TestBackend extends NodeBackend {
@@ -16,7 +16,7 @@ const backend = new TestBackend();
 
 describe("Tests core package", () => {
   describe("tests allowedHosts", () => {
-    let pkg: UnmockNode;
+    let pkg: UnmockPackage;
     beforeEach(() => {
       pkg = new UnmockPackage(backend);
     });
