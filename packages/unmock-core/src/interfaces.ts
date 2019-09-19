@@ -606,6 +606,8 @@ export interface IIncomingQuery {
   [key: string]: string | string[] | undefined;
 }
 
+export type IProtocol = "http" | "https";
+
 export interface ISerializedRequest {
   body?: string | object;
   headers?: IIncomingHeaders;
@@ -623,7 +625,7 @@ export interface ISerializedRequest {
    * Query parameters
    */
   query: IIncomingQuery;
-  protocol: "http" | "https";
+  protocol: IProtocol;
 }
 
 export interface ISerializedResponse {

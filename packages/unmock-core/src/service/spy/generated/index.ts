@@ -3,7 +3,13 @@
  */
 import { match, SinonMatcher } from "sinon";
 import { ServiceSpy } from "..";
-import { HTTPMethod } from "../../../interfaces";
+import {
+  HTTPMethod,
+  IIncomingHeaders,
+  IIncomingQuery,
+  IOutgoingHeaders,
+  IProtocol,
+} from "../../../interfaces";
 import { decorateSpy, verifyOnlyOneCall } from "../decorate";
 
 export interface ISpyDecoration {
@@ -11,16 +17,51 @@ export interface ISpyDecoration {
   withMethod(method: HTTPMethod): ServiceSpy;
   postRequestHost(matcher?: SinonMatcher): string;
   postRequestBody(matcher?: SinonMatcher): any;
+  postRequestPathname(matcher?: SinonMatcher): string;
+  postRequestPath(matcher?: SinonMatcher): string;
+  postRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
+  postRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
+  postRequestProtocol(matcher?: SinonMatcher): IProtocol;
+
   postResponseBody(matcher?: SinonMatcher): any;
+  postResponseCode(matcher?: SinonMatcher): number;
+  postResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
+
   getRequestHost(matcher?: SinonMatcher): string;
   getRequestBody(matcher?: SinonMatcher): any;
+  getRequestPathname(matcher?: SinonMatcher): string;
+  getRequestPath(matcher?: SinonMatcher): string;
+  getRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
+  getRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
+  getRequestProtocol(matcher?: SinonMatcher): IProtocol;
+
   getResponseBody(matcher?: SinonMatcher): any;
+  getResponseCode(matcher?: SinonMatcher): number;
+  getResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
+
   putRequestHost(matcher?: SinonMatcher): string;
   putRequestBody(matcher?: SinonMatcher): any;
+  putRequestPathname(matcher?: SinonMatcher): string;
+  putRequestPath(matcher?: SinonMatcher): string;
+  putRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
+  putRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
+  putRequestProtocol(matcher?: SinonMatcher): IProtocol;
+
   putResponseBody(matcher?: SinonMatcher): any;
+  putResponseCode(matcher?: SinonMatcher): number;
+  putResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
+
   deleteRequestHost(matcher?: SinonMatcher): string;
   deleteRequestBody(matcher?: SinonMatcher): any;
+  deleteRequestPathname(matcher?: SinonMatcher): string;
+  deleteRequestPath(matcher?: SinonMatcher): string;
+  deleteRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
+  deleteRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
+  deleteRequestProtocol(matcher?: SinonMatcher): IProtocol;
+
   deleteResponseBody(matcher?: SinonMatcher): any;
+  deleteResponseCode(matcher?: SinonMatcher): number;
+  deleteResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 }
 
 export const decorators = {
