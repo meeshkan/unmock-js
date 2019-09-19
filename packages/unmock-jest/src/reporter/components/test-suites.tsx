@@ -6,6 +6,10 @@ import TestSuite from "./test-suite";
 
 const testFileToId = (file: string) => file.replace(/[\/|\\|\.]/g, "-");  // TODO Use path.sep?
 
+/**
+ * Not actually a React component but something that returns dynamically generated CSS and a React component
+ * @returns Tuple where the first element is CSS string, second is a React component for rendering the test results.
+ */
 const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () => React.ReactElement] => {
 
     const elementsAndCss = map(testSuites, (testSuite) => {
