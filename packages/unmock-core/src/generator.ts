@@ -54,6 +54,7 @@ import {
 import { ServiceStore } from "./service/serviceStore";
 export const seedHack = {
   seed: 0,
+  optionalsProbability: 1.0,
 };
 /**
  * Finds server URLs that match a given protocol and host
@@ -698,7 +699,10 @@ const generateMockFromTemplate2 = (
   headerSchema?: any,
   bodySchema?: any,
 ): ISerializedResponse => {
-  jsf.option("alwaysFakeOptionals", false);
+  jsf.option("optionalsProbability", seedHack.optionalsProbability);
+  // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
+  // otherwise, generate up to optionalsProbability% of optionals
+  jsf.option("fixedProbabilities", seedHack.optionalsProbability === 1);
   jsf.option("useDefaultValue", false);
   jsf.option("random", seedrandom(`${seedHack.seed}`));
 

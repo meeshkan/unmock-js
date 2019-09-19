@@ -59,6 +59,7 @@ export default (
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
     seedHack.seed = i;
+    seedHack.optionalsProbability = Math.random();
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
