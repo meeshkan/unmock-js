@@ -228,4 +228,77 @@ describe("Tests dynamic path tests", () => {
       expectNServices(3);
     });
   });
+
+  describe("Paths can be defined using arrays and regexs", () => {
+    it("An empty array of strings is equal to root path", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get([])
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
+    });
+
+    it("An array of strings is equal to the string of its parts", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get(["foo", "foo", "foo"])
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual([
+        "/foo/foo/foo",
+      ]);
+    });
+
+    it("A simple regex is added as a parameter with randomly generated name", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get(["foo", /\W+/, "bar"])
+        .reply(200);
+      expectNServices(1);
+      const schema = getPrivateSchema("foo");
+      expect(Object.keys(schema.paths).length).toEqual(1);
+      const path = Object.keys(schema.paths)[0];
+      expect(path).toMatch(/^\/foo\/\{[^}]+\}\/bar/);
+      expect(schema.paths[path].parameters.length).toEqual(1);
+      expect(path).toContain(schema.paths[path].parameters[0].name);
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual("/\\W+/");
+    });
+
+    it("A regex is added as a parameter given name", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get(["foo", ["baz", /\W+/], "bar"])
+        .reply(200);
+      expectNServices(1);
+      const schema = getPrivateSchema("foo");
+      expect(Object.keys(schema.paths).length).toEqual(1);
+      const path = Object.keys(schema.paths)[0];
+      expect(path).toEqual("/foo/{baz}/bar");
+      expect(schema.paths[path].parameters.length).toEqual(1);
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual("/\\W+/");
+    });
+
+    it("Also handles multiple parameters", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get(["foo", ["baz", /\W+/], "bar", /\d+/, ["spam", /eggs/]])
+        .reply(200);
+      expectNServices(1);
+      const schema = getPrivateSchema("foo");
+      expect(Object.keys(schema.paths).length).toEqual(1);
+      const path = Object.keys(schema.paths)[0];
+      expect(path).toMatch(/\/foo\/{baz}\/bar\/{\w+}\/{spam}/);
+      const params = schema.paths[path].parameters;
+      expect(params.length).toEqual(3);
+      expect(params[0].schema.pattern).toEqual("/\\W+/");
+      expect(params[1].schema.pattern).toEqual("/\\d+/");
+      expect(params[2].schema.pattern).toEqual("/eggs/");
+    });
+  });
 });

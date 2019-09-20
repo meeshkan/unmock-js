@@ -17,7 +17,7 @@ import {
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
-import { Schema } from "./service/interfaces";
+import { Schema, ValidEndpointType } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
 /*************************************************
@@ -190,7 +190,7 @@ type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
 // How the fluent dynamic service API looks like (e.g. specifies `get(endpoint: string) => DynamicServiceSpec`)
 type FluentDynamicService = {
-  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
+  [k in HTTPMethod]: (endpoint: ValidEndpointType) => DynamicServiceSpec;
 };
 
 // How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
@@ -209,8 +209,6 @@ interface IDynamicServiceSpec {
     data: InputToPoet | InputToPoet[],
   ): FluentDynamicService & IDynamicServiceSpec;
 }
-
-type ValidEndpointType = string | Array<string | RegExp>;
 
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
@@ -272,16 +270,14 @@ const updateStore = (
   statusCode: CodeAsInt | "default";
   data: Schema;
 }) =>
-  Array.isArray(endpoint)
-    ? store
-    : store.updateOrAdd({
-        baseUrl,
-        method,
-        endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-        statusCode,
-        response: data,
-        name,
-      });
+  store.updateOrAdd({
+    baseUrl,
+    method,
+    endpoint,
+    statusCode,
+    response: data,
+    name,
+  });
 
 const buildFluentNock = (
   store: ServiceStore,
