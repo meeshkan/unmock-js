@@ -12,19 +12,21 @@ const testFileToId = (file: string) => file.replace(/[\/|\\|\.]/g, "-");  // TOD
  */
 const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () => React.ReactElement] => {
 
-    const elementsAndCss = map(testSuites, (testSuite) => {
+    const elementsAndCss = map(testSuites, (testSuite, index) => {
         const id = testFileToId(testSuite.testFilePath);
         const elementCss = `#box-${id}:checked~.test-suite-label-${id} {
-    background-color: #FF1493;
+    filter: brightness(85%);
     }
 
+    /* Display test suite when corresponding box is checked */
     #box-${id}:checked~.test-suite-${id} {
     display: block;
     }
 `;
+        const testSuiteLabelColor = testSuite.suiteResults.numFailingTests > 0 ? `test-suite-label--failure` : `test-suite-label--success`;
         return [
-            <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={true} value={`box-${id}`} key={`input-${id}`} />,
-            <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id}`} id="feature-label" key={`label-${id}`}>{testSuite.testFilePath}</label>,
+            <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={index === 0} value={`box-${id}`} key={`input-${id}`} />,
+            <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>{testSuite.testFilePath}</label>,
             <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,
             elementCss,
         ];

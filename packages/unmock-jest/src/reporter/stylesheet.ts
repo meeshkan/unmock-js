@@ -167,10 +167,17 @@ body {
 
 .test-suite-label {
   display: inline-block;
-  background-color: red;
   border-radius: 2rem;
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+.test-suite-label--success {
+  background-color: ${successGreen};
+}
+
+.test-suite-label--failure {
+  background-color: ${failureRed};
 }
 
 .test-results-container {
