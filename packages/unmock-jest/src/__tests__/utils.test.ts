@@ -61,6 +61,10 @@ describe("Reporter utils", () => {
       const result = largestCommonArray([["dir", "stuff"], ["dir", "stuff"]]);
       expect(result).toEqual(["dir", "stuff"]);
     });
+    it("should return empty array when one of the arrays is empty", () => {
+      const result = largestCommonArray([[], ["dir", "stuff"]]);
+      expect(result).toEqual([]);
+    });
     it("should return the two first items when they match", () => {
       const result = largestCommonArray([
         ["dir", "stuff", "baz"],
