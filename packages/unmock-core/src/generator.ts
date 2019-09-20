@@ -109,7 +109,7 @@ const maybeAddStringSchema = (
 ): Array<Reference | Schema> => (s.length === 0 ? [{ type: "string" }] : s);
 
 const discernName = (o: Option<Parameter>, n: string): Option<Parameter> =>
-  isNone(o) ? o : o.value.name === n && o.value.in === "path" ? o : none;
+  isNone(o) || (o.value.name === n && o.value.in === "path") ? o : none;
 
 const internalGetParameter = (
   t: Traversal<PathItem, Reference | Parameter>,
@@ -190,18 +190,15 @@ const pathParameterMatch = (
     i =>
       jsonschema.validate(part, {
         ...i,
-        definitions:
-          oas.components && oas.components.schemas
-            ? Object.entries(oas.components.schemas).reduce(
-                (a, b) => ({
-                  ...a,
-                  [b[0]]: isReference(b[1])
-                    ? changeRef(b[1])
-                    : changeRefs(b[1]),
-                }),
-                {},
-              )
-            : {},
+        definitions: Object.entries(
+          (oas.components && oas.components.schemas) || {},
+        ).reduce(
+          (a, b) => ({
+            ...a,
+            [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1]),
+          }),
+          {},
+        ),
       }).valid,
   ).length > 0;
 
@@ -387,9 +384,9 @@ export const truncatePath = (
 /**
  * A matcher that takes a request and a dictionary of
  * openAPI schema and returns a dictionary containing
- * *only* the schmea with *only* the path item and *only*
+ * *only* the schema with *only* the path item and *only*
  * the method corresponding to the request. This will be
- * and empty dictionary if the schema does not exist,
+ * an empty dictionary if the schema does not exist,
  * empty PathItems if the path does not exist, and
  * empty operations if the method does not exist.
  * @param req The request
