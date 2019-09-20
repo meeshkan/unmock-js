@@ -11,24 +11,17 @@ export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
   );
 };
 
-export const longestCommonString = (strings: string[]): string => {
-  return strings.reduce((acc, val) => {
-    let longest = "";
-    for (let i = 0; i < acc.length; i++) {
-      const tried = acc.substring(0, i);
-      if (val.startsWith(tried)) {
-        longest = tried;
-        continue;
-      } else {
-        break;
-      }
-    }
-    return longest;
-  });
-};
-
-export const longestCommonPath = (paths: string[][]): string[] => {
-  return paths.reduce((acc, val) => {
+/**
+ * Find the longest common items for a list of arrays
+ * Examples:
+ * [["a", "b"], ["a", "c"]] => ["a"]
+ * [["a", "b"], ["a", "b"]] => ["a", "b"]
+ * [["a", "c"], ["b", "c"]] => []
+ * @param arrays List of arrays
+ * @return Longest array that all arrays start with
+ */
+export const largestCommonArray = <T>(arrays: T[][]): T[] => {
+  return arrays.reduce((acc, val) => {
     let commonItems = 0;
     for (let i = 0; i < acc.length; i++) {
       if (acc[i] === val[i]) {
@@ -67,7 +60,7 @@ export const toTestSuites = (input: IReportInput): ITestSuite[] => {
     path.dirname(testResult.testFilePath).split(path.sep),
   );
 
-  const longestPath = longestCommonPath(paths).join(path.sep);
+  const longestPath = largestCommonArray(paths).join(path.sep);
 
   const combined = map(testResultByFilePath, (value, filepath) => ({
     testFilePath: value.testFilePath.replace(longestPath, ""),
