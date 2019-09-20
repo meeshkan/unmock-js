@@ -46,6 +46,7 @@ body {
 .test-suite__title {
   background-color: #eee;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   padding: 1rem 2rem;
   border-radius: 2rem;
@@ -53,9 +54,13 @@ body {
 
 .test-suite__title-filename {
   font-size: 2rem;
+  font-weight: bold;
+  margin: auto;
 }
 
 .test-suite__title-summary {
+  font-size: 2rem;
+  margin: auto;
 }
 
 .test-suite__results {
@@ -85,7 +90,7 @@ body {
   border-radius: 2rem;
 }
 
-.test-title {
+.test__title {
   font-size: 2rem;
   font-weight: 700;
 }
@@ -153,6 +158,50 @@ body {
 
 .call__body {
   width: 100%;
+}
+
+.test-suite-input {
+  display: none;
+}
+
+.test-suite {
+  display: none;
+  padding: 2rem;
+}
+
+.test-suite-label {
+  display: inline-block;
+  border-radius: 2rem;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.test-suite-label__filename {
+  float: left;
+}
+
+.test-suite-label__summary {
+  float: right;
+}
+
+.test-suite-label--success {
+  background-color: ${successGreen};
+}
+
+.test-suite-label--failure {
+  background-color: ${failureRed};
+}
+
+.test-results-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+fieldset {
+  border-style: none;
 }
 
 `;
