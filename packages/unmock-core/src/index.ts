@@ -67,6 +67,10 @@ export class UnmockPackage implements IUnmockPackage {
     return nockify({ backend: this.backend, baseUrl, name });
   }
 
+  public associate(url: string, name: string) {
+    this.backend.serviceStore.updateOrAdd({ baseUrl: url, name });
+  }
+
   public reloadServices() {
     this.backend.loadServices();
   }

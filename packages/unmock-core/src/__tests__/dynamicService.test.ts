@@ -1,32 +1,38 @@
 import unmock, { nock, u } from "..";
 
+const expectNServices = (expectedLength: number) =>
+  expect(Object.keys(unmock.services).length).toEqual(expectedLength);
+
+// @ts-ignore // we access private fields in this test for simplicity; it would probably be cleaner to have some of these as E2E tests
+const getPrivateSchema = (name: string) => unmock.services[name].core.oasSchema;
+
 describe("Tests dynamic path tests", () => {
   beforeEach(() => unmock.reloadServices());
 
   it("Adds a service", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
   });
 
   it("should add a service when used with named export", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0);
+    expectNServices(0);
     nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
   });
 
   it("Adds a service and changes state", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
       .reply(200, { foo: u.string() });
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
     const service = unmock.services["foo.com"];
     if (service === undefined) {
       // type-checking mostly...
@@ -35,7 +41,7 @@ describe("Tests dynamic path tests", () => {
   });
 
   it("Adds a service and updates it on consecutive calls", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://foo.com")
       .get("foo") // slash is prepended automatically
@@ -44,7 +50,7 @@ describe("Tests dynamic path tests", () => {
       .nock("https://foo.com")
       .post("/foo")
       .reply(201);
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
     const service = unmock.services["foo.com"];
     if (service === undefined) {
       // type-checking mostly...
@@ -53,37 +59,37 @@ describe("Tests dynamic path tests", () => {
   });
 
   it("Adds a named service", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
       .reply(200, { foo: u.string() });
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
   });
 
   it("Chains multiple endpoints", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
       .reply(200, { foo: u.string() })
       .post("bar")
       .reply(404);
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
   });
 
   it("Chains multiple endpoints in multiple calls", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     const dynamicSpec = unmock
       .nock("https://abc.com", "foo")
       .get("foo")
       .reply(200, { city: u.string("address.city") });
     dynamicSpec.get("foo").reply(404, { msg: u.string("address.city") });
-    expect(Object.keys(unmock.services).length).toEqual(1);
+    expectNServices(1);
   });
 
   it("Allows using same name with multiple servers", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://abc.com", "foo")
       .get("foo")
@@ -96,25 +102,130 @@ describe("Tests dynamic path tests", () => {
       .nock("https://abc.com", "foo")
       .get("foo")
       .reply(500);
-    // @ts-ignore // "private fields" heh...
-    expect(unmock.services.foo.core.oasSchema.servers).toEqual([
+    expect(getPrivateSchema("foo").servers).toEqual([
       { url: "https://abc.com" },
       { url: "https://def.com" },
     ]);
   });
 
   it("Defines different responses on same endpoint and method", () => {
-    expect(Object.keys(unmock.services).length).toEqual(0); // Uses the default location and not the test folder
+    expectNServices(0);
     unmock
       .nock("https://foo.com", "foo")
       .get("bar")
       .reply(200, { msg: u.string() })
       .reply(404, { msg: "Page not found!" });
     expect(
-      Object.keys(
-        // @ts-ignore // "private fields" heh...
-        unmock.services.foo.core.oasSchema.paths["/bar"].get.responses,
-      ),
+      Object.keys(getPrivateSchema("foo").paths["/bar"].get.responses),
     ).toEqual(["200", "404"]);
+  });
+
+  describe("Association works as expected", () => {
+    it("Defines an empty service when nothing exists", () => {
+      expectNServices(0);
+      unmock.associate("https://foo.com", "foo");
+      expectNServices(1);
+      const schema = getPrivateSchema("foo");
+      expect(Object.keys(schema.paths).length).toEqual(0);
+      expect(schema.servers.length).toEqual(1);
+    });
+
+    it("Associates a service by url", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com")
+        .get("")
+        .reply(200);
+      expect(unmock.services["www.foo.com"]).toBeDefined();
+      expectNServices(1);
+      unmock.associate("https://www.foo.com", "foo"); // rename the service
+      expectNServices(1);
+      expect(unmock.services.foo).toBeDefined();
+      expect(unmock.services["www.foo.com"]).toBeUndefined();
+    });
+
+    it("Associates a url by name", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      expect(unmock.services.foo).toBeDefined();
+      expectNServices(1);
+      unmock.associate("https://www.bar.com", "foo"); // add a server
+      expectNServices(1);
+      expect(unmock.services["www.foo.com"]).toBeUndefined();
+      expect(unmock.services["www.bar.com"]).toBeUndefined();
+      expect(getPrivateSchema("foo").servers).toEqual([
+        { url: "https://www.bar.com" },
+        { url: "https://www.foo.com" },
+      ]);
+    });
+
+    it("A URL can be associated with multiple services", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      unmock
+        .nock("https://www.bar.com", "bar")
+        .get("")
+        .reply(200);
+      expect(unmock.services.foo).toBeDefined();
+      expect(unmock.services.bar).toBeDefined();
+      expectNServices(2);
+      unmock.associate("https://www.bar.com", "foo"); // add a server
+      expect(getPrivateSchema("foo").servers).toEqual([
+        { url: "https://www.bar.com" },
+        { url: "https://www.foo.com" },
+      ]);
+      expect(getPrivateSchema("bar").servers).toEqual([
+        { url: "https://www.bar.com" },
+      ]);
+    });
+
+    it("A URL can be associated with multiple services and won't delete other services if they share name and URL", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      unmock
+        .nock("https://www.bar.com")
+        .get("")
+        .reply(200);
+      expect(unmock.services.foo).toBeDefined();
+      expect(unmock.services["www.bar.com"]).toBeDefined();
+      expectNServices(2);
+      unmock.associate("https://www.bar.com", "foo"); // add a server to foo
+      expect(getPrivateSchema("foo").servers).toEqual([
+        { url: "https://www.bar.com" },
+        { url: "https://www.foo.com" },
+      ]);
+      expect(getPrivateSchema("www.bar.com").servers).toEqual([
+        { url: "https://www.bar.com" },
+      ]);
+    });
+
+    it("Can add to an existing service after call to associate", () => {
+      expectNServices(0);
+      unmock.associate("https://www.foo.com", "foo"); // empty service
+      expectNServices(1);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths).length).toEqual(1);
+      unmock.associate("https://www.bar.com", "bar"); // empty service
+      expectNServices(2);
+      // since a name is not given, it cannot be associated with previously declared www.bar.com.
+      unmock
+        .nock("https://www.bar.com")
+        .get("")
+        .reply(200);
+      expectNServices(3);
+    });
   });
 });

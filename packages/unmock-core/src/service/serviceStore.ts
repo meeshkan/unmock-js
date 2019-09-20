@@ -26,14 +26,15 @@ export class ServiceStore {
 
   public updateOrAdd(input: IObjectToService): ServiceStore {
     // TODO: Tighly coupled with OpenAPI at the moment... resolve this at a later time
-    const serviceName =
-      input.name || url.parse(input.baseUrl).hostname || input.baseUrl;
+    const hostName = url.parse(input.baseUrl).hostname || input.baseUrl;
+    const serviceName = input.name || hostName || input.baseUrl;
     const baseSchema: OpenAPIObject =
       serviceName !== undefined && this.cores[serviceName] !== undefined
-        ? // service exists
-          this.cores[serviceName].schema
-        : // Build new schema object
-          {
+        ? this.cores[serviceName].schema /* service exists by name */
+        : this.cores[hostName] !== undefined
+        ? this.cores[hostName].schema /* service exists by base url */
+        : {
+            /* new service - some template schema */
             openapi: "3.0.0",
             info: { title: "Internally built by unmock", version: "0.0.0" },
             paths: {},
@@ -42,6 +43,14 @@ export class ServiceStore {
       ...input,
       name: serviceName,
     });
+    if (
+      this.cores[hostName] !== undefined &&
+      this.cores[serviceName] === undefined
+    ) {
+      // remove old service core and wrapper if a service is just renamed
+      delete this.cores[hostName];
+      delete this.services[hostName];
+    }
     this.cores[serviceName] = newServiceCore;
     this.services[serviceName] = new Service(newServiceCore);
 
