@@ -109,7 +109,7 @@ const maybeAddStringSchema = (
 ): Array<Reference | Schema> => (s.length === 0 ? [{ type: "string" }] : s);
 
 const discernName = (o: Option<Parameter>, n: string): Option<Parameter> =>
-  isNone(o) ? o : o.value.name === n && o.value.in === "path" ? o : none;
+  isNone(o) || (o.value.name === n && o.value.in === "path") ? o : none;
 
 const internalGetParameter = (
   t: Traversal<PathItem, Reference | Parameter>,
@@ -190,20 +190,19 @@ const pathParameterMatch = (
     i =>
       jsonschema.validate(part, {
         ...i,
-        definitions:
-          oas.components && oas.components.schemas
-            ? Object.entries(oas.components.schemas).reduce(
-                (a, b) => ({
-                  ...a,
-                  [b[0]]: isReference(b[1])
-                    ? changeRef(b[1])
-                    : changeRefs(b[1]),
-                }),
-                {},
-              )
-            : {},
+        definitions: Object.entries(
+          (oas.components && oas.components.schemas) || {},
+        ).reduce(
+          (a, b) => ({
+            ...a,
+            [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1]),
+          }),
+          {},
+        ),
       }).valid,
   ).length > 0;
+
+const pathParamRegex = new RegExp(/^\{[^}]+\}/gi);
 
 export const matchesInternal = (
   path: string[],
@@ -216,9 +215,8 @@ export const matchesInternal = (
   path.length === pathItemKey.length &&
   (path.length === 0 || // terminal condition
     ((path[0] === pathItemKey[0] || // either they are equal, or...
-      /* is wild card, ie {} */ (pathItemKey[0].length > 2 &&
-        pathItemKey[0][0] === "{" &&
-        pathItemKey[0].slice(-1) === "}" &&
+      /* is wild card, ie {} */
+      (pathItemKey[0].match(pathParamRegex) !== null &&
         pathParameterMatch(
           path[0],
           pathItemKey[0].slice(1, -1),
@@ -387,9 +385,9 @@ export const truncatePath = (
 /**
  * A matcher that takes a request and a dictionary of
  * openAPI schema and returns a dictionary containing
- * *only* the schmea with *only* the path item and *only*
+ * *only* the schema with *only* the path item and *only*
  * the method corresponding to the request. This will be
- * and empty dictionary if the schema does not exist,
+ * an empty dictionary if the schema does not exist,
  * empty PathItems if the path does not exist, and
  * empty operations if the method does not exist.
  * @param req The request
@@ -615,7 +613,7 @@ export function responseCreatorFactory({
       // first transformer is the matcher
       matcher,
       // subsequent developer-defined transformers
-      ...Object.entries(store.cores).map(([_, core]) =>
+      ...Object.values(store.cores).map(core =>
         hoistTransformer(core.transformer),
       ),
     ];
