@@ -184,5 +184,28 @@ describe("Tests dynamic path tests", () => {
         { url: "https://www.bar.com" },
       ]);
     });
+
+    it("A URL can be associated with multiple services and won't delete other services if they share name and URL", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      unmock
+        .nock("https://www.bar.com")
+        .get("")
+        .reply(200);
+      expect(unmock.services.foo).toBeDefined();
+      expect(unmock.services["www.bar.com"]).toBeDefined();
+      expectNServices(2);
+      unmock.associate("https://www.bar.com", "foo"); // add a server to foo
+      expect(getPrivateSchema("foo").servers).toEqual([
+        { url: "https://www.bar.com" },
+        { url: "https://www.foo.com" },
+      ]);
+      expect(getPrivateSchema("www.bar.com").servers).toEqual([
+        { url: "https://www.bar.com" },
+      ]);
+    });
   });
 });
