@@ -202,6 +202,8 @@ const pathParameterMatch = (
       }).valid,
   ).length > 0;
 
+const pathParamRegex = new RegExp(/^\{[^}]+\}/gi);
+
 export const matchesInternal = (
   path: string[],
   pathItemKey: string[],
@@ -213,9 +215,8 @@ export const matchesInternal = (
   path.length === pathItemKey.length &&
   (path.length === 0 || // terminal condition
     ((path[0] === pathItemKey[0] || // either they are equal, or...
-      /* is wild card, ie {} */ (pathItemKey[0].length > 2 &&
-        pathItemKey[0][0] === "{" &&
-        pathItemKey[0].slice(-1) === "}" &&
+      /* is wild card, ie {} */
+      (pathItemKey[0].match(pathParamRegex) !== null &&
         pathParameterMatch(
           path[0],
           pathItemKey[0].slice(1, -1),
@@ -612,7 +613,7 @@ export function responseCreatorFactory({
       // first transformer is the matcher
       matcher,
       // subsequent developer-defined transformers
-      ...Object.entries(store.cores).map(([_, core]) =>
+      ...Object.values(store.cores).map(core =>
         hoistTransformer(core.transformer),
       ),
     ];
