@@ -60,7 +60,7 @@ export default (
   for (let i = 0; i < realOptions.maxLoop; i++) {
     runnerConfiguration.seed = i;
     runnerConfiguration.optionalsProbability = Math.random();
-    runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 20)); // 2^19 seems enough for min items/length (upper bound of 500K items/length)
+    runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
