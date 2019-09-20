@@ -210,6 +210,8 @@ interface IDynamicServiceSpec {
   ): FluentDynamicService & IDynamicServiceSpec;
 }
 
+type ValidEndpointType = string | Array<string | RegExp>;
+
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
 
@@ -261,7 +263,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
 const updateStore = (
   baseUrl: string,
   method: HTTPMethod,
-  endpoint: string,
+  endpoint: ValidEndpointType,
   name?: string,
 ) => (store: ServiceStore) => ({
   statusCode,
@@ -270,14 +272,16 @@ const updateStore = (
   statusCode: CodeAsInt | "default";
   data: Schema;
 }) =>
-  store.updateOrAdd({
-    baseUrl,
-    method,
-    endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-    statusCode,
-    response: data,
-    name,
-  });
+  Array.isArray(endpoint)
+    ? store
+    : store.updateOrAdd({
+        baseUrl,
+        method,
+        endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
+        statusCode,
+        response: data,
+        name,
+      });
 
 const buildFluentNock = (
   store: ServiceStore,
@@ -296,7 +300,7 @@ const buildFluentNock = (
   }).reduce(
     (o, [method, code]) => ({
       ...o,
-      [method]: (endpoint: string) =>
+      [method]: (endpoint: ValidEndpointType) =>
         new DynamicServiceSpec(
           updateStore(baseUrl, method as HTTPMethod, endpoint, name),
           code as CodeAsInt,
