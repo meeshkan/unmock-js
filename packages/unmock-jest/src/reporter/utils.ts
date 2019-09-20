@@ -70,7 +70,8 @@ export const toTestSuites = (input: IReportInput): ITestSuite[] => {
   const longestPath = largestCommonArray(paths).join(path.sep) + path.sep;
 
   const combined = map(testResultByFilePath, (value, filepath) => ({
-    testFilePath: value.testFilePath.replace(longestPath, ""),
+    shortFilePath: value.testFilePath.replace(longestPath, ""),
+    testFilePath: value.testFilePath,
     suiteResults: value,
     snapshots: snapshotsByFilePath[filepath] || [],
   }));

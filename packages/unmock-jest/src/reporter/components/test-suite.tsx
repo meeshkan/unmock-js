@@ -8,7 +8,7 @@ const Summary = ({ testSuite }: { testSuite: ITestSuite }) => {
     const nSnapshots = testSuite.snapshots.length;
     return (<div className="test-suite__title">
         <div className="test-suite__title-filename">
-            {testSuite.testFilePath}
+            {testSuite.shortFilePath}
         </div>
         <div className="test-suite__title-summary">
             {`Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${nSnapshots}`}
