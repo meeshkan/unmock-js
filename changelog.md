@@ -5,6 +5,7 @@
 Features:
 
   - Added more randomization to test runner
+  - Added more accessors to spy methods, for example, `postResponseCode`
   - Added `unmock.associate` method for associating a service with a URL
   - Changed Jest reporter to show only one test suite at a time
 
