@@ -46,6 +46,7 @@ body {
 .test-suite__title {
   background-color: #eee;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   padding: 1rem 2rem;
   border-radius: 2rem;
@@ -53,10 +54,13 @@ body {
 
 .test-suite__title-filename {
   font-size: 2rem;
+  font-weight: bold;
+  margin: auto;
 }
 
 .test-suite__title-summary {
   font-size: 2rem;
+  margin: auto;
 }
 
 .test-suite__results {
@@ -168,8 +172,18 @@ body {
 .test-suite-label {
   display: inline-block;
   border-radius: 2rem;
-  padding: 1rem;
+  padding: 1rem 2rem;
   margin-bottom: 1rem;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.test-suite-label__filename {
+  float: left;
+}
+
+.test-suite-label__summary {
+  float: right;
 }
 
 .test-suite-label--success {

@@ -15,7 +15,7 @@ const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () 
     const elementsAndCss = map(testSuites, (testSuite, index) => {
         const id = testFileToId(testSuite.testFilePath);
         const elementCss = `#box-${id}:checked~.test-suite-label-${id} {
-    filter: brightness(85%);
+    opacity: 1;
     }
 
     /* Display test suite when corresponding box is checked */
@@ -23,10 +23,18 @@ const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () 
     display: block;
     }
 `;
+
+        const numPassingTests = testSuite.suiteResults.numPassingTests;
+        const numFailingTests = testSuite.suiteResults.numFailingTests;
+        const nSnapshots = testSuite.snapshots.length;
+
         const testSuiteLabelColor = testSuite.suiteResults.numFailingTests > 0 ? `test-suite-label--failure` : `test-suite-label--success`;
         return [
             <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={index === 0} value={`box-${id}`} key={`input-${id}`} />,
-            <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>{testSuite.testFilePath}</label>,
+            <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>
+                <span className="test-suite-label__filename">{testSuite.testFilePath}</span>
+                <span className="test-suite-label__summary">{`Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${nSnapshots}`}</span>
+            </label>,
             <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,
             elementCss,
         ];
