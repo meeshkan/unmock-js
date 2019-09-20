@@ -34,9 +34,7 @@ const largestCommonArray2 = <T>(arr1: T[], arr2: T[]): T[] => {
  * @return Longest array that all arrays start with
  */
 export const largestCommonArray = <T>(arrays: T[][]): T[] => {
-  return arrays.reduce((acc, val) => {
-    return largestCommonArray2(acc, val);
-  });
+  return arrays.reduce((acc, val) => largestCommonArray2(acc, val));
 };
 
 export const toTestSuites = (input: IReportInput): ITestSuite[] => {
