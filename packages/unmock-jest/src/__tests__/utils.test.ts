@@ -3,6 +3,7 @@ import { ITestSuite } from "../reporter/types";
 import { largestCommonArray, sortTestSuites } from "../reporter/utils";
 
 const testSuite1: ITestSuite = {
+  shortFilePath: "blah",
   testFilePath: "blah",
   suiteResults: {
     numFailingTests: 3,
@@ -11,6 +12,7 @@ const testSuite1: ITestSuite = {
 };
 
 const testSuite2: ITestSuite = {
+  shortFilePath: "blah2",
   testFilePath: "blah2",
   suiteResults: {
     numFailingTests: 2,
@@ -19,6 +21,7 @@ const testSuite2: ITestSuite = {
 };
 
 const testSuite3: ITestSuite = {
+  shortFilePath: "blah3",
   testFilePath: "blah3",
   suiteResults: {
     numFailingTests: 2,
