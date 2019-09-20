@@ -60,7 +60,7 @@ const buildTestDiv = (
   // Failure messages
   if (assertionResult.failureMessages.length > 0) {
     const failureDiv = testDiv.ele("div", {
-      class: "test-failure-messages",
+      class: "test__failure-messages",
     });
     failureDiv.raw(
       `Failure message: ${stripAnsi(

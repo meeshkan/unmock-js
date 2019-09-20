@@ -163,7 +163,6 @@ body {
 .test-suite {
   display: none;
   padding: 2rem;
-  text-align: center;
 }
 
 .test-suite-label {
