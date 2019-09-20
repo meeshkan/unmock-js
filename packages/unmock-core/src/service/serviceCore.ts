@@ -32,25 +32,25 @@ export class ServiceCore implements IServiceCore {
     // Create a new endpoint from array if needed
     const endpointParameters = {
       parameters: Array.isArray(endpoint)
-        ? endpoint
-            .filter(e => typeof e !== "string")
-            .map(e => ({
-              in: "path",
-              required: true,
-              ...(e instanceof RegExp
-                ? {
-                    name: Math.random()
-                      .toString(36)
-                      .substring(2),
-                    schema: { pattern: e.toString() },
-                  }
-                : {
-                    name: e[0],
-                    schema: {
-                      pattern: e[1].toString(),
-                    },
-                  }),
-            }))
+        ? (endpoint.filter(e => typeof e !== "string") as Array<
+            RegExp | [string, RegExp]
+          >).map(e => ({
+            in: "path",
+            required: true,
+            ...(e instanceof RegExp
+              ? {
+                  name: Math.random()
+                    .toString(36)
+                    .substring(2),
+                  schema: { pattern: e },
+                }
+              : {
+                  name: e[0],
+                  schema: {
+                    pattern: e[1],
+                  },
+                }),
+          }))
         : [],
     };
     const newEndpoint = Array.isArray(endpoint)
@@ -62,9 +62,8 @@ export class ServiceCore implements IServiceCore {
                 : `{${endpointParameters.parameters
                     .filter(a =>
                       Array.isArray(e)
-                        ? a.name === e[0] &&
-                          a.schema.pattern === e[1].toString()
-                        : a.schema.pattern === e.toString(),
+                        ? a.name === e[0] && a.schema.pattern === e[1]
+                        : a.schema.pattern === e,
                     )
                     .map(a => a.name)
                     .shift()}}`, // otherwise get the next element from endpointParameters

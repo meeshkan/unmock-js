@@ -1,3 +1,4 @@
+import axios from "axios";
 import unmock, { nock, u } from "..";
 
 const expectNServices = (expectedLength: number) =>
@@ -256,7 +257,7 @@ describe("Tests dynamic path tests", () => {
       expectNServices(0);
       unmock
         .nock("https://www.foo.com", "foo")
-        .get(["foo", /\W+/, "bar"])
+        .get(["foo", /\w+/, "bar"])
         .reply(200);
       expectNServices(1);
       const schema = getPrivateSchema("foo");
@@ -265,7 +266,7 @@ describe("Tests dynamic path tests", () => {
       expect(path).toMatch(/^\/foo\/\{[^}]+\}\/bar/);
       expect(schema.paths[path].parameters.length).toEqual(1);
       expect(path).toContain(schema.paths[path].parameters[0].name);
-      expect(schema.paths[path].parameters[0].schema.pattern).toEqual("/\\W+/");
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(/\w+/);
     });
 
     it("A regex is added as a parameter given name", () => {
@@ -280,10 +281,10 @@ describe("Tests dynamic path tests", () => {
       const path = Object.keys(schema.paths)[0];
       expect(path).toEqual("/foo/{baz}/bar");
       expect(schema.paths[path].parameters.length).toEqual(1);
-      expect(schema.paths[path].parameters[0].schema.pattern).toEqual("/\\W+/");
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(/\W+/);
     });
 
-    it("Also handles multiple parameters", () => {
+    it("Also handles multiple parameters", async () => {
       expectNServices(0);
       unmock
         .nock("https://www.foo.com", "foo")
@@ -296,9 +297,14 @@ describe("Tests dynamic path tests", () => {
       expect(path).toMatch(/\/foo\/{baz}\/bar\/{\w+}\/{spam}/);
       const params = schema.paths[path].parameters;
       expect(params.length).toEqual(3);
-      expect(params[0].schema.pattern).toEqual("/\\W+/");
-      expect(params[1].schema.pattern).toEqual("/\\d+/");
-      expect(params[2].schema.pattern).toEqual("/eggs/");
+      expect(params[0].schema.pattern).toEqual(/\W+/);
+      expect(params[1].schema.pattern).toEqual(/\d+/);
+      expect(params[2].schema.pattern).toEqual(/eggs/);
+      // basic E2E test:
+      unmock.on();
+      const res = await axios("https://www.foo.com/foo/!@@!/bar/123/FeggsX");
+      expect(res.status).toEqual(200);
+      unmock.off();
     });
   });
 });
