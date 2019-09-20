@@ -10,39 +10,19 @@ import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
 import { sortTestSuites, toTestSuites } from "./utils";
 
-const createHtmlBase = (): xmlBuilder.XMLDocument => {
-  const htmlBase = {
-    html: {
-      head: {
-        meta: { "@charset": "utf-8" },
-        title: { "#text": "Unmock report" },
-        link: {
-          "@href":
-            "https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900",
-          "@rel": "stylesheet",
-        },
-        style: { "@type": "text/css", "#text": stylesheet },
-      },
-    },
-  };
-
-  const doc = xmlBuilder.create(htmlBase);
-  return doc;
-};
-
 const createHtml = ({ css, body } : { css: string, body: string }) => {
   return `<html>
   <head>
-  <meta charset="utf-8">
-  <title>Unmock Report</title>
-  <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
-  <style type="text/css">${stylesheet}</style>
-  <style type="text/css">${css}</style>
+    <meta charset="utf-8">
+    <title>Unmock Report</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <style type="text/css">${stylesheet}</style>
+    <style type="text/css">${css}</style>
   </head>
   <body>
-  ${body}
+    ${body}
   </body>
-  </html>`;
+</html>`;
 }
 
 export const PAGE_TITLE = "Unmock Jest report";

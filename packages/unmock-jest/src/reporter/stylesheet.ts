@@ -56,6 +56,7 @@ body {
 }
 
 .test-suite__title-summary {
+  font-size: 2rem;
 }
 
 .test-suite__results {
