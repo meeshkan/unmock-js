@@ -9,7 +9,10 @@ const buildTestTitle = (assertionResult: jest.AssertionResult) =>
 
 const Test = ({ assertionResult, snapshots }: { assertionResult: jest.AssertionResult, snapshots: ISnapshot[]}) => {
     return (<div className="test">
-        {buildTestTitle(assertionResult)}
+        <div className="test__title">
+            {buildTestTitle(assertionResult)}
+        </div>
+        
     </div>);
 };
 

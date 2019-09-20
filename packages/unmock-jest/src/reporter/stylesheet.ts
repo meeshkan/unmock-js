@@ -86,7 +86,7 @@ body {
   border-radius: 2rem;
 }
 
-.test-title {
+.test__title {
   font-size: 2rem;
   font-weight: 700;
 }
