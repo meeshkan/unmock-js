@@ -49,20 +49,27 @@ describe("Reporter utils", () => {
       ]);
     });
   });
-  describe("Finding longest common path", () => {
-    it("should match everything when only single array given", () => {
+  describe("Finding longest array in common", () => {
+    it("should return the whole array when only single array given", () => {
       const result = largestCommonArray([["dir", "stuff"]]);
       expect(result).toEqual(["dir", "stuff"]);
     });
-    it("should match everything when the paths match", () => {
+    it("should return the whole array when all items match", () => {
       const result = largestCommonArray([["dir", "stuff"], ["dir", "stuff"]]);
       expect(result).toEqual(["dir", "stuff"]);
     });
-    it("should only match the matching parts in the beginning", () => {
+    it("should return the two first items when they match", () => {
+      const result = largestCommonArray([
+        ["dir", "stuff", "baz"],
+        ["dir", "stuff"],
+      ]);
+      expect(result).toEqual(["dir", "stuff"]);
+    });
+    it("should only return the first when the first matches", () => {
       const result = largestCommonArray([["dir", "stuff"], ["dir", "baz"]]);
       expect(result).toEqual(["dir"]);
     });
-    it("should not match anything when first is different", () => {
+    it("should return an empty array when first item is different", () => {
       const result = largestCommonArray([["dir", "stuff"], ["dir2", "stuff"]]);
       expect(result).toEqual([]);
     });

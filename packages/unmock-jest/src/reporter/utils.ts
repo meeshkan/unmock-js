@@ -1,4 +1,4 @@
-import { groupBy, map, mapValues, reverse, sortBy } from "lodash";
+import { groupBy, map, mapValues, reverse, sortBy, takeWhile } from "lodash";
 import * as path from "path";
 import { IReportInput, ITestSuite } from "./types";
 
@@ -12,25 +12,30 @@ export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
 };
 
 /**
- * Find the longest common items for a list of arrays
+ * Same as `largestCommonArray` but for two arrays
  * Examples:
- * [["a", "b"], ["a", "c"]] => ["a"]
- * [["a", "b"], ["a", "b"]] => ["a", "b"]
- * [["a", "c"], ["b", "c"]] => []
+ * [["a", "b"], ["a", "c"]] => ["a"]  // First item same
+ * [["a", "b"], ["a", "b"]] => ["a", "b"]  // All items same
+ * [["a", "c"], ["b", "c"]] => []  // First item does not match
+ */
+const largestCommonArray2 = <T>(arr1: T[], arr2: T[]): T[] => {
+  const [shorter, longer] =
+    arr1.length >= arr2.length ? [arr2, arr1] : [arr1, arr2];
+  return takeWhile(shorter, (item1, index) => item1 === longer[index]);
+};
+
+/**
+ * Find the longest common array that all input arrays start with
+ * Examples:
+ * [["a", "b"], ["a", "c"], ["a", "d"]] => ["a"]  // First item same
+ * [["a", "b"], ["a", "b"]] => ["a", "b"]  // All items same
+ * [["a", "c"], ["b", "c"]] => []  // First item does not match
  * @param arrays List of arrays
  * @return Longest array that all arrays start with
  */
 export const largestCommonArray = <T>(arrays: T[][]): T[] => {
   return arrays.reduce((acc, val) => {
-    let commonItems = 0;
-    for (let i = 0; i < acc.length; i++) {
-      if (acc[i] === val[i]) {
-        commonItems = i + 1;
-      } else {
-        break;
-      }
-    }
-    return acc.slice(0, commonItems);
+    return largestCommonArray2(acc, val);
   });
 };
 
@@ -56,11 +61,13 @@ export const toTestSuites = (input: IReportInput): ITestSuite[] => {
     snapshot => snapshot.testPath,
   );
 
-  const paths = input.jestData.aggregatedResult.testResults.map(testResult =>
-    path.dirname(testResult.testFilePath).split(path.sep),
+  // Paths to each test suite's directory as an array
+  const paths: string[][] = input.jestData.aggregatedResult.testResults.map(
+    testResult => path.dirname(testResult.testFilePath).split(path.sep),
   );
 
-  const longestPath = largestCommonArray(paths).join(path.sep);
+  // Longest path that all test suites' directories start with
+  const longestPath = largestCommonArray(paths).join(path.sep) + path.sep;
 
   const combined = map(testResultByFilePath, (value, filepath) => ({
     testFilePath: value.testFilePath.replace(longestPath, ""),
