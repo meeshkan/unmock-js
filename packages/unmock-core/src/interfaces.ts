@@ -575,6 +575,17 @@ export interface IUnmockPackage {
   off(): void;
 
   /**
+   * Associates a service with a base URL (server, host, etc.).
+   * If the service with `url` exists, it will be accessible via the new `name`.
+   * If the service with `name` exists and `url` is missing as a server, it will be added.
+   * If the service with `name` exists and `url` is listed in a different service - it will be added to the named service as well.
+   * If there is no service matching `name`, and no service matching `url`, it will create an empty service with that server and name.
+   * @param url
+   * @param name
+   */
+  associate(url: string, name: string): void;
+
+  /**
    * Reloads all services for unmock.
    * Any dynamically-defined services will be deleted.
    */
