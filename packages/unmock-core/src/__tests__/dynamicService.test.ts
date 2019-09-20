@@ -207,5 +207,25 @@ describe("Tests dynamic path tests", () => {
         { url: "https://www.bar.com" },
       ]);
     });
+
+    it("Can add to an existing service after call to associate", () => {
+      expectNServices(0);
+      unmock.associate("https://www.foo.com", "foo"); // empty service
+      expectNServices(1);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("")
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths).length).toEqual(1);
+      unmock.associate("https://www.bar.com", "bar"); // empty service
+      expectNServices(2);
+      // since a name is not given, it cannot be associated with previously declared www.bar.com.
+      unmock
+        .nock("https://www.bar.com")
+        .get("")
+        .reply(200);
+      expectNServices(3);
+    });
   });
 });
