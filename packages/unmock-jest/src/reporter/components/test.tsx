@@ -20,6 +20,11 @@ const FailureMessage = ({ messages }: { messages: string[] }) => {
             </div>) 
 }
 
+/**
+ * Build Test component
+ * @param assertionResult Jest results for the test
+ * @param snapshots All unmock snapshots for **this test**
+ */
 const Test = ({ assertionResult, snapshots }: { assertionResult: jest.AssertionResult, snapshots: ISnapshot[]}) => {
 
     const failureMessages = assertionResult.failureMessages;
