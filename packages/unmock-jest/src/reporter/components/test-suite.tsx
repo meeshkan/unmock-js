@@ -1,4 +1,3 @@
-import { map } from "lodash";
 import * as React from "react";
 import { ITestSuite } from "../types";
 import Test from "./test";
@@ -19,8 +18,7 @@ const Summary = ({ testSuite }: { testSuite: ITestSuite }) => {
 
 const TestSuite = ({ testSuite }: { testSuite: ITestSuite }) => {
 
-    const testElements = map(
-        testSuite.suiteResults.testResults,
+    const testElements = testSuite.suiteResults.testResults.map(
         (assertionResult: jest.AssertionResult) => {
             const snapshotsForTest = testSuite.snapshots.filter(
                 snapshot => snapshot.currentTestName === assertionResult.fullName,

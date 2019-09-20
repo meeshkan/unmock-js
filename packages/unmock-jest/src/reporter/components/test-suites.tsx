@@ -1,4 +1,3 @@
-import { map } from "lodash";
 import * as os from "os";
 import * as React from "react";
 import { ITestSuite } from "../types";
@@ -12,7 +11,7 @@ const testFileToId = (file: string) => file.replace(/[\/|\\|\.]/g, "-");  // TOD
  */
 const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () => React.ReactElement] => {
 
-    const elementsAndCss = map(testSuites, (testSuite, index) => {
+    const elementsAndCss = testSuites.map((testSuite, index) => {
         const id = testFileToId(testSuite.testFilePath);
         const elementCss = `#box-${id}:checked~.test-suite-label-${id} {
     opacity: 1;
@@ -29,27 +28,27 @@ const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () 
         const nSnapshots = testSuite.snapshots.length;
 
         const testSuiteLabelColor = testSuite.suiteResults.numFailingTests > 0 ? `test-suite-label--failure` : `test-suite-label--success`;
-        return [
-            <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={index === 0} value={`box-${id}`} key={`input-${id}`} />,
-            <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>
+        return {
+            input: <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={index === 0} value={`box-${id}`} key={`input-${id}`} />,
+            label: <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>
                 <span className="test-suite-label__filename">{testSuite.testFilePath}</span>
                 <span className="test-suite-label__summary">{`Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${nSnapshots}`}</span>
             </label>,
-            <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,
-            elementCss,
-        ];
+            testSuite: <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,
+            css: elementCss
+        };
     });
 
-    const inputs = map(elementsAndCss, (element) => element[0]);
-    const labels = map(elementsAndCss, (element) => element[1]);
-    const divs = map(elementsAndCss, (element) => element[2]);
-    const css = map(elementsAndCss, (element) => element[3]);
+    const inputs = elementsAndCss.map(val => val.input);
+    const labels = elementsAndCss.map(val => val.label);
+    const testSuiteComponents = elementsAndCss.map(val => val.testSuite);
+    const css = elementsAndCss.map(val => val.css);
 
   const renderResult = () => (<fieldset>
       <div className="test-results-container">
         {...inputs}
         {...labels}
-        {...divs}
+        {...testSuiteComponents}
     </div>
     </fieldset>);
 
