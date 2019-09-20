@@ -1,6 +1,6 @@
 import { ISnapshot } from "unmock";
 import { ITestSuite } from "../reporter/types";
-import { sortTestSuites } from "../reporter/utils";
+import { longestCommonPath, sortTestSuites } from "../reporter/utils";
 
 const testSuite1: ITestSuite = {
   testFilePath: "blah",
@@ -47,6 +47,24 @@ describe("Reporter utils", () => {
         testSuite3,
         testSuite2,
       ]);
+    });
+  });
+  describe("Finding longest common path", () => {
+    it("should match everything when only single array given", () => {
+      const result = longestCommonPath([["dir", "stuff"]]);
+      expect(result).toEqual(["dir", "stuff"]);
+    });
+    it("should match everything when the paths match", () => {
+      const result = longestCommonPath([["dir", "stuff"], ["dir", "stuff"]]);
+      expect(result).toEqual(["dir", "stuff"]);
+    });
+    it("should only match the matching parts in the beginning", () => {
+      const result = longestCommonPath([["dir", "stuff"], ["dir", "baz"]]);
+      expect(result).toEqual(["dir"]);
+    });
+    it("should not match anything when first is different", () => {
+      const result = longestCommonPath([["dir", "stuff"], ["dir2", "stuff"]]);
+      expect(result).toEqual([]);
     });
   });
 });
