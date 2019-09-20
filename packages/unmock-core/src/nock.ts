@@ -16,10 +16,14 @@ import {
   JSSTTuple,
 } from "json-schema-strictly-typed";
 import NodeBackend from "./backend";
-import { HTTPMethod } from "./interfaces";
+import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
+/*************************************************
+ * (Extended, Dynamic) JSON Schema defined below *
+ *************************************************
+ */
 // Used to differentiate between e.g. `{ foo: { type: "string" } }` as a literal value
 // (i.e. key `foo` having the value of `{type: "string"}`) and a dynamic JSON schema
 const DynamicJSONSymbol: unique symbol = Symbol();
@@ -77,6 +81,7 @@ type ExtendedValueType =
   | JSONObject;
 interface IExtendedObjectType extends Record<string, ExtendedValueType> {} // Defined as interface due to circular reasons
 interface IExtendedArrayType extends Array<ExtendedValueType> {} // Defined as interface due to circular reference
+type EJSEmpty = JSSTEmpty<{}>; // Used as a shortcut
 
 // Define matching codecs for the above types
 const ExtendedPrimitive = io.union([JSONPrimitive, JSO]);
@@ -101,27 +106,28 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
+const spreadAndSchemify = (
+  e?: IExtendedObjectType,
+  f: (e: ExtendedValueType) => JSSTAnything<EJSEmpty, {}> = JSONSchemify,
+) =>
+  e ? Object.entries(e).reduce((a, b) => ({ ...a, [b[0]]: f(b[1]) }), {}) : {};
+
 // hack until we get around to doing full typing :-(
-const removeDynamicSymbol = (
-  schema: any,
-): JSONSchemaObject<JSSTEmpty<{}>, {}> => {
+const removeDynamicSymbol = (schema: any): JSONSchemaObject<EJSEmpty, {}> => {
   if (schema instanceof Array) {
-    return (schema.map(removeDynamicSymbol) as unknown) as JSONSchemaObject<
-      JSSTEmpty<{}>,
-      {}
-    >;
+    return (schema as unknown) as JSONSchemaObject<EJSEmpty, {}>;
   }
   if (typeof schema === "object") {
     const { dynamic, ...rest } = schema;
-    return (Object.entries(rest).reduce(
-      (a, b) => ({ ...a, [b[0]]: removeDynamicSymbol(b[1]) }),
-      {},
-    ) as unknown) as JSONSchemaObject<JSSTEmpty<{}>, {}>;
+    return spreadAndSchemify(
+      dynamic === DynamicJSONSymbol ? rest : schema,
+      removeDynamicSymbol,
+    ) as JSONSchemaObject<EJSEmpty, {}>;
   }
   return schema;
 };
 
-const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
+const JSONSchemify = (e: ExtendedValueType): JSSTAnything<EJSEmpty, {}> =>
   isDynamic(e)
     ? removeDynamicSymbol(
         // we cover all of the nested cases,
@@ -144,37 +150,15 @@ const JSONSchemify = (e: ExtendedValueType): JSSTAnything<JSSTEmpty<{}>, {}> =>
               ...(e.additionalProperties
                 ? { additionalProperties: JSONSchemify(e.additionalProperties) }
                 : {}),
-              ...(e.patternProperties
-                ? {
-                    patternProperties: Object.entries(
-                      e.patternProperties,
-                    ).reduce(
-                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-                      {},
-                    ),
-                  }
-                : {}),
-              ...(e.properties
-                ? {
-                    properties: Object.entries(e.properties).reduce(
-                      (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-                      {},
-                    ),
-                  }
-                : {}),
+              ...spreadAndSchemify(e.patternProperties),
+              ...spreadAndSchemify(e.properties),
             }
           : e,
       )
     : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<JSSTEmpty<{}>, {}>({})(e.map(JSONSchemify))
+    ? tuple_<EJSEmpty, {}>({})(e.map(JSONSchemify))
     : ExtendedObject.is(e) || JSONObject.is(e)
-    ? type_<JSSTEmpty<{}>, {}>({})(
-        Object.entries(e).reduce(
-          (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
-          {},
-        ),
-        {},
-      )
+    ? type_<EJSEmpty, {}>({})(spreadAndSchemify(e), {})
     : cnst_<{}>({})(e);
 
 // Define poet to recognize the new "dynamic type"
@@ -184,12 +168,18 @@ const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
 
 export const u = jspt;
 
+/*******************************
+ * Nock-like API defined below *
+ *******************************
+ */
 // Defined nock-like syntax to create/update a service on the fly
-type UpdateCallback = ({
+type UpdateCallback = (
+  store: ServiceStore,
+) => ({
   statusCode,
   data,
 }: {
-  statusCode: number;
+  statusCode: CodeAsInt | "default";
   data: Schema;
 }) => ServiceStore;
 
@@ -198,74 +188,103 @@ type UpdateCallback = ({
 type Primitives = string | number | boolean;
 type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
-export class DynamicServiceSpec {
+// How the fluent dynamic service API looks like (e.g. specifies `get(endpoint: string) => DynamicServiceSpec`)
+type FluentDynamicService = {
+  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
+};
+
+// How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
+//                                                      `replyWithFile(....)`
+interface IDynamicServiceSpec {
+  /**
+   * Sets the reply schema for the previous base URL, endpoint and HTTP method.
+   * @param statusCode
+   * @param data
+   */
+  reply(
+    statusCode: CodeAsInt | "default",
+    data?: InputToPoet | InputToPoet[],
+  ): FluentDynamicService & IDynamicServiceSpec;
+  reply(
+    data: InputToPoet | InputToPoet[],
+  ): FluentDynamicService & IDynamicServiceSpec;
+}
+
+export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
 
   // Default status code passed in constructor
   constructor(
     private updater: UpdateCallback,
-    private statusCode: number = 200,
+    private statusCode: CodeAsInt | "default" = 200,
     private baseUrl: string,
+    private serviceStore: ServiceStore,
     private name?: string,
   ) {}
 
-  // TODO: Should this allow fluency for consecutive .get, .post, etc on the same service?
   public reply(
-    statusCode: number,
-    data?: InputToPoet | InputToPoet[],
-  ): FluentDynamicService;
-  public reply(data: InputToPoet | InputToPoet[]): FluentDynamicService;
-  public reply(
-    maybeStatusCode: number | InputToPoet | InputToPoet[],
+    maybeStatusCode: CodeAsInt | "default" | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
-  ): FluentDynamicService {
+  ): FluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
-      this.data = JSONSchemify(maybeData) as Schema;
-      this.statusCode = maybeStatusCode as number;
+      this.data = JSONSchemify(maybeData) as Schema; // TODO should this be some JSSTX?
+      this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else if (
-      typeof maybeStatusCode === "number" &&
-      maybeStatusCode >= 100 &&
-      maybeStatusCode < 599
+      (typeof maybeStatusCode === "number" &&
+        maybeStatusCode >= 100 &&
+        maybeStatusCode <= 599) ||
+      maybeStatusCode === "default"
     ) {
       // we assume it's a status code
-      this.statusCode = maybeStatusCode;
+      this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else {
       this.data = JSONSchemify(maybeStatusCode) as Schema;
     }
-    const store = this.updater({
+    const store = this.updater(this.serviceStore)({
       data: this.data,
       statusCode: this.statusCode,
     });
 
-    return buildFluentNock(store, this.baseUrl, this.name);
+    const methods = buildFluentNock(store, this.baseUrl, this.name);
+    const dss = new DynamicServiceSpec(
+      this.updater,
+      this.statusCode,
+      this.baseUrl,
+      store,
+      this.name,
+    );
+    // Have to manually update the methods to match `IDynamicServiceSpec`
+    return { ...methods, reply: dss.reply.bind(dss) };
   }
 }
 
-type FluentDynamicService = {
-  [k in HTTPMethod]: (endpoint: string) => DynamicServiceSpec;
-};
+const updateStore = (
+  baseUrl: string,
+  method: HTTPMethod,
+  endpoint: string,
+  name?: string,
+) => (store: ServiceStore) => ({
+  statusCode,
+  data,
+}: {
+  statusCode: CodeAsInt | "default";
+  data: Schema;
+}) =>
+  store.updateOrAdd({
+    baseUrl,
+    method,
+    endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
+    statusCode,
+    response: data,
+    name,
+  });
 
 const buildFluentNock = (
   store: ServiceStore,
   baseUrl: string,
   name?: string,
-): FluentDynamicService => {
-  const dynFn = (method: HTTPMethod, endpoint: string) => ({
-    statusCode,
-    data,
-  }: {
-    statusCode: number;
-    data: Schema;
-  }) =>
-    store.updateOrAdd({
-      baseUrl,
-      method,
-      endpoint: endpoint.startsWith("/") ? endpoint : `/${endpoint}`,
-      statusCode,
-      response: data,
-      name,
-    });
-  return Object.entries({
+): FluentDynamicService =>
+  Object.entries({
     get: 200,
     head: 200,
     post: 201,
@@ -279,15 +298,15 @@ const buildFluentNock = (
       ...o,
       [method]: (endpoint: string) =>
         new DynamicServiceSpec(
-          dynFn(method as HTTPMethod, endpoint),
-          code,
+          updateStore(baseUrl, method as HTTPMethod, endpoint, name),
+          code as CodeAsInt,
           baseUrl,
+          store,
           name,
         ),
     }),
     {},
   ) as FluentDynamicService;
-};
 
 export const nockify = ({
   backend,

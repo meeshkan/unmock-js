@@ -67,6 +67,10 @@ export class UnmockPackage implements IUnmockPackage {
     return nockify({ backend: this.backend, baseUrl, name });
   }
 
+  public associate(url: string, name: string) {
+    this.backend.serviceStore.updateOrAdd({ baseUrl: url, name });
+  }
+
   public reloadServices() {
     this.backend.loadServices();
   }
@@ -76,10 +80,10 @@ export class UnmockPackage implements IUnmockPackage {
   }
 }
 
-const unmock = new UnmockPackage(new NodeBackend(), {
+export const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 
-export type UnmockNode = typeof unmock;
+export const nock = unmock.nock.bind(unmock);
 
 export default unmock;

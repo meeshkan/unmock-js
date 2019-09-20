@@ -13,6 +13,7 @@ export interface IReportInput {
  * Represents the results for a given **test file**
  */
 export interface ITestSuite {
+  testFilePath: string;
   suiteResults: jest.TestResult;
   snapshots: ISnapshot[];
 }

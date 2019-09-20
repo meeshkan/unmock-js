@@ -1,5 +1,5 @@
 {
-  "version": "0.3.2",
+  "version": "0.3.3",
   "name": "unmock-jest",
   "displayName": "unmock-jest",
   "main": "dist/index.js",
@@ -16,6 +16,8 @@
     "chalk": "^2.4.2",
     "debug": "^4.1.1",
     "lodash": "^4.17.15",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
     "strip-ansi": "^5.2.0",
     "xmlbuilder": "^13.0.2"
   },

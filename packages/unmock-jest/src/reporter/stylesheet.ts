@@ -46,6 +46,7 @@ body {
 .test-suite__title {
   background-color: #eee;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   padding: 1rem 2rem;
   border-radius: 2rem;
@@ -53,9 +54,13 @@ body {
 
 .test-suite__title-filename {
   font-size: 2rem;
+  font-weight: bold;
+  margin: auto;
 }
 
 .test-suite__title-summary {
+  font-size: 2rem;
+  margin: auto;
 }
 
 .test-suite__results {
@@ -78,26 +83,125 @@ body {
   background-color: ${failureRed};
 }
 
-.test-suite__test {
+.test {
   border-style: solid;
   padding: 1rem;
   margin: 1rem;
   border-radius: 2rem;
 }
 
-.test-suite__test-title {
+.test__title {
   font-size: 2rem;
   font-weight: 700;
 }
 
-.test-suite__test--success {
+.test--success {
   border-color: ${darkGreen};
   background-color: ${successGreen};
 }
 
-.test-suite__test--failure {
+.test--failure {
   border-color: ${darkRed};
   background-color: ${failureRed};
+}
+
+.calls {
+  background-color: #eee;
+  border-color: black;
+  border-style: solid;
+  border-radius: 2rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.calls__title {
+  font-size: 2rem;
+  margin: 0 auto 1rem auto;
+}
+
+.call {
+  border-color: black;
+  border-style: solid;
+  background-color: white;
+  padding: 1rem;
+  display: flex;
+  margin-bottom: 1rem;
+  flex-direction: row;
+}
+
+.call:last-child {
+  margin-bottom: 0rem;
+}
+
+.call__request {
+  flex: 1 1 0px;
+  # border-style: solid;
+  # border-radius: 2rem;
+  padding: 1rem;
+}
+
+.call__response {
+  flex: 1 1 0px;
+  # border-style: solid;
+  # border-radius: 2rem;
+  padding: 1rem;
+}
+
+.call__request-title {
+  font-size: 2rem;
+}
+
+.call__response-title {
+  font-size: 2rem;
+}
+
+.call__body {
+  width: 100%;
+}
+
+.test-suite-input {
+  display: none;
+}
+
+.test-suite {
+  display: none;
+  padding: 2rem;
+}
+
+.test-suite-label {
+  display: inline-block;
+  border-radius: 2rem;
+  padding: 1rem 2rem;
+  margin-bottom: 1rem;
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+.test-suite-label__filename {
+  float: left;
+}
+
+.test-suite-label__summary {
+  float: right;
+}
+
+.test-suite-label--success {
+  background-color: ${successGreen};
+}
+
+.test-suite-label--failure {
+  background-color: ${failureRed};
+}
+
+.test-results-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+fieldset {
+  border-style: none;
 }
 
 `;

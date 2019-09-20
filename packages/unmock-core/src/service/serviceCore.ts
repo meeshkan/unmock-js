@@ -29,20 +29,23 @@ export class ServiceCore implements IServiceCore {
     const mediaType =
       typeof response === "string" ? "text/*" : "application/json";
     // TODO: Decouple from ServiceCore :( - this is nasty
-    const newPath: PathItem = {
-      [endpoint]: {
-        [method]: {
-          responses: {
-            [statusCode]: {
-              description: "Automatically added",
-              content: {
-                [mediaType]: { schema: response },
+    const newPath: PathItem =
+      endpoint !== undefined && method !== undefined && statusCode !== undefined
+        ? {
+            [endpoint]: {
+              [method]: {
+                responses: {
+                  [statusCode]: {
+                    description: "Automatically added",
+                    content: {
+                      [mediaType]: { schema: response },
+                    },
+                  },
+                },
               },
             },
-          },
-        },
-      },
-    };
+          }
+        : {};
     const newUrls = [{ url: baseUrl }];
 
     const newPaths = defaultsDeep(newPath, baseSchema.paths);
