@@ -1,5 +1,13 @@
 # CHANGELOG.md
 
+## 0.3.3 (2019-09-20)
+
+Features:
+
+  - Added more randomization to test runner
+  - Added `unmock.associate` method for associating a service with a URL
+  - Changed Jest reporter to show only one test suite at a time
+
 ## 0.3.2 (2019-09-18)
 
 Features:
