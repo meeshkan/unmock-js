@@ -4,7 +4,7 @@ import { ITestSuite } from "../types";
 import TestSuite from "./test-suite";
 
 // Replace file path separator chars with a dash
-export const testFileToId = (file: string) => file.replace(/(\/|\\(\\)?|:)/g, "-");  // TODO Use path.sep?
+export const testFileToId = (file: string) => file.replace(/(\/|\\(\\)?|:)/g, "-");
 
 /**
  * Not actually a React component but something that returns dynamically generated CSS and a React component
