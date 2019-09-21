@@ -312,7 +312,66 @@ describe("Tests dynamic path tests", () => {
     });
   });
 
-  
+  describe("queries can be specified", () => {
+    it("An empty query results in a viable spec", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", {}, "foo")
+        .get("/")
+        .query({})
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
+    });
+
+    it("A query is correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("/")
+        .query({ foo: "bar" })
+        .reply(200);
+      expectNServices(1);
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
+        "foo",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "string",
+        enum: ["bar"],
+      });
+    });
+    it("A query in the path correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com?q&m=1&", "foo")
+        .get("/")
+        .reply(200);
+      expectNServices(1);
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
+        "q",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "null",
+      });
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].name).toEqual(
+        "m",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].schema).toEqual({
+        type: "string",
+        enum: ["1"],
+      });
+    });
+  });
+
   describe("Request headers can be specified", () => {
     it("An empty request header results in a viable spec", () => {
       expectNServices(0);
@@ -331,11 +390,17 @@ describe("Tests dynamic path tests", () => {
         .get("/")
         .reply(200);
       expectNServices(1);
-      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual("header");
-      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual("hello");
-      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({type: "string", enum: ["world"] });
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "header",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
+        "hello",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "string",
+        enum: ["world"],
+      });
     });
-
   });
 
   describe("Reply headers can be specified", () => {
@@ -344,7 +409,7 @@ describe("Tests dynamic path tests", () => {
       unmock
         .nock("https://www.foo.com", "foo")
         .get("/")
-        .reply(200, "", { });
+        .reply(200, "", {});
       expectNServices(1);
       expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
     });
@@ -356,9 +421,10 @@ describe("Tests dynamic path tests", () => {
         .get("/")
         .reply(200, "", { hello: "world" });
       expectNServices(1);
-      expect(getPrivateSchema("foo").paths["/"].get.responses["200"].headers.hello.schema).toEqual({ type: "string", enum: ["world"]});
+      expect(
+        getPrivateSchema("foo").paths["/"].get.responses["200"].headers.hello
+          .schema,
+      ).toEqual({ type: "string", enum: ["world"] });
     });
-
   });
-
 });

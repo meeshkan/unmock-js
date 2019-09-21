@@ -19,6 +19,7 @@ export class ServiceCore implements IServiceCore {
     {
       baseUrl,
       method,
+      query,
       requestHeaders,
       responseHeaders,
       body,
@@ -27,7 +28,7 @@ export class ServiceCore implements IServiceCore {
       response,
       name,
     }: IObjectToService & { name: string },
-  ): IServiceCore {
+  ): IServiceCore {console.log("INCOMING QUERY", query);
     // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
     const mediaType =
       typeof response === "string" ? "text/*" : "application/json";
@@ -58,6 +59,12 @@ export class ServiceCore implements IServiceCore {
           : []),
         ...Object.entries(requestHeaders || {}).map(([n, s]) => ({
           in: "header",
+          required: true,
+          name: n,
+          schema: s,
+        })),
+        ...Object.entries(query || {}).map(([n, s]) => ({
+          in: "query",
           required: true,
           name: n,
           schema: s,

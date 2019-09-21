@@ -16,6 +16,7 @@ import {
   JSSTTuple,
 } from "json-schema-strictly-typed";
 import { valAsConst } from "openapi-refinements";
+import * as querystring from "query-string";
 import NodeBackend from "./backend";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
@@ -173,11 +174,11 @@ export const JSONSchemify = (
     ? type_<EJSEmpty, {}>({})(spreadAndSchemify(e), {})
     : e instanceof RegExp
     ? { type: "string", pattern: e.source }
-    // total hack comes from the conversion from schema to json-schema
-    // this works because valAsConst only ever yields valid JSON schema
-    // we should mitigate this by makeing a "subset" type
-    // common to both OAS & JSON Schema
-    : valAsConst(cnst_<{}>({})(e).const) as JSSTAnything<EJSEmpty, {}>;
+    : // total hack comes from the conversion from schema to json-schema
+      // this works because valAsConst only ever yields valid JSON schema
+      // we should mitigate this by makeing a "subset" type
+      // common to both OAS & JSON Schema
+      (valAsConst(cnst_<{}>({})(e).const) as JSSTAnything<EJSEmpty, {}>);
 
 // Define poet to recognize the new "dynamic type"
 const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
@@ -221,6 +222,9 @@ interface IDynamicServiceSpec {
    * @param statusCode
    * @param data
    */
+  query(
+    data?: Record<string, InputToPoet>,
+  ): FluentDynamicService & IDynamicServiceSpec;
   reply(
     statusCode: CodeAsInt | "default",
     data?: InputToPoet | InputToPoet[],
@@ -234,16 +238,61 @@ interface IDynamicServiceSpec {
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
   private headers: Record<string, Schema> = {};
+  private queries: Record<string, Schema> = {};
 
   // Default status code passed in constructor
   constructor(
     private updater: UpdateCallback,
     private statusCode: CodeAsInt | "default" = 200,
     private baseUrl: string,
+    private queriez: Record<string, Schema>,
     private requestHeaders: Record<string, JSSTAnything<JSSTEmpty<{}>, {}>>,
     private serviceStore: ServiceStore,
     private name?: string,
   ) {}
+
+  public query(
+    data?: Record<string, InputToPoet>,
+  ): FluentDynamicService & IDynamicServiceSpec {
+    this.queries = {
+      ...this.queries,
+      ...this.queriez,
+      ...(data
+        ? Object.entries(data).reduce(
+            (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+            {},
+          )
+        : {}),
+    } as Record<string, Schema>;
+
+    const store = this.updater(this.serviceStore)({
+      data: this.data,
+      headers: this.headers,
+      statusCode: this.statusCode,
+    });
+
+    const methods = buildFluentNock(
+      store,
+      this.baseUrl,
+      this.requestHeaders,
+      this.name,
+    );
+    const dss = new DynamicServiceSpec(
+      this.updater,
+      this.statusCode,
+      this.baseUrl,
+      this.queries,
+      this.requestHeaders,
+      store,
+      this.name,
+    );
+
+    return {
+      ...methods,
+      query: dss.query.bind(dss),
+      reply: dss.reply.bind(dss),
+    };
+  }
 
   public reply(
     maybeStatusCode: CodeAsInt | "default" | InputToPoet | InputToPoet[],
@@ -282,16 +331,22 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       this.requestHeaders,
       this.name,
     );
+    console.log("QUERIES IN REPLY", { ...this.queries, ...this.queriez });
     const dss = new DynamicServiceSpec(
       this.updater,
       this.statusCode,
       this.baseUrl,
+      { ...this.queries, ...this.queriez },
       this.requestHeaders,
       store,
       this.name,
     );
     // Have to manually update the methods to match `IDynamicServiceSpec`
-    return { ...methods, reply: dss.reply.bind(dss) };
+    return {
+      ...methods,
+      query: dss.query.bind(dss),
+      reply: dss.reply.bind(dss),
+    };
   }
 }
 
@@ -299,6 +354,7 @@ const updateStore = (
   baseUrl: string,
   method: HTTPMethod,
   endpoint: ValidEndpointType,
+  query: Record<string, Schema>,
   requestHeaders: Record<string, Schema>,
   body?: Schema,
   name?: string,
@@ -315,6 +371,7 @@ const updateStore = (
     baseUrl,
     method,
     endpoint,
+    query,
     requestHeaders,
     responseHeaders: headers,
     body,
@@ -322,6 +379,14 @@ const updateStore = (
     response: data,
     name,
   });
+
+const endpointToQs = (endpoint: ValidEndpointType) =>
+  Object.entries(querystring.parse(
+    typeof endpoint === "string" ? endpoint.split("?")[1] || "" : "",
+  )).reduce((a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1] === undefined ? null : b[1])}), {}) || {};
+
+const naked = (endpoint: ValidEndpointType) =>
+  typeof endpoint === "string" ? endpoint.split("?")[0] : endpoint;
 
 const buildFluentNock = (
   store: ServiceStore,
@@ -348,7 +413,8 @@ const buildFluentNock = (
                 updateStore(
                   baseUrl,
                   method as HTTPMethod,
-                  endpoint,
+                  naked(endpoint),
+                  endpointToQs(endpoint) || {},
                   requestHeaders as Record<string, Schema>,
                   requestBody !== undefined
                     ? (JSONSchemify(requestBody) as Schema)
@@ -357,6 +423,7 @@ const buildFluentNock = (
                 ),
                 code as CodeAsInt,
                 baseUrl,
+                endpointToQs(endpoint) || {},
                 requestHeaders,
                 store,
                 name,
@@ -366,13 +433,15 @@ const buildFluentNock = (
                 updateStore(
                   baseUrl,
                   method as HTTPMethod,
-                  endpoint,
+                  naked(endpoint),
+                  endpointToQs(endpoint) || {},
                   requestHeaders as Record<string, Schema>,
                   undefined,
                   name,
                 ),
                 code as CodeAsInt,
                 baseUrl,
+                endpointToQs(endpoint) || {},
                 requestHeaders,
                 store,
                 name,
