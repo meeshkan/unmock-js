@@ -28,7 +28,7 @@ export class ServiceCore implements IServiceCore {
       response,
       name,
     }: IObjectToService & { name: string },
-  ): IServiceCore {console.log("INCOMING QUERY", query);
+  ): IServiceCore {
     // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
     const mediaType =
       typeof response === "string" ? "text/*" : "application/json";

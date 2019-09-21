@@ -33,7 +33,9 @@ export interface IDynamicJSONValue {
   dynamic: typeof DynamicJSONSymbol;
 }
 const isDynamic = (unk: unknown): unk is IDynamicJSONValue =>
-  typeof unk === "object" && (unk as any).dynamic === DynamicJSONSymbol;
+  typeof unk === "object" &&
+  unk !== null &&
+  (unk as any).dynamic === DynamicJSONSymbol;
 const DynamicJSONValue: io.Type<
   IDynamicJSONValue,
   IDynamicJSONValue
@@ -194,6 +196,8 @@ export const u = jspt;
 // Defined nock-like syntax to create/update a service on the fly
 type UpdateCallback = (
   store: ServiceStore,
+) => (
+  queriesFromCallToQueries: Record<string, Schema>,
 ) => ({
   statusCode,
   data,
@@ -238,14 +242,14 @@ interface IDynamicServiceSpec {
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
   private headers: Record<string, Schema> = {};
-  private queries: Record<string, Schema> = {};
+  private queriesFromCallToQueries: Record<string, Schema> = {};
 
   // Default status code passed in constructor
   constructor(
     private updater: UpdateCallback,
     private statusCode: CodeAsInt | "default" = 200,
     private baseUrl: string,
-    private queriez: Record<string, Schema>,
+    private accumulatedQueries: Record<string, Schema>,
     private requestHeaders: Record<string, JSSTAnything<JSSTEmpty<{}>, {}>>,
     private serviceStore: ServiceStore,
     private name?: string,
@@ -254,9 +258,9 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
   public query(
     data?: Record<string, InputToPoet>,
   ): FluentDynamicService & IDynamicServiceSpec {
-    this.queries = {
-      ...this.queries,
-      ...this.queriez,
+    this.queriesFromCallToQueries = {
+      ...this.queriesFromCallToQueries,
+      ...this.accumulatedQueries,
       ...(data
         ? Object.entries(data).reduce(
             (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
@@ -265,14 +269,8 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
         : {}),
     } as Record<string, Schema>;
 
-    const store = this.updater(this.serviceStore)({
-      data: this.data,
-      headers: this.headers,
-      statusCode: this.statusCode,
-    });
-
     const methods = buildFluentNock(
-      store,
+      this.serviceStore,
       this.baseUrl,
       this.requestHeaders,
       this.name,
@@ -281,9 +279,9 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       this.updater,
       this.statusCode,
       this.baseUrl,
-      this.queries,
+      this.queriesFromCallToQueries,
       this.requestHeaders,
-      store,
+      this.serviceStore,
       this.name,
     );
 
@@ -320,6 +318,9 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
         ) as Record<string, Schema>)
       : {};
     const store = this.updater(this.serviceStore)({
+      ...this.queriesFromCallToQueries,
+      ...this.accumulatedQueries,
+    })({
       data: this.data,
       headers: this.headers,
       statusCode: this.statusCode,
@@ -331,12 +332,11 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       this.requestHeaders,
       this.name,
     );
-    console.log("QUERIES IN REPLY", { ...this.queries, ...this.queriez });
     const dss = new DynamicServiceSpec(
       this.updater,
       this.statusCode,
       this.baseUrl,
-      { ...this.queries, ...this.queriez },
+      { ...this.queriesFromCallToQueries, ...this.accumulatedQueries },
       this.requestHeaders,
       store,
       this.name,
@@ -358,7 +358,9 @@ const updateStore = (
   requestHeaders: Record<string, Schema>,
   body?: Schema,
   name?: string,
-) => (store: ServiceStore) => ({
+) => (store: ServiceStore) => (
+  queriesFromCallToQueries: Record<string, Schema>,
+) => ({
   statusCode,
   headers,
   data,
@@ -371,7 +373,7 @@ const updateStore = (
     baseUrl,
     method,
     endpoint,
-    query,
+    query: { ...query, ...queriesFromCallToQueries },
     requestHeaders,
     responseHeaders: headers,
     body,
@@ -381,9 +383,17 @@ const updateStore = (
   });
 
 const endpointToQs = (endpoint: ValidEndpointType) =>
-  Object.entries(querystring.parse(
-    typeof endpoint === "string" ? endpoint.split("?")[1] || "" : "",
-  )).reduce((a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1] === undefined ? null : b[1])}), {}) || {};
+  Object.entries(
+    querystring.parse(
+      typeof endpoint === "string" ? endpoint.split("?")[1] || "" : "",
+    ),
+  ).reduce(
+    (a, b) => ({
+      ...a,
+      [b[0]]: JSONSchemify(b[1] === undefined ? null : b[1]),
+    }),
+    {},
+  ) || {};
 
 const naked = (endpoint: ValidEndpointType) =>
   typeof endpoint === "string" ? endpoint.split("?")[0] : endpoint;

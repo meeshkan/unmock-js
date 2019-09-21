@@ -346,16 +346,14 @@ describe("Tests dynamic path tests", () => {
     it("A query in the path correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com?q&m=1&", "foo")
-        .get("/")
+        .nock("https://www.foo.com", "foo")
+        .get("/?q&m=1&") // include an empty query
         .reply(200);
       expectNServices(1);
       expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
         "query",
       );
-      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
-        "q",
-      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual("");
       expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
         type: "null",
       });
