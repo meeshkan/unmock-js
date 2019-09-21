@@ -214,9 +214,17 @@ type Primitives = string | number | boolean;
 type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
 // How the fluent dynamic service API looks like (e.g. specifies `get(endpoint: string) => DynamicServiceSpec`)
-type FluentDynamicService = {
-  [k in HTTPMethod]: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-};
+export interface IFluentDynamicService {
+  tldr: () => void;
+  get: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  head: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  post: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  put: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  patch: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  delete: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  options: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  trace: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+}
 
 // How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
 //                                                      `replyWithFile(....)`
@@ -228,15 +236,15 @@ interface IDynamicServiceSpec {
    */
   query(
     data?: Record<string, InputToPoet>,
-  ): FluentDynamicService & IDynamicServiceSpec;
+  ): IFluentDynamicService & IDynamicServiceSpec;
   reply(
     statusCode: CodeAsInt | "default",
     data?: InputToPoet | InputToPoet[],
     headers?: InputToPoet,
-  ): FluentDynamicService & IDynamicServiceSpec;
+  ): IFluentDynamicService & IDynamicServiceSpec;
   reply(
     data: InputToPoet | InputToPoet[],
-  ): FluentDynamicService & IDynamicServiceSpec;
+  ): IFluentDynamicService & IDynamicServiceSpec;
 }
 
 export class DynamicServiceSpec implements IDynamicServiceSpec {
@@ -257,7 +265,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
 
   public query(
     data?: Record<string, InputToPoet>,
-  ): FluentDynamicService & IDynamicServiceSpec {
+  ): IFluentDynamicService & IDynamicServiceSpec {
     this.queriesFromCallToQueries = {
       ...this.queriesFromCallToQueries,
       ...this.accumulatedQueries,
@@ -296,7 +304,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
     maybeStatusCode: CodeAsInt | "default" | InputToPoet | InputToPoet[],
     maybeData?: InputToPoet | InputToPoet[],
     maybeHeaders?: Record<string, InputToPoet>,
-  ): FluentDynamicService & IDynamicServiceSpec {
+  ): IFluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
       this.data = JSONSchemify(maybeData) as Schema; // TODO should this be some JSSTX?
       this.statusCode = maybeStatusCode as CodeAsInt | "default";
@@ -403,8 +411,102 @@ const buildFluentNock = (
   baseUrl: string,
   requestHeaders: Record<string, JSSTAnything<EJSEmpty, {}>>,
   name?: string,
-): FluentDynamicService =>
-  Object.entries({
+): IFluentDynamicService =>
+  ((fds: IFluentDynamicService) => ({
+    ...fds,
+    tldr: () =>
+      fds
+        .get("/")
+        .reply(200)
+        .get("/{a}")
+        .reply(200)
+        .get("/{a}/{b}")
+        .reply(200)
+        .get("/{a}/{b}/{c}")
+        .reply(200)
+        .get("/{a}/{b}/{c}/{d}")
+        .reply(200)
+        .get("/{a}/{b}/{c}/{d}/{e}")
+        .reply(200)
+        .get("/{a}/{b}/{c}/{d}/{e}/{f}")
+        .reply(200)
+        .get("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
+        .reply(200)
+        .get("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
+        .reply(200)
+        .post("/")
+        .reply(200)
+        .post("/{a}")
+        .reply(200)
+        .post("/{a}/{b}")
+        .reply(200)
+        .post("/{a}/{b}/{c}")
+        .reply(200)
+        .post("/{a}/{b}/{c}/{d}")
+        .reply(200)
+        .post("/{a}/{b}/{c}/{d}/{e}")
+        .reply(200)
+        .post("/{a}/{b}/{c}/{d}/{e}/{f}")
+        .reply(200)
+        .post("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
+        .reply(200)
+        .post("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
+        .reply(200)
+        .put("/")
+        .reply(200)
+        .put("/{a}")
+        .reply(200)
+        .put("/{a}/{b}")
+        .reply(200)
+        .put("/{a}/{b}/{c}")
+        .reply(200)
+        .put("/{a}/{b}/{c}/{d}")
+        .reply(200)
+        .put("/{a}/{b}/{c}/{d}/{e}")
+        .reply(200)
+        .put("/{a}/{b}/{c}/{d}/{e}/{f}")
+        .reply(200)
+        .put("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
+        .reply(200)
+        .put("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
+        .reply(200)
+        .delete("/")
+        .reply(200)
+        .delete("/{a}")
+        .reply(200)
+        .delete("/{a}/{b}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}/{d}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}/{d}/{e}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}/{d}/{e}/{f}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
+        .reply(200)
+        .delete("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
+        .reply(200)
+        .patch("/")
+        .reply(200)
+        .patch("/{a}")
+        .reply(200)
+        .patch("/{a}/{b}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}/{d}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}/{d}/{e}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}/{d}/{e}/{f}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
+        .reply(200)
+        .patch("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
+        .reply(200),
+  }))(Object.entries({
     get: 200,
     head: 200,
     post: 201,
@@ -458,7 +560,7 @@ const buildFluentNock = (
               ),
     }),
     {},
-  ) as FluentDynamicService;
+  ) as IFluentDynamicService);
 
 export const nockify = ({
   backend,

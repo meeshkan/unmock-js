@@ -401,6 +401,15 @@ describe("Tests dynamic path tests", () => {
     });
   });
 
+  describe("tldr adds 9 levels of arbitrary paths to requests", () => {
+    it("ignores unimportant stuff", () => {
+      expectNServices(0);
+      unmock.nock("https://www.foo.com", "foo").tldr();
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths).length).toEqual(9);
+    });
+  });
+
   describe("Reply headers can be specified", () => {
     it("An empty reply header results in a viable spec", () => {
       expectNServices(0);
