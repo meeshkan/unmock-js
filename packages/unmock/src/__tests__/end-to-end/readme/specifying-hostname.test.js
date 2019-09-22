@@ -12,10 +12,8 @@ async function verifyReadme() {
   return parseInt(text);
 }
 
-beforeAll(() => {
-  unmock.on();
-});
-afterAll(() => unmock.off());
+beforeAll(() => unmock.default.on());
+afterAll(() => unmock.default.off());
 
 describe("verifyReadme", () => {
   it("makes sure the readme works", async () => {

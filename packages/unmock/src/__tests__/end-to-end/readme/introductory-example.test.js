@@ -20,7 +20,7 @@ let zodiac;
 beforeAll(() => {
   zodiac = unmock.default.on().services.zodiac;
 });
-afterAll(() => unmock.off());
+afterAll(() => unmock.default.off());
 
 describe("getHoroscope", () => {
   it(

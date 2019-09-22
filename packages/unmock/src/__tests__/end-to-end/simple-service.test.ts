@@ -1,5 +1,6 @@
 import axios from "axios";
 import unmock, { Arr, transform, u } from "../../";
+import { IService } from "unmock-core/dist/service/interfaces";
 const { responseBody } = transform;
 
 unmock
@@ -23,7 +24,7 @@ unmock
     ),
   );
 
-let foo;
+let foo: IService;
 beforeAll(() => {
   foo = unmock.on().services.foo;
 });

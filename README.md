@@ -37,7 +37,11 @@ async function getHoroscope(sign) {
   return { ...json, seen: false };
 }
 
-const { zodiac } = unmock.default.on().services;
+let zodiac;
+beforeAll(() => {
+  zodiac = unmock.default.on().services.zodiac;
+});
+afterAll(() => unmock.default.off());
 
 describe("getHoroscope", () => {
   it(
