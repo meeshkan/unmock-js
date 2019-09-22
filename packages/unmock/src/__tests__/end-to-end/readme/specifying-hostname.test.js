@@ -12,7 +12,9 @@ async function verifyReadme() {
   return parseInt(text);
 }
 
-beforeAll(() => { unmock.on() })
+beforeAll(() => {
+  unmock.on();
+});
 
 describe("verifyReadme", () => {
   it("makes sure the readme works", async () => {
