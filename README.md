@@ -138,31 +138,7 @@ unmock.nock('http://example.com')
   .reply(200, { results: u.array({id: u.integer() }) })
 ```
 
-### Specifying replies
-
-You can specify the return status code for a path on the first argument of reply like this:
-
-```js
-unmock.nock('http://myapp.iriscouch.com')
-  .get('/users/1')
-  .reply(404)
-```
-
-You can also specify the reply body as valid JSON, JSON schema, or any combination thereof.
-
-```js
-unmock.nock('http://www.google.com')
-  .get('/')
-  .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
-```
-
-### Specifying headers
-
-#### Header field names are case-insensitive
-
-Per [HTTP/1.1 4.2 Message Headers](http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2) specification, all message headers are case insensitive and thus internally Nock uses lower-case for all field names even if some other combination of cases was specified either in mocking specification or in mocked requests themselves.
-
-#### Specifying Request Headers
+### Specifying Request Headers
 
 You can specify the request headers like this:
 
@@ -190,7 +166,25 @@ const scope = nock('http://www.example.com', {
 
 Headers in unmock are always a partial match, meaning that additional headers are ignored. This means that you don't need to worry about matching against common headers like `Content-Type` and `Host`.
 
-#### Specifying Reply Headers
+### Specifying replies
+
+You can specify the return status code for a path on the first argument of reply like this:
+
+```js
+unmock.nock('http://myapp.iriscouch.com')
+  .get('/users/1')
+  .reply(404)
+```
+
+You can also specify the reply body as valid JSON, JSON schema, or any combination thereof.
+
+```js
+unmock.nock('http://www.google.com')
+  .get('/')
+  .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
+```
+
+### Specifying reply headers
 
 You can specify the reply headers like this:
 
@@ -228,12 +222,12 @@ unmock. nock('http://myapp.iriscouch.com')
 
 ### Passthrough
 
-For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `passthrough`.
+For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
 
 ```js
 unmock
   .nock("https://my-analytics-api.vendor.com)
-  .passthrough();
+  .tldr();
 ```
 
 ## Expectations
