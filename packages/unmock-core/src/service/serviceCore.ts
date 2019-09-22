@@ -101,7 +101,13 @@ export class ServiceCore implements IServiceCore {
             [finalEndpoint]: {
               ...endpointParameters,
               [method]: {
-                ...(body ? { requestBody: body } : {}),
+                ...(body
+                  ? {
+                      requestBody: {
+                        content: { "application/json": { schema: body } },
+                      },
+                    }
+                  : {}),
                 responses: {
                   [statusCode]: {
                     description: "Automatically added",

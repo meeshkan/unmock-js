@@ -14,7 +14,7 @@ $ npm install --save-dev unmock
 
 ## Usage
 
-Unmock has great [documentation](https://unmock.io/docs/introduction), but this README contains all the essential information.
+This README contains all the essential information about unmock. For more examples and detail, see the [documentation](https://unmock.io/docs/introduction).
 
 Here is a simple mock, a simple function, and a simple test in jest.
 
@@ -57,9 +57,7 @@ describe("getHoroscope", () => {
 });
 ```
 
-This setup says that we will intercept every HTTP call to `https://zodiac.com`.
-
-It will intercept all HTTPS GET requests to `/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec.
+This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope.
 
 ### Specifying hostname
 
@@ -82,10 +80,10 @@ unmock.nock('http://www.example.com', 'foo')
 To match multiple protocols or URLs, use `associate`.
 
 ```js
-unmock.associate('https://www2.example.com', 'foo')
+unmock.default.associate('https://www2.example.com', 'foo')
 ```
 
-### Specifying path
+### Specifying the path
 
 The request path should be a string, and you can use any [HTTP verb](#http-verbs). Wild-cards in the string should be enclosed in curly braces.
 
@@ -98,7 +96,7 @@ unmock.nock('http://www.example.com')
 Alternatively, you can use an array of path segments, where each segment is either a string, a string in curly-braces for an open parameter, or a key/value pair associating a name of a path parameter to a regex matching it.
 
 ```js
-const scope = nock('http://www.example.com')
+unmock.nock('http://www.example.com')
   .get(["users", /[0-9]+/, "status"]) // "/users/{id}/status"
   .reply(200, u.string())
 ```
@@ -107,27 +105,15 @@ const scope = nock('http://www.example.com')
 
 You can specify the request body to be matched as the second argument to the `get`, `post`, `put` or `delete` specifications. The argument can be any valid JSON, [`json-schema-poet`](https://github.com/unmock/json-schema-poet) using the `u` syntax(`u.integer()`, `u.string()`) or any combination thereof.
 
-Here is an example of a simple string.
+Here is an example of a post request that will only validate if it contains a token.
 
 ```js
 unmock.nock('http://www.example.com')
-  .post('/login', 'username=pgte&password=123456')
+  .post('/login', u.type({ token: u.string()}, {expires: u.integer()}))
   .reply(200, { id: u.string() })
 ```
 
-Here is an example of a more complicated structure, using `u.type` to specify required and optional properties.
-
-```js
-unmock.nock('http://www.example.com')
-  .post('/login', u.type({ token: u.string()}, {expires: u.integer()})
-  .reply(200, { id: u.string() })
-```
-
-```js
-unmock.nock('http://www.example.com')
-  .post('/login', { token: u.string(), expires: u.integer() })
-  .reply(200, { id: u.string() })
-```
+> Unmock does not support body encodings other than "application/json" at this point.
 
 ### Specifying request query string
 
