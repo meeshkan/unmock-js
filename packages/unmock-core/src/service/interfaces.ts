@@ -40,6 +40,10 @@ export interface IObjectToService {
   baseUrl: string;
   method?: HTTPMethod;
   endpoint?: ValidEndpointType;
+  query?: Record<string, Schema>;
+  requestHeaders?: Record<string, Schema>;
+  responseHeaders?: Record<string, Schema>;
+  body?: Schema;
   statusCode?: CodeAsInt | "default";
   response?: string | Schema;
   name?: string;

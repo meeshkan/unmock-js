@@ -349,7 +349,7 @@ const listToTuple = (i: number) => (s: Schema): Schema => ({
     : {}),
 });
 
-const valAsConst = (val: JSONValue): Schema =>
+export const valAsConst = (val: JSONValue): Schema =>
   val === null
     ? { type: "null" }
     : typeof val === "number"

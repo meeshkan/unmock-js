@@ -266,7 +266,9 @@ describe("Tests dynamic path tests", () => {
       expect(path).toMatch(/^\/foo\/\{[^}]+\}\/bar/);
       expect(schema.paths[path].parameters.length).toEqual(1);
       expect(path).toContain(schema.paths[path].parameters[0].name);
-      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(/\w+/);
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(
+        /\w+/.source,
+      );
     });
 
     it("A regex is added as a parameter given name", () => {
@@ -281,7 +283,9 @@ describe("Tests dynamic path tests", () => {
       const path = Object.keys(schema.paths)[0];
       expect(path).toEqual("/foo/{baz}/bar");
       expect(schema.paths[path].parameters.length).toEqual(1);
-      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(/\W+/);
+      expect(schema.paths[path].parameters[0].schema.pattern).toEqual(
+        /\W+/.source,
+      );
     });
 
     it("Also handles multiple parameters", async () => {
@@ -297,14 +301,137 @@ describe("Tests dynamic path tests", () => {
       expect(path).toMatch(/\/foo\/{baz}\/bar\/{\w+}\/{spam}/);
       const params = schema.paths[path].parameters;
       expect(params.length).toEqual(3);
-      expect(params[0].schema.pattern).toEqual(/\W+/);
-      expect(params[1].schema.pattern).toEqual(/\d+/);
-      expect(params[2].schema.pattern).toEqual(/eggs/);
+      expect(params[0].schema.pattern).toEqual(/\W+/.source);
+      expect(params[1].schema.pattern).toEqual(/\d+/.source);
+      expect(params[2].schema.pattern).toEqual(/eggs/.source);
       // basic E2E test:
       unmock.on();
       const res = await axios("https://www.foo.com/foo/!@@!/bar/123/FeggsX");
       expect(res.status).toEqual(200);
       unmock.off();
+    });
+  });
+
+  describe("queries can be specified", () => {
+    it("An empty query results in a viable spec", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", {}, "foo")
+        .get("/")
+        .query({})
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
+    });
+
+    it("A query is correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("/")
+        .query({ foo: "bar" })
+        .reply(200);
+      expectNServices(1);
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
+        "foo",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "string",
+        enum: ["bar"],
+      });
+    });
+    it("A query in the path correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("/?q&m=1&") // include an empty query
+        .reply(200);
+      expectNServices(1);
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual("");
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "null",
+      });
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].in).toEqual(
+        "query",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].name).toEqual(
+        "m",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[1].schema).toEqual({
+        type: "string",
+        enum: ["1"],
+      });
+    });
+  });
+
+  describe("Request headers can be specified", () => {
+    it("An empty request header results in a viable spec", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", {}, "foo")
+        .get("/")
+        .reply(200);
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
+    });
+
+    it("A request header is correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
+        .get("/")
+        .reply(200);
+      expectNServices(1);
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].in).toEqual(
+        "header",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].name).toEqual(
+        "hello",
+      );
+      expect(getPrivateSchema("foo").paths["/"].parameters[0].schema).toEqual({
+        type: "string",
+        enum: ["world"],
+      });
+    });
+  });
+
+  describe("tldr adds 9 levels of arbitrary paths to requests", () => {
+    it("ignores unimportant stuff", () => {
+      expectNServices(0);
+      unmock.nock("https://www.foo.com", "foo").tldr();
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths).length).toEqual(9);
+    });
+  });
+
+  describe("Reply headers can be specified", () => {
+    it("An empty reply header results in a viable spec", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("/")
+        .reply(200, "", {});
+      expectNServices(1);
+      expect(Object.keys(getPrivateSchema("foo").paths)).toEqual(["/"]);
+    });
+
+    it("A reply header is correctly propagated", () => {
+      expectNServices(0);
+      unmock
+        .nock("https://www.foo.com", "foo")
+        .get("/")
+        .reply(200, "", { hello: "world" });
+      expectNServices(1);
+      expect(
+        getPrivateSchema("foo").paths["/"].get.responses["200"].headers.hello
+          .schema,
+      ).toEqual({ type: "string", enum: ["world"] });
     });
   });
 });
