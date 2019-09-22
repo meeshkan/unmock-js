@@ -280,6 +280,19 @@ export const transform = {
       return out;
     };
   },
+  after: (n: number) => (f: IStateTransformer) => {
+    const counter = { c: 0 };
+    return (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject => {
+      const out = f(req, o);
+      if (!isEqual(out, o)) {
+        counter.c = counter.c + 1;
+      }
+      if (counter.c <= n) {
+        return o;
+      }
+      return out;
+    };
+  },
   withCodes,
   withoutCodes,
   mapDefaultTo,
