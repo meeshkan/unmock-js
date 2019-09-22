@@ -276,14 +276,6 @@ The following getter functions are defined on the spy object.
 - `getResponseBody`
 - `getResponseCode`
 - `getResponseHeaders`
-- `headRequestPathname`
-- `headRequestPath`
-- `headRequestHeaders`
-- `headRequestQuery`
-- `headRequestProtocol`
-- `headResponseBody`
-- `headResponseCode`
-- `headResponseHeaders`
 - `postRequestBody`
 - `postRequestPathname`
 - `postRequestPath`
@@ -320,21 +312,6 @@ The following getter functions are defined on the spy object.
 - `deleteResponseCode`
 - `deleteResponseHeaders`
 - `optionsRequestPathname`
-- `optionsRequestPath`
-- `optionsRequestHeaders`
-- `optionsRequestQuery`
-- `optionsRequestProtocol`
-- `optionsResponseBody`
-- `optionsResponseCode`
-- `optionsResponseHeaders`
-- `traceRequestPathname`
-- `traceRequestPath`
-- `traceRequestHeaders`
-- `traceRequestQuery`
-- `traceRequestProtocol`
-- `traceResponseBody`
-- `traceResponseCode`
-- `traceResponseHeaders`
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
 
