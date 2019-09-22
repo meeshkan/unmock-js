@@ -1,6 +1,5 @@
 import { matcher } from "../generator";
 import { OpenAPIObject } from "loas3/dist/generated/full";
-import { object } from "prop-types";
 
 const store: Record<string, OpenAPIObject> = {
   foo: {
