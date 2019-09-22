@@ -67,7 +67,9 @@ export class UnmockPackage implements IUnmockPackage {
 
   public nock(
     baseUrl: string,
-    nameOrHeaders?: string | { reqheaders?: Record<string, ExtendedJSONSchema> },
+    nameOrHeaders?:
+      | string
+      | { reqheaders?: Record<string, ExtendedJSONSchema> },
     name?: string,
   ) {
     const internalName =
