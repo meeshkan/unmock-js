@@ -15,6 +15,7 @@ async function verifyReadme() {
 beforeAll(() => {
   unmock.on();
 });
+afterAll(() => unmock.off());
 
 describe("verifyReadme", () => {
   it("makes sure the readme works", async () => {
