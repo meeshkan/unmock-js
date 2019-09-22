@@ -19,32 +19,38 @@ Unmock has great [documentation](https://unmock.io/docs/introduction), but this 
 Here is a simple mock, a simple function, and a simple test in jest.
 
 ```js
-const unmock = require('unmock')
-const { nock, runner, transform } = unmock;
+const unmock = require("unmock");
+const { nock, runner, transform, u } = unmock;
 const { withCodes } = transform;
 
-nock('https://zodiac.com', 'zodiac')
-  .get('/horoscope/{sign}')
+nock("https://zodiac.com", "zodiac")
+  .get("/horoscope/{sign}")
   .reply(200, {
     horoscope: u.string(),
   })
-  .reply(404, { message: 'Not authorized' })
+  .reply(404, { message: "Not authorized" });
 
 async function getHoroscope(sign) {
-  const result = await unmock.fetch('https://zodiac.com/horoscope/'+sign)
-  return { ...result.json(), seen: false }
+  // use unmock.fetch, request, fetch, axios or any similar library
+  const result = await unmock.fetch("https://zodiac.com/horoscope/" + sign);
+  const json = await result.json();
+  return { ...json, seen: false };
 }
 
-const { zodiac } = unmock.on().services
+const { zodiac } = unmock.default.on().services;
 
-describe("getHoroscope", () =>
-  it("augments the API call with seen=false", runner(async () => {
-    zodiac(withCodes(200))
-    const res = await getHoroscope()
-    expect(res).toMatchObject(zodiac.spy.getResponseBody())
-    expect(res.seen).toBe(false)
-  }));
-)
+describe("getHoroscope", () => {
+  it(
+    "augments the API call with seen=false",
+    runner(async () => {
+      zodiac.spy.resetHistory();
+      zodiac.state(withCodes(200));
+      const res = await getHoroscope();
+      expect(res).toMatchObject(JSON.parse(zodiac.spy.getResponseBody()));
+      expect(res.seen).toBe(false);
+    }),
+  );
+});
 ```
 
 This setup says that we will intercept every HTTP call to `https://zodiac.com`.
@@ -340,45 +346,9 @@ test("my API always works as expected", runner(async () => {
 }));
 ```
 
-### Nasty testing
-
-The unmock runner can also be nasty, which means that it will randomly change the defined spec, dropping out values, changing the return value type, etc. Most APIs are nice, but some are not. Use `runner.nasty` to emulate the not-nice ones.
-
-```js
-const { runner } = "unmock";
-test("my API always works as expected", runner.nasty(async () => {
-  const res = await myApiFunction();
-  // some expectations
-}));
-```
-
-
-### Sadistic testing
-
-The unmock runner can, if you ask it, be downright cruel. JSON is no longer JSON, incomprehensible headers, dropped packets. This is effectively chaos engineering. Use this when stress-testing your code.
-
-```js
-const { runner } = "unmock";
-test("my API always works as expected", runner.sadistic(async () => {
-  const res = await myApiFunction();
-  // some expectations
-}));
-```
-
 ## OpenAPI
 
 Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
-
-## Recording
-
-In unmock, you can record either JSON fixtures *or* `json-schema-poet` fixtures. We recommend the latter, or converting the former to the latter.
-
-```js
-unmock.record('/tmp/session', { output: typescript })
-axios('https://zodiac.com/libra')
-```
-
-This will yield a typescript file that writes the resposne in `json-schema-poet` with commented-out default values. From there, you can include this in your project however you see fit.
 
 ## Contributing
 

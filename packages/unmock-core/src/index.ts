@@ -1,4 +1,5 @@
 // Sinon for asserts and matchers
+import * as fetch from "node-fetch";
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
@@ -8,6 +9,7 @@ import { ExtendedJSONSchema, JSONSchemify, nockify } from "./nock";
 import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
+export { fetch };
 export { runner };
 export * from "./types";
 export { sinon };
