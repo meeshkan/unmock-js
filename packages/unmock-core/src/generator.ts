@@ -795,7 +795,7 @@ export function responseCreatorFactory({
           req,
           null,
           2,
-        )}`,
+        )} looking at ${JSON.stringify(schemas, null, 2)}`,
       );
     }
     const codes: Array<keyof Responses> = Object.keys(
