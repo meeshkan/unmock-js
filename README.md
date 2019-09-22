@@ -318,6 +318,40 @@ The following getter functions are defined on the spy object.
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
 
+## State
+
+Unmock supports the initialization of services to arbitrary states. This is helpful, for example, if you want to test how your code behaves when a given service returns *exactly* five items or when a particiular field in an object is missing or present.
+
+To do this, set the `state` property of a service. The state property is a function that takes a request and an OpenAPI schema as input and returns an OpenAPI schema and output.  Many utility functions have been created for the most common state manipulations. For example, to test the outcome with only certain codes, use `withCodes`.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state(withCodes([200, 201, 404]));
+```
+
+Because `withCodes` returns a function, the same thing could have been written.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state((req, schema) => withCodes([200, 201, 404])(req, schema));
+```
+
+This is useful, for example, if you want to test a certain code only if a given header is present.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state((req, schema) =>
+  withCodes([200, ...(req.headers.MyHeader ? [404] : [])])(req, schema));
+```
+
+The unmock [documentation](https://www.unmock.io/docs/setting-state) contains more information about initializing the state.
+
 ## Runner
 
 The unmock runner runs the same test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
