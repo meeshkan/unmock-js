@@ -1,5 +1,6 @@
 import axios from "axios";
 import unmock, { Arr, transform, u } from "../../";
+import { IService } from "unmock-core/dist/service/interfaces";
 const { responseBody } = transform;
 
 unmock
@@ -23,9 +24,13 @@ unmock
     ),
   );
 
+let foo: IService;
+beforeAll(() => {
+  foo = unmock.on().services.foo;
+});
+afterAll(() => unmock.off());
 describe("Simple service test", () => {
   it("Should return sane values from a simple service", async () => {
-    const { foo } = unmock.on().services;
     foo.state(responseBody().minItems(56));
     const response0 = await axios("https://api.foo.com/v1/users");
     expect(response0.data.length).toBeGreaterThanOrEqual(56);

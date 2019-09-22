@@ -1,13 +1,15 @@
 // Sinon for asserts and matchers
+import * as fetch from "node-fetch";
 import * as sinon from "sinon";
 import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
-import { nockify } from "./nock";
+import { ExtendedJSONSchema, JSONSchemify, nockify } from "./nock";
 import runner from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
+export { fetch };
 export { runner };
 export * from "./types";
 export { sinon };
@@ -63,8 +65,32 @@ export class UnmockPackage implements IUnmockPackage {
     return this.backend.services;
   }
 
-  public nock(baseUrl: string, name?: string) {
-    return nockify({ backend: this.backend, baseUrl, name });
+  public nock(
+    baseUrl: string,
+    nameOrHeaders?:
+      | string
+      | { reqheaders?: Record<string, ExtendedJSONSchema> },
+    name?: string,
+  ) {
+    const internalName =
+      typeof nameOrHeaders === "string"
+        ? nameOrHeaders
+        : typeof name === "string"
+        ? name
+        : undefined;
+    const requestHeaders =
+      typeof nameOrHeaders === "object" && nameOrHeaders.reqheaders
+        ? Object.entries(nameOrHeaders.reqheaders).reduce(
+            (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+            {},
+          )
+        : {};
+    return nockify({
+      backend: this.backend,
+      baseUrl,
+      requestHeaders,
+      name: internalName,
+    });
   }
 
   public associate(url: string, name: string) {

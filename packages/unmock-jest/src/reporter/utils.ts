@@ -1,4 +1,5 @@
-import { groupBy, map, mapValues, reverse, sortBy } from "lodash";
+import { groupBy, map, mapValues, reverse, sortBy, takeWhile } from "lodash";
+import * as path from "path";
 import { IReportInput, ITestSuite } from "./types";
 
 export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
@@ -8,6 +9,32 @@ export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
       testSuite => testSuite.snapshots.length,
     ]),
   );
+};
+
+/**
+ * Same as `largestCommonArray` but for two arrays
+ * Examples:
+ * [["a", "b"], ["a", "c"]] => ["a"]  // First item same
+ * [["a", "b"], ["a", "b"]] => ["a", "b"]  // All items same
+ * [["a", "c"], ["b", "c"]] => []  // First item does not match
+ */
+const largestCommonArray2 = <T>(arr1: T[], arr2: T[]): T[] => {
+  const [shorter, longer] =
+    arr1.length >= arr2.length ? [arr2, arr1] : [arr1, arr2];
+  return takeWhile(shorter, (item1, index) => item1 === longer[index]);
+};
+
+/**
+ * Find the longest common array that all input arrays start with
+ * Examples:
+ * [["a", "b"], ["a", "c"], ["a", "d"]] => ["a"]  // First item same
+ * [["a", "b"], ["a", "b"]] => ["a", "b"]  // All items same
+ * [["a", "c"], ["b", "c"]] => []  // First item does not match
+ * @param arrays List of arrays
+ * @return Longest array that all arrays start with
+ */
+export const largestCommonArray = <T>(arrays: T[][]): T[] => {
+  return arrays.reduce((acc, val) => largestCommonArray2(acc, val));
 };
 
 export const toTestSuites = (input: IReportInput): ITestSuite[] => {
@@ -32,7 +59,16 @@ export const toTestSuites = (input: IReportInput): ITestSuite[] => {
     snapshot => snapshot.testPath,
   );
 
+  // Paths to each test suite's directory as an array
+  const paths: string[][] = input.jestData.aggregatedResult.testResults.map(
+    testResult => path.dirname(testResult.testFilePath).split(path.sep),
+  );
+
+  // Longest path that all test suites' directories start with
+  const longestPath = largestCommonArray(paths).join(path.sep) + path.sep;
+
   const combined = map(testResultByFilePath, (value, filepath) => ({
+    shortFilePath: value.testFilePath.replace(longestPath, ""),
     testFilePath: value.testFilePath,
     suiteResults: value,
     snapshots: snapshotsByFilePath[filepath] || [],

@@ -31,7 +31,7 @@ const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () 
         return {
             input: <input type="radio" id={`box-${id}`} className="test-suite-input" name="content" defaultChecked={index === 0} value={`box-${id}`} key={`input-${id}`} />,
             label: <label htmlFor={`box-${id}`} className={`test-suite-label test-suite-label-${id} ${testSuiteLabelColor}`} id="feature-label" key={`label-${id}`}>
-                <span className="test-suite-label__filename">{testSuite.testFilePath}</span>
+                <span className="test-suite-label__filename">{testSuite.shortFilePath}</span>
                 <span className="test-suite-label__summary">{`Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${nSnapshots}`}</span>
             </label>,
             testSuite: <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,

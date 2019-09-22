@@ -33,10 +33,17 @@ export interface IService {
 export type ServiceStoreType = Record<string, IService>;
 
 // Used to programmatically define/update a service
+export type ValidEndpointType =
+  | string
+  | Array<string | RegExp | [string, RegExp]>;
 export interface IObjectToService {
   baseUrl: string;
   method?: HTTPMethod;
-  endpoint?: string;
+  endpoint?: ValidEndpointType;
+  query?: Record<string, Schema>;
+  requestHeaders?: Record<string, Schema>;
+  responseHeaders?: Record<string, Schema>;
+  body?: Schema;
   statusCode?: CodeAsInt | "default";
   response?: string | Schema;
   name?: string;

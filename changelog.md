@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.3.4 (2019-09-22)
+
+Features:
+
+  - `nock`-like syntax for setting request headers, response headers, request bodies, and queries
+
 ## 0.3.3 (2019-09-20)
 
 Features:

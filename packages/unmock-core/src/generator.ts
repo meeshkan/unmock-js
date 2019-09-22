@@ -4,9 +4,15 @@
 // Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
 import { array } from "fp-ts/lib/Array";
-import { isNone, none, Option, some } from "fp-ts/lib/Option";
+import { fold, isNone, none, Option, some } from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/lib/pipeable";
 import * as jsonschema from "jsonschema";
-import { isParameter, isResponse, MediaType } from "loas3/dist/generated/full";
+import {
+  isParameter,
+  isResponse,
+  MediaType,
+  RequestBody,
+} from "loas3/dist/generated/full";
 import { omit } from "lodash";
 import {
   fromTraversable,
@@ -23,6 +29,7 @@ import {
   changeRefs,
   getComponentFromRef,
   getParameterFromRef,
+  getRequestBodyFromRef,
   getResponseFromRef,
   getSchemaFromRef,
   internalGetComponent,
@@ -83,14 +90,31 @@ export const matchUrls = (
         )
     : [];
 
-const prunePathItemInternal = (
+const schemaPrism = (oai: OpenAPIObject): Prism<Schema | Reference, Schema> =>
+  new Prism(
+    s =>
+      isReference(s) ? getSchemaFromRef(oai, s.$ref.split("/")[3]) : some(s),
+    a => a,
+  );
+const makeDefinitionsFromSchema = (o: OpenAPIObject): Record<string, Schema> =>
+  o.components && o.components.schemas
+    ? Object.entries(o.components.schemas).reduce(
+        (a, b) => ({
+          ...a,
+          [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1]),
+        }),
+        {},
+      )
+    : {};
+
+const findRelevantPath = (
   m: MethodNames,
   a: MethodNames[],
   p: PathItem,
 ): PathItem =>
   a.length === 0
     ? p // return p once we've exchausted all method names
-    : prunePathItemInternal(
+    : findRelevantPath(
         m,
         a.slice(1),
         /* omit everything but m from p */ a[0] === m ? p : omit(p, a[0]),
@@ -101,15 +125,157 @@ const prunePathItemInternal = (
  * @param m An operation (`get`, `post`, etc)
  * @param p A path item.
  */
-export const prunePathItem = (m: MethodNames, p: PathItem) =>
-  prunePathItemInternal(m, allMethods, p);
+export const getPathItemWithMethod = (m: MethodNames, p: PathItem): PathItem =>
+  findRelevantPath(m, allMethods, p);
+
+const getRequiredRequestQueryOrHeaderParametersInternal = (
+  header: boolean,
+  t: Traversal<PathItem, Reference | Parameter>,
+  oai: OpenAPIObject,
+  p: PathItem,
+): Parameter[] =>
+  t
+    .composePrism(
+      new Prism(
+        s =>
+          isReference(s)
+            ? getParameterFromRef(oai, s.$ref.split("/")[3])
+            : some(s),
+        a => a,
+      ),
+    )
+    .composePrism(
+      new Prism(
+        s =>
+          s.in === (header ? "header" : "query") && s.required ? some(s) : none,
+        a => a,
+      ),
+    )
+    .composeGetter(new Getter(i => i))
+    .getAll(p)
+    .filter(a =>
+      a.schema ? !isNone(schemaPrism(oai).getOption(a.schema)) : false,
+    )
+    .map(b => ({
+      ...b,
+      schema: b.schema
+        ? isReference(b.schema)
+          ? changeRef(b.schema)
+          : changeRefs(b.schema)
+        : { type: "string" },
+    }));
+
+const getRequiredRequestQueryOrHeaderParameters = (
+  header: boolean,
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+  p: PathItem,
+): Parameter[] => [
+  ...getRequiredRequestQueryOrHeaderParametersInternal(
+    header,
+    Optional.fromNullableProp<PathItem>()("parameters").composeTraversal(
+      fromTraversable(array)(),
+    ),
+    oai,
+    p,
+  ),
+  ...getRequiredRequestQueryOrHeaderParametersInternal(
+    header,
+    Optional.fromNullableProp<PathItem>()(req.method)
+      .composeOptional(Optional.fromNullableProp<Operation>()("parameters"))
+      .composeTraversal(fromTraversable(array)()),
+    oai,
+    p,
+  ),
+];
+const getRequiredRequestBodySchemas = (
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+  p: PathItem,
+): Schema[] =>
+  Optional.fromNullableProp<PathItem>()(req.method)
+    .composeOptional(Optional.fromNullableProp<Operation>()("requestBody"))
+    .composePrism(
+      new Prism(
+        s =>
+          isReference(s)
+            ? getRequestBodyFromRef(oai, s.$ref.split("/")[3])
+            : some(s),
+        a => a,
+      ),
+    )
+    .composeOptional(Optional.fromNullableProp<RequestBody>()("content"))
+    .composeIso(objectToArray())
+    .composeTraversal(fromTraversable(array)())
+    .composeLens(valueLens())
+    .composeOptional(Optional.fromNullableProp<MediaType>()("schema"))
+    .composePrism(schemaPrism(oai))
+    .composeGetter(new Getter(i => i))
+    .getAll(p);
+
+const keepMethodIfRequiredRequestBodyIsPresent = (
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+) => (p: PathItem): PathItem =>
+  !p[req.method]
+    ? p
+    : pipe(
+        getRequiredRequestBodySchemas(req, oai, p).filter(
+          i =>
+            !jsonschema.validate(req.body, {
+              ...changeRefs(i),
+              definitions: makeDefinitionsFromSchema(oai),
+            }).valid,
+        ).length === 0
+          ? some(p)
+          : none,
+        fold(() => omit(p, req.method), a => a),
+      );
+
+const keepMethodIfRequiredHeaderParametersArePresent = (
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+) => (p: PathItem) =>
+  keepMethodIfRequiredQueryOrHeaderParametersArePresent(true, req, oai, p);
+
+const keepMethodIfRequiredQueryPrametersArePresent = (
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+) => (p: PathItem) =>
+  keepMethodIfRequiredQueryOrHeaderParametersArePresent(false, req, oai, p);
+
+const keepMethodIfRequiredQueryOrHeaderParametersArePresent = (
+  header: boolean,
+  req: ISerializedRequest,
+  oai: OpenAPIObject,
+  p: PathItem,
+): PathItem =>
+  !p[req.method]
+    ? p
+    : pipe(
+        getRequiredRequestQueryOrHeaderParameters(header, req, oai, p),
+        properties =>
+          jsonschema.validate(header ? req.headers || {} : req.query, {
+            type: "object",
+            properties: properties.reduce(
+              (a, b) => ({ ...a, [b.name]: b.schema }),
+              {},
+            ),
+            required: properties.filter(i => i.required).map(i => i.name),
+            additionalProperties: true,
+            definitions: makeDefinitionsFromSchema(oai),
+          }).valid
+            ? some(p)
+            : none,
+        fold(() => omit(p, req.method), a => a),
+      );
 
 const maybeAddStringSchema = (
   s: Array<Reference | Schema>,
 ): Array<Reference | Schema> => (s.length === 0 ? [{ type: "string" }] : s);
 
 const discernName = (o: Option<Parameter>, n: string): Option<Parameter> =>
-  isNone(o) ? o : o.value.name === n && o.value.in === "path" ? o : none;
+  isNone(o) || (o.value.name === n && o.value.in === "path") ? o : none;
 
 const internalGetParameter = (
   t: Traversal<PathItem, Reference | Parameter>,
@@ -188,22 +354,13 @@ const pathParameterMatch = (
 ) =>
   getMatchingParameters(vname, pathItem, operation, oas).filter(
     i =>
-      jsonschema.validate(part, {
+      !jsonschema.validate(part, {
         ...i,
-        definitions:
-          oas.components && oas.components.schemas
-            ? Object.entries(oas.components.schemas).reduce(
-                (a, b) => ({
-                  ...a,
-                  [b[0]]: isReference(b[1])
-                    ? changeRef(b[1])
-                    : changeRefs(b[1]),
-                }),
-                {},
-              )
-            : {},
+        definitions: makeDefinitionsFromSchema(oas),
       }).valid,
-  ).length > 0;
+  ).length === 0;
+
+const pathParamRegex = new RegExp(/^\{[^}]+\}/gi);
 
 export const matchesInternal = (
   path: string[],
@@ -216,9 +373,8 @@ export const matchesInternal = (
   path.length === pathItemKey.length &&
   (path.length === 0 || // terminal condition
     ((path[0] === pathItemKey[0] || // either they are equal, or...
-      /* is wild card, ie {} */ (pathItemKey[0].length > 2 &&
-        pathItemKey[0][0] === "{" &&
-        pathItemKey[0].slice(-1) === "}" &&
+      /* is wild card, ie {} */
+      (pathItemKey[0].match(pathParamRegex) !== null &&
         pathParameterMatch(
           path[0],
           pathItemKey[0].slice(1, -1),
@@ -247,8 +403,8 @@ export const matches = (
   oas: OpenAPIObject,
 ): boolean =>
   matchesInternal(
-    path.split("/"),
-    pathItemKey.split("/"),
+    path.split("/").filter(i => i !== ""),
+    pathItemKey.split("/").filter(i => i !== ""),
     pathItem,
     method,
     oas,
@@ -387,9 +543,9 @@ export const truncatePath = (
 /**
  * A matcher that takes a request and a dictionary of
  * openAPI schema and returns a dictionary containing
- * *only* the schmea with *only* the path item and *only*
+ * *only* the schema with *only* the path item and *only*
  * the method corresponding to the request. This will be
- * and empty dictionary if the schema does not exist,
+ * an empty dictionary if the schema does not exist,
  * empty PathItems if the path does not exist, and
  * empty operations if the method does not exist.
  * @param req The request
@@ -407,7 +563,14 @@ export const matcher = (
         .composeIso(objectToArray<PathItem>())
         .composeTraversal(fromTraversable(array)())
         .composeLens(valueLens())
-        .modify(pathItem => prunePathItem(req.method, pathItem))({
+        .modify(pathItem =>
+          pipe(
+            getPathItemWithMethod(req.method, pathItem),
+            keepMethodIfRequiredHeaderParametersArePresent(req, oai),
+            keepMethodIfRequiredQueryPrametersArePresent(req, oai),
+            keepMethodIfRequiredRequestBodyIsPresent(req, oai),
+          ),
+        )({
         ...oai,
         ...(oai.paths
           ? {
@@ -615,7 +778,7 @@ export function responseCreatorFactory({
       // first transformer is the matcher
       matcher,
       // subsequent developer-defined transformers
-      ...Object.entries(store.cores).map(([_, core]) =>
+      ...Object.values(store.cores).map(core =>
         hoistTransformer(core.transformer),
       ),
     ];
@@ -640,16 +803,7 @@ export function responseCreatorFactory({
     ) as Array<keyof Responses>;
     const code = codes[Math.floor(Math.random() * codes.length)];
     const statusCode = code === "default" ? 500 : +code;
-    const definitions =
-      schema.value.components && schema.value.components.schemas
-        ? Object.entries(schema.value.components.schemas).reduce(
-            (a, b) => ({
-              ...a,
-              [b[0]]: isReference(b[1]) ? changeRef(b[1]) : changeRefs(b[1]),
-            }),
-            {},
-          )
-        : {};
+    const definitions = makeDefinitionsFromSchema(schema.value);
     const operationLevelHeaders = headersFromOperation(
       schema.value,
       operation.value,
