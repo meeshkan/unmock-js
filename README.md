@@ -6,6 +6,26 @@
 
 Mock API dependencies in JavaScript.
 
+* [Install](#install)
+* [Usage](#usage)
+  + [Specifying hostname](#specifying-hostname)
+  + [Specifying the path](#specifying-the-path)
+  + [Specifying request body](#specifying-request-body)
+  + [Specifying request query string](#specifying-request-query-string)
+  + [Specifying Request Headers](#specifying-request-headers)
+  + [Specifying replies](#specifying-replies)
+  + [Specifying reply headers](#specifying-reply-headers)
+  + [Chaining](#chaining)
+  + [Passthrough](#passthrough)
+* [Expectations](#expectations)
+* [State](#state)
+* [Runner](#runner)
+* [OpenAPI](#openapi)
+* [Tutorials](#tutorials)
+* [Contributing](#contributing)
+* [Development](#development)
+* [License](#license)
+
 ## Install
 
 ```sh
@@ -367,6 +387,11 @@ test("my API always works as expected", runner(async () => {
 ## OpenAPI
 
 Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
+
+## Tutorials
+
+- [Unmock ts koans](https://github.com/unmock/unmock-ts-koans)
+- [Unmock js katacoda](https://www.katacoda.com/unmock/scenarios/introduction)
 
 ## Contributing
 
