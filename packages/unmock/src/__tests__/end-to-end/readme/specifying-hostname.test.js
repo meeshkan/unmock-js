@@ -2,12 +2,12 @@ const unmock = require("unmock");
 const { u } = unmock;
 
 unmock
-  .nock("https://www.example.com")
+  .nock("http://www.example.com")
   .get("/resource")
   .reply(200, u.integer());
 
 async function verifyReadme() {
-  const result = await unmock.fetch("https://www.example.com/resource/");
+  const result = await unmock.fetch("http://www.example.com/resource/");
   const text = await result.text();
   return parseInt(text);
 }
