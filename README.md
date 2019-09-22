@@ -64,7 +64,7 @@ The request hostname should be a string.
 ```js
 unmock.nock('http://www.example.com')
   .get('/resource')
-  .reply(200, u.string())
+  .reply(200, u.integer())
 ```
 
 Unmock will then refer to the service as `example`. To specify the name of the service as `foo`, we would write.
@@ -95,7 +95,7 @@ Alternatively, you can use an array of path segments, where each segment is eith
 
 ```js
 const scope = nock('http://www.example.com')
-  .get(["users", /[0-9]+/, "status"]) "/users/{id}/status"
+  .get(["users", /[0-9]+/, "status"]) // "/users/{id}/status"
   .reply(200, u.string())
 ```
 

@@ -384,7 +384,7 @@ describe("Tests dynamic path tests", () => {
     it("A request header is correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", { hello: "world" }, "foo")
+        .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
         .get("/")
         .reply(200);
       expectNServices(1);
