@@ -1,4 +1,5 @@
-import unmock, { fetch } from "../";
+import fetch from "node-fetch";
+import unmock from "../";
 import { IService } from "../service";
 
 unmock
