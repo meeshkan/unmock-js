@@ -14,7 +14,7 @@ $ npm install --save-dev unmock
 
 ## Usage
 
-Unmock has great [documentation](https://unmock.io/docs/introduction), but this README contains all the essential information.
+This README contains all the essential information about unmock. For more examples and detail, see the [documentation](https://unmock.io/docs/introduction).
 
 Here is a simple mock, a simple function, and a simple test in jest.
 
@@ -57,9 +57,7 @@ describe("getHoroscope", () => {
 });
 ```
 
-This setup says that we will intercept every HTTP call to `https://zodiac.com`.
-
-It will intercept all HTTPS GET requests to `/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec.
+This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope.
 
 ### Specifying hostname
 
@@ -82,10 +80,10 @@ unmock.nock('http://www.example.com', 'foo')
 To match multiple protocols or URLs, use `associate`.
 
 ```js
-unmock.associate('https://www2.example.com', 'foo')
+unmock.default.associate('https://www2.example.com', 'foo')
 ```
 
-### Specifying path
+### Specifying the path
 
 The request path should be a string, and you can use any [HTTP verb](#http-verbs). Wild-cards in the string should be enclosed in curly braces.
 
@@ -98,7 +96,7 @@ unmock.nock('http://www.example.com')
 Alternatively, you can use an array of path segments, where each segment is either a string, a string in curly-braces for an open parameter, or a key/value pair associating a name of a path parameter to a regex matching it.
 
 ```js
-const scope = nock('http://www.example.com')
+unmock.nock('http://www.example.com')
   .get(["users", /[0-9]+/, "status"]) // "/users/{id}/status"
   .reply(200, u.string())
 ```
@@ -107,27 +105,15 @@ const scope = nock('http://www.example.com')
 
 You can specify the request body to be matched as the second argument to the `get`, `post`, `put` or `delete` specifications. The argument can be any valid JSON, [`json-schema-poet`](https://github.com/unmock/json-schema-poet) using the `u` syntax(`u.integer()`, `u.string()`) or any combination thereof.
 
-Here is an example of a simple string.
+Here is an example of a post request that will only validate if it contains a token.
 
 ```js
 unmock.nock('http://www.example.com')
-  .post('/login', 'username=pgte&password=123456')
+  .post('/login', u.type({ token: u.string()}, {expires: u.integer()}))
   .reply(200, { id: u.string() })
 ```
 
-Here is an example of a more complicated structure, using `u.type` to specify required and optional properties.
-
-```js
-unmock.nock('http://www.example.com')
-  .post('/login', u.type({ token: u.string()}, {expires: u.integer()})
-  .reply(200, { id: u.string() })
-```
-
-```js
-unmock.nock('http://www.example.com')
-  .post('/login', { token: u.string(), expires: u.integer() })
-  .reply(200, { id: u.string() })
-```
+> Unmock does not support body encodings other than "application/json" at this point.
 
 ### Specifying request query string
 
@@ -152,31 +138,7 @@ unmock.nock('http://example.com')
   .reply(200, { results: u.array({id: u.integer() }) })
 ```
 
-### Specifying replies
-
-You can specify the return status code for a path on the first argument of reply like this:
-
-```js
-unmock.nock('http://myapp.iriscouch.com')
-  .get('/users/1')
-  .reply(404)
-```
-
-You can also specify the reply body as valid JSON, JSON schema, or any combination thereof.
-
-```js
-unmock.nock('http://www.google.com')
-  .get('/')
-  .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
-```
-
-### Specifying headers
-
-#### Header field names are case-insensitive
-
-Per [HTTP/1.1 4.2 Message Headers](http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2) specification, all message headers are case insensitive and thus internally Nock uses lower-case for all field names even if some other combination of cases was specified either in mocking specification or in mocked requests themselves.
-
-#### Specifying Request Headers
+### Specifying Request Headers
 
 You can specify the request headers like this:
 
@@ -204,7 +166,25 @@ const scope = nock('http://www.example.com', {
 
 Headers in unmock are always a partial match, meaning that additional headers are ignored. This means that you don't need to worry about matching against common headers like `Content-Type` and `Host`.
 
-#### Specifying Reply Headers
+### Specifying replies
+
+You can specify the return status code for a path on the first argument of reply like this:
+
+```js
+unmock.nock('http://myapp.iriscouch.com')
+  .get('/users/1')
+  .reply(404)
+```
+
+You can also specify the reply body as valid JSON, JSON schema, or any combination thereof.
+
+```js
+unmock.nock('http://www.google.com')
+  .get('/')
+  .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
+```
+
+### Specifying reply headers
 
 You can specify the reply headers like this:
 
@@ -242,12 +222,12 @@ unmock. nock('http://myapp.iriscouch.com')
 
 ### Passthrough
 
-For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `passthrough`.
+For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
 
 ```js
 unmock
   .nock("https://my-analytics-api.vendor.com)
-  .passthrough();
+  .tldr();
 ```
 
 ## Expectations
@@ -337,6 +317,40 @@ The following getter functions are defined on the spy object.
 - `traceResponseHeaders`
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
+
+## State
+
+Unmock supports the initialization of services to arbitrary states. This is helpful, for example, if you want to test how your code behaves when a given service returns *exactly* five items or when a particiular field in an object is missing or present.
+
+To do this, set the `state` property of a service. The state property is a function that takes a request and an OpenAPI schema as input and returns an OpenAPI schema and output.  Many utility functions have been created for the most common state manipulations. For example, to test the outcome with only certain codes, use `withCodes`.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state(withCodes([200, 201, 404]));
+```
+
+Because `withCodes` returns a function, the same thing could have been written.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state((req, schema) => withCodes([200, 201, 404])(req, schema));
+```
+
+This is useful, for example, if you want to test a certain code only if a given header is present.
+
+```js
+const unmock = require('unmock');
+const withCodes = unmock.transform.withCodes;
+const github = unmock.default.on().services.github;
+github.state((req, schema) =>
+  withCodes([200, ...(req.headers.MyHeader ? [404] : [])])(req, schema));
+```
+
+The unmock [documentation](https://www.unmock.io/docs/setting-state) contains more information about initializing the state.
 
 ## Runner
 
