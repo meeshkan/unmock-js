@@ -12,6 +12,8 @@ async function verifyReadme() {
   return parseInt(text);
 }
 
+beforeAll(() => { unmock.on() })
+
 describe("verifyReadme", () => {
   it("makes sure the readme works", async () => {
     const res = await verifyReadme();
