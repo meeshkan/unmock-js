@@ -6,8 +6,8 @@ unmock
   .get("/resource")
   .reply(200, u.integer());
 
-async function verifyReadme(sign) {
-  const result = await unmock.fetch("https://www.example.com/resource/");
+async function verifyReadme() {
+  const result = await unmock.fetch("http://www.example.com/resource/");
   const text = await result.text();
   return parseInt(text);
 }
