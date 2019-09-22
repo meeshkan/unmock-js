@@ -1,6 +1,6 @@
 import {
   matchUrls,
-  prunePathItem,
+  getPathItemWithMethod,
   matches,
   refName,
   firstElementOptional,
@@ -51,18 +51,18 @@ test("matchUrls returns all the urls from a schema's servers that match a given 
   ).toEqual(0);
 });
 
-test("prune path item keeps the path item we ask for and discards the rest", () => {
+test("get path item with method keeps the path item we ask for and discards the rest", () => {
   const o: PathItem = {
     get: { responses: { 100: { description: "hello" } } },
     post: { responses: { 101: { description: "hello" } } },
     delete: { responses: { 102: { description: "hello" } } },
     description: "foo",
   };
-  expect(prunePathItem("get", o)).toEqual({
+  expect(getPathItemWithMethod("get", o)).toEqual({
     get: { responses: { 100: { description: "hello" } } },
     description: "foo",
   });
-  expect(prunePathItem("post", o)).toEqual({
+  expect(getPathItemWithMethod("post", o)).toEqual({
     post: { responses: { 101: { description: "hello" } } },
     description: "foo",
   });

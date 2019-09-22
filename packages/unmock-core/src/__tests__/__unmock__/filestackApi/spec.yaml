@@ -35,7 +35,6 @@ paths:
       parameters:
         - name: apikey
           in: query
-          required: true
           schema:
             type: string
       responses:
