@@ -65,7 +65,7 @@ export class UnmockPackage implements IUnmockPackage {
 
   public nock(
     baseUrl: string,
-    nameOrHeaders?: string | Record<string, ExtendedJSONSchema>,
+    nameOrHeaders?: string | { reqheaders: Record<string, ExtendedJSONSchema> },
     name?: string,
   ) {
     const internalName =
@@ -76,7 +76,7 @@ export class UnmockPackage implements IUnmockPackage {
         : undefined;
     const requestHeaders =
       typeof nameOrHeaders === "object"
-        ? Object.entries(nameOrHeaders).reduce(
+        ? Object.entries(nameOrHeaders.reqheaders).reduce(
             (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
             {},
           )
