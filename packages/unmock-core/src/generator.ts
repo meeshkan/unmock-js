@@ -403,8 +403,8 @@ export const matches = (
   oas: OpenAPIObject,
 ): boolean =>
   matchesInternal(
-    path.split("/"),
-    pathItemKey.split("/"),
+    path.split("/").filter(i => i !== ""),
+    pathItemKey.split("/").filter(i => i !== ""),
     pathItem,
     method,
     oas,
