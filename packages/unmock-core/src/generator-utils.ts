@@ -268,26 +268,26 @@ export const transform = {
     return out;
   },
   times: (n: number) => (f: IStateTransformer) => {
-    const counter = { c: 0 };
+    let counter = 0;
     return (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject => {
       const out = f(req, o);
       if (!isEqual(out, o)) {
-        counter.c = counter.c + 1;
+        counter += 1;
       }
-      if (counter.c > n) {
+      if (counter > n) {
         return o;
       }
       return out;
     };
   },
   after: (n: number) => (f: IStateTransformer) => {
-    const counter = { c: 0 };
+    let counter = 0;
     return (req: ISerializedRequest, o: OpenAPIObject): OpenAPIObject => {
       const out = f(req, o);
       if (!isEqual(out, o)) {
-        counter.c = counter.c + 1;
+        counter += 1;
       }
-      if (counter.c <= n) {
+      if (counter <= n) {
         return o;
       }
       return out;
