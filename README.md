@@ -34,7 +34,7 @@ $ npm install --save-dev unmock
 
 ## Usage
 
-This README contains all the essential information about unmock. For more examples and detail, see the [documentation](https://unmock.io/docs/introduction).
+This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
 
 Here is a simple mock, a simple function, and a simple test in jest.
 
@@ -276,14 +276,6 @@ The following getter functions are defined on the spy object.
 - `getResponseBody`
 - `getResponseCode`
 - `getResponseHeaders`
-- `headRequestPathname`
-- `headRequestPath`
-- `headRequestHeaders`
-- `headRequestQuery`
-- `headRequestProtocol`
-- `headResponseBody`
-- `headResponseCode`
-- `headResponseHeaders`
 - `postRequestBody`
 - `postRequestPathname`
 - `postRequestPath`
@@ -302,15 +294,6 @@ The following getter functions are defined on the spy object.
 - `putResponseBody`
 - `putResponseCode`
 - `putResponseHeaders`
-- `patchRequestBody`
-- `patchRequestPathname`
-- `patchRequestPath`
-- `patchRequestHeaders`
-- `patchRequestQuery`
-- `patchRequestProtocol`
-- `patchResponseBody`
-- `patchResponseCode`
-- `patchResponseHeaders`
 - `deleteRequestPathname`
 - `deleteRequestPath`
 - `deleteRequestHeaders`
@@ -319,22 +302,6 @@ The following getter functions are defined on the spy object.
 - `deleteResponseBody`
 - `deleteResponseCode`
 - `deleteResponseHeaders`
-- `optionsRequestPathname`
-- `optionsRequestPath`
-- `optionsRequestHeaders`
-- `optionsRequestQuery`
-- `optionsRequestProtocol`
-- `optionsResponseBody`
-- `optionsResponseCode`
-- `optionsResponseHeaders`
-- `traceRequestPathname`
-- `traceRequestPath`
-- `traceRequestHeaders`
-- `traceRequestQuery`
-- `traceRequestProtocol`
-- `traceResponseBody`
-- `traceResponseCode`
-- `traceResponseHeaders`
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
 
