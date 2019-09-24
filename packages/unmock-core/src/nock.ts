@@ -215,15 +215,15 @@ type InputToPoet = { [k: string]: any } | Primitives | Primitives[];
 
 // How the fluent dynamic service API looks like (e.g. specifies `get(endpoint: string) => DynamicServiceSpec`)
 export interface IFluentDynamicService {
-  tldr: () => void;
-  get: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  head: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  post: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  put: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  patch: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  delete: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  options: (endpoint: ValidEndpointType) => DynamicServiceSpec;
-  trace: (endpoint: ValidEndpointType) => DynamicServiceSpec;
+  tldr(): void;
+  get(endpoint: ValidEndpointType): DynamicServiceSpec;
+  head(endpoint: ValidEndpointType): DynamicServiceSpec;
+  post(endpoint: ValidEndpointType): DynamicServiceSpec;
+  put(endpoint: ValidEndpointType): DynamicServiceSpec;
+  patch(endpoint: ValidEndpointType): DynamicServiceSpec;
+  delete(endpoint: ValidEndpointType): DynamicServiceSpec;
+  options(endpoint: ValidEndpointType): DynamicServiceSpec;
+  trace(endpoint: ValidEndpointType): DynamicServiceSpec;
 }
 
 // How the actual dynamic service spec looks like (e.g. `reply(statusCode: number, data: InputToPoet): ...`)
@@ -406,6 +406,17 @@ const endpointToQs = (endpoint: ValidEndpointType) =>
 const naked = (endpoint: ValidEndpointType) =>
   typeof endpoint === "string" ? endpoint.split("?")[0] : endpoint;
 
+const HTTPMethodsWithCommonStatusResponses = {
+  get: 200,
+  head: 200,
+  post: 201,
+  put: 204,
+  patch: 204,
+  delete: 200,
+  options: 200,
+  trace: 200,
+};
+
 const buildFluentNock = (
   store: ServiceStore,
   baseUrl: string,
@@ -415,107 +426,26 @@ const buildFluentNock = (
   ((fds: IFluentDynamicService) => ({
     ...fds,
     tldr: () =>
-      fds
-        .get("/")
-        .reply(200)
-        .get("/{a}")
-        .reply(200)
-        .get("/{a}/{b}")
-        .reply(200)
-        .get("/{a}/{b}/{c}")
-        .reply(200)
-        .get("/{a}/{b}/{c}/{d}")
-        .reply(200)
-        .get("/{a}/{b}/{c}/{d}/{e}")
-        .reply(200)
-        .get("/{a}/{b}/{c}/{d}/{e}/{f}")
-        .reply(200)
-        .get("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
-        .reply(200)
-        .get("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
-        .reply(200)
-        .post("/")
-        .reply(200)
-        .post("/{a}")
-        .reply(200)
-        .post("/{a}/{b}")
-        .reply(200)
-        .post("/{a}/{b}/{c}")
-        .reply(200)
-        .post("/{a}/{b}/{c}/{d}")
-        .reply(200)
-        .post("/{a}/{b}/{c}/{d}/{e}")
-        .reply(200)
-        .post("/{a}/{b}/{c}/{d}/{e}/{f}")
-        .reply(200)
-        .post("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
-        .reply(200)
-        .post("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
-        .reply(200)
-        .put("/")
-        .reply(200)
-        .put("/{a}")
-        .reply(200)
-        .put("/{a}/{b}")
-        .reply(200)
-        .put("/{a}/{b}/{c}")
-        .reply(200)
-        .put("/{a}/{b}/{c}/{d}")
-        .reply(200)
-        .put("/{a}/{b}/{c}/{d}/{e}")
-        .reply(200)
-        .put("/{a}/{b}/{c}/{d}/{e}/{f}")
-        .reply(200)
-        .put("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
-        .reply(200)
-        .put("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
-        .reply(200)
-        .delete("/")
-        .reply(200)
-        .delete("/{a}")
-        .reply(200)
-        .delete("/{a}/{b}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}/{d}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}/{d}/{e}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}/{d}/{e}/{f}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
-        .reply(200)
-        .delete("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
-        .reply(200)
-        .patch("/")
-        .reply(200)
-        .patch("/{a}")
-        .reply(200)
-        .patch("/{a}/{b}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}/{d}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}/{d}/{e}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}/{d}/{e}/{f}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}/{d}/{e}/{f}/{g}")
-        .reply(200)
-        .patch("/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}")
-        .reply(200),
-  }))(Object.entries({
-    get: 200,
-    head: 200,
-    post: 201,
-    put: 204,
-    patch: 204,
-    delete: 200,
-    options: 200,
-    trace: 200,
-  }).reduce(
+      [
+        "/",
+        "/{a}",
+        "/{a}/{b}",
+        "/{a}/{b}/{c}",
+        "/{a}/{b}/{c}/{d}",
+        "/{a}/{b}/{c}/{d}/{e}",
+        "/{a}/{b}/{c}/{d}/{e}/{f}",
+        "/{a}/{b}/{c}/{d}/{e}/{f}/{g}",
+        "/{a}/{b}/{c}/{d}/{e}/{f}/{g}/{h}",
+      ].forEach(p =>
+        Object.entries(
+          HTTPMethodsWithCommonStatusResponses,
+          // "cast" fds to any to leave the TS world for dynamic method calls
+          // "cast" back to IDynamicServiceSpec for consistency
+        ).forEach(([method, code]) =>
+          ((fds as any)[method](p) as IDynamicServiceSpec).reply(code),
+        ),
+      ),
+  }))(Object.entries(HTTPMethodsWithCommonStatusResponses).reduce(
     (o, [method, code]) => ({
       ...o,
       [method]:
