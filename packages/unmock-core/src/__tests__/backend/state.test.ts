@@ -15,6 +15,7 @@ const {
   noopThrows,
   compose,
   times,
+  after,
 } = transform;
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
@@ -201,6 +202,40 @@ describe("Node.js interceptor", () => {
       );
       let resp = await postMessage();
 
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).not.toEqual(text);
+    });
+
+    test("updates times after n", async () => {
+      const text = "foo";
+      const postMessage = () =>
+        axios.post("https://slack.com/api/chat.postMessage", {
+          data: { channel: "my_channel_id", text },
+        });
+      slack.state(
+        withCodes(200),
+        times(3)(
+          after(3)(
+            responseBody({
+              path: "/chat.postMessage",
+              lens: ["message", "text"],
+            }).const(text),
+          ),
+        ),
+      );
+
+      let resp = await postMessage();
+      expect(resp.data.message.text).not.toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).not.toEqual(text);
+      resp = await postMessage();
+      expect(resp.data.message.text).not.toEqual(text);
+      resp = await postMessage();
       expect(resp.data.message.text).toEqual(text);
       resp = await postMessage();
       expect(resp.data.message.text).toEqual(text);

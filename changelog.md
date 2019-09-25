@@ -1,5 +1,16 @@
 # CHANGELOG.md
 
+## 0.3.5 (2019-9-25)
+
+Features:
+
+  - the `runner` no longer needs manual resetting of the spies
+
+Fixes:
+
+  - `json-schema-faker` ignored `minItems`, which is now disabled. as a result, there is a slight regression in the fuzzing (it is less fuzzy) that we can address in a future release.
+
+
 ## 0.3.4 (2019-09-22)
 
 Features:

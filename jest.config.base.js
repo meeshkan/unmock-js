@@ -4,7 +4,7 @@ module.exports = {
   testEnvironment: "node",
   preset: "ts-jest",
   testMatch: null,
-  testRegex: "/__tests__/.*\\.test\\.(js|ts)$",
+  testRegex: "/__tests__/.*\\.test\\.(jsx?|tsx?)$",
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
   moduleNameMapper: {

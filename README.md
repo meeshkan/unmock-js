@@ -6,6 +6,26 @@
 
 Mock API dependencies in JavaScript.
 
+* [Install](#install)
+* [Usage](#usage)
+  + [Specifying hostname](#specifying-hostname)
+  + [Specifying the path](#specifying-the-path)
+  + [Specifying request body](#specifying-request-body)
+  + [Specifying request query string](#specifying-request-query-string)
+  + [Specifying Request Headers](#specifying-request-headers)
+  + [Specifying replies](#specifying-replies)
+  + [Specifying reply headers](#specifying-reply-headers)
+  + [Chaining](#chaining)
+  + [Passthrough](#passthrough)
+* [Expectations](#expectations)
+* [State](#state)
+* [Runner](#runner)
+* [OpenAPI](#openapi)
+* [Tutorials](#tutorials)
+* [Contributing](#contributing)
+* [Development](#development)
+* [License](#license)
+
 ## Install
 
 ```sh
@@ -14,7 +34,7 @@ $ npm install --save-dev unmock
 
 ## Usage
 
-This README contains all the essential information about unmock. For more examples and detail, see the [documentation](https://unmock.io/docs/introduction).
+This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
 
 Here is a simple mock, a simple function, and a simple test in jest.
 
@@ -256,14 +276,6 @@ The following getter functions are defined on the spy object.
 - `getResponseBody`
 - `getResponseCode`
 - `getResponseHeaders`
-- `headRequestPathname`
-- `headRequestPath`
-- `headRequestHeaders`
-- `headRequestQuery`
-- `headRequestProtocol`
-- `headResponseBody`
-- `headResponseCode`
-- `headResponseHeaders`
 - `postRequestBody`
 - `postRequestPathname`
 - `postRequestPath`
@@ -282,15 +294,6 @@ The following getter functions are defined on the spy object.
 - `putResponseBody`
 - `putResponseCode`
 - `putResponseHeaders`
-- `patchRequestBody`
-- `patchRequestPathname`
-- `patchRequestPath`
-- `patchRequestHeaders`
-- `patchRequestQuery`
-- `patchRequestProtocol`
-- `patchResponseBody`
-- `patchResponseCode`
-- `patchResponseHeaders`
 - `deleteRequestPathname`
 - `deleteRequestPath`
 - `deleteRequestHeaders`
@@ -299,22 +302,6 @@ The following getter functions are defined on the spy object.
 - `deleteResponseBody`
 - `deleteResponseCode`
 - `deleteResponseHeaders`
-- `optionsRequestPathname`
-- `optionsRequestPath`
-- `optionsRequestHeaders`
-- `optionsRequestQuery`
-- `optionsRequestProtocol`
-- `optionsResponseBody`
-- `optionsResponseCode`
-- `optionsResponseHeaders`
-- `traceRequestPathname`
-- `traceRequestPath`
-- `traceRequestHeaders`
-- `traceRequestQuery`
-- `traceRequestProtocol`
-- `traceResponseBody`
-- `traceResponseCode`
-- `traceResponseHeaders`
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
 
@@ -367,6 +354,11 @@ test("my API always works as expected", runner(async () => {
 ## OpenAPI
 
 Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
+
+## Tutorials
+
+- [Unmock ts koans](https://github.com/unmock/unmock-ts-koans)
+- [Unmock js katacoda](https://www.katacoda.com/unmock/scenarios/introduction)
 
 ## Contributing
 

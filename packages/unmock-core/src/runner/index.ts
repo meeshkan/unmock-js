@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import NodeBackend from "../backend";
 import { runnerConfiguration } from "../generator";
 export interface IRunnerOptions {
   maxLoop: number;
@@ -9,16 +9,15 @@ const defaultRunnerOptions: IRunnerOptions = {
 };
 
 const errorHandler = (
-  allFailed: boolean,
+  nTimes: number,
   errors: Error[],
   intermediaryErrors: Array<string | { message: string }>,
   cb?: jest.DoneCallback,
 ) => {
   // tslint:disable-next-line:max-line-length
   const msg = (rest: string) =>
-    `${chalk.red("@unmock")} - ${
-      allFailed ? "all" : "some"
-    } tests failed. Here's the first error.\n${rest}`;
+    `This many tests failed: ${errors.length +
+      intermediaryErrors.length} out of ${nTimes}. Here's the first error.\n${rest}`;
   if (errors.length) {
     errors[0].message = msg(errors[0].message);
   } else {
@@ -40,7 +39,7 @@ const errorHandler = (
   }
 };
 
-export default (
+export default (backend: NodeBackend) => (
   fn?: jest.ProvidesCallback,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: jest.DoneCallback) => {
@@ -70,14 +69,17 @@ export default (
       } else {
         throw e;
       }
+    } finally {
+      // reset histories
+      Object.entries(backend.serviceStore.services).forEach(([_, service]) => {
+        service.spy.resetHistory();
+      });
     }
   }
   runnerConfiguration.reset();
   // >= in case fail is called multiple times... fix
-  if (errors.length + intermediaryErrors.length >= realOptions.maxLoop) {
-    errorHandler(true, errors, intermediaryErrors, cb);
-  } else if (errors.length + intermediaryErrors.length > 0) {
-    errorHandler(false, errors, intermediaryErrors, cb);
+  if (errors.length + intermediaryErrors.length > 0) {
+    errorHandler(realOptions.maxLoop, errors, intermediaryErrors, cb);
   } else {
     // tslint:disable-next-line:no-unused-expression
     cb && cb();
