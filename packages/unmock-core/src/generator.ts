@@ -870,7 +870,7 @@ const generateMockFromTemplate2 = (
   jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
   jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
-
+  console.log("BODY SCHEMA", JSON.stringify(bodySchema, null, 2));
   const body = bodySchema
     ? JSON.stringify(jsf.generate(bodySchema))
     : undefined;

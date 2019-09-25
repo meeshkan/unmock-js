@@ -6,11 +6,10 @@ import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
 import { ExtendedJSONSchema, JSONSchemify, nockify } from "./nock";
-import runner from "./runner";
+import internalRunner, { IRunnerOptions } from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export { fetch };
-export { runner };
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
@@ -65,6 +64,13 @@ export class UnmockPackage implements IUnmockPackage {
     return this.backend.services;
   }
 
+  public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
+    const f = async (cb?: jest.DoneCallback) => {
+      return internalRunner(this.backend)(fn, options)(cb);
+    };
+    return f;
+  }
+
   public nock(
     baseUrl: string,
     nameOrHeaders?:
@@ -111,5 +117,6 @@ export const unmock = new UnmockPackage(new NodeBackend(), {
 });
 
 export const nock = unmock.nock.bind(unmock);
+export const runner = unmock.runner.bind(unmock);
 
 export default unmock;
