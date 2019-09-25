@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import NodeBackend from "../backend";
 import { runnerConfiguration } from "../generator";
 export interface IRunnerOptions {
