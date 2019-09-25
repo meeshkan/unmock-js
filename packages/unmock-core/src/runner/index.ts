@@ -17,7 +17,8 @@ const errorHandler = (
 ) => {
   // tslint:disable-next-line:max-line-length
   const msg = (rest: string) =>
-    `This many tests failed: ${errors.length + intermediaryErrors.length} out of ${nTimes}. Here's the first error.\n${rest}`;
+    `This many tests failed: ${errors.length +
+      intermediaryErrors.length} out of ${nTimes}. Here's the first error.\n${rest}`;
   if (errors.length) {
     errors[0].message = msg(errors[0].message);
   } else {
