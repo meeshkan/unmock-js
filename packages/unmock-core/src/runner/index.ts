@@ -62,21 +62,18 @@ export default (backend: NodeBackend) => (
     runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
-      // reset histories
-      Object.entries(backend.serviceStore.services).forEach(([_, service]) => {
-        service.spy.resetHistory();
-      });
       res.push(r);
     } catch (e) {
-      // reset histories
-      Object.entries(backend.serviceStore.services).forEach(([_, service]) => {
-        service.spy.resetHistory();
-      });
       if (e.constructor.name === "JestAssertionError") {
         errors.push(e);
       } else {
         throw e;
       }
+    } finally {
+      // reset histories
+      Object.entries(backend.serviceStore.services).forEach(([_, service]) => {
+        service.spy.resetHistory();
+      });
     }
   }
   runnerConfiguration.reset();
