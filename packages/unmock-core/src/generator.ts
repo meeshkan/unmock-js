@@ -866,11 +866,11 @@ const generateMockFromTemplate2 = (
     "fixedProbabilities",
     runnerConfiguration.optionalsProbability === 1,
   );
-  jsf.option("minItems", runnerConfiguration.minItems);
-  jsf.option("minLength", runnerConfiguration.minItems);
+  // disables this temporarily as it messes with user-defined min items
+  // jsf.option("minItems", runnerConfiguration.minItems);
+  // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
   jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
-  console.log("BODY SCHEMA", JSON.stringify(bodySchema, null, 2));
   const body = bodySchema
     ? JSON.stringify(jsf.generate(bodySchema))
     : undefined;
