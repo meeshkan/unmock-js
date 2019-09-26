@@ -338,6 +338,18 @@ const getMatchingParameters = (
   ]);
 
 /**
+ * Returns parsed JSON or the original if it is not valid JSON
+ * @param maybe Perhaps this is JSON, perhaps not
+ */
+const maybeJson = (maybe: string) => {
+  try {
+    return JSON.parse(maybe);
+  } catch {
+    return maybe;
+  }
+};
+
+/**
  * Matches part of a path against a path parameter with name vname
  * @param part part of a path, ie an id
  * @param vname name of a parameter
@@ -354,10 +366,19 @@ const pathParameterMatch = (
 ) =>
   getMatchingParameters(vname, pathItem, operation, oas).filter(
     i =>
-      !jsonschema.validate(part, {
-        ...i,
-        definitions: makeDefinitionsFromSchema(oas),
-      }).valid,
+      // this is a precaution in case the path
+      // is a number or bool and the schema is defined as such
+      // so we include the part as itself and as its
+      // JSON-parsed equivalent via maybeJson
+      ![...new Set([part, maybeJson(part)])].reduce(
+        (a, b) =>
+          a ||
+          jsonschema.validate(b, {
+            ...i,
+            definitions: makeDefinitionsFromSchema(oas),
+          }).valid,
+        false,
+      ),
   ).length === 0;
 
 const pathParamRegex = new RegExp(/^\{[^}]+\}/gi);
