@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.3.7 (2019-9-26)
+
+Fixes:
+
+  - Fixes a bug in the reporter where no test suites were shown
+
 ## 0.3.6 (2019-9-26)
 
 Fixes:
