@@ -41,7 +41,10 @@ describe("Decorated spy", () => {
     path: "/v3",
     pathname: "/v3",
     query: {},
-    body: {
+    body: JSON.stringify({
+      hello: "foo",
+    }),
+    bodyAsJson: {
       hello: "foo",
     },
     headers: {
