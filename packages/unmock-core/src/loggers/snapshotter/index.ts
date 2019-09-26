@@ -2,7 +2,8 @@ import debug from "debug";
 import * as expect from "expect";
 import * as fs from "fs";
 import { merge } from "lodash";
-import { tmpdir as osTmpdir } from "os";
+import * as mkdirp from "mkdirp";
+import { homedir } from "os";
 import { resolve as pathResolve } from "path";
 import { IListener, IListenerInput } from "../../interfaces";
 import { unmockSnapshot } from "./expect-extend";
@@ -19,8 +20,9 @@ export interface IFsSnapshotterOptions {
 }
 
 export const DEFAULT_SNAPSHOT_DIRECTORY = pathResolve(
-  osTmpdir(), // TODO Resolve if symlink?
+  homedir(),
   ".unmock",
+  "snapshots",
 );
 
 const DEFAULT_OPTIONS: IFsSnapshotterOptions = {
@@ -38,7 +40,7 @@ export const resolveOptions = (
 const ensureDirExists = (directory: string) => {
   if (!fs.existsSync(directory)) {
     debugLog(`Creating snapshot directory: ${directory}`);
-    return fs.mkdirSync(directory); // TODO Catch
+    return mkdirp.sync(directory);
   }
 
   if (!fs.lstatSync(directory).isDirectory()) {
