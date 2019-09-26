@@ -6,7 +6,7 @@ describe("Test suites component", () => {
             expect(testFileToId(`C:\\\\Windows\\Users\\Meeshkan`)).toBe("C--Windows-Users-Meeshkan");
         });
         it("should change unix path to proper id", () => {
-            expect(testFileToId("/unix/path/dir")).toBe("-unix-path-dir");
+            expect(testFileToId("/unix/path/dir/file.txt")).toBe("-unix-path-dir-file-txt");
         });
     });
 });
