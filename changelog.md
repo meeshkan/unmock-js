@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.3.6 (2019-9-26)
+
+Fixes:
+
+  - fixes a bug where path parameters were incorrectly matched if they were anything other than a string.
+
 ## 0.3.5 (2019-9-25)
 
 Features:

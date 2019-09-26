@@ -13,9 +13,18 @@ const store: Record<string, OpenAPIObject> = {
         description: "",
       },
       "/user/{id}": {
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            schema: {
+              type: "integer",
+            },
+          },
+        ],
         get: { responses: { 200: { description: "useridget" } } },
         post: { responses: { 201: { description: "useridpost" } } },
-        description: "",
       },
       "/user/{id}/name": {
         get: { responses: { 200: { description: "useridnameget" } } },
@@ -197,13 +206,73 @@ test("matcher matches correctly 2", () => {
   });
 });
 
-test("matcher discriminates paths correctly", () => {
+test("matcher discriminates paths correctly when path is misspelled", () => {
   expect(
     matcher(
       {
         host: "api.foo.com",
         path: "/users", // incorrect, should be user
         pathname: "/users", // incorrect, should be user
+        protocol: "https",
+        method: "get",
+        query: {},
+      },
+      store,
+    ),
+  ).toEqual({
+    foo: {
+      openapi: "",
+      servers: [{ url: "https://api.foo.com" }],
+      info: { title: "", version: "" },
+      paths: {},
+    },
+  });
+});
+
+test("matcher discriminates paths correctly when path wildcard conforms to schema", () => {
+  expect(
+    matcher(
+      {
+        host: "api.foo.com",
+        path: "/user/55", // correctly parses number
+        pathname: "/user/55", // correcly parses number
+        protocol: "https",
+        method: "get",
+        query: {},
+      },
+      store,
+    ),
+  ).toEqual({
+    foo: {
+      openapi: "",
+      servers: [{ url: "https://api.foo.com" }],
+      info: { title: "", version: "" },
+      paths: {
+        ["/user/{id}"]: {
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: {
+                type: "integer",
+              },
+            },
+          ],
+          get: { responses: { 200: { description: "useridget" } } },
+        },
+      },
+    },
+  });
+});
+
+test("matcher discriminates paths correctly when path wildcard differs from schema", () => {
+  expect(
+    matcher(
+      {
+        host: "api.foo.com",
+        path: "/user/fdsfsfwef", // correctly rejects non-number
+        pathname: "/user/fdsfsfwef", // correcly rejects non-number
         protocol: "https",
         method: "get",
         query: {},

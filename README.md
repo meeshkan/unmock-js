@@ -18,7 +18,7 @@ Mock API dependencies in JavaScript.
   + [Chaining](#chaining)
   + [Passthrough](#passthrough)
 * [Expectations](#expectations)
-* [State](#state)
+* [Initializing Mocks](#initializing-mocks)
 * [Runner](#runner)
 * [OpenAPI](#openapi)
 * [Tutorials](#tutorials)
@@ -305,7 +305,7 @@ The following getter functions are defined on the spy object.
 
 In addition, spies are full-fledged sinon spies. More about their usage in Unmock can be found [here](https://www.unmock.io/docs/expectations), and more information on sinon can be found [here](https://sinonjs.org/).
 
-## State
+## Initializing Mocks
 
 Unmock supports the initialization of services to arbitrary states. This is helpful, for example, if you want to test how your code behaves when a given service returns *exactly* five items or when a particiular field in an object is missing or present.
 
