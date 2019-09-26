@@ -70,12 +70,16 @@ describe("Decorated spy", () => {
     });
     it("should return request body when used with matching matcher", () => {
       expect(
-        callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
+        callTracker.spy.postRequestBody(
+          match({ bodyAsJson: { hello: "foo" } }),
+        ),
       ).toBe(req.body);
     });
     it("should throw when called with non-matching matcher", () => {
       expect(() =>
-        callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
+        callTracker.spy.postRequestBody(
+          match({ bodyAsJson: { hello: "bar" } }),
+        ),
       ).toThrowError("postRequestBody: Expected");
     });
     it("should throw when nothing tracked", () => {
