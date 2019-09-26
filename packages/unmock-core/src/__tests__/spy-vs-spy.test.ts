@@ -60,11 +60,13 @@ describe("tests spies", () => {
     expect(foo.spy.putRequestPath()).toBe("/hello?alpha=omega");
     expect(foo.spy.putRequestPathname()).toBe("/hello");
     expect(foo.spy.putRequestProtocol()).toBe("https");
-    expect(foo.spy.putRequestBody()).toEqual({ the: "end" });
+    expect(JSON.parse(foo.spy.putRequestBody())).toEqual({ the: "end" });
+    expect(foo.spy.putRequestBodyAsJson()).toEqual({ the: "end" });
     expect(foo.spy.putRequestHost()).toBe("www.foo.com");
     expect(foo.spy.putRequestQuery()).toEqual({ alpha: "omega" });
     expect(foo.spy.putResponseCode()).toBe(200);
     expect(JSON.parse(foo.spy.putResponseBody())).toEqual({ foo: "bar" });
+    expect(foo.spy.putResponseBodyAsJson()).toEqual({ foo: "bar" });
     expect(foo.spy.putResponseHeaders().my).toBe("header");
   });
   it("spies post attributes correctly", async () => {
@@ -77,11 +79,13 @@ describe("tests spies", () => {
     expect(foo.spy.postRequestPath()).toBe("/hello?alpha=omega");
     expect(foo.spy.postRequestPathname()).toBe("/hello");
     expect(foo.spy.postRequestProtocol()).toBe("https");
-    expect(foo.spy.postRequestBody()).toEqual({ the: "end" });
+    expect(JSON.parse(foo.spy.postRequestBody())).toEqual({ the: "end" });
+    expect(foo.spy.postRequestBodyAsJson()).toEqual({ the: "end" });
     expect(foo.spy.postRequestHost()).toBe("www.foo.com");
     expect(foo.spy.postRequestQuery()).toEqual({ alpha: "omega" });
     expect(foo.spy.postResponseCode()).toBe(200);
     expect(JSON.parse(foo.spy.postResponseBody())).toEqual({ foo: "bar" });
+    expect(foo.spy.postResponseBodyAsJson()).toEqual({ foo: "bar" });
     expect(foo.spy.postResponseHeaders().my).toBe("header");
   });
 });

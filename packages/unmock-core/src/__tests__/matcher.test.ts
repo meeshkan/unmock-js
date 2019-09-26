@@ -289,7 +289,7 @@ test("matcher discriminates paths correctly when path wildcard differs from sche
   });
 });
 
-test("matcher discrimnates operation correctly", () => {
+test("matcher discriminates operation correctly", () => {
   expect(
     matcher(
       {
@@ -316,7 +316,7 @@ test("matcher discrimnates operation correctly", () => {
   });
 });
 
-test("matcher discrimnates bad service correctly", () => {
+test("matcher discriminates bad service correctly", () => {
   expect(
     matcher(
       {
@@ -332,7 +332,7 @@ test("matcher discrimnates bad service correctly", () => {
   ).toEqual({});
 });
 
-test("matcher discrimnates required query parameters when pattern matches", () => {
+test("matcher discriminates required query parameters when pattern matches", () => {
   expect(
     matcher(
       {
@@ -348,7 +348,7 @@ test("matcher discrimnates required query parameters when pattern matches", () =
   ).toEqual(store.baz.paths["/guest"].get);
 });
 
-test("matcher discrimnates required query parameters when pattern does not match", () => {
+test("matcher discriminates required query parameters when pattern does not match", () => {
   expect(
     matcher(
       {
@@ -364,7 +364,7 @@ test("matcher discrimnates required query parameters when pattern does not match
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required query parameters when no query is present", () => {
+test("matcher discriminates required query parameters when no query is present", () => {
   expect(
     matcher(
       {
@@ -380,7 +380,7 @@ test("matcher discrimnates required query parameters when no query is present", 
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required post body correctly", () => {
+test("matcher discriminates required post body correctly", () => {
   expect(
     matcher(
       {
@@ -390,14 +390,15 @@ test("matcher discrimnates required post body correctly", () => {
         protocol: "https",
         method: "post",
         query: {},
-        body: { age: 42 },
+        bodyAsJson: { age: 42 },
+        body: JSON.stringify({ age: 42 }),
       },
       store,
     ).baz.paths["/guest/{id}/name"].post,
   ).toEqual(store.baz.paths["/guest/{id}/name"].post);
 });
 
-test("matcher discrimnates incorrect required post body correctly", () => {
+test("matcher discriminates incorrect required post body correctly", () => {
   expect(
     matcher(
       {
@@ -407,14 +408,15 @@ test("matcher discrimnates incorrect required post body correctly", () => {
         protocol: "https",
         method: "post",
         query: {},
-        body: { age: "42" },
+        body: JSON.stringify({ age: "42" }),
+        bodyAsJson: { age: "42" },
       },
       store,
     ).baz.paths["/guest/{id}/name"].post,
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required header and query correctly", () => {
+test("matcher discriminates required header and query correctly", () => {
   expect(
     matcher(
       {
@@ -431,7 +433,7 @@ test("matcher discrimnates required header and query correctly", () => {
   ).toEqual(store.baz.paths["/guest/{id}"].post);
 });
 
-test("matcher discrimnates missing required header correctly", () => {
+test("matcher discriminates missing required header correctly", () => {
   expect(
     matcher(
       {

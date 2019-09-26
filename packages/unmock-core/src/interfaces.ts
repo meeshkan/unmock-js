@@ -1,3 +1,4 @@
+import { JSONValue } from "json-schema-strictly-typed";
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
 
@@ -620,7 +621,8 @@ export interface IIncomingQuery {
 export type IProtocol = "http" | "https";
 
 export interface ISerializedRequest {
-  body?: string | object;
+  body?: string;
+  bodyAsJson?: JSONValue;
   headers?: IIncomingHeaders;
   host: string;
   method: HTTPMethod;
@@ -640,6 +642,7 @@ export interface ISerializedRequest {
 }
 
 export interface ISerializedResponse {
+  bodyAsJson?: JSONValue;
   body?: string;
   headers?: IOutgoingHeaders;
   statusCode: number;

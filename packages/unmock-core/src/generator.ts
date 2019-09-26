@@ -222,7 +222,7 @@ const keepMethodIfRequiredRequestBodyIsPresent = (
     : pipe(
         getRequiredRequestBodySchemas(req, oai, p).filter(
           i =>
-            !jsonschema.validate(req.body, {
+            !jsonschema.validate(req.bodyAsJson, {
               ...changeRefs(i),
               definitions: makeDefinitionsFromSchema(oai),
             }).valid,
@@ -892,15 +892,15 @@ const generateMockFromTemplate2 = (
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
   jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
-  const body = bodySchema
-    ? JSON.stringify(jsf.generate(bodySchema))
-    : undefined;
+  const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
+  const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);
   const resHeaders = headerSchema ? jsf.generate(headerSchema) : undefined;
   jsf.option("useDefaultValue", false);
 
   return {
     body,
+    bodyAsJson,
     headers: resHeaders,
     statusCode,
   };
