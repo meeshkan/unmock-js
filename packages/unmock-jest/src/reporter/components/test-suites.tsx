@@ -13,7 +13,7 @@ export const testFileToId = (file: string) => file.replace(/(\/|\\(\\)?|:|\.)/g,
 const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () => React.ReactElement] => {
 
     const elementsAndCss = testSuites.map((testSuite, index) => {
-        const id = testFileToId(testSuite.testFilePath);
+        const id = testFileToId(testSuite.shortFilePath);
         const elementCss = `#box-${id}:checked~.test-suite-label-${id} {
     opacity: 1;
     }
