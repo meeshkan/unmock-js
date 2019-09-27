@@ -33,21 +33,29 @@ describe("Test suites component", () => {
             const fieldset = dom.window.document.querySelector("fieldset");
             expect(fieldset).toBeInTheDocument();
         });
+        it("should have two inputs", () => {
+            const inputs = dom.window.document.querySelectorAll("input");
+            expect(inputs).toHaveLength(2);
+        });
+        it("should have input with expected id", () => {
+            const inputElement = dom.window.document.querySelector("input#box-dsl-test-ts");
+            expect(inputElement).toBeDefined();
+        });
         it("should have two labels", () => {
             const labels = dom.window.document.querySelectorAll("label");
             expect(labels).toHaveLength(2);
         });
         it("rendered component should have label with expected class", () => {
-            const label = dom.window.document.querySelector("label .test-suite-label-dsl-test-ts");
-            expect(label).toBeDefined();
+            const label = dom.window.document.querySelector("label.test-suite-label-dsl-test-ts");
+            expect(label).not.toBeNull();
         });
         it("should have two divs for test suite results", () => {
             const divs = dom.window.document.querySelectorAll("div .test-suite");
             expect(divs).toHaveLength(2);
         });
         it("should have div with expected class", () => {
-            const div = dom.window.document.querySelector("div .test-suite-dsl-test-ts");
-            expect(div).toBeDefined();
+            const div = dom.window.document.querySelector("div.test-suite-dsl-test-ts");
+            expect(div).not.toBeNull();
         });
     });
 });
