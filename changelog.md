@@ -1,5 +1,15 @@
 # CHANGELOG.md
 
+## 0.3.8 (2019-9-27)
+
+Features:
+
+  - Request and response include `bodyAsJson` for convenient access to a parsed object
+
+Fixes:
+
+  - Adds certain types as a dependency
+
 ## 0.3.7 (2019-9-26)
 
 Fixes:
