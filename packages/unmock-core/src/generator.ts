@@ -880,6 +880,7 @@ const generateMockFromTemplate2 = (
   headerSchema?: any,
   bodySchema?: any,
 ): ISerializedResponse => {
+  jsf.extend("faker", () => require("faker"));
   jsf.option("optionalsProbability", runnerConfiguration.optionalsProbability);
   // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
   // otherwise, generate up to optionalsProbability% of optionals

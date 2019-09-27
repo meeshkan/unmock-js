@@ -12,8 +12,8 @@ unmock
       u.type(
         {
           address: {
-            city: u.string(),
-            state: u.string(),
+            city: u.string("address.city"),
+            state: u.string("address.state"),
           },
         },
         {
