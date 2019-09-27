@@ -38,7 +38,6 @@ body {
 }
 
 .test-suite {
-  # border-style: dotted;
   padding: 1rem;
   margin-top: 3rem;
 }
@@ -61,18 +60,6 @@ body {
 .test-suite__title-summary {
   font-size: 2rem;
   margin: auto;
-}
-
-.test-suite__results {
-  # border-style: solid;
-}
-
-.test-suite--success {
-  # background-color: ${successGreen};
-}
-
-.test-suite--failure {
-  # background-color: ${failureRed};
 }
 
 .test-suite__results--success {
@@ -136,15 +123,11 @@ body {
 
 .call__request {
   flex: 1 1 0px;
-  # border-style: solid;
-  # border-radius: 2rem;
   padding: 1rem;
 }
 
 .call__response {
   flex: 1 1 0px;
-  # border-style: solid;
-  # border-radius: 2rem;
   padding: 1rem;
 }
 
