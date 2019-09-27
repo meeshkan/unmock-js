@@ -3,6 +3,7 @@ import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { createCallTracker, ICallTracker } from "../service/spy";
 
 const fakeRequest: ISerializedRequest = {
+  headers: {},
   method: "get",
   host: "github.com",
   protocol: "https",

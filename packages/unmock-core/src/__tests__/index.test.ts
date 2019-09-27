@@ -18,6 +18,7 @@ describe("Imports", () => {
   describe("for types", () => {
     it("should have UnmockRequest and UnmockResponse", () => {
       const request: UnmockRequest = {
+        headers: {},
         host: "github.com",
         method: "get",
         path: "/v1",
@@ -25,7 +26,11 @@ describe("Imports", () => {
         protocol: "http",
         query: {},
       };
-      const response: UnmockResponse = { body: "asdf", statusCode: 200 };
+      const response: UnmockResponse = {
+        headers: {},
+        body: "asdf",
+        statusCode: 200,
+      };
       expect(request).toBeDefined();
       expect(response).toBeDefined();
     });

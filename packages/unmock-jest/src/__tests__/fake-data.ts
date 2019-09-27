@@ -58,9 +58,11 @@ export const testRequest: UnmockRequest = {
   host: "api.github.com",
   protocol: "https",
   query: {},
+  headers: {},
 };
 
 export const testResponse: UnmockResponse = {
+  headers: {},
   statusCode: 200,
   body: "OK",
 };
