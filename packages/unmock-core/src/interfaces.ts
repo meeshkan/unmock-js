@@ -623,7 +623,7 @@ export type IProtocol = "http" | "https";
 export interface ISerializedRequest {
   body?: string;
   bodyAsJson?: JSONValue;
-  headers?: IIncomingHeaders;
+  headers: IIncomingHeaders;
   host: string;
   method: HTTPMethod;
   /**
@@ -644,7 +644,7 @@ export interface ISerializedRequest {
 export interface ISerializedResponse {
   bodyAsJson?: JSONValue;
   body?: string;
-  headers?: IOutgoingHeaders;
+  headers: IOutgoingHeaders;
   statusCode: number;
 }
 

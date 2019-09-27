@@ -21,56 +21,56 @@ export interface ISpyDecoration {
   postRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   postRequestPathname(matcher?: SinonMatcher): string;
   postRequestPath(matcher?: SinonMatcher): string;
-  postRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders | undefined;
+  postRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
   postRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
   postRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   postResponseBody(matcher?: SinonMatcher): string | undefined;
   postResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   postResponseCode(matcher?: SinonMatcher): number;
-  postResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders | undefined;
+  postResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   getRequestHost(matcher?: SinonMatcher): string;
   getRequestBody(matcher?: SinonMatcher): string | undefined;
   getRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   getRequestPathname(matcher?: SinonMatcher): string;
   getRequestPath(matcher?: SinonMatcher): string;
-  getRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders | undefined;
+  getRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
   getRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
   getRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   getResponseBody(matcher?: SinonMatcher): string | undefined;
   getResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   getResponseCode(matcher?: SinonMatcher): number;
-  getResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders | undefined;
+  getResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   putRequestHost(matcher?: SinonMatcher): string;
   putRequestBody(matcher?: SinonMatcher): string | undefined;
   putRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   putRequestPathname(matcher?: SinonMatcher): string;
   putRequestPath(matcher?: SinonMatcher): string;
-  putRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders | undefined;
+  putRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
   putRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
   putRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   putResponseBody(matcher?: SinonMatcher): string | undefined;
   putResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   putResponseCode(matcher?: SinonMatcher): number;
-  putResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders | undefined;
+  putResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   deleteRequestHost(matcher?: SinonMatcher): string;
   deleteRequestBody(matcher?: SinonMatcher): string | undefined;
   deleteRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   deleteRequestPathname(matcher?: SinonMatcher): string;
   deleteRequestPath(matcher?: SinonMatcher): string;
-  deleteRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders | undefined;
+  deleteRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
   deleteRequestQuery(matcher?: SinonMatcher): IIncomingQuery;
   deleteRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   deleteResponseBody(matcher?: SinonMatcher): string | undefined;
   deleteResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
   deleteResponseCode(matcher?: SinonMatcher): number;
-  deleteResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders | undefined;
+  deleteResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 }
 
 export const decorators = {
@@ -131,7 +131,7 @@ export const decorators = {
   postRequestHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IIncomingHeaders | undefined {
+  ): IIncomingHeaders {
     const methodMatcher = match({ method: "post" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -188,7 +188,7 @@ export const decorators = {
   postResponseHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IOutgoingHeaders | undefined {
+  ): IOutgoingHeaders {
     const methodMatcher = match({ method: "post" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -242,7 +242,7 @@ export const decorators = {
   getRequestHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IIncomingHeaders | undefined {
+  ): IIncomingHeaders {
     const methodMatcher = match({ method: "get" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -296,7 +296,7 @@ export const decorators = {
   getResponseHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IOutgoingHeaders | undefined {
+  ): IOutgoingHeaders {
     const methodMatcher = match({ method: "get" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -347,7 +347,7 @@ export const decorators = {
   putRequestHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IIncomingHeaders | undefined {
+  ): IIncomingHeaders {
     const methodMatcher = match({ method: "put" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -401,7 +401,7 @@ export const decorators = {
   putResponseHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IOutgoingHeaders | undefined {
+  ): IOutgoingHeaders {
     const methodMatcher = match({ method: "put" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -458,7 +458,7 @@ export const decorators = {
   deleteRequestHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IIncomingHeaders | undefined {
+  ): IIncomingHeaders {
     const methodMatcher = match({ method: "delete" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);
@@ -518,7 +518,7 @@ export const decorators = {
   deleteResponseHeaders(
     this: ServiceSpy,
     matcher?: SinonMatcher,
-  ): IOutgoingHeaders | undefined {
+  ): IOutgoingHeaders {
     const methodMatcher = match({ method: "delete" });
     const fullMatcher = matcher ? methodMatcher.and(matcher) : methodMatcher;
     const spyWithMatcher = this.with(fullMatcher);

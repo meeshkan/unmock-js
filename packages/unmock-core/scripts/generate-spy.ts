@@ -34,14 +34,14 @@ ${method}RequestBody(matcher?: SinonMatcher): string | undefined;
 ${method}RequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
 ${method}RequestPathname(matcher?: SinonMatcher): string;
 ${method}RequestPath(matcher?: SinonMatcher): string;
-${method}RequestHeaders(matcher?: SinonMatcher): IIncomingHeaders | undefined;
+${method}RequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
 ${method}RequestQuery(matcher?: SinonMatcher): IIncomingQuery;
 ${method}RequestProtocol(matcher?: SinonMatcher): IProtocol;
 
 ${method}ResponseBody(matcher?: SinonMatcher): string | undefined;
 ${method}ResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
 ${method}ResponseCode(matcher?: SinonMatcher): number;
-${method}ResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders | undefined;
+${method}ResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 `;
 };
 
@@ -101,7 +101,7 @@ const decoratorsFor = (method: HTTPMethod): string => {
   )},
   ${makeInternalRequestFunction(
     method,
-    "IIncomingHeaders | undefined",
+    "IIncomingHeaders",
     "RequestHeaders",
     "headers",
   )},
@@ -137,7 +137,7 @@ const decoratorsFor = (method: HTTPMethod): string => {
   )},
   ${makeInternalResposneFunction(
     method,
-    "IOutgoingHeaders | undefined",
+    "IOutgoingHeaders",
     "ResponseHeaders",
     "headers",
   )}`;
