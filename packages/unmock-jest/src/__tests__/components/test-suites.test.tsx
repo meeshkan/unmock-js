@@ -73,9 +73,14 @@ describe("Test suites component", () => {
             const divs = dom.window.document.querySelectorAll("div .test-suite");
             expect(divs).toHaveLength(2);
         });
-        it("should have div with expected class", () => {
+        it("should have first div with expected class and it be visible", () => {
             const div = dom.window.document.querySelector("div.test-suite-dsl-test-ts");
             expect(div).not.toBeNull();
+            expect(div).toHaveStyle("display: block");
+        });
+        it("should have as second div a hidden block", () => {
+            const div = dom.window.document.querySelector("div.test-suite-basic-test-ts");
+            expect(div).toHaveStyle("display: none");
         });
     });
 });
