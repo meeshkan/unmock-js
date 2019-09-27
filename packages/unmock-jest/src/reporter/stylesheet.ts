@@ -56,9 +56,7 @@ body {
   cursor: pointer;
 }
 
-.btn:hover {
-  /* transform: translateY(-0.3rem);*/
-}
+.btn:hover {}
 
 .btn:active {
   transform: translateY(-0.2rem);
