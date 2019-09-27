@@ -37,11 +37,6 @@ body {
   text-align: center;
 }
 
-.test-suite {
-  padding: 1rem;
-  margin-top: 3rem;
-}
-
 .test-suite__title {
   background-color: #eee;
   display: flex;
@@ -162,15 +157,19 @@ body {
 .test-suite {
   display: none;
   padding: 2rem;
+  flex: 1 0 100%;
+  padding: 1rem;
+  margin-top: 1rem;
 }
 
 .test-suite-label {
   display: inline-block;
   border-radius: 2rem;
   padding: 1rem 2rem;
-  margin-bottom: 1rem;
+  margin: 1rem;
   font-size: 2rem;
   opacity: 0.7;
+  flex: 1 1 auto;
 }
 
 .test-suite-label__filename {
@@ -191,7 +190,8 @@ body {
 
 .test-results-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   padding: 1rem;
 }
 
