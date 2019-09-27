@@ -3,6 +3,7 @@ import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { createCallTracker, ICallTracker } from "../service/spy";
 
 const fakeRequest: ISerializedRequest = {
+  headers: {},
   method: "get",
   host: "github.com",
   protocol: "https",
@@ -41,7 +42,10 @@ describe("Decorated spy", () => {
     path: "/v3",
     pathname: "/v3",
     query: {},
-    body: {
+    body: JSON.stringify({
+      hello: "foo",
+    }),
+    bodyAsJson: {
       hello: "foo",
     },
     headers: {
@@ -67,12 +71,16 @@ describe("Decorated spy", () => {
     });
     it("should return request body when used with matching matcher", () => {
       expect(
-        callTracker.spy.postRequestBody(match({ body: { hello: "foo" } })),
+        callTracker.spy.postRequestBody(
+          match({ bodyAsJson: { hello: "foo" } }),
+        ),
       ).toBe(req.body);
     });
     it("should throw when called with non-matching matcher", () => {
       expect(() =>
-        callTracker.spy.postRequestBody(match({ body: { hello: "bar" } })),
+        callTracker.spy.postRequestBody(
+          match({ bodyAsJson: { hello: "bar" } }),
+        ),
       ).toThrowError("postRequestBody: Expected");
     });
     it("should throw when nothing tracked", () => {
