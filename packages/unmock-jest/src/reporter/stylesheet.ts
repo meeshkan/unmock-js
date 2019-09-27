@@ -163,24 +163,23 @@ body {
 }
 
 .test-suite-label {
-  display: inline-block;
   border-radius: 2rem;
   padding: 0.5rem 2rem;
   margin: 1rem;
   font-size: 2rem;
   opacity: 0.7;
   flex: 1 1 auto;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
 
-.test-suite-label__filename {
-  float: left;
-}
+.test-suite-label__filename {}
 
 .test-suite-label__summary {
   font-size: 0.75em;
-  float: right;
   /* Translate down as much as the smaller font-size requires */
-  transform: translateY(25%);
+  transform: translateY(12.5%);
 }
 
 .test-suite-label--success {
