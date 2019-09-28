@@ -18,9 +18,9 @@ const authRedactor: Redactor = (req, res) => ({
   req: {
     ...req,
     headers: {
-      ...res.headers,
-      ...(res.headers.Authorization ? { Authorization: "-- redacted --" } : {}),
-      ...(res.headers.authorization ? { authorization: "-- redacted --" } : {}),
+      ...req.headers,
+      ...(req.headers.Authorization ? { Authorization: "-- redacted --" } : {}),
+      ...(req.headers.authorization ? { authorization: "-- redacted --" } : {}),
     },
   },
   res,
