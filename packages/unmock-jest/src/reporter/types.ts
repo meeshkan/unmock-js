@@ -2,10 +2,10 @@ import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
 
 export type Redactor = (
   req: UnmockRequest,
-  res: UnmockResponse,
+  res: UnmockResponse | undefined,
 ) => {
   req: UnmockRequest;
-  res: UnmockResponse;
+  res?: UnmockResponse;
 };
 
 export interface IJestData {

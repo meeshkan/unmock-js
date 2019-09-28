@@ -41,7 +41,7 @@ const Test = ({ assertionResult, snapshots, redactor }: { assertionResult: jest.
             { failureMessages.length > 0 ?
                 <FailureMessage messages={failureMessages} />
                 : null }
-            <Calls assertionResult={assertionResult} redactor={Redactor} snapshots={snapshots}/>
+            <Calls assertionResult={assertionResult} redactor={redactor} snapshots={snapshots}/>
         </div>);
 };
 
