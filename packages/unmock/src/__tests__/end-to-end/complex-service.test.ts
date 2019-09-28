@@ -1,7 +1,5 @@
 import axios from "axios";
-import unmock, { Arr, transform, u } from "../../";
-import { IService } from "unmock-core/dist/service/interfaces";
-const { responseBody } = transform;
+import unmock, { u } from "../../";
 
 unmock
   .nock("https://api.foo.com/v1", "foo")

@@ -374,7 +374,7 @@ export const JSONSchemify = <T, C extends object>(c: C) => (
     : constantHandler(e as CType);
 
 // Define poet to recognize the new "dynamic type"
-const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
+const jspt = extendT<RecursiveUnionType, IDynamicJSONValue>({
   dynamic: DynamicJSONSymbol,
 });
 
