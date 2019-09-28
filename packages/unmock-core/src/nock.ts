@@ -27,8 +27,6 @@ import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
-const CONS = <T>(t: T, m?: string) => { console.log(JSON.stringify(t), typeof t === "object" ? (t as any).dynamic : "not dynamic", m); return t };
-
 /*************************************************
  * (Extended, Dynamic) JSON Schema defined below *
  *************************************************
@@ -214,18 +212,8 @@ const spreadAndSchemify = <T, C extends object>(
 
 // hack until we get around to doing full typing :-(
 const removeDynamicSymbol = (schema: any): JSONSchemaObject<EJSEmpty, {}> => {
-  CONS(schema, "checking out this schema")
-  if (schema instanceof Array) {
-    return (schema as unknown) as JSONSchemaObject<EJSEmpty, {}>;
-  }
-  if (typeof schema === "object") {
-    const { dynamic, ...rest } = schema;
-    return spreadAndSchemify(
-      dynamic === DynamicJSONSymbol ? rest : schema,
-      removeDynamicSymbol,
-    ) as JSONSchemaObject<EJSEmpty, {}>;
-  }
-  return schema;
+  const { dynamic, ...rest } = schema;
+  return rest;
 };
 
 const fuzzNoop = (
@@ -236,15 +224,8 @@ const fuzzNoop = (
     IDynamicJSONValue
   >;
 
-type CType =
-  | string
-  | number
-  | boolean
-  | (string & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
-  | (number & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
-  | (false & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
-  | (true & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
-  | null;
+type CType = string | number | boolean | null;
+
 type ConstTransformer<T, C extends object> = (e: CType) => JSSTAnything<T, C>;
 
 // total hack comes from the conversion from schema to json-schema
@@ -338,18 +319,26 @@ export const JSONSchemify = <T, C extends object>(c: C) => (
                     )(constantHandler)(e.additionalProperties),
                   }
                 : {}),
-              ...spreadAndSchemify(
-                e.patternProperties,
-                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
-                  constantHandler,
-                ),
-              ),
-              ...spreadAndSchemify(
-                e.properties,
-                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
-                  constantHandler,
-                ),
-              ),
+              ...(e.patternProperties
+                ? {
+                    patternProperties: spreadAndSchemify(
+                      e.patternProperties,
+                      JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                        constantHandler,
+                      ),
+                    ),
+                  }
+                : {}),
+              ...(e.properties
+                ? {
+                    properties: spreadAndSchemify(
+                      e.properties,
+                      JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                        constantHandler,
+                      ),
+                    ),
+                  }
+                : {}),
             }
           : e,
       )
@@ -362,7 +351,7 @@ export const JSONSchemify = <T, C extends object>(c: C) => (
     : ExtendedObject.is(e) || JSONObject.is(e)
     ? type_<T, C>(c)(
         spreadAndSchemify(
-          rejectOptionals(CONS(e, "touching extended object")),
+          rejectOptionals(e),
           JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(constantHandler),
         ),
         spreadAndSchemify(
@@ -372,7 +361,7 @@ export const JSONSchemify = <T, C extends object>(c: C) => (
       )
     : e instanceof RegExp
     ? { type: "string", pattern: e.source, ...c }
-    : constantHandler(e);
+    : constantHandler(e as CType);
 
 // Define poet to recognize the new "dynamic type"
 const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
@@ -448,9 +437,9 @@ interface IDynamicServiceSpec {
   ): IFluentDynamicService & IDynamicServiceSpec;
 }
 
-const vanillaJSONSchemify = JSONSchemify<EJSEmpty, {}>({})(removeDynamicSymbol)(
-  simpleConstantTransformer,
-);
+export const vanillaJSONSchemify = JSONSchemify<EJSEmpty, {}>({})(
+  removeDynamicSymbol,
+)(simpleConstantTransformer);
 
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};

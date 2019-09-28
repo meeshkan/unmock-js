@@ -16,7 +16,6 @@ describe("Tests dynamic path tests", () => {
       .nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
-    console.log("HANGING OUT WITH FOO", u.string().dynamic);
     expectNServices(1);
   });
 

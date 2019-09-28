@@ -5,7 +5,7 @@ import NodeBackend from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
-import { ExtendedJSONSchema, JSONSchemify, nockify } from "./nock";
+import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
@@ -87,7 +87,7 @@ export class UnmockPackage implements IUnmockPackage {
     const requestHeaders =
       typeof nameOrHeaders === "object" && nameOrHeaders.reqheaders
         ? Object.entries(nameOrHeaders.reqheaders).reduce(
-            (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+            (a, b) => ({ ...a, [b[0]]: vanillaJSONSchemify(b[1]) }),
             {},
           )
         : {};
