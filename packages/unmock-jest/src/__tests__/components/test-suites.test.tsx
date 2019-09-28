@@ -7,6 +7,7 @@ import stylesheet from "../../reporter/stylesheet";
 import { ITestSuite } from "../../reporter/types";
 import { toTestSuites } from "../../reporter/utils";
 import { readJson } from "../utils";
+import { authRedactor } from "../../reporter/options";
 
 const jestResults = readJson("resources/jest-results.json");
 const unmockSnapshots = readJson("resources/unmock-snapshots.json");
@@ -18,7 +19,7 @@ const input = {
 
 const renderTestSuites = () => {
     const testSuites: ITestSuite[] = toTestSuites(input);
-    const [css, TestSuitesComponent] = TestSuites({testSuites });
+    const [css, TestSuitesComponent] = TestSuites({testSuites, redactor: authRedactor });
     const element = ReactDomServer.renderToStaticMarkup(<TestSuitesComponent />);
     // Small hack to include stylesheets in the DOM
     const html = `<!DOCTYPE html><html><head><style>${stylesheet}</style><style>${css}</style></head><body>${element}</body></html>`;

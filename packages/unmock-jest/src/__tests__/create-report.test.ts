@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { JSDOM } from "jsdom";
 import * as path from "path";
 import createReport from "../reporter/create-report";
+import { authRedactor } from "../reporter/options";
 import { writeToDirectory } from "../reporter/write-report";
 import { exampleInput } from "./fake-data";
 import { readJson } from "./utils";
@@ -10,7 +11,7 @@ const jestResults = readJson("resources/jest-results.json");
 const unmockSnapshots = readJson("resources/unmock-snapshots.json");
 
 describe("Report creator for given data", () => {
-  const report = createReport(exampleInput);
+  const report = createReport(exampleInput, authRedactor);
   expect(report).toBeDefined();
   const dom = new JSDOM(report);
   it("should have header", () => {
@@ -25,10 +26,13 @@ describe("Report creator for given data", () => {
 });
 
 describe("Report creator for real test data", () => {
-  const report = createReport({
-    jestData: { aggregatedResult: jestResults },
-    snapshots: unmockSnapshots,
-  });
+  const report = createReport(
+    {
+      jestData: { aggregatedResult: jestResults },
+      snapshots: unmockSnapshots,
+    },
+    authRedactor,
+  );
   const dom = new JSDOM(report);
 
   it("should have header", () => {
@@ -49,6 +53,7 @@ describe("Report creator for real test data", () => {
     writeToDirectory(report, {
       outputDirectory: targetDirectory,
       outputFilename: "report.html",
+      redactor: authRedactor,
     });
   });
 });

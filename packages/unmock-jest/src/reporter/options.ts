@@ -14,7 +14,7 @@ export interface IReporterOptions {
   redactor: Redactor;
 }
 
-export const authRedactor: Redactor = (req, res) => ({
+export const authRedactor: Redactor = (req, res?) => ({
   req: {
     ...req,
     headers: {

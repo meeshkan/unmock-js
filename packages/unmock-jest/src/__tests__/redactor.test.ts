@@ -1,4 +1,3 @@
-import { UnmockRequest } from "unmock";
 import { authRedactor } from "../reporter/options";
 import { testRequest } from "./fake-data";
 test("auth redactor redacts authentication tokens", () => {

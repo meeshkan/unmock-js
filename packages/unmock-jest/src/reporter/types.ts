@@ -2,7 +2,7 @@ import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
 
 export type Redactor = (
   req: UnmockRequest,
-  res: UnmockResponse | undefined,
+  res?: UnmockResponse,
 ) => {
   req: UnmockRequest;
   res?: UnmockResponse;
