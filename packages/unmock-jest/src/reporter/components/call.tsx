@@ -50,7 +50,7 @@ const Call = ({ snapshot, redactor }: { snapshot: ISnapshot, redactor: Redactor 
   const redacted = redactor(snapshot.data.req, snapshot.data.res);
   return (<div className={"call"}>
     <Request request={redacted.req} />
-    { snapshot.data.res ? <Response response={redacted.res} /> : <div>No response</div>}
+    { redacted.res ? <Response response={redacted.res} /> : <div>No response</div>}
     </div>);
 };
 
