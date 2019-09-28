@@ -249,6 +249,17 @@ const fuzz: ConstTransformer<RecursiveUnionType, IDynamicJSONValue> = (
     ? jspt.boolean()
     : jspt.nul();
 
+const unfuzz: ConstTransformer<RecursiveUnionType, IDynamicJSONValue> = (
+  e: CType,
+): JSSTAnything<RecursiveUnionType, IDynamicJSONValue> =>
+  typeof e === "string"
+    ? jspt.cnst(e)
+    : typeof e === "number"
+    ? jspt.cnst(e)
+    : typeof e === "boolean"
+    ? jspt.cnst(e)
+    : jspt.cnst(null);
+
 export const JSONSchemify = <T, C extends object>(c: C) => (
   schemaToSchemaTransformer: (schema: any) => JSSTAnything<T, C>,
 ) => (constantHandler: ConstTransformer<T, C>) => (
@@ -372,6 +383,9 @@ export const u = {
   fuzz: JSONSchemify<RecursiveUnionType, IDynamicJSONValue>({
     dynamic: DynamicJSONSymbol,
   })(fuzzNoop)(fuzz),
+  unfuzz: JSONSchemify<RecursiveUnionType, IDynamicJSONValue>({
+    dynamic: DynamicJSONSymbol,
+  })(fuzzNoop)(unfuzz),
   opt: (e: ExtendedJSONSchema): IMaybeJSONValue => ({
     maybe: MaybeJSONSymbol,
     val: e,
