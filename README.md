@@ -47,6 +47,7 @@ nock("https://zodiac.com", "zodiac")
   .get("/horoscope/{sign}")
   .reply(200, {
     horoscope: u.string(),
+    ascendant: u.opt(u.string())
   })
   .reply(404, { message: "Not authorized" });
 
@@ -77,7 +78,7 @@ describe("getHoroscope", () => {
 });
 ```
 
-This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope.
+This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope and optionally any ascendant.
 
 ### Specifying hostname
 

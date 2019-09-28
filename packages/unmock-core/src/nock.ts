@@ -1,3 +1,5 @@
+import { array } from "fp-ts/lib/Array";
+import { none, Option, some } from "fp-ts/lib/Option";
 import * as io from "io-ts";
 import { cnst_, extendT, tuple_, type_ } from "json-schema-poet";
 import {
@@ -15,9 +17,11 @@ import {
   JSSTOneOf,
   JSSTTuple,
 } from "json-schema-strictly-typed";
+import { fromTraversable, Iso, Prism } from "monocle-ts";
 import { valAsConst } from "openapi-refinements";
 import * as querystring from "query-string";
 import NodeBackend from "./backend";
+import { identityGetter } from "./generator";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
@@ -44,6 +48,33 @@ const DynamicJSONValue: io.Type<
   isDynamic,
   (input, context) =>
     isDynamic(input) ? io.success(input) : io.failure(input, context),
+  io.identity,
+);
+
+/*************************************************
+ * (Extended, Maybe) JSON Schema defined below *
+ *************************************************
+ */
+// Used to signal that a value is optional in an object
+const MaybeJSONSymbol: unique symbol = Symbol();
+export interface IMaybeJSONValue {
+  maybe: typeof MaybeJSONSymbol;
+  val: ExtendedValueType;
+}
+const isMaybe = (unk: unknown): unk is IMaybeJSONValue =>
+  typeof unk === "object" &&
+  unk !== null &&
+  (unk as any).maybe === MaybeJSONSymbol &&
+  ExtendedValue.is((unk as any).val);
+
+const MaybeJSONValue: io.Type<IMaybeJSONValue, IMaybeJSONValue> = new io.Type<
+  IMaybeJSONValue,
+  IMaybeJSONValue
+>(
+  "MaybeJSONValueType",
+  isMaybe,
+  (input, context) =>
+    isMaybe(input) ? io.success(input) : io.failure(input, context),
   io.identity,
 );
 
@@ -83,8 +114,59 @@ export type ExtendedValueType =
   | IExtendedObjectType
   | JSONArray
   | JSONObject;
-export interface IExtendedObjectType
+
+export interface ITameExtendedObjectType
   extends Record<string, ExtendedValueType> {} // Defined as interface due to circular reasons
+
+export interface IExtendedObjectType
+  extends Record<string, ExtendedValueType | IMaybeJSONValue> {} // Defined as interface due to circular reasons
+
+const rejectOptionals = (i: IExtendedObjectType): ITameExtendedObjectType =>
+  new Iso<
+    IExtendedObjectType,
+    Array<[string, ExtendedValueType | IMaybeJSONValue]>
+  >(
+    a => Object.entries(a),
+    q => q.reduce((a, b) => ({ ...a, [b[0]]: b[1] }), {}),
+  )
+    .composeTraversal(fromTraversable(array)())
+    .composePrism(
+      new Prism<
+        [string, ExtendedValueType | IMaybeJSONValue],
+        [string, ExtendedValueType]
+      >(
+        a =>
+          ((
+            q: string,
+            r: ExtendedValueType | IMaybeJSONValue,
+          ): Option<[string, ExtendedValueType]> =>
+            MaybeJSONValue.is(r) ? none : some([q, r]))(a[0], a[1]),
+        a => a,
+      ),
+    )
+    .composeGetter(identityGetter())
+    .getAll(i)
+    .reduce((a, b) => ({ ...a, [b[0]]: b[1] }), {});
+
+const keepOptionals = (i: IExtendedObjectType): ITameExtendedObjectType =>
+  new Iso<
+    IExtendedObjectType,
+    Array<[string, ExtendedValueType | IMaybeJSONValue]>
+  >(
+    a => Object.entries(a),
+    q => q.reduce((a, b) => ({ ...a, [b[0]]: b[1] }), {}),
+  )
+    .composeTraversal(fromTraversable(array)())
+    .composePrism(
+      new Prism<
+        [string, ExtendedValueType | IMaybeJSONValue],
+        [string, ExtendedValueType]
+      >(a => (MaybeJSONValue.is(a[1]) ? some([a[0], a[1].val]) : none), a => a),
+    )
+    .composeGetter(identityGetter())
+    .getAll(i)
+    .reduce((a, b) => ({ ...a, [b[0]]: b[1] }), {});
+
 export interface IExtendedArrayType extends Array<ExtendedValueType> {} // Defined as interface due to circular reference
 type EJSEmpty = JSSTEmpty<{}>; // Used as a shortcut
 
@@ -113,14 +195,16 @@ const ExtendedValue: io.Type<
 const ExtendedObject: io.Type<
   IExtendedObjectType,
   IExtendedObjectType
-> = io.recursion("ExtendedObject", () => io.record(io.string, ExtendedValue));
+> = io.recursion("ExtendedObject", () =>
+  io.record(io.string, io.union([ExtendedValue, MaybeJSONValue])),
+);
 const ExtendedArray: io.Type<
   IExtendedArrayType,
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
 const spreadAndSchemify = (
-  e?: IExtendedObjectType,
+  e?: ITameExtendedObjectType,
   f: (e: ExtendedValueType) => JSSTAnything<EJSEmpty, {}> = JSONSchemify,
 ) =>
   e ? Object.entries(e).reduce((a, b) => ({ ...a, [b[0]]: f(b[1]) }), {}) : {};
@@ -173,7 +257,10 @@ export const JSONSchemify = (
     : ExtendedArray.is(e) || JSONArray.is(e)
     ? tuple_<EJSEmpty, {}>({})(e.map(JSONSchemify))
     : ExtendedObject.is(e) || JSONObject.is(e)
-    ? type_<EJSEmpty, {}>({})(spreadAndSchemify(e), {})
+    ? type_<EJSEmpty, {}>({})(
+        spreadAndSchemify(rejectOptionals(e)),
+        spreadAndSchemify(keepOptionals(e)),
+      )
     : e instanceof RegExp
     ? { type: "string", pattern: e.source }
     : // total hack comes from the conversion from schema to json-schema
@@ -187,7 +274,13 @@ const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
   dynamic: DynamicJSONSymbol,
 });
 
-export const u = jspt;
+export const u = {
+  ...jspt,
+  opt: (e: ExtendedJSONSchema): IMaybeJSONValue => ({
+    maybe: MaybeJSONSymbol,
+    val: e,
+  }),
+};
 
 /*******************************
  * Nock-like API defined below *
