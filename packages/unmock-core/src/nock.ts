@@ -15,7 +15,6 @@ import {
   JSSTNot,
   JSSTObject,
   JSSTOneOf,
-  JSSTTopLevel,
   JSSTTuple,
 } from "json-schema-strictly-typed";
 import { fromTraversable, Iso, Prism } from "monocle-ts";
