@@ -1,7 +1,8 @@
 import * as React from "react";
 import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
+import { Redactor } from "../types";
 
-const Request = ({ request }: { request: UnmockRequest}) => {
+const Request = ({ request, }: { request: UnmockRequest}) => {
   const operation = `${request.method.toUpperCase()} ${request.protocol}://${request.host}${request.path}`;
   return (<div className={"call__request"}>
     <div className={"call__request-title"}>Request</div>
@@ -45,10 +46,11 @@ const Response = ({ response }: { response: UnmockResponse }) => {
   </div>)
 }
 
-const Call = ({ snapshot }: { snapshot: ISnapshot }) => {
+const Call = ({ snapshot, redactor }: { snapshot: ISnapshot, redactor: Redactor }) => {
+  const redacted = redactor(snapshot.data.req, snapshot.data.res);
   return (<div className={"call"}>
-    <Request request={snapshot.data.req} />
-    { snapshot.data.res ? <Response response={snapshot.data.res} /> : <div>No response</div>}
+    <Request request={redacted.req} />
+    { snapshot.data.res ? <Response response={redacted.res} /> : <div>No response</div>}
     </div>);
 };
 

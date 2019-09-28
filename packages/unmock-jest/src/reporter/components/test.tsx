@@ -1,6 +1,7 @@
 import * as React from "react";
 import stripAnsi from "strip-ansi";
 import { ISnapshot } from "unmock";
+import { Redactor } from "../types";
 import Calls from "./calls";
 
 const buildTestTitle = (assertionResult: jest.AssertionResult) =>
@@ -25,7 +26,7 @@ const FailureMessage = ({ messages }: { messages: string[] }) => {
  * @param assertionResult Jest results for the test
  * @param snapshots All unmock snapshots for **this test**
  */
-const Test = ({ assertionResult, snapshots }: { assertionResult: jest.AssertionResult, snapshots: ISnapshot[]}) => {
+const Test = ({ assertionResult, snapshots, redactor }: { assertionResult: jest.AssertionResult, snapshots: ISnapshot[], redactor: Redactor}) => {
 
     const failureMessages = assertionResult.failureMessages;
 
@@ -40,7 +41,7 @@ const Test = ({ assertionResult, snapshots }: { assertionResult: jest.AssertionR
             { failureMessages.length > 0 ?
                 <FailureMessage messages={failureMessages} />
                 : null }
-            <Calls assertionResult={assertionResult}  snapshots={snapshots}/>
+            <Calls assertionResult={assertionResult} redactor={Redactor} snapshots={snapshots}/>
         </div>);
 };
 
