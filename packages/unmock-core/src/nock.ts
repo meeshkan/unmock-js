@@ -15,6 +15,7 @@ import {
   JSSTNot,
   JSSTObject,
   JSSTOneOf,
+  JSSTTopLevel,
   JSSTTuple,
 } from "json-schema-strictly-typed";
 import { fromTraversable, Iso, Prism } from "monocle-ts";
@@ -25,6 +26,8 @@ import { identityGetter } from "./generator";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
+
+const CONS = <T>(t: T, m?: string) => { console.log(JSON.stringify(t), typeof t === "object" ? (t as any).dynamic : "not dynamic", m); return t };
 
 /*************************************************
  * (Extended, Dynamic) JSON Schema defined below *
@@ -203,14 +206,15 @@ const ExtendedArray: io.Type<
   IExtendedArrayType
 > = io.recursion("ExtendedArray", () => io.array(ExtendedValue));
 
-const spreadAndSchemify = (
-  e?: ITameExtendedObjectType,
-  f: (e: ExtendedValueType) => JSSTAnything<EJSEmpty, {}> = JSONSchemify,
+const spreadAndSchemify = <T, C extends object>(
+  e: ITameExtendedObjectType | undefined,
+  f: (e: ExtendedValueType) => JSSTAnything<T, C>,
 ) =>
   e ? Object.entries(e).reduce((a, b) => ({ ...a, [b[0]]: f(b[1]) }), {}) : {};
 
 // hack until we get around to doing full typing :-(
 const removeDynamicSymbol = (schema: any): JSONSchemaObject<EJSEmpty, {}> => {
+  CONS(schema, "checking out this schema")
   if (schema instanceof Array) {
     return (schema as unknown) as JSONSchemaObject<EJSEmpty, {}>;
   }
@@ -224,50 +228,151 @@ const removeDynamicSymbol = (schema: any): JSONSchemaObject<EJSEmpty, {}> => {
   return schema;
 };
 
-export const JSONSchemify = (
-  e: ExtendedValueType,
+const fuzzNoop = (
+  schema: any,
+): JSONSchemaObject<RecursiveUnionType, IDynamicJSONValue> =>
+  (schema as unknown) as JSONSchemaObject<
+    RecursiveUnionType,
+    IDynamicJSONValue
+  >;
+
+type CType =
+  | string
+  | number
+  | boolean
+  | (string & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
+  | (number & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
+  | (false & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
+  | (true & JSSTTopLevel<RecursiveUnionType, IDynamicJSONValue>)
+  | null;
+type ConstTransformer<T, C extends object> = (e: CType) => JSSTAnything<T, C>;
+
+// total hack comes from the conversion from schema to json-schema
+// this works because valAsConst only ever yields valid JSON schema
+// we should mitigate this by makeing a "subset" type
+// common to both OAS & JSON Schema
+const simpleConstantTransformer: ConstTransformer<EJSEmpty, {}> = (
+  e: CType,
 ): JSSTAnything<EJSEmpty, {}> =>
+  valAsConst(cnst_<{}>({})(e).const) as JSSTAnything<EJSEmpty, {}>;
+
+const fuzz: ConstTransformer<RecursiveUnionType, IDynamicJSONValue> = (
+  e: CType,
+): JSSTAnything<RecursiveUnionType, IDynamicJSONValue> =>
+  typeof e === "string"
+    ? jspt.string()
+    : typeof e === "number" && Math.floor(e) === e
+    ? jspt.integer()
+    : typeof e === "number"
+    ? jspt.number()
+    : typeof e === "boolean"
+    ? jspt.boolean()
+    : jspt.nul();
+
+export const JSONSchemify = <T, C extends object>(c: C) => (
+  schemaToSchemaTransformer: (schema: any) => JSSTAnything<T, C>,
+) => (constantHandler: ConstTransformer<T, C>) => (
+  e: ExtendedValueType,
+): JSSTAnything<T, C> =>
   isDynamic(e)
-    ? removeDynamicSymbol(
+    ? schemaToSchemaTransformer(
         // we cover all of the nested cases,
         // followed by un-nested cases
         JSSTAllOf(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, allOf: e.allOf.map(JSONSchemify) }
+          ? {
+              ...e,
+              allOf: e.allOf.map(
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
+            }
           : JSSTAnyOf(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, anyOf: e.anyOf.map(JSONSchemify) }
+          ? {
+              ...e,
+              anyOf: e.anyOf.map(
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
+            }
           : JSSTOneOf(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, oneOf: e.oneOf.map(JSONSchemify) }
+          ? {
+              ...e,
+              oneOf: e.oneOf.map(
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
+            }
           : JSSTNot(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, not: JSONSchemify(e.not) }
+          ? {
+              ...e,
+              not: JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                constantHandler,
+              )(e.not),
+            }
           : JSSTList(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, items: JSONSchemify(e.items) }
+          ? {
+              ...e,
+              items: JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                constantHandler,
+              )(e.items),
+            }
           : JSSTTuple(RecursiveUnion, DynamicJSONValue).is(e)
-          ? { ...e, oneOf: e.items.map(JSONSchemify) }
+          ? {
+              ...e,
+              oneOf: e.items.map(
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
+            }
           : JSSTObject(RecursiveUnion, DynamicJSONValue).is(e)
           ? {
               ...e,
               ...(e.additionalProperties
-                ? { additionalProperties: JSONSchemify(e.additionalProperties) }
+                ? {
+                    additionalProperties: JSONSchemify<T, C>(c)(
+                      schemaToSchemaTransformer,
+                    )(constantHandler)(e.additionalProperties),
+                  }
                 : {}),
-              ...spreadAndSchemify(e.patternProperties),
-              ...spreadAndSchemify(e.properties),
+              ...spreadAndSchemify(
+                e.patternProperties,
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
+              ...spreadAndSchemify(
+                e.properties,
+                JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(
+                  constantHandler,
+                ),
+              ),
             }
           : e,
       )
     : ExtendedArray.is(e) || JSONArray.is(e)
-    ? tuple_<EJSEmpty, {}>({})(e.map(JSONSchemify))
+    ? tuple_<T, C>(c)(
+        e.map(
+          JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(constantHandler),
+        ),
+      )
     : ExtendedObject.is(e) || JSONObject.is(e)
-    ? type_<EJSEmpty, {}>({})(
-        spreadAndSchemify(rejectOptionals(e)),
-        spreadAndSchemify(keepOptionals(e)),
+    ? type_<T, C>(c)(
+        spreadAndSchemify(
+          rejectOptionals(CONS(e, "touching extended object")),
+          JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(constantHandler),
+        ),
+        spreadAndSchemify(
+          keepOptionals(e),
+          JSONSchemify<T, C>(c)(schemaToSchemaTransformer)(constantHandler),
+        ),
       )
     : e instanceof RegExp
-    ? { type: "string", pattern: e.source }
-    : // total hack comes from the conversion from schema to json-schema
-      // this works because valAsConst only ever yields valid JSON schema
-      // we should mitigate this by makeing a "subset" type
-      // common to both OAS & JSON Schema
-      (valAsConst(cnst_<{}>({})(e).const) as JSSTAnything<EJSEmpty, {}>);
+    ? { type: "string", pattern: e.source, ...c }
+    : constantHandler(e);
 
 // Define poet to recognize the new "dynamic type"
 const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
@@ -276,6 +381,9 @@ const jspt = extendT<ExtendedJSONSchema, IDynamicJSONValue>({
 
 export const u = {
   ...jspt,
+  fuzz: JSONSchemify<RecursiveUnionType, IDynamicJSONValue>({
+    dynamic: DynamicJSONSymbol,
+  })(fuzzNoop)(fuzz),
   opt: (e: ExtendedJSONSchema): IMaybeJSONValue => ({
     maybe: MaybeJSONSymbol,
     val: e,
@@ -340,6 +448,10 @@ interface IDynamicServiceSpec {
   ): IFluentDynamicService & IDynamicServiceSpec;
 }
 
+const vanillaJSONSchemify = JSONSchemify<EJSEmpty, {}>({})(removeDynamicSymbol)(
+  simpleConstantTransformer,
+);
+
 export class DynamicServiceSpec implements IDynamicServiceSpec {
   private data: Schema = {};
   private headers: Record<string, Schema> = {};
@@ -364,7 +476,10 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       ...this.accumulatedQueries,
       ...(data
         ? Object.entries(data).reduce(
-            (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+            (a, b) => ({
+              ...a,
+              [b[0]]: vanillaJSONSchemify(b[1]),
+            }),
             {},
           )
         : {}),
@@ -399,7 +514,7 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
     maybeHeaders?: Record<string, InputToPoet>,
   ): IFluentDynamicService & IDynamicServiceSpec {
     if (maybeData !== undefined) {
-      this.data = JSONSchemify(maybeData) as Schema; // TODO should this be some JSSTX?
+      this.data = vanillaJSONSchemify(maybeData) as Schema; // TODO should this be some JSSTX?
       this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else if (
       (typeof maybeStatusCode === "number" &&
@@ -410,11 +525,14 @@ export class DynamicServiceSpec implements IDynamicServiceSpec {
       // we assume it's a status code
       this.statusCode = maybeStatusCode as CodeAsInt | "default";
     } else {
-      this.data = JSONSchemify(maybeStatusCode) as Schema;
+      this.data = vanillaJSONSchemify(maybeStatusCode) as Schema;
     }
     this.headers = maybeHeaders
       ? (Object.entries(maybeHeaders).reduce(
-          (a, b) => ({ ...a, [b[0]]: JSONSchemify(b[1]) }),
+          (a, b) => ({
+            ...a,
+            [b[0]]: vanillaJSONSchemify(b[1]),
+          }),
           {},
         ) as Record<string, Schema>)
       : {};
@@ -491,7 +609,7 @@ const endpointToQs = (endpoint: ValidEndpointType) =>
   ).reduce(
     (a, b) => ({
       ...a,
-      [b[0]]: JSONSchemify(b[1] === undefined ? null : b[1]),
+      [b[0]]: vanillaJSONSchemify(b[1] === undefined ? null : b[1]),
     }),
     {},
   ) || {};
@@ -552,7 +670,7 @@ const buildFluentNock = (
                   endpointToQs(endpoint) || {},
                   requestHeaders as Record<string, Schema>,
                   requestBody !== undefined
-                    ? (JSONSchemify(requestBody) as Schema)
+                    ? (vanillaJSONSchemify(requestBody) as Schema)
                     : undefined,
                   name,
                 ),

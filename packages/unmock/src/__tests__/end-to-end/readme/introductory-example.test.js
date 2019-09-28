@@ -6,7 +6,7 @@ nock("https://zodiac.com", "zodiac")
   .get("/horoscope/{sign}")
   .reply(200, {
     horoscope: u.string(),
-    ascendant: u.opt()
+    ascendant: u.opt(u.string()),
   })
   .reply(404, { message: "Not authorized" });
 

@@ -78,7 +78,7 @@ describe("getHoroscope", () => {
 });
 ```
 
-This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope and optionally any ascendant.
+This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope of type `string` and optionally an ascendant of type `string`.
 
 ### Specifying hostname
 
@@ -197,12 +197,21 @@ unmock.nock('http://myapp.iriscouch.com')
   .reply(404)
 ```
 
-You can also specify the reply body as valid JSON, JSON schema, or any combination thereof.
+You can also specify the reply body as valid JSON, `json-schema-poet`, or any combination thereof.
 
 ```js
 unmock.nock('http://www.google.com')
   .get('/')
   .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
+```
+
+If you would like to transform any part of a constant reply (ie a fixture recorded from real API traffic) into a variable version of itself, use `u.fuzz`. This command infers the type of its input and produces output following the same schema.
+
+```js
+unmock.nock('http://www.foo.com')
+  .get('/')
+  // produces { firstName: "a random string", lastName: "another random string" }
+  .reply(200, u.fuzz({ firstName: "Bob", lastName: "Smith" }))
 ```
 
 ### Specifying reply headers
