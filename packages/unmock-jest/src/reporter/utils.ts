@@ -38,6 +38,8 @@ export const largestCommonArray = <T>(arrays: T[][]): T[] => {
   return arrays.reduce((acc, val) => largestCommonArray2(acc, val));
 };
 
+export const REDACTED = "-- redacted --";
+
 export const authRedactor: Redactor = (snapshot: ISnapshot): ISnapshot => {
   const req = snapshot.data.req;
 
@@ -45,8 +47,8 @@ export const authRedactor: Redactor = (snapshot: ISnapshot): ISnapshot => {
     ...req,
     headers: {
       ...req.headers,
-      ...(req.headers.Authorization ? { Authorization: "-- redacted --" } : {}),
-      ...(req.headers.authorization ? { authorization: "-- redacted --" } : {}),
+      ...(req.headers.Authorization ? { Authorization: REDACTED } : {}),
+      ...(req.headers.authorization ? { authorization: REDACTED } : {}),
     },
   };
 
