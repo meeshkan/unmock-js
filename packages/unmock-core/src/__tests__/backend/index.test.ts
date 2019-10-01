@@ -1,7 +1,7 @@
 import axios from "axios";
 import { removeCodes } from "openapi-refinements";
 import * as path from "path";
-import { Service, sinon, UnmockPackage } from "../../";
+import { Service, sinon, transform, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
 import { UNMOCK_INTERNAL_HTTP_HEADER } from "../../backend/client-request-tracker";
 
@@ -138,6 +138,7 @@ describe("Unmock node package", () => {
     });
     beforeEach(() => {
       petstore.reset();
+      petstore.state(transform.withCodes(201));
     });
     afterAll(() => {
       unmock.off();
