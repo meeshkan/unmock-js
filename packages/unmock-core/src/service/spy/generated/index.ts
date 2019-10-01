@@ -18,7 +18,7 @@ export interface ISpyDecoration {
   withMethod(method: HTTPMethod): ServiceSpy;
   postRequestHost(matcher?: SinonMatcher): string;
   postRequestBody(matcher?: SinonMatcher): string | undefined;
-  postRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  postRequestBodyAsJson(matcher?: SinonMatcher): any;
   postRequestPathname(matcher?: SinonMatcher): string;
   postRequestPath(matcher?: SinonMatcher): string;
   postRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
@@ -26,13 +26,13 @@ export interface ISpyDecoration {
   postRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   postResponseBody(matcher?: SinonMatcher): string | undefined;
-  postResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  postResponseBodyAsJson(matcher?: SinonMatcher): any;
   postResponseCode(matcher?: SinonMatcher): number;
   postResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   getRequestHost(matcher?: SinonMatcher): string;
   getRequestBody(matcher?: SinonMatcher): string | undefined;
-  getRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  getRequestBodyAsJson(matcher?: SinonMatcher): any;
   getRequestPathname(matcher?: SinonMatcher): string;
   getRequestPath(matcher?: SinonMatcher): string;
   getRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
@@ -40,13 +40,13 @@ export interface ISpyDecoration {
   getRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   getResponseBody(matcher?: SinonMatcher): string | undefined;
-  getResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  getResponseBodyAsJson(matcher?: SinonMatcher): any;
   getResponseCode(matcher?: SinonMatcher): number;
   getResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   putRequestHost(matcher?: SinonMatcher): string;
   putRequestBody(matcher?: SinonMatcher): string | undefined;
-  putRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  putRequestBodyAsJson(matcher?: SinonMatcher): any;
   putRequestPathname(matcher?: SinonMatcher): string;
   putRequestPath(matcher?: SinonMatcher): string;
   putRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
@@ -54,13 +54,13 @@ export interface ISpyDecoration {
   putRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   putResponseBody(matcher?: SinonMatcher): string | undefined;
-  putResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  putResponseBodyAsJson(matcher?: SinonMatcher): any;
   putResponseCode(matcher?: SinonMatcher): number;
   putResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 
   deleteRequestHost(matcher?: SinonMatcher): string;
   deleteRequestBody(matcher?: SinonMatcher): string | undefined;
-  deleteRequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  deleteRequestBodyAsJson(matcher?: SinonMatcher): any;
   deleteRequestPathname(matcher?: SinonMatcher): string;
   deleteRequestPath(matcher?: SinonMatcher): string;
   deleteRequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
@@ -68,7 +68,7 @@ export interface ISpyDecoration {
   deleteRequestProtocol(matcher?: SinonMatcher): IProtocol;
 
   deleteResponseBody(matcher?: SinonMatcher): string | undefined;
-  deleteResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+  deleteResponseBodyAsJson(matcher?: SinonMatcher): any;
   deleteResponseCode(matcher?: SinonMatcher): number;
   deleteResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 }

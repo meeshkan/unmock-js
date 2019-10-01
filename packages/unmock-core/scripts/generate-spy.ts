@@ -31,7 +31,7 @@ import { JSONValue } from "json-schema-strictly-typed";`;
 const interfaceMethodsFor = (method: HTTPMethod): string => {
   return `${method}RequestHost(matcher?: SinonMatcher): string;
 ${method}RequestBody(matcher?: SinonMatcher): string | undefined;
-${method}RequestBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+${method}RequestBodyAsJson(matcher?: SinonMatcher): any;
 ${method}RequestPathname(matcher?: SinonMatcher): string;
 ${method}RequestPath(matcher?: SinonMatcher): string;
 ${method}RequestHeaders(matcher?: SinonMatcher): IIncomingHeaders;
@@ -39,7 +39,7 @@ ${method}RequestQuery(matcher?: SinonMatcher): IIncomingQuery;
 ${method}RequestProtocol(matcher?: SinonMatcher): IProtocol;
 
 ${method}ResponseBody(matcher?: SinonMatcher): string | undefined;
-${method}ResponseBodyAsJson(matcher?: SinonMatcher): JSONValue | undefined;
+${method}ResponseBodyAsJson(matcher?: SinonMatcher): any;
 ${method}ResponseCode(matcher?: SinonMatcher): number;
 ${method}ResponseHeaders(matcher?: SinonMatcher): IOutgoingHeaders;
 `;
