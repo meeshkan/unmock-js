@@ -48,7 +48,8 @@ export default abstract class ClientRequestTracker {
   /**
    * Extract the `ClientRequest` corresponding to the given `IncomingMessage`.
    * Deletes the corresponding instance from the map of tracked requests.
-   * @param incomingMessage Incoming message ("server" side)
+   * NOTE: Modifies input message by deleting the internally used header!
+   * @param incomingMessage Incoming message ("server" side). The header used internal tracking is deleted!
    */
   public static pop(incomingMessage: IncomingMessage): ClientRequest {
     const { [UNMOCK_INTERNAL_HTTP_HEADER]: reqId } = incomingMessage.headers;
@@ -61,13 +62,14 @@ export default abstract class ClientRequestTracker {
         `Expected to find a string request ID in request header, got type: ${typeof reqId}`,
       );
     }
+    delete incomingMessage.headers[UNMOCK_INTERNAL_HTTP_HEADER];
+
     const clientRequest = ClientRequestTracker.clientRequests[reqId];
     if (clientRequest === undefined) {
       throw Error(`Expected to find a client request for request ID ${reqId}`);
     }
 
     delete ClientRequestTracker.clientRequests[reqId];
-
     return clientRequest;
   }
 
