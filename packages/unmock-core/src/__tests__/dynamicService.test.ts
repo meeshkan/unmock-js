@@ -1,5 +1,5 @@
 import axios from "axios";
-import unmock, { nock, u } from "..";
+import unmock, { u } from "..";
 
 const expectNServices = (expectedLength: number) =>
   expect(Object.keys(unmock.services).length).toEqual(expectedLength);
@@ -21,7 +21,8 @@ describe("Tests dynamic path tests", () => {
 
   it("should add a service when used with named export", () => {
     expectNServices(0);
-    nock("https://foo.com")
+    unmock
+      .nock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
     expectNServices(1);
@@ -432,6 +433,19 @@ describe("Tests dynamic path tests", () => {
         getPrivateSchema("foo").paths["/"].get.responses["200"].headers.hello
           .schema,
       ).toEqual({ type: "string", enum: ["world"] });
+    });
+  });
+
+  describe("schema generates valid stuff", () => {
+    it("faker works out of the box", async () => {
+      unmock
+        .nock("https://www.foo.com")
+        .get("/")
+        .reply(200, u.string("date.future"));
+      unmock.on();
+      const res = await axios("https://www.foo.com");
+      expect(Date.parse(res.data)).toBeGreaterThan(Date.now());
+      unmock.off();
     });
   });
 });

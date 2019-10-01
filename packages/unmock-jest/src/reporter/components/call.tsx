@@ -1,5 +1,15 @@
 import * as React from "react";
 import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
+import { IIncomingHeaders } from "unmock-core/dist/interfaces";
+
+const Headers = ({ headers }: { headers: IIncomingHeaders }) => {
+  return <div className={"call__request-headers"}>
+        {`Headers`}
+        <ul className={"call__request-headers-list"}>
+          {Object.keys(headers).map(key => (<li key={key}>{key}: {headers[key]}</li>))}
+        </ul>
+    </div>
+};
 
 const Request = ({ request }: { request: UnmockRequest}) => {
   const operation = `${request.method.toUpperCase()} ${request.protocol}://${request.host}${request.path}`;
@@ -17,6 +27,7 @@ const Request = ({ request }: { request: UnmockRequest}) => {
     <p>
         {`Protocol: ${request.protocol}`}
     </p>
+    <Headers headers={request.headers} />
     { request.body? (<p>
       {`Body:`}
       <div className={"call__request-body"}>
