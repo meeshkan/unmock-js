@@ -131,15 +131,22 @@ body {
 .call__request {
   flex: 1 1 0px;
   padding: 1rem;
+  font-size: 0.8em;
 }
 
 .call__response {
   flex: 1 1 0px;
   padding: 1rem;
+  font-size: 0.8em;
 }
 
 .call__request-title {
   font-size: 2rem;
+}
+
+.call__request-headers-list {
+  margin-left: 2rem;
+  font-size: 0.9em;
 }
 
 .call__response-title {
