@@ -55,6 +55,14 @@ describe("Report creator for real test data", () => {
 });
 
 describe("Report creator auth redaction", () => {
+  it("should not redact anything from test snapshots", () => {
+    const testInput = {
+      jestData: { aggregatedResult: jestResults },
+      snapshots: unmockSnapshots,
+    };
+    const report = createReport(testInput);
+    expect(report).not.toContain(REDACTED);
+  });
   it("should redact auth from header", () => {
     const snapshot = unmockSnapshots[0];
     const testSnapshot = {
