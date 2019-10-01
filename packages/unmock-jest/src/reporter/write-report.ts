@@ -44,7 +44,7 @@ export const writeToDirectory = (
  */
 const writeReport = (input: IReportInput, opts: IReporterOptions) => {
   const options = resolveOptions(opts || {});
-  const report: string = createReport(input, options.redactor);
+  const report: string = createReport(input);
   return writeToDirectory(report, options);
 };
 

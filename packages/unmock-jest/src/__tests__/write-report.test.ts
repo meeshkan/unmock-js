@@ -2,7 +2,6 @@ import * as fs from "fs";
 import * as path from "path";
 import writeReport, { writeToDirectory } from "../reporter/write-report";
 import { aggregatedResult, snapshots } from "./fake-data";
-import { authRedactor } from "../reporter/options";
 
 const RANDOM_STRING = Math.random()
   .toString(36)
@@ -29,7 +28,6 @@ describe("Report writer", () => {
       {
         outputDirectory: OUTPUT_FOLDER,
         outputFilename: TEST_FILE_NAME,
-        redactor: authRedactor,
       },
     );
 
@@ -41,7 +39,6 @@ describe("Report writer", () => {
     writeToDirectory(RANDOM_STRING, {
       outputDirectory: OUTPUT_FOLDER,
       outputFilename: TEST_FILE_NAME,
-      redactor: authRedactor,
     });
 
     const contents = fs.readFileSync(TEST_FILE_PATH, { encoding: "utf-8" });
