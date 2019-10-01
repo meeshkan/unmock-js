@@ -1,4 +1,3 @@
-import { JSONValue } from "json-schema-strictly-typed";
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
 
