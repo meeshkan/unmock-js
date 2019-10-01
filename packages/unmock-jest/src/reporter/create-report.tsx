@@ -4,7 +4,7 @@ import xmlBuilder = require("xmlbuilder");
 import TestSuites from "./components/test-suites";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
-import { sortTestSuites, toTestSuites, authRedactor } from "./utils";
+import { authRedactor, sortTestSuites, toTestSuites } from "./utils";
 
 const createHtml = ({ css, body } : { css: string, body: string }) => {
   return `<html>
