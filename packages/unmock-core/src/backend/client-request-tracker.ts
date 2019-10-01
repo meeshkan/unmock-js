@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const debugLog = debug("unmock:client-request-tracker");
 
-const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
+export const UNMOCK_INTERNAL_HTTP_HEADER = "x-unmock-req-id";
 
 /**
  * "Static" class for tracking client requests.
