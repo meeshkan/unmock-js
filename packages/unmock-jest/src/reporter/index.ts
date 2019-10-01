@@ -2,7 +2,6 @@ import chalk from "chalk";
 import { utils as unmockUtils } from "unmock";
 import { IReporterOptions, resolveOptions } from "./options";
 import { IJestData } from "./types";
-import { authRedactor } from "./utils";
 import writeReport from "./write-report";
 
 /**
@@ -13,8 +12,7 @@ export const write = (jestData: IJestData, options: IReporterOptions) => {
   const snapshots = unmockUtils.snapshotter
     .getOrUpdateSnapshotter()
     .readSnapshots();
-  const redactedSnapshots = snapshots.map(snapshot => authRedactor(snapshot));
-  return writeReport({ jestData, snapshots: redactedSnapshots }, options);
+  return writeReport({ jestData, snapshots }, options);
 };
 
 const formatLogString = (writtenFilePath: string): string => {
