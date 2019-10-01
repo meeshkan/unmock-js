@@ -1,12 +1,6 @@
-import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
+import { ISnapshot } from "unmock";
 
-export type Redactor = (
-  req: UnmockRequest,
-  res?: UnmockResponse,
-) => {
-  req: UnmockRequest;
-  res?: UnmockResponse;
-};
+export type Redactor = (snapshot: ISnapshot) => ISnapshot;
 
 export interface IJestData {
   aggregatedResult: jest.AggregatedResult;

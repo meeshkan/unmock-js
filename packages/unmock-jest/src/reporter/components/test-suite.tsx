@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ITestSuite, Redactor } from "../types";
+import { ITestSuite } from "../types";
 import Test from "./test";
 
 const Summary = ({ testSuite }: { testSuite: ITestSuite }) => {
@@ -16,14 +16,14 @@ const Summary = ({ testSuite }: { testSuite: ITestSuite }) => {
     </div>)
 };
 
-const TestSuite = ({ testSuite, redactor }: { testSuite: ITestSuite, redactor: Redactor }) => {
+const TestSuite = ({ testSuite }: { testSuite: ITestSuite }) => {
 
     const testElements = testSuite.suiteResults.testResults.map(
         (assertionResult: jest.AssertionResult) => {
             const snapshotsForTest = testSuite.snapshots.filter(
                 snapshot => snapshot.currentTestName === assertionResult.fullName,
             );
-            return <Test assertionResult={assertionResult} snapshots={snapshotsForTest} key={assertionResult.fullName} redactor={redactor}/>
+            return <Test assertionResult={assertionResult} snapshots={snapshotsForTest} key={assertionResult.fullName}/>
         },
   );
 

@@ -3,7 +3,7 @@ import * as ReactDomServer from "react-dom/server";
 import xmlBuilder = require("xmlbuilder");
 import TestSuites from "./components/test-suites";
 import stylesheet from "./stylesheet";
-import { IReportInput, ITestSuite, Redactor } from "./types";
+import { IReportInput, ITestSuite } from "./types";
 import { sortTestSuites, toTestSuites } from "./utils";
 
 const createHtml = ({ css, body } : { css: string, body: string }) => {
@@ -56,7 +56,7 @@ const buildHeaderDiv = (input: IReportInput): xmlBuilder.XMLDocument => {
 };
 
 
-const buildBodyDiv = (input: IReportInput, redactor: Redactor): [xmlBuilder.XMLDocument, string] => {
+const buildBodyDiv = (input: IReportInput): [xmlBuilder.XMLDocument, string] => {
   const reportBody = xmlBuilder.begin().element("div", { class: "report" });
 
   // Header
@@ -64,15 +64,15 @@ const buildBodyDiv = (input: IReportInput, redactor: Redactor): [xmlBuilder.XMLD
 
   const testSuites: ITestSuite[] = sortTestSuites(toTestSuites(input));
 
-  const [css, TestSuitesComponent ] = TestSuites({testSuites, redactor });
+  const [css, TestSuitesComponent ] = TestSuites({testSuites });
 
   reportBody.raw(renderReact(<TestSuitesComponent />));
 
   return [reportBody, css];
 };
 
-export const createReport = (input: IReportInput, redactor: Redactor) => {
-  const [body, css] = buildBodyDiv(input, redactor);
+export const createReport = (input: IReportInput) => {
+  const [body, css] = buildBodyDiv(input);
   const htmlOutput = createHtml({ css, body: body.end() });
   return htmlOutput;
 };

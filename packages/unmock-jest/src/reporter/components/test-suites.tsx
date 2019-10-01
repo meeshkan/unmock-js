@@ -1,6 +1,6 @@
 import * as os from "os";
 import * as React from "react";
-import { ITestSuite, Redactor } from "../types";
+import { ITestSuite } from "../types";
 import TestSuite from "./test-suite";
 
 // Replace file path separator chars with a dash
@@ -10,7 +10,7 @@ export const testFileToId = (file: string) => file.replace(/(\/|\\(\\)?|:|\.)/g,
  * Not actually a React component but something that returns dynamically generated CSS and a React component
  * @returns Tuple where the first element is CSS string, second is a React component for rendering the test results.
  */
-const TestResults = ({ testSuites, redactor }: { testSuites: ITestSuite[], redactor: Redactor }): [string, () => React.ReactElement] => {
+const TestResults = ({ testSuites }: { testSuites: ITestSuite[] }): [string, () => React.ReactElement] => {
 
     const elementsAndCss = testSuites.map((testSuite, index) => {
         const id = testFileToId(testSuite.shortFilePath);
@@ -36,7 +36,7 @@ const TestResults = ({ testSuites, redactor }: { testSuites: ITestSuite[], redac
                 <span className="test-suite-label__filename">{testSuite.shortFilePath}</span>
                 <span className="test-suite-label__summary">{`Passing: ${numPassingTests}, failing: ${numFailingTests}, HTTP calls: ${nSnapshots}`}</span>
             </label>,
-            testSuite: <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} redactor={redactor} /></div>,
+            testSuite: <div className={`test-suite test-suite-${id}`} key={`div-${id}`}><TestSuite testSuite={testSuite} /></div>,
             css: elementCss
         };
     });

@@ -1,6 +1,7 @@
 import { groupBy, map, mapValues, reverse, sortBy, takeWhile } from "lodash";
 import * as path from "path";
-import { IReportInput, ITestSuite } from "./types";
+import { ISnapshot } from "unmock";
+import { IReportInput, ITestSuite, Redactor } from "./types";
 
 export const sortTestSuites = (testSuites: ITestSuite[]): ITestSuite[] => {
   return reverse(
@@ -35,6 +36,27 @@ const largestCommonArray2 = <T>(arr1: T[], arr2: T[]): T[] => {
  */
 export const largestCommonArray = <T>(arrays: T[][]): T[] => {
   return arrays.reduce((acc, val) => largestCommonArray2(acc, val));
+};
+
+export const authRedactor: Redactor = (snapshot: ISnapshot): ISnapshot => {
+  const req = snapshot.data.req;
+
+  const redactedReq = {
+    ...req,
+    headers: {
+      ...req.headers,
+      ...(req.headers.Authorization ? { Authorization: "-- redacted --" } : {}),
+      ...(req.headers.authorization ? { authorization: "-- redacted --" } : {}),
+    },
+  };
+
+  return {
+    ...snapshot,
+    data: {
+      ...snapshot.data,
+      req: redactedReq,
+    },
+  };
 };
 
 export const toTestSuites = (input: IReportInput): ITestSuite[] => {
