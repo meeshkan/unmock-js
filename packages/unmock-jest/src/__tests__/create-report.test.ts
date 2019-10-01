@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/extend-expect";
 import { JSDOM } from "jsdom";
 import * as path from "path";
 import createReport from "../reporter/create-report";
+import { REDACTED } from "../reporter/utils";
 import { writeToDirectory } from "../reporter/write-report";
 import { exampleInput } from "./fake-data";
 import { readJson } from "./utils";
@@ -50,5 +51,37 @@ describe("Report creator for real test data", () => {
       outputDirectory: targetDirectory,
       outputFilename: "report.html",
     });
+  });
+});
+
+describe("Report creator auth redaction", () => {
+  it("should not redact anything from test snapshots", () => {
+    const testInput = {
+      jestData: { aggregatedResult: jestResults },
+      snapshots: unmockSnapshots,
+    };
+    const report = createReport(testInput);
+    expect(report).not.toContain(REDACTED);
+  });
+  it("should redact auth from header", () => {
+    const snapshot = unmockSnapshots[0];
+    const testSnapshot = {
+      ...snapshot,
+      data: {
+        ...snapshot.data,
+        req: {
+          ...snapshot.data.req,
+          headers: {
+            Authorization: "Bearer foo",
+          },
+        },
+      },
+    };
+    const testInput = {
+      jestData: { aggregatedResult: jestResults },
+      snapshots: [testSnapshot],
+    };
+    const report = createReport(testInput);
+    expect(report).toContain(REDACTED);
   });
 });
