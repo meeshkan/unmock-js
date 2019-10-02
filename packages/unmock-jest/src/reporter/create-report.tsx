@@ -4,7 +4,7 @@ import xmlBuilder = require("xmlbuilder");
 import TestSuites from "./components/test-suites";
 import stylesheet from "./stylesheet";
 import { IReportInput, ITestSuite } from "./types";
-import { sortTestSuites, toTestSuites } from "./utils";
+import { authRedactor, sortTestSuites, toTestSuites } from "./utils";
 
 const createHtml = ({ css, body } : { css: string, body: string }) => {
   return `<html>
@@ -72,7 +72,8 @@ const buildBodyDiv = (input: IReportInput): [xmlBuilder.XMLDocument, string] => 
 };
 
 export const createReport = (input: IReportInput) => {
-  const [body, css] = buildBodyDiv(input);
+  const redactedInput = { ...input, snapshots: input.snapshots.map((snapshot) => authRedactor(snapshot))};
+  const [body, css] = buildBodyDiv(redactedInput);
   const htmlOutput = createHtml({ css, body: body.end() });
   return htmlOutput;
 };

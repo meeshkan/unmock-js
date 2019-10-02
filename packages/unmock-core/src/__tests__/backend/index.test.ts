@@ -1,8 +1,9 @@
 import axios from "axios";
 import { removeCodes } from "openapi-refinements";
 import * as path from "path";
-import { Service, sinon, UnmockPackage } from "../../";
+import { Service, sinon, transform, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
+import { UNMOCK_INTERNAL_HTTP_HEADER } from "../../backend/client-request-tracker";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
@@ -128,6 +129,24 @@ describe("Unmock node package", () => {
       await axios.post("http://petstore.swagger.io/v1/pets", {});
       petstore.reset();
       sinon.assert.notCalled(petstore.spy);
+    });
+  });
+  describe("call tracking", () => {
+    let petstore: Service;
+    beforeAll(() => {
+      petstore = unmock.on().services.petstore;
+    });
+    beforeEach(() => {
+      petstore.reset();
+      petstore.state(transform.withCodes(201));
+    });
+    afterAll(() => {
+      unmock.off();
+    });
+    test("should not leave internally used tracking ID in request header", async () => {
+      await axios.post("http://petstore.swagger.io/v1/pets", {});
+      const requestHeaders = petstore.spy.postRequestHeaders();
+      expect(requestHeaders).not.toHaveProperty(UNMOCK_INTERNAL_HTTP_HEADER);
     });
   });
 });

@@ -96,6 +96,7 @@ export const PetstoreServiceWithDynamicPaths = (
 };
 
 export const testRequest: ISerializedRequest = {
+  headers: {},
   method: "get",
   path: "/v3",
   pathname: "/v3",
@@ -105,6 +106,7 @@ export const testRequest: ISerializedRequest = {
 };
 
 export const testResponse: ISerializedResponse = {
+  headers: {},
   statusCode: 200,
   body: "OK",
 };

@@ -1,5 +1,7 @@
 import { ISnapshot } from "unmock";
 
+export type Redactor = (snapshot: ISnapshot) => ISnapshot;
+
 export interface IJestData {
   aggregatedResult: jest.AggregatedResult;
 }

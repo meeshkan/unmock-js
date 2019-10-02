@@ -620,8 +620,9 @@ export interface IIncomingQuery {
 export type IProtocol = "http" | "https";
 
 export interface ISerializedRequest {
-  body?: string | object;
-  headers?: IIncomingHeaders;
+  body?: string;
+  bodyAsJson?: any;
+  headers: IIncomingHeaders;
   host: string;
   method: HTTPMethod;
   /**
@@ -640,8 +641,9 @@ export interface ISerializedRequest {
 }
 
 export interface ISerializedResponse {
+  bodyAsJson?: any;
   body?: string;
-  headers?: IOutgoingHeaders;
+  headers: IOutgoingHeaders;
   statusCode: number;
 }
 

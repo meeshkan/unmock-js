@@ -1,5 +1,18 @@
 # CHANGELOG.md
 
+## 0.3.8 (2019-9-27)
+
+Features:
+
+  - Request and response include `bodyAsJson` for convenient access to a parsed object
+  - Include request headers in Jest reporter and redact `Authorization` fields
+  - Adds `u.opt`
+
+Fixes:
+
+  - Fix missing Faker issue [#272](https://github.com/unmock/unmock-js/issues/272)
+  - Adds certain types as a dependency
+
 ## 0.3.7 (2019-9-26)
 
 Fixes:

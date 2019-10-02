@@ -1,4 +1,3 @@
-import debug from "debug";
 import * as http from "http";
 // @types/readable-stream not compatible with @types/node@8?
 // @ts-ignore
@@ -11,11 +10,6 @@ import {
   ISerializedRequest,
   isRESTMethod,
 } from "../interfaces";
-
-const CONTENT_TYPE_KEY = "content-type";
-const MIME_JSON_TYPE = "application/json";
-
-const debugLog = debug("unmock:node:serializer");
 
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {
@@ -89,16 +83,14 @@ function extractVars(
   };
 }
 
-const hasContentTypeJson = (headers: IIncomingHeaders) =>
-  headers[CONTENT_TYPE_KEY] !== undefined &&
-  headers[CONTENT_TYPE_KEY]!.includes(MIME_JSON_TYPE);
-
-const safelyParseJson = (body: string): string | object => {
+const jsonOrBust = (s: string | undefined) => {
+  if (s === undefined) {
+    return undefined;
+  }
   try {
-    return JSON.parse(body);
-  } catch (err) {
-    debugLog(`Failed parsing body: ${body}`);
-    return body;
+    return JSON.parse(s);
+  } catch {
+    return undefined;
   }
 };
 
@@ -117,14 +109,11 @@ export const serializeRequest = async (
   const protocol = isEncrypted ? "https" : "http";
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
-
-  const deserializedBody =
-    body === undefined || !hasContentTypeJson(headers)
-      ? body
-      : safelyParseJson(body);
+  const bodyAsJson = jsonOrBust(body);
 
   const serializedRequest: ISerializedRequest = {
-    body: deserializedBody,
+    body,
+    ...(bodyAsJson !== undefined ? { bodyAsJson } : {}),
     headers,
     host,
     method,

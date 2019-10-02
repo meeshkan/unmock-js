@@ -154,6 +154,7 @@ test("matcher matches correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.com",
         path: "/user",
         pathname: "/user",
@@ -182,6 +183,7 @@ test("matcher matches correctly 2", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.bar.com",
         path: "/guest/{id}",
         pathname: "/guest/{id}",
@@ -210,6 +212,7 @@ test("matcher discriminates paths correctly when path is misspelled", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.com",
         path: "/users", // incorrect, should be user
         pathname: "/users", // incorrect, should be user
@@ -233,6 +236,7 @@ test("matcher discriminates paths correctly when path wildcard conforms to schem
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.com",
         path: "/user/55", // correctly parses number
         pathname: "/user/55", // correcly parses number
@@ -270,6 +274,7 @@ test("matcher discriminates paths correctly when path wildcard differs from sche
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.com",
         path: "/user/fdsfsfwef", // correctly rejects non-number
         pathname: "/user/fdsfsfwef", // correcly rejects non-number
@@ -289,10 +294,11 @@ test("matcher discriminates paths correctly when path wildcard differs from sche
   });
 });
 
-test("matcher discrimnates operation correctly", () => {
+test("matcher discriminates operation correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.com",
         path: "/user",
         pathname: "/user",
@@ -316,10 +322,11 @@ test("matcher discrimnates operation correctly", () => {
   });
 });
 
-test("matcher discrimnates bad service correctly", () => {
+test("matcher discriminates bad service correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.foo.commmm", // does not exist
         path: "/user",
         pathname: "/user",
@@ -332,10 +339,11 @@ test("matcher discrimnates bad service correctly", () => {
   ).toEqual({});
 });
 
-test("matcher discrimnates required query parameters when pattern matches", () => {
+test("matcher discriminates required query parameters when pattern matches", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest",
         pathname: "/guest",
@@ -348,10 +356,11 @@ test("matcher discrimnates required query parameters when pattern matches", () =
   ).toEqual(store.baz.paths["/guest"].get);
 });
 
-test("matcher discrimnates required query parameters when pattern does not match", () => {
+test("matcher discriminates required query parameters when pattern does not match", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest",
         pathname: "/guest",
@@ -364,10 +373,11 @@ test("matcher discrimnates required query parameters when pattern does not match
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required query parameters when no query is present", () => {
+test("matcher discriminates required query parameters when no query is present", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest",
         pathname: "/guest",
@@ -380,41 +390,45 @@ test("matcher discrimnates required query parameters when no query is present", 
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required post body correctly", () => {
+test("matcher discriminates required post body correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest/3/name",
         pathname: "/guest/3/name",
         protocol: "https",
         method: "post",
         query: {},
-        body: { age: 42 },
+        bodyAsJson: { age: 42 },
+        body: JSON.stringify({ age: 42 }),
       },
       store,
     ).baz.paths["/guest/{id}/name"].post,
   ).toEqual(store.baz.paths["/guest/{id}/name"].post);
 });
 
-test("matcher discrimnates incorrect required post body correctly", () => {
+test("matcher discriminates incorrect required post body correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest/3/name",
         pathname: "/guest/3/name",
         protocol: "https",
         method: "post",
         query: {},
-        body: { age: "42" },
+        body: JSON.stringify({ age: "42" }),
+        bodyAsJson: { age: "42" },
       },
       store,
     ).baz.paths["/guest/{id}/name"].post,
   ).toEqual(undefined);
 });
 
-test("matcher discrimnates required header and query correctly", () => {
+test("matcher discriminates required header and query correctly", () => {
   expect(
     matcher(
       {
@@ -431,10 +445,11 @@ test("matcher discrimnates required header and query correctly", () => {
   ).toEqual(store.baz.paths["/guest/{id}"].post);
 });
 
-test("matcher discrimnates missing required header correctly", () => {
+test("matcher discriminates missing required header correctly", () => {
   expect(
     matcher(
       {
+        headers: {},
         host: "api.baz.com",
         path: "/guest/4",
         pathname: "/guest/4",
