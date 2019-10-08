@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { flatMap } from "lodash";
 import * as path from "path";
 import { IServiceDef } from "./interfaces";
+import { IServiceDefLoader } from "./service-loaders";
 
 const debugLog = debug("unmock:fs-service-def-loader");
 
@@ -12,7 +13,7 @@ const debugLog = debug("unmock:fs-service-def-loader");
  * 2. Environment variable `UNMOCK_SERVICES_DIRECTORY`
  * 3. `${process.cwd()}/__unmock__`
  */
-export class FsServiceDefLoader {
+export class FsServiceDefLoader implements IServiceDefLoader {
   /**
    * Read service parser input from directory containing all the files for a given service.
    * @param absoluteDirectory Absolute path to service directory. For example, /path/to/__unmock__/petstore/

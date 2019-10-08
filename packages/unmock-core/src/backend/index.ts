@@ -1,7 +1,6 @@
 import debug from "debug";
 import * as _ from "lodash";
 import { CustomConsole } from "../console";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
 import { createInterceptor, IInterceptor } from "../interceptor";
 import {
@@ -14,9 +13,9 @@ import {
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
 import { ServiceParser } from "../parser";
+import createServiceDefLoader from "../service-loaders";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
-import { resolveUnmockDirectories } from "../utils";
 
 const debugLog = debug("unmock:node");
 
@@ -84,17 +83,10 @@ export default class NodeBackend {
   }
 
   public loadServices() {
-    // Resolve where services can live
-    const unmockDirectories = this.config.servicesDirectory
-      ? [this.config.servicesDirectory]
-      : resolveUnmockDirectories();
-
-    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
-
     // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
-    });
+    const serviceDefLoader = createServiceDefLoader(
+      this.config.servicesDirectory,
+    );
 
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
     const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
