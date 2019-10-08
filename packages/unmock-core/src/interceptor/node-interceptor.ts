@@ -80,17 +80,22 @@ const NodeInterceptorConstructor: IInterceptorConstructor = class NodeIntercepto
         );
         req.on("abort", () => debugLog("Intercepted request aborted"));
         const clientRequest: ClientRequest = ClientRequestTracker.pop(req);
-        const serializedRequest: ISerializedRequest = await serializeRequest(
-          req,
-        );
+        let serializedRequest: ISerializedRequest;
+        try {
+          serializedRequest = await serializeRequest(req);
+        } catch (err) {
+          debugLog(`Failed serializing request`);
+          clientRequest.emit("error", err);
+          return;
+        }
+
         setImmediate(() =>
           handleRequest(
             serializedRequest,
             this.options.listener.createResponse,
             (err: Error) => clientRequest.emit("error", err),
-            (serializedResponse: ISerializedResponse) => {
-              respondFromSerializedResponse(serializedResponse, res);
-            },
+            (serializedResponse: ISerializedResponse) =>
+              respondFromSerializedResponse(serializedResponse, res),
           ),
         );
       },
