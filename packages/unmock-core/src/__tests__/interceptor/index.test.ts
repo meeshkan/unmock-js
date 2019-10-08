@@ -1,8 +1,4 @@
 import axios from "axios";
-import { removeCodes } from "openapi-refinements";
-import * as path from "path";
-import { Service, sinon, transform, UnmockPackage } from "../../";
-import NodeBackend from "../../backend";
 import { IInterceptor, IInterceptorOptions } from "../../interceptor";
 import NodeInterceptor from "../../interceptor/node-interceptor";
 import { ISerializedRequest } from "../../interfaces";
@@ -58,6 +54,20 @@ describe("Node.js interceptor", () => {
     await expect(axios("http://petstore.swagger.io/v1/pets")).rejects.toThrow(
       "Request failed with status code 500",
     );
+  });
+
+  it("should respect cancellation", async () => {
+    const cancelTokenSource = axios.CancelToken.source();
+    setImmediate(() => cancelTokenSource.cancel());
+    try {
+      await axios("http://example.org", {
+        cancelToken: cancelTokenSource.token,
+      });
+    } catch (err) {
+      expect(axios.isCancel(err)).toBe(true);
+      return;
+    }
+    throw new Error("Was supposed to throw a cancellation error");
   });
 
   afterAll(() => {
