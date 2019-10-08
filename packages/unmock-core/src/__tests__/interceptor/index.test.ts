@@ -11,7 +11,7 @@ describe("Node.js interceptor", () => {
   beforeAll(() => {
     const options: IInterceptorOptions = {
       listener: { createResponse },
-      shouldBypassHost: (host: string) => false,
+      shouldBypassHost: (_: string) => false,
     };
     nodeInterceptor = new NodeInterceptor(options);
   });
