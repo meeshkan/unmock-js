@@ -1,18 +1,9 @@
 import debug from "debug";
-import {
-  ClientRequest,
-  IncomingMessage,
-  RequestOptions,
-  ServerResponse,
-} from "http";
 import * as _ from "lodash";
-import Mitm = require("mitm");
-import * as net from "net";
 import { CustomConsole } from "../console";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
 import {
-  CreateResponse,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
@@ -22,33 +13,23 @@ import {
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
 import { ServiceParser } from "../parser";
-import { serializeRequest } from "../serialize";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
-import ClientRequestTracker from "./client-request-tracker";
+import NodeInterceptor from "./node-interceptor";
 
 export interface IInterceptorListener {
-  bypass(host: string): boolean;
   createResponse(
     request: ISerializedRequest,
   ): Promise<ISerializedResponse | undefined>;
 }
 
 export interface IInterceptor {
-  initialize(): void;
+  initialize(shouldBypass: (host: string) => boolean): void;
   disable(): void;
 }
 
 const debugLog = debug("unmock:node");
-
-const respondFromSerializedResponse = (
-  serializedResponse: ISerializedResponse,
-  res: ServerResponse,
-) => {
-  res.writeHead(serializedResponse.statusCode, serializedResponse.headers);
-  res.end(serializedResponse.body);
-};
 
 export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   const serverUrl = `${sreq.protocol}://${sreq.host}`;
@@ -71,32 +52,34 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   `;
 };
 
-async function handleRequestAndResponse(
-  createResponse: CreateResponse,
-  req: IncomingMessage,
-  res: ServerResponse,
-  clientRequest: ClientRequest, // For emitting errors
-) {
+export const handleRequest = async (
+  serializedRequest: ISerializedRequest,
+  createResponse: (
+    req: ISerializedRequest,
+  ) => Promise<ISerializedResponse | undefined>,
+  emitError: (e: Error) => void,
+  sendResponse: (res: ISerializedResponse) => void,
+) => {
   try {
-    const serializedRequest: ISerializedRequest = await serializeRequest(req);
+    // Node.js serialization
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse: ISerializedResponse | undefined = createResponse(
-      serializedRequest,
-    );
+    const serializedResponse:
+      | ISerializedResponse
+      | undefined = await createResponse(serializedRequest);
 
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
       const formatted = CustomConsole.format("instruct", errMsg);
-      clientRequest.emit("error", Error(formatted));
+      emitError(Error(formatted));
       return;
     }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
-    respondFromSerializedResponse(serializedResponse, res);
+    sendResponse(serializedResponse);
   } catch (err) {
-    clientRequest.emit("error", Error(`unmock error: ${err.message}`));
+    emitError(Error(`unmock error: ${err.message}`));
   }
-}
+};
 
 export interface INodeBackendOptions {
   servicesDirectory?: string;
@@ -104,14 +87,10 @@ export interface INodeBackendOptions {
 
 const nodeBackendDefaultOptions: INodeBackendOptions = {};
 
-interface IBypassableSocket extends net.Socket {
-  bypass: () => void;
-}
-
 export default class NodeBackend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   private readonly config: INodeBackendOptions;
-  private mitm: any;
+  private interceptor?: IInterceptor;
 
   public constructor(config?: INodeBackendOptions) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
@@ -152,17 +131,11 @@ export default class NodeBackend {
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
-    if (this.mitm !== undefined) {
-      this.reset();
+
+    if (this.interceptor) {
+      this.interceptor.disable();
+      this.interceptor = undefined;
     }
-    this.mitm = Mitm();
-
-    ClientRequestTracker.start();
-
-    // Client-side socket connect, use to bypass connections
-    this.mitm.on("connect", (socket: IBypassableSocket, opts: RequestOptions) =>
-      this.mitmOnConnect(options, socket, opts),
-    );
 
     const createResponse = responseCreatorFactory({
       listeners: [
@@ -175,46 +148,25 @@ export default class NodeBackend {
       store: this.serviceStore,
     });
 
-    this.mitm.on("request", (req: IncomingMessage, res: ServerResponse) =>
-      this.mitmOnRequest(createResponse, req, res),
-    );
+    this.interceptor = new NodeInterceptor({
+      listener: {
+        createResponse: async (req: ISerializedRequest) => createResponse(req),
+      },
+    });
+
+    this.interceptor.initialize(options.isWhitelisted);
   }
 
   public reset() {
-    if (this.mitm) {
-      this.mitm.disable();
-      this.mitm = undefined;
+    if (this.interceptor) {
+      this.interceptor.disable();
+      this.interceptor = undefined;
     }
     if (this.serviceStore) {
       // TODO - this is quite ugly :shrug:
       Object.values(this.serviceStore.services).forEach(service =>
         service.reset(),
       );
-    }
-    ClientRequestTracker.stop();
-  }
-
-  private mitmOnRequest(
-    createResponse: CreateResponse,
-    req: IncomingMessage,
-    res: ServerResponse,
-  ) {
-    debugLog("Handling incoming message...");
-    req.on("error", (e: any) => debugLog("Error on intercepted request:", e));
-    req.on("abort", () => debugLog("Intercepted request aborted"));
-    const clientRequest = ClientRequestTracker.pop(req);
-    setImmediate(() =>
-      handleRequestAndResponse(createResponse, req, res, clientRequest),
-    );
-  }
-
-  private mitmOnConnect(
-    { isWhitelisted }: IUnmockOptions,
-    socket: IBypassableSocket,
-    opts: RequestOptions,
-  ) {
-    if (isWhitelisted(opts.host || "")) {
-      socket.bypass();
     }
   }
 }
