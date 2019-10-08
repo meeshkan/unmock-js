@@ -27,13 +27,24 @@ interface IBypassableSocket extends net.Socket {
   bypass: () => void;
 }
 
+/**
+ * Node.js interceptor using node-mitm.
+ * @param options Interceptor options
+ */
 const NodeInterceptorConstructor: IInterceptorConstructor = class NodeInterceptor
   implements IInterceptor {
   private mitm: any;
+  /**
+   * Create interceptor and start intercepting requests.
+   * @param options
+   */
   constructor(public readonly options: IInterceptorOptions) {
     this.initialize(options.shouldBypassHost);
   }
 
+  /**
+   * Disable interceptor.
+   */
   public disable() {
     if (this.mitm) {
       this.mitm.disable();
