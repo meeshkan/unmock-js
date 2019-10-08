@@ -22,9 +22,24 @@ export interface IInterceptorListener {
   createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
 }
 
+export interface IInterceptorOptions {
+  listener: IInterceptorListener;
+  shouldBypassHost: (host: string) => boolean;
+}
+
+export type IInterceptorConstructor = new (
+  options: IInterceptorOptions,
+) => IInterceptor;
+
 export interface IInterceptor {
-  initialize(shouldBypass: (host: string) => boolean): void;
   disable(): void;
+}
+
+function createInterceptor(
+  ctor: IInterceptorConstructor,
+  options: IInterceptorOptions,
+): IInterceptor {
+  return new ctor(options);
 }
 
 const debugLog = debug("unmock:node");
@@ -143,13 +158,12 @@ export default class NodeBackend {
       store: this.serviceStore,
     });
 
-    this.interceptor = new NodeInterceptor({
+    this.interceptor = createInterceptor(NodeInterceptor, {
       listener: {
         createResponse,
       },
+      shouldBypassHost: options.isWhitelisted,
     });
-
-    this.interceptor.initialize(options.isWhitelisted);
   }
 
   public reset() {

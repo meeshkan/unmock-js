@@ -9,7 +9,12 @@ import Mitm = require("mitm");
 import * as net from "net";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { serializeRequest } from "../serialize";
-import { handleRequest, IInterceptor, IInterceptorListener } from "./";
+import {
+  handleRequest,
+  IInterceptor,
+  IInterceptorConstructor,
+  IInterceptorOptions,
+} from "./";
 import ClientRequestTracker from "./client-request-tracker";
 
 const debugLog = debug("unmock:node-interceptor");
@@ -26,15 +31,22 @@ interface IBypassableSocket extends net.Socket {
   bypass: () => void;
 }
 
-interface IInterceptorOptions {
-  listener: IInterceptorListener;
-}
-
-export default class NodeInterceptor implements IInterceptor {
+const NodeInterceptorConstructor: IInterceptorConstructor = class NodeInterceptor
+  implements IInterceptor {
   private mitm: any;
-  constructor(private readonly options: IInterceptorOptions) {}
+  constructor(public readonly options: IInterceptorOptions) {
+    this.initialize(options.shouldBypassHost);
+  }
 
-  public initialize(shouldBypass: (host: string) => boolean) {
+  public disable() {
+    if (this.mitm) {
+      this.mitm.disable();
+      this.mitm = undefined;
+    }
+    ClientRequestTracker.stop();
+  }
+
+  private initialize(shouldBypass: (host: string) => boolean) {
     if (this.mitm !== undefined) {
       this.disable();
     }
@@ -77,12 +89,6 @@ export default class NodeInterceptor implements IInterceptor {
       },
     );
   }
+};
 
-  public disable() {
-    if (this.mitm) {
-      this.mitm.disable();
-      this.mitm = undefined;
-    }
-    ClientRequestTracker.stop();
-  }
-}
+export default NodeInterceptorConstructor;
