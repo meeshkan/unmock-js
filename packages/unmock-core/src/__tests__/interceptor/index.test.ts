@@ -7,13 +7,21 @@ import { testResponse } from "../utils";
 describe("Node.js interceptor", () => {
   let nodeInterceptor: IInterceptor;
   const createResponse = jest.fn();
+  const shouldBypassHost = jest.fn();
 
   beforeAll(() => {
     const options: IInterceptorOptions = {
       listener: { createResponse },
-      shouldBypassHost: (_: string) => false,
+      shouldBypassHost,
     };
     nodeInterceptor = new NodeInterceptor(options);
+  });
+
+  beforeEach(() => {
+    createResponse.mockImplementationOnce(
+      (_: ISerializedRequest) => testResponse,
+    );
+    shouldBypassHost.mockImplementationOnce((_: string) => false);
   });
 
   afterEach(() => {
@@ -21,9 +29,6 @@ describe("Node.js interceptor", () => {
   });
 
   it("should call createResponse with correctly serialized request", async () => {
-    createResponse.mockImplementationOnce(
-      (_: ISerializedRequest) => testResponse,
-    );
     await axios("http://petstore.swagger.io/v1/pets");
     expect(createResponse).toHaveBeenCalledTimes(1);
     expect(createResponse).toHaveBeenCalledWith(
@@ -36,10 +41,12 @@ describe("Node.js interceptor", () => {
     );
   });
 
+  it("should call bypass function", async () => {
+    await axios("http://petstore.swagger.io/v1/pets");
+    expect(shouldBypassHost).toHaveBeenCalledWith("petstore.swagger.io");
+  });
+
   it("should return expected response", async () => {
-    createResponse.mockImplementationOnce(
-      (_: ISerializedRequest) => testResponse,
-    );
     const { data: responseBody } = await axios(
       "http://petstore.swagger.io/v1/pets",
     );
@@ -47,6 +54,7 @@ describe("Node.js interceptor", () => {
   });
 
   it("should throw for a request when response status code is an error", async () => {
+    createResponse.mockReset();
     createResponse.mockImplementationOnce((_: ISerializedRequest) => ({
       ...testResponse,
       statusCode: 500,
