@@ -28,6 +28,18 @@ import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
 import ClientRequestTracker from "./client-request-tracker";
 
+export interface IInterceptorListener {
+  bypass(host: string): boolean;
+  createResponse(
+    request: ISerializedRequest,
+  ): Promise<ISerializedResponse | undefined>;
+}
+
+export interface IInterceptor {
+  initialize(): void;
+  disable(): void;
+}
+
 const debugLog = debug("unmock:node");
 
 const respondFromSerializedResponse = (
@@ -38,7 +50,7 @@ const respondFromSerializedResponse = (
   res.end(serializedResponse.body);
 };
 
-const errorForMissingTemplate = (sreq: ISerializedRequest) => {
+export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   const serverUrl = `${sreq.protocol}://${sreq.host}`;
   return `No matching template found for intercepted request. Please ensure that
 
@@ -154,7 +166,9 @@ export default class NodeBackend {
 
     const createResponse = responseCreatorFactory({
       listeners: [
-        new FSLogger({ directory: this.config.servicesDirectory }),
+        new FSLogger({
+          directory: this.config.servicesDirectory,
+        }),
         FSSnapshotter.getOrUpdateSnapshotter({}),
       ],
       options,
