@@ -7,14 +7,10 @@ import {
 } from "http";
 import Mitm = require("mitm");
 import * as net from "net";
+import { handleRequest } from "../backend";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { serializeRequest } from "../serialize";
-import {
-  handleRequest,
-  IInterceptor,
-  IInterceptorConstructor,
-  IInterceptorOptions,
-} from "./";
+import { IInterceptor, IInterceptorConstructor, IInterceptorOptions } from "./";
 import ClientRequestTracker from "./client-request-tracker";
 
 const debugLog = debug("unmock:node-interceptor");

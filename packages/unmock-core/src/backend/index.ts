@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import { CustomConsole } from "../console";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
+import { createInterceptor, IInterceptor } from "../interceptor";
 import {
   ISerializedRequest,
   ISerializedResponse,
@@ -16,31 +17,6 @@ import { ServiceParser } from "../parser";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 import { resolveUnmockDirectories } from "../utils";
-import NodeInterceptor from "./node-interceptor";
-
-export interface IInterceptorListener {
-  createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
-}
-
-export interface IInterceptorOptions {
-  listener: IInterceptorListener;
-  shouldBypassHost: (host: string) => boolean;
-}
-
-export type IInterceptorConstructor = new (
-  options: IInterceptorOptions,
-) => IInterceptor;
-
-export interface IInterceptor {
-  disable(): void;
-}
-
-function createInterceptor(
-  ctor: IInterceptorConstructor,
-  options: IInterceptorOptions,
-): IInterceptor {
-  return new ctor(options);
-}
 
 const debugLog = debug("unmock:node");
 
@@ -158,7 +134,7 @@ export default class NodeBackend {
       store: this.serviceStore,
     });
 
-    this.interceptor = createInterceptor(NodeInterceptor, {
+    this.interceptor = createInterceptor({
       listener: {
         createResponse,
       },

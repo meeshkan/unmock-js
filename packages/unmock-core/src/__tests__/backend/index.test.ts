@@ -3,7 +3,7 @@ import { removeCodes } from "openapi-refinements";
 import * as path from "path";
 import { Service, sinon, transform, UnmockPackage } from "../../";
 import NodeBackend from "../../backend";
-import { UNMOCK_INTERNAL_HTTP_HEADER } from "../../backend/client-request-tracker";
+import { UNMOCK_INTERNAL_HTTP_HEADER } from "../../interceptor/client-request-tracker";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
