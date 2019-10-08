@@ -19,9 +19,7 @@ import { resolveUnmockDirectories } from "../utils";
 import NodeInterceptor from "./node-interceptor";
 
 export interface IInterceptorListener {
-  createResponse(
-    request: ISerializedRequest,
-  ): Promise<ISerializedResponse | undefined>;
+  createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
 }
 
 export interface IInterceptor {
@@ -52,20 +50,17 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   `;
 };
 
-export const handleRequest = async (
+export const handleRequest = (
   serializedRequest: ISerializedRequest,
-  createResponse: (
-    req: ISerializedRequest,
-  ) => Promise<ISerializedResponse | undefined>,
+  createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
   emitError: (e: Error) => void,
   sendResponse: (res: ISerializedResponse) => void,
 ) => {
   try {
-    // Node.js serialization
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse:
-      | ISerializedResponse
-      | undefined = await createResponse(serializedRequest);
+    const serializedResponse: ISerializedResponse | undefined = createResponse(
+      serializedRequest,
+    );
 
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
@@ -150,7 +145,7 @@ export default class NodeBackend {
 
     this.interceptor = new NodeInterceptor({
       listener: {
-        createResponse: async (req: ISerializedRequest) => createResponse(req),
+        createResponse,
       },
     });
 

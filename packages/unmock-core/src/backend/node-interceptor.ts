@@ -44,7 +44,6 @@ export default class NodeInterceptor implements IInterceptor {
     this.mitm.on(
       "connect",
       (socket: IBypassableSocket, opts: RequestOptions) => {
-        // Somehow "serialize" here
         if (shouldBypass(opts.host || "")) {
           socket.bypass();
         }
@@ -65,16 +64,16 @@ export default class NodeInterceptor implements IInterceptor {
         const serializedRequest: ISerializedRequest = await serializeRequest(
           req,
         );
-        setImmediate(async () => {
-          await handleRequest(
+        setImmediate(() =>
+          handleRequest(
             serializedRequest,
             this.options.listener.createResponse,
             (err: Error) => clientRequest.emit("error", err),
             (serializedResponse: ISerializedResponse) => {
               respondFromSerializedResponse(serializedResponse, res);
             },
-          );
-        });
+          ),
+        );
       },
     );
   }
