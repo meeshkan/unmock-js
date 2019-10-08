@@ -1,6 +1,5 @@
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import NodeInterceptorConstructor from "./node-interceptor";
-export * from "./node-interceptor";
 
 export interface IInterceptorListener {
   createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
