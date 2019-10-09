@@ -2,7 +2,7 @@ import debug from "debug";
 import * as _ from "lodash";
 import { CustomConsole } from "../console";
 import { responseCreatorFactory } from "../generator";
-import { createInterceptor, IInterceptor } from "../interceptor";
+import { IInterceptor, IInterceptorConstructor } from "../interceptor";
 import {
   ISerializedRequest,
   ISerializedResponse,
@@ -72,13 +72,21 @@ export interface INodeBackendOptions {
 
 const nodeBackendDefaultOptions: INodeBackendOptions = {};
 
-export default class NodeBackend {
+export class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
+  public readonly InterceptorConstructor: IInterceptorConstructor;
   private readonly config: INodeBackendOptions;
   private interceptor?: IInterceptor;
 
-  public constructor(config?: INodeBackendOptions) {
+  public constructor({
+    interceptorConstructor,
+    config,
+  }: {
+    interceptorConstructor: IInterceptorConstructor;
+    config?: INodeBackendOptions;
+  }) {
     this.config = { ...nodeBackendDefaultOptions, ...config };
+    this.InterceptorConstructor = interceptorConstructor;
     this.loadServices();
   }
 
@@ -126,7 +134,7 @@ export default class NodeBackend {
       store: this.serviceStore,
     });
 
-    this.interceptor = createInterceptor({
+    this.interceptor = new this.InterceptorConstructor({
       listener: {
         createResponse,
       },
@@ -147,3 +155,5 @@ export default class NodeBackend {
     }
   }
 }
+
+export default Backend;

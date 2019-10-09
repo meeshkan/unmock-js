@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as path from "path";
-import { runner, Service, UnmockPackage, transform } from "..";
-import NodeBackend from "../backend";
+import { runner, Service, transform, UnmockPackage } from "..";
+import NodeBackend from "../backend/node";
 const { withCodes } = transform;
 
 const servicesDirectory = path.join(__dirname, "__unmock__");

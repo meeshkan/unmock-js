@@ -1,7 +1,7 @@
 // Sinon for asserts and matchers
 import * as fetch from "node-fetch";
 import * as sinon from "sinon";
-import NodeBackend from "./backend";
+import NodeBackend from "./backend/node";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
 import WinstonLogger from "./loggers/winston-logger";
