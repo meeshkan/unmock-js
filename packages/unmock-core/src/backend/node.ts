@@ -2,10 +2,7 @@ import NodeInterceptorConstructor from "../interceptor/node-interceptor";
 import { IServiceDef } from "../interfaces";
 import FSLogger from "../loggers/filesystem-logger";
 import FSSnapshotter from "../loggers/snapshotter";
-import { ServiceParser } from "../parser";
-import createServiceDefLoader from "../service-loaders";
-import { IServiceCore } from "../service/interfaces";
-import { ServiceStore } from "../service/serviceStore";
+import createFsServiceDefLoader from "../service-loaders";
 import Backend from "./";
 
 export interface INodeBackendOptions {
@@ -35,14 +32,8 @@ export default class NodeBackend extends Backend {
   }
 
   public loadServices() {
-    // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = createServiceDefLoader(this.servicesDirectory);
-
+    const serviceDefLoader = createFsServiceDefLoader(this.servicesDirectory);
     const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-      ServiceParser.parse(serviceDef),
-    );
-
-    this.serviceStore = new ServiceStore(coreServices);
+    this.updateServiceDefs(serviceDefs);
   }
 }

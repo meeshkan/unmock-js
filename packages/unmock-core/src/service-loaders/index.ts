@@ -10,7 +10,9 @@ export interface IServiceDefLoader {
   loadSync(): IServiceDef[];
 }
 
-const createServiceDefLoader = (servicesDirectory?: string) => {
+const createFsServiceDefLoader = (
+  servicesDirectory?: string,
+): IServiceDefLoader => {
   const unmockDirectories = servicesDirectory
     ? [servicesDirectory]
     : resolveUnmockDirectories();
@@ -19,4 +21,4 @@ const createServiceDefLoader = (servicesDirectory?: string) => {
   return new FsServiceDefLoader({ unmockDirectories });
 };
 
-export default createServiceDefLoader;
+export default createFsServiceDefLoader;

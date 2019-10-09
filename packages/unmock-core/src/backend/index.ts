@@ -7,10 +7,12 @@ import {
   IListener,
   ISerializedRequest,
   ISerializedResponse,
+  IServiceDef,
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
-
+import { ServiceParser } from "../parser";
+import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 
 const debugLog = debug("unmock:node");
@@ -126,6 +128,14 @@ export abstract class Backend {
   }
 
   public abstract loadServices(): void;
+
+  protected updateServiceDefs(serviceDefs: IServiceDef[]) {
+    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
+      ServiceParser.parse(serviceDef),
+    );
+
+    this.serviceStore = new ServiceStore(coreServices);
+  }
 }
 
 export default Backend;
