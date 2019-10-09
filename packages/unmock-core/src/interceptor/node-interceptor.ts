@@ -30,7 +30,7 @@ interface IBypassableSocket extends net.Socket {
  * Node.js interceptor using node-mitm.
  * @param options Interceptor options
  */
-const NodeInterceptorConstructor: IInterceptorConstructor = class NodeInterceptor
+const NodeInterceptor: IInterceptorConstructor = class NodeInterceptorCls
   implements IInterceptor {
   private mitm: any;
   /**
@@ -101,4 +101,4 @@ const NodeInterceptorConstructor: IInterceptorConstructor = class NodeIntercepto
   }
 };
 
-export default NodeInterceptorConstructor;
+export default NodeInterceptor;
