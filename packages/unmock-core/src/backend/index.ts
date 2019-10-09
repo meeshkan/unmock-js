@@ -41,7 +41,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   `;
 };
 
-export const handleRequest = (
+export const buildRequestHandler = (
   createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
 ): HandleRequest => (
   serializedRequest: ISerializedRequest,
@@ -136,7 +136,7 @@ export default class NodeBackend {
     });
 
     this.interceptor = createInterceptor({
-      handleRequest: handleRequest(createResponse),
+      handleRequest: buildRequestHandler(createResponse),
       shouldBypassHost: options.isWhitelisted,
     });
   }

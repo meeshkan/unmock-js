@@ -1,5 +1,5 @@
 import axios from "axios";
-import { handleRequest } from "../../backend";
+import { buildRequestHandler } from "../../backend";
 import { IInterceptor, IInterceptorOptions } from "../../interceptor";
 import NodeInterceptor from "../../interceptor/node-interceptor";
 import { ISerializedRequest } from "../../interfaces";
@@ -13,7 +13,7 @@ describe("Node.js interceptor", () => {
   > = jest.fn(); */
   const createResponse = jest.fn();
   const shouldBypassHost = jest.fn();
-  const requestHandler = handleRequest(createResponse);
+  const requestHandler = buildRequestHandler(createResponse);
 
   beforeAll(() => {
     const options: IInterceptorOptions = {
