@@ -1,5 +1,5 @@
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
-import NodeInterceptorConstructor from "./node-interceptor";
+import NodeInterceptor from "./node-interceptor";
 
 export type HandleRequest = (
   serializedRequest: ISerializedRequest,
@@ -32,5 +32,5 @@ export interface IInterceptor {
  * @param options
  */
 export function createInterceptor(options: IInterceptorOptions): IInterceptor {
-  return new NodeInterceptorConstructor(options);
+  return new NodeInterceptor(options);
 }
