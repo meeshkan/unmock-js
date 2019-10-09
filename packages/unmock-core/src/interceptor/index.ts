@@ -1,12 +1,14 @@
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import NodeInterceptorConstructor from "./node-interceptor";
 
-export interface IInterceptorListener {
-  createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
-}
+export type HandleRequest = (
+  serializedRequest: ISerializedRequest,
+  sendResponse: (res: ISerializedResponse) => void,
+  emitError: (e: Error) => void,
+) => void;
 
 export interface IInterceptorOptions {
-  listener: IInterceptorListener;
+  handleRequest: HandleRequest;
   shouldBypassHost: (host: string) => boolean;
 }
 

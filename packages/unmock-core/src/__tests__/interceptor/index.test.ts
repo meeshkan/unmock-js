@@ -1,4 +1,5 @@
 import axios from "axios";
+import { handleRequest } from "../../backend";
 import { IInterceptor, IInterceptorOptions } from "../../interceptor";
 import NodeInterceptor from "../../interceptor/node-interceptor";
 import { ISerializedRequest } from "../../interfaces";
@@ -6,12 +7,17 @@ import { testResponse } from "../utils";
 
 describe("Node.js interceptor", () => {
   let nodeInterceptor: IInterceptor;
+  /* const handleRequest: jest.Mock<
+    ReturnType<HandleRequest>,
+    Parameters<HandleRequest>
+  > = jest.fn(); */
   const createResponse = jest.fn();
   const shouldBypassHost = jest.fn();
+  const requestHandler = handleRequest(createResponse);
 
   beforeAll(() => {
     const options: IInterceptorOptions = {
-      listener: { createResponse },
+      handleRequest: requestHandler,
       shouldBypassHost,
     };
     nodeInterceptor = new NodeInterceptor(options);
