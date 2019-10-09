@@ -138,7 +138,7 @@ export default class NodeBackend {
       listener: {
         createResponse,
       },
-      shouldBypassHost: options.isWhitelisted,
+      shouldBypassHost: options.isWhitelisted.bind(options),
     });
   }
 
