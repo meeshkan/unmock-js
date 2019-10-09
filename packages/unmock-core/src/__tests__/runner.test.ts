@@ -8,8 +8,8 @@ const servicesDirectory = path.join(__dirname, "__unmock__");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
-    const nodeInterceptor = new NodeBackend({ servicesDirectory });
-    const unmock = new UnmockPackage(nodeInterceptor);
+    const nodeBackend = new NodeBackend({ servicesDirectory });
+    const unmock = new UnmockPackage(nodeBackend);
     let petstore: Service;
 
     beforeAll(() => {

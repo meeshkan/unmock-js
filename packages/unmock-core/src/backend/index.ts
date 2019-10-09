@@ -4,17 +4,13 @@ import { CustomConsole } from "../console";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorConstructor } from "../interceptor";
 import {
+  IListener,
   ISerializedRequest,
   ISerializedResponse,
-  IServiceDef,
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
-import FSLogger from "../loggers/filesystem-logger";
-import FSSnapshotter from "../loggers/snapshotter";
-import { ServiceParser } from "../parser";
-import createServiceDefLoader from "../service-loaders";
-import { IServiceCore } from "../service/interfaces";
+
 import { ServiceStore } from "../service/serviceStore";
 
 const debugLog = debug("unmock:node");
@@ -66,42 +62,21 @@ export const handleRequest = (
   }
 };
 
-export interface INodeBackendOptions {
-  servicesDirectory?: string;
-}
-
-const nodeBackendDefaultOptions: INodeBackendOptions = {};
-
-export class Backend {
+export abstract class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
-  public readonly InterceptorConstructor: IInterceptorConstructor;
-  private readonly config: INodeBackendOptions;
+  public readonly InterceptorCls: IInterceptorConstructor;
+  protected readonly listeners: IListener[];
   private interceptor?: IInterceptor;
 
   public constructor({
-    interceptorConstructor,
-    config,
+    InterceptorCls,
+    listeners,
   }: {
-    interceptorConstructor: IInterceptorConstructor;
-    config?: INodeBackendOptions;
+    InterceptorCls: IInterceptorConstructor;
+    listeners?: IListener[];
   }) {
-    this.config = { ...nodeBackendDefaultOptions, ...config };
-    this.InterceptorConstructor = interceptorConstructor;
-    this.loadServices();
-  }
-
-  public loadServices() {
-    // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = createServiceDefLoader(
-      this.config.servicesDirectory,
-    );
-
-    const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-      ServiceParser.parse(serviceDef),
-    );
-
-    this.serviceStore = new ServiceStore(coreServices);
+    this.InterceptorCls = InterceptorCls;
+    this.listeners = listeners || [];
   }
 
   public get services(): ServiceStoreType {
@@ -124,17 +99,12 @@ export class Backend {
     }
 
     const createResponse = responseCreatorFactory({
-      listeners: [
-        new FSLogger({
-          directory: this.config.servicesDirectory,
-        }),
-        FSSnapshotter.getOrUpdateSnapshotter({}),
-      ],
+      listeners: this.listeners,
       options,
       store: this.serviceStore,
     });
 
-    this.interceptor = new this.InterceptorConstructor({
+    this.interceptor = new this.InterceptorCls({
       listener: {
         createResponse,
       },
@@ -154,6 +124,8 @@ export class Backend {
       );
     }
   }
+
+  public abstract loadServices(): void;
 }
 
 export default Backend;

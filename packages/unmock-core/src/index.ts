@@ -1,6 +1,7 @@
 // Sinon for asserts and matchers
 import * as fetch from "node-fetch";
 import * as sinon from "sinon";
+import Backend from "./backend";
 import NodeBackend from "./backend/node";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
@@ -23,10 +24,10 @@ export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
-  protected readonly backend: NodeBackend;
+  protected readonly backend: Backend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
-    backend: NodeBackend,
+    backend: Backend,
     options?: {
       logger?: ILogger;
     },
