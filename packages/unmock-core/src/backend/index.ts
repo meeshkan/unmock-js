@@ -3,7 +3,11 @@ import * as _ from "lodash";
 import { CustomConsole } from "../console";
 import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { responseCreatorFactory } from "../generator";
-import { createInterceptor, HandleRequest, IInterceptor } from "../interceptor";
+import {
+  createInterceptor,
+  IInterceptor,
+  OnSerializedRequest,
+} from "../interceptor";
 import {
   ISerializedRequest,
   ISerializedResponse,
@@ -43,7 +47,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
 
 export const buildRequestHandler = (
   createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
-): HandleRequest => (
+): OnSerializedRequest => (
   serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
   emitError: (e: Error) => void,
@@ -136,7 +140,7 @@ export default class NodeBackend {
     });
 
     this.interceptor = createInterceptor({
-      handleRequest: buildRequestHandler(createResponse),
+      onSerializedRequest: buildRequestHandler(createResponse),
       shouldBypassHost: options.isWhitelisted,
     });
   }

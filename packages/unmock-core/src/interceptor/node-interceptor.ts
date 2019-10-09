@@ -89,7 +89,7 @@ const NodeInterceptor: IInterceptorConstructor = class NodeInterceptorCls
         }
 
         setImmediate(() =>
-          this.config.handleRequest(
+          this.config.onSerializedRequest(
             serializedRequest,
             (serializedResponse: ISerializedResponse) =>
               respondFromSerializedResponse(serializedResponse, res),

@@ -1,6 +1,10 @@
 import axios from "axios";
 import { buildRequestHandler } from "../../backend";
-import { IInterceptor, IInterceptorOptions } from "../../interceptor";
+import {
+  IInterceptor,
+  IInterceptorOptions,
+  OnSerializedRequest,
+} from "../../interceptor";
 import NodeInterceptor from "../../interceptor/node-interceptor";
 import { ISerializedRequest } from "../../interfaces";
 import { testResponse } from "../utils";
@@ -13,11 +17,13 @@ describe("Node.js interceptor", () => {
   > = jest.fn(); */
   const createResponse = jest.fn();
   const shouldBypassHost = jest.fn();
-  const requestHandler = buildRequestHandler(createResponse);
+  const onSerializedRequest: OnSerializedRequest = buildRequestHandler(
+    createResponse,
+  );
 
   beforeAll(() => {
     const options: IInterceptorOptions = {
-      handleRequest: requestHandler,
+      onSerializedRequest,
       shouldBypassHost,
     };
     nodeInterceptor = new NodeInterceptor(options);
