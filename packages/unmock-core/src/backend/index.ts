@@ -1,6 +1,6 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { CustomConsole } from "../console";
+import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorConstructor } from "../interceptor";
 import {
@@ -53,7 +53,7 @@ export const handleRequest = (
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = CustomConsole.format("instruct", errMsg);
+      const formatted = formatMsg("instruct", errMsg);
       emitError(Error(formatted));
       return;
     }
