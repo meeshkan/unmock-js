@@ -1,5 +1,5 @@
 import axios from "axios";
-import unmock, { u } from "../../";
+import unmock, { u } from "../../node";
 
 unmock
   .nock("https://api.foo.com/v1", "foo")
