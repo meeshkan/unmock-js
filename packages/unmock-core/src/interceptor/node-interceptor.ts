@@ -7,7 +7,6 @@ import {
 } from "http";
 import Mitm = require("mitm");
 import * as net from "net";
-import { handleRequest } from "../backend";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { serializeRequest } from "../serialize";
 import { IInterceptor, IInterceptorConstructor, IInterceptorOptions } from "./";
@@ -31,15 +30,15 @@ interface IBypassableSocket extends net.Socket {
  * Node.js interceptor using node-mitm.
  * @param options Interceptor options
  */
-const NodeInterceptorConstructor: IInterceptorConstructor = class NodeInterceptor
+const NodeInterceptor: IInterceptorConstructor = class NodeInterceptorCls
   implements IInterceptor {
   private mitm: any;
   /**
    * Create interceptor and start intercepting requests.
-   * @param options
+   * @param config
    */
-  constructor(public readonly options: IInterceptorOptions) {
-    this.initialize(options.shouldBypassHost);
+  constructor(public readonly config: IInterceptorOptions) {
+    this.initialize(config.shouldBypassHost);
   }
 
   /**
@@ -90,12 +89,11 @@ const NodeInterceptorConstructor: IInterceptorConstructor = class NodeIntercepto
         }
 
         setImmediate(() =>
-          handleRequest(
+          this.config.onSerializedRequest(
             serializedRequest,
-            this.options.listener.createResponse,
-            (err: Error) => clientRequest.emit("error", err),
             (serializedResponse: ISerializedResponse) =>
               respondFromSerializedResponse(serializedResponse, res),
+            (err: Error) => clientRequest.emit("error", err),
           ),
         );
       },
@@ -103,4 +101,4 @@ const NodeInterceptorConstructor: IInterceptorConstructor = class NodeIntercepto
   }
 };
 
-export default NodeInterceptorConstructor;
+export default NodeInterceptor;

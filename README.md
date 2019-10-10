@@ -374,8 +374,7 @@ Unmock supports the reading of OpenAPI specifications out of the box. Simply pla
 
 Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRIBUTING.md) for notes on our commit message conventions and how to run tests.
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
-By participating in this project you agree to abide by its terms.
+Please note that this project is governed by the [Unmock Community Code of Conduct](https://github.com/unmock/code-of-conduct). By participating in this project, you agree to abide by its terms.
 
 ## Development
 

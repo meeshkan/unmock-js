@@ -2,7 +2,11 @@ import debug from "debug";
 import * as _ from "lodash";
 import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
-import { IInterceptor, IInterceptorConstructor } from "../interceptor";
+import {
+  IInterceptor,
+  IInterceptorConstructor,
+  OnSerializedRequest,
+} from "../interceptor";
 import {
   IListener,
   ISerializedRequest,
@@ -38,11 +42,12 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
   `;
 };
 
-export const handleRequest = (
-  serializedRequest: ISerializedRequest,
+export const buildRequestHandler = (
   createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
-  emitError: (e: Error) => void,
+): OnSerializedRequest => (
+  serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
+  emitError: (e: Error) => void,
 ) => {
   try {
     debugLog("Serialized request", JSON.stringify(serializedRequest));
@@ -107,9 +112,7 @@ export abstract class Backend {
     });
 
     this.interceptor = new this.InterceptorCls({
-      listener: {
-        createResponse,
-      },
+      onSerializedRequest: buildRequestHandler(createResponse),
       shouldBypassHost: options.isWhitelisted,
     });
   }
