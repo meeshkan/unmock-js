@@ -1,10 +1,10 @@
 {
   "extends": "../../tsconfig.base",
   "compilerOptions": {
-    "rootDir": "./src/node",
-    "outDir": "./dist/node"
+    "rootDir": "./src/react-native",
+    "outDir": "./dist/react-native"
   },
-  "include": ["src/node/**/*"],
+  "include": ["src/react-native/**/*"],
   "exclude": ["**/__tests__"],
   "references": [
     { "path": "../unmock-cli" },

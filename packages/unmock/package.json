@@ -6,7 +6,9 @@
   "bin": {
     "unmock": "./index.js"
   },
-  "main": "dist/index.js",
+  "main": "dist/node/index.js",
+  "browser": "dist/browser/index.js",
+  "react-native": "dist/react-native/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"

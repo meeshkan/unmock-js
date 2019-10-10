@@ -2,7 +2,7 @@ node_modules
 dist
 .unmock
 .env
-tsconfig.tsbuildinfo
+tsconfig*.tsbuildinfo
 .vscode
 coverage
 .DS_Store
