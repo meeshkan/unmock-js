@@ -3,7 +3,7 @@ import { OpenAPIObject } from "loas3/dist/generated/full";
 import { Arr } from "openapi-refinements";
 import * as path from "path";
 import { Service, UnmockPackage } from "../..";
-import NodeBackend from "../../backend";
+import NodeBackend from "../../backend/node";
 import { transform } from "../../generator-utils";
 import { ISerializedRequest } from "../../interfaces";
 

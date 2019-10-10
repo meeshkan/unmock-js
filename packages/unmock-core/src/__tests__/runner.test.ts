@@ -1,15 +1,15 @@
 import axios from "axios";
 import * as path from "path";
-import { runner, Service, UnmockPackage, transform } from "..";
-import NodeBackend from "../backend";
+import { runner, Service, transform, UnmockPackage } from "..";
+import NodeBackend from "../backend/node";
 const { withCodes } = transform;
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
-    const nodeInterceptor = new NodeBackend({ servicesDirectory });
-    const unmock = new UnmockPackage(nodeInterceptor);
+    const nodeBackend = new NodeBackend({ servicesDirectory });
+    const unmock = new UnmockPackage(nodeBackend);
     let petstore: Service;
 
     beforeAll(() => {

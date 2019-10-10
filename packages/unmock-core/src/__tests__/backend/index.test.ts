@@ -2,7 +2,7 @@ import axios from "axios";
 import { removeCodes } from "openapi-refinements";
 import * as path from "path";
 import { Service, sinon, transform, UnmockPackage } from "../../";
-import NodeBackend from "../../backend";
+import NodeBackend from "../../backend/node";
 import { UNMOCK_INTERNAL_HTTP_HEADER } from "../../interceptor/client-request-tracker";
 
 const servicesDirectory = path.join(__dirname, "..", "__unmock__");

@@ -1,7 +1,10 @@
 import { UnmockPackage } from "..";
-import NodeBackend from "../backend/index";
+import Backend from "../backend/";
 
-class TestBackend extends NodeBackend {
+class TestBackend extends Backend {
+  public constructor() {
+    super({ InterceptorCls: jest.fn() });
+  }
   public initialize(_: any): never {
     throw Error("Not implemented");
   }
@@ -11,7 +14,9 @@ class TestBackend extends NodeBackend {
   public get services() {
     return {};
   }
+  public loadServices() {}
 }
+
 const backend = new TestBackend();
 
 describe("Tests core package", () => {

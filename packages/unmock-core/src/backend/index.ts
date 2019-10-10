@@ -1,26 +1,23 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { CustomConsole } from "../console";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
+import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
 import {
-  createInterceptor,
   IInterceptor,
+  IInterceptorConstructor,
   OnSerializedRequest,
 } from "../interceptor";
 import {
+  IListener,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
-import FSLogger from "../loggers/filesystem-logger";
-import FSSnapshotter from "../loggers/snapshotter";
 import { ServiceParser } from "../parser";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
-import { resolveUnmockDirectories } from "../utils";
 
 const debugLog = debug("unmock:node");
 
@@ -61,7 +58,7 @@ export const buildRequestHandler = (
     if (serializedResponse === undefined) {
       debugLog("No match found, emitting error");
       const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = CustomConsole.format("instruct", errMsg);
+      const formatted = formatMsg("instruct", errMsg);
       emitError(Error(formatted));
       return;
     }
@@ -72,41 +69,21 @@ export const buildRequestHandler = (
   }
 };
 
-export interface INodeBackendOptions {
-  servicesDirectory?: string;
-}
-
-const nodeBackendDefaultOptions: INodeBackendOptions = {};
-
-export default class NodeBackend {
+export abstract class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
-  private readonly config: INodeBackendOptions;
+  public readonly InterceptorCls: IInterceptorConstructor;
+  protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
 
-  public constructor(config?: INodeBackendOptions) {
-    this.config = { ...nodeBackendDefaultOptions, ...config };
-    this.loadServices();
-  }
-
-  public loadServices() {
-    // Resolve where services can live
-    const unmockDirectories = this.config.servicesDirectory
-      ? [this.config.servicesDirectory]
-      : resolveUnmockDirectories();
-
-    debugLog(`Found unmock directories: ${JSON.stringify(unmockDirectories)}`);
-
-    // Prepare the request-response mapping by bootstrapping all dependencies here
-    const serviceDefLoader = new FsServiceDefLoader({
-      unmockDirectories,
-    });
-
-    const serviceDefs: IServiceDef[] = serviceDefLoader.loadSync();
-    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
-      ServiceParser.parse(serviceDef),
-    );
-
-    this.serviceStore = new ServiceStore(coreServices);
+  public constructor({
+    InterceptorCls,
+    listeners,
+  }: {
+    InterceptorCls: IInterceptorConstructor;
+    listeners?: IListener[];
+  }) {
+    this.InterceptorCls = InterceptorCls;
+    this.requestResponseListeners = listeners || [];
   }
 
   public get services(): ServiceStoreType {
@@ -129,19 +106,14 @@ export default class NodeBackend {
     }
 
     const createResponse = responseCreatorFactory({
-      listeners: [
-        new FSLogger({
-          directory: this.config.servicesDirectory,
-        }),
-        FSSnapshotter.getOrUpdateSnapshotter({}),
-      ],
+      listeners: this.requestResponseListeners,
       options,
       store: this.serviceStore,
     });
 
-    this.interceptor = createInterceptor({
+    this.interceptor = new this.InterceptorCls({
       onSerializedRequest: buildRequestHandler(createResponse),
-      shouldBypassHost: options.isWhitelisted.bind(options),
+      shouldBypassHost: options.isWhitelisted,
     });
   }
 
@@ -157,4 +129,16 @@ export default class NodeBackend {
       );
     }
   }
+
+  public abstract loadServices(): void;
+
+  protected updateServiceDefs(serviceDefs: IServiceDef[]) {
+    const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>
+      ServiceParser.parse(serviceDef),
+    );
+
+    this.serviceStore = new ServiceStore(coreServices);
+  }
 }
+
+export default Backend;
