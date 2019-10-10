@@ -3,6 +3,17 @@ import { AllowedHosts } from "./settings/allowedHosts";
 
 export { ServiceStoreType };
 
+/**
+ * Interceptor callback. Called after request is serialized with
+ * (1) serialized request, (2) function for sending serialized response,
+ * (3) a function for emitting an error.
+ */
+export type OnSerializedRequest = (
+  serializedRequest: ISerializedRequest,
+  sendResponse: (res: ISerializedResponse) => void,
+  emitError: (e: Error) => void,
+) => void;
+
 // tslint:disable-next-line:max-line-length
 export type CodeAsInt =
   | 100

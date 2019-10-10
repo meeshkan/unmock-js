@@ -1,12 +1,12 @@
 import axios from "axios";
 import { buildRequestHandler } from "../../backend";
-import {
-  IInterceptor,
-  IInterceptorOptions,
-  OnSerializedRequest,
-} from "../../interceptor";
+import { IInterceptor, IInterceptorOptions } from "../../interceptor";
 import NodeInterceptor from "../../interceptor/node-interceptor";
-import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
+import {
+  ISerializedRequest,
+  ISerializedResponse,
+  OnSerializedRequest,
+} from "../../interfaces";
 import { testResponse } from "../utils";
 
 describe("Node.js interceptor", () => {
