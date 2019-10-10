@@ -1,8 +1,8 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { FsServiceDefLoader } from "../fs-service-def-loader";
 import { IServiceDef } from "../interfaces";
 import { resolveUnmockDirectories } from "../utils";
+import { FsServiceDefLoader } from "./fs-service-def-loader";
 
 const debugLog = debug("unmock:node");
 
