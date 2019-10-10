@@ -72,7 +72,7 @@ export const buildRequestHandler = (
 export abstract class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly InterceptorCls: IInterceptorConstructor;
-  protected readonly listeners: IListener[];
+  protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
 
   public constructor({
@@ -83,7 +83,7 @@ export abstract class Backend {
     listeners?: IListener[];
   }) {
     this.InterceptorCls = InterceptorCls;
-    this.listeners = listeners || [];
+    this.requestResponseListeners = listeners || [];
   }
 
   public get services(): ServiceStoreType {
@@ -106,7 +106,7 @@ export abstract class Backend {
     }
 
     const createResponse = responseCreatorFactory({
-      listeners: this.listeners,
+      listeners: this.requestResponseListeners,
       options,
       store: this.serviceStore,
     });
