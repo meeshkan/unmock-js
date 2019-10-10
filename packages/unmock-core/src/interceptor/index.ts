@@ -1,12 +1,19 @@
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
-import NodeInterceptorConstructor from "./node-interceptor";
+import NodeInterceptor from "./node-interceptor";
 
-export interface IInterceptorListener {
-  createResponse(request: ISerializedRequest): ISerializedResponse | undefined;
-}
+/**
+ * Interceptor callback. Called after request is serialized with
+ * (1) serialized request, (2) function for sending serialized response,
+ * (3) a function for emitting an error.
+ */
+export type OnSerializedRequest = (
+  serializedRequest: ISerializedRequest,
+  sendResponse: (res: ISerializedResponse) => void,
+  emitError: (e: Error) => void,
+) => void;
 
 export interface IInterceptorOptions {
-  listener: IInterceptorListener;
+  onSerializedRequest: OnSerializedRequest;
   shouldBypassHost: (host: string) => boolean;
 }
 
@@ -30,5 +37,5 @@ export interface IInterceptor {
  * @param options
  */
 export function createInterceptor(options: IInterceptorOptions): IInterceptor {
-  return new NodeInterceptorConstructor(options);
+  return new NodeInterceptor(options);
 }
