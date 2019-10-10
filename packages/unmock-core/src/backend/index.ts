@@ -141,7 +141,7 @@ export default class NodeBackend {
 
     this.interceptor = createInterceptor({
       onSerializedRequest: buildRequestHandler(createResponse),
-      shouldBypassHost: options.isWhitelisted,
+      shouldBypassHost: options.isWhitelisted.bind(options),
     });
   }
 
