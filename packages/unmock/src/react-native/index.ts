@@ -1,1 +1,3 @@
-export * from "openapi-refinements";
+export const sayDuck = () => "Duck";
+
+export default { sayDuck };
