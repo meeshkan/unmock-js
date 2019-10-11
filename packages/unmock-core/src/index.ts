@@ -2,23 +2,19 @@
 import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import { ISnapshot } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
-import { IService } from "./service/interfaces";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./interfaces";
 export * from "./types";
+export { ISnapshot } from "./interfaces";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
 export { isRESTMethod } from "./interfaces";
-export { IService };
-
-export { ISnapshot };
+export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
-
 export { Backend, buildRequestHandler };
 
 export class UnmockPackage implements IUnmockPackage {
