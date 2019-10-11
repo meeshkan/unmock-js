@@ -1,6 +1,6 @@
 import * as path from "path";
-import { FsServiceDefLoader } from "../service-loaders/fs-service-def-loader";
-import { IServiceDef } from "../interfaces";
+import { IServiceDef } from "unmock-core/dist/interfaces";
+import { FsServiceDefLoader } from "../fs-service-def-loader";
 
 const RESOURCES_DIR = path.join(__dirname, "__unmock__");
 

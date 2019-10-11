@@ -4,10 +4,13 @@ import {
   IInterceptor,
   IInterceptorOptions,
   OnSerializedRequest,
-} from "../../interceptor";
-import NodeInterceptor from "../../interceptor/node-interceptor";
-import { ISerializedRequest, ISerializedResponse } from "../../interfaces";
-import { testResponse } from "../utils";
+} from "unmock-core/dist/interceptor";
+import NodeInterceptor from "../interceptor/node-interceptor";
+import {
+  ISerializedRequest,
+  ISerializedResponse,
+} from "unmock-core/dist/interfaces";
+import { testResponse } from "./utils";
 
 describe("Node.js interceptor", () => {
   let nodeInterceptor: IInterceptor;

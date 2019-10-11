@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
+import { IService } from "unmock-core";
 import unmock from "../";
-import { IService } from "../service";
 
 unmock
   .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")

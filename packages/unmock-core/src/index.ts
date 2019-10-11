@@ -1,11 +1,13 @@
 // Sinon for asserts and matchers
 import * as fetch from "node-fetch";
 import * as sinon from "sinon";
-import Backend from "./backend";
+import Backend, { buildRequestHandler } from "./backend";
+import * as interfaces from "./interfaces";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ISnapshot } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
+import { IService } from "./service/interfaces";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export { fetch };
@@ -13,10 +15,12 @@ export * from "./types";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
+export { interfaces };
+export { IService };
 
 export { ISnapshot };
 
-export { Backend };
+export { Backend, buildRequestHandler };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
