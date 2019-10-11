@@ -16,7 +16,7 @@ Mock API dependencies in JavaScript.
   + [Specifying replies](#specifying-replies)
   + [Specifying reply headers](#specifying-reply-headers)
   + [Chaining](#chaining)
-  + [Passthrough](#passthrough)
+  + [Trivial API calls](#trivial-api-calls)
 * [Expectations](#expectations)
 * [Initializing Mocks](#initializing-mocks)
 * [Runner](#runner)
@@ -140,7 +140,7 @@ unmock.nock('http://www.example.com')
 
 Unmock automatically ignores query strings. However, it understands query strings if you would like to match against them.
 
-> You should avoid matching against query strings, as they will act as required. Most APIs do not have required query strings. If you want to use query strings to compose the return value of an API, use the `state`.
+> When query strings are included in Unmock, they will act as if they are required. Most APIs do not have required query strings, so make sure to double-check the API documentation before indicating a required query string.
 
 These parameters can be included as part of the path:
 
@@ -250,9 +250,9 @@ unmock. nock('http://myapp.iriscouch.com')
   })
 ```
 
-### Passthrough
+### Trivial API calls
 
-For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
+For "trivial" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
 
 ```js
 unmock
