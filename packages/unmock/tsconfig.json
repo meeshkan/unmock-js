@@ -1,10 +1,10 @@
 {
   "extends": "../../tsconfig.base",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist"
+    "rootDir": "./src/node",
+    "outDir": "./dist/node"
   },
-  "include": ["src/**/*"],
+  "include": ["src/node/**/*"],
   "exclude": ["**/__tests__"],
   "references": [
     { "path": "../unmock-cli" },

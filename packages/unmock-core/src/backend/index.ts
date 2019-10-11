@@ -2,17 +2,14 @@ import debug from "debug";
 import * as _ from "lodash";
 import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
-import {
-  IInterceptor,
-  IInterceptorConstructor,
-  OnSerializedRequest,
-} from "../interceptor";
+import { IInterceptor, IInterceptorConstructor } from "../interceptor";
 import {
   IListener,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
   IUnmockOptions,
+  OnSerializedRequest,
   ServiceStoreType,
 } from "../interfaces";
 import { ServiceParser } from "../parser";

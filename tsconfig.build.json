@@ -10,6 +10,7 @@
     { "path": "./packages/unmock-core" },
     { "path": "./packages/unmock-jest" },
     { "path": "./packages/unmock-node" },
+    { "path": "./packages/unmock-fetch" },
     { "path": "./packages/openapi-refinements" }
   ]
 }

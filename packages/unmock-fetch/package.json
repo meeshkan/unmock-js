@@ -1,12 +1,9 @@
 {
   "version": "0.3.8",
-  "name": "unmock",
-  "displayName": "unmock",
+  "name": "unmock-fetch",
+  "displayName": "unmock-fetch",
+  "main": "dist/index.js",
   "license": "MIT",
-  "bin": {
-    "unmock": "./index.js"
-  },
-  "main": "dist/node/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -16,8 +13,11 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock-cli": "file:../unmock-cli",
+    "@types/debug": "^4.1.5",
+    "@types/url-parse": "^1.4.3",
+    "cross-fetch": "^3.0.4",
+    "debug": "^4.1.1",
     "unmock-core": "file:../unmock-core",
-    "unmock-node": "file:../unmock-node"
+    "url-parse": "^1.4.7"
   }
 }
