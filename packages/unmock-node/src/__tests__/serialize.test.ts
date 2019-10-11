@@ -1,7 +1,7 @@
 import * as http from "http";
 import * as https from "https";
 import Mitm = require("mitm");
-import { serializeRequest } from "../../serialize";
+import { serializeRequest } from "../serialize";
 
 describe("Request serializer", () => {
   let mitm: any;

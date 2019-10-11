@@ -2,12 +2,12 @@ import * as http from "http";
 // @types/readable-stream not compatible with @types/node@8?
 // @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
+import { isRESTMethod } from "unmock-core";
 import {
   HTTPMethod,
   IIncomingHeaders,
   IIncomingQuery,
   ISerializedRequest,
-  isRESTMethod,
 } from "unmock-core/dist/interfaces";
 import * as url from "url";
 

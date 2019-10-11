@@ -1,5 +1,6 @@
 import axios from "axios";
-import unmock, { u } from "..";
+import { u } from "unmock-core";
+import unmock from "..";
 
 const expectNServices = (expectedLength: number) =>
   expect(Object.keys(unmock.services).length).toEqual(expectedLength);

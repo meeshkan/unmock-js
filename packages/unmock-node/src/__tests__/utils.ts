@@ -5,8 +5,8 @@ import {
   ISerializedRequest,
   ISerializedResponse,
 } from "unmock-core/dist/interfaces";
+import { ServiceCore } from "unmock-core";
 import { OpenAPIObject } from "unmock-core/dist/service/interfaces";
-import { ServiceCore } from "unmock-core/dist/service/serviceCore";
 
 export const PetStoreSpecLocation = path.join(
   __dirname,

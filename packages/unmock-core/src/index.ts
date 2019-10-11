@@ -2,7 +2,6 @@
 import * as fetch from "node-fetch";
 import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
-import * as interfaces from "./interfaces";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ISnapshot } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
@@ -11,14 +10,16 @@ import { IService } from "./service/interfaces";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
 export { fetch };
+export * from "./interfaces";
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
-export { interfaces };
+export { isRESTMethod } from "./interfaces";
 export { IService };
 
 export { ISnapshot };
+export { ServiceCore } from "./service/serviceCore";
 
 export { Backend, buildRequestHandler };
 

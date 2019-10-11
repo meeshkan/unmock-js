@@ -1,15 +1,16 @@
 import axios from "axios";
-import { buildRequestHandler } from "../../backend";
+import {
+  buildRequestHandler,
+  ISerializedRequest,
+  ISerializedResponse,
+} from "unmock-core";
 import {
   IInterceptor,
   IInterceptorOptions,
   OnSerializedRequest,
 } from "unmock-core/dist/interceptor";
 import NodeInterceptor from "../interceptor/node-interceptor";
-import {
-  ISerializedRequest,
-  ISerializedResponse,
-} from "unmock-core/dist/interfaces";
+
 import { testResponse } from "./utils";
 
 describe("Node.js interceptor", () => {
