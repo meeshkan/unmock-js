@@ -1,5 +1,8 @@
+import { IServiceDefLoader } from "./service-loaders";
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
+
+export { IServiceDefLoader };
 
 export { ServiceStoreType };
 

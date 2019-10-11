@@ -20,6 +20,8 @@ export { ISnapshot };
 const utils = { snapshotter: FsSnapshotter };
 export { utils };
 
+export { Backend };
+
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
