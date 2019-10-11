@@ -1,10 +1,18 @@
-import { IServiceDefLoader } from "./service-loaders";
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
 
-export { IServiceDefLoader };
+export interface IServiceDefLoader {
+  loadSync(): IServiceDef[];
+}
 
 export { ServiceStoreType };
+
+export interface ISnapshot {
+  timestamp: Date;
+  testPath: string;
+  currentTestName: string;
+  data: IListenerInput;
+}
 
 // tslint:disable-next-line:max-line-length
 export type CodeAsInt =
