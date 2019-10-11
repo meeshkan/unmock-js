@@ -1,5 +1,4 @@
 // Sinon for asserts and matchers
-import * as fetch from "node-fetch";
 import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
@@ -9,7 +8,6 @@ import internalRunner, { IRunnerOptions } from "./runner";
 import { IService } from "./service/interfaces";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
-export { fetch };
 export * from "./interfaces";
 export * from "./types";
 export { sinon };

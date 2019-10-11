@@ -1,3 +1,4 @@
+import * as fetch from "node-fetch";
 import { UnmockPackage } from "unmock-core";
 import NodeBackend from "./backend";
 import FsSnapshotter from "./loggers/snapshotter";
@@ -5,6 +6,7 @@ import WinstonLogger from "./loggers/winston-logger";
 
 const utils = { snapshotter: FsSnapshotter };
 export { utils };
+export { fetch };
 
 export const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
