@@ -8,7 +8,7 @@ import {
   IIncomingHeaders,
   IIncomingQuery,
   ISerializedRequest,
-} from "unmock-core/dist/interfaces";
+} from "unmock-core";
 import * as url from "url";
 
 class BodySerializer extends readable.Transform {

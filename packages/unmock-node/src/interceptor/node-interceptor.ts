@@ -7,15 +7,12 @@ import {
 } from "http";
 import Mitm = require("mitm");
 import * as net from "net";
+import { ISerializedRequest, ISerializedResponse } from "unmock-core";
 import {
   IInterceptor,
   IInterceptorConstructor,
   IInterceptorOptions,
 } from "unmock-core/dist/interceptor";
-import {
-  ISerializedRequest,
-  ISerializedResponse,
-} from "unmock-core/dist/interfaces";
 import { serializeRequest } from "../serialize";
 
 import ClientRequestTracker from "./client-request-tracker";

@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as _ from "lodash";
 import { flatMap } from "lodash";
 import * as path from "path";
-import { IServiceDef, IServiceDefLoader } from "unmock-core/dist/interfaces";
+import { IServiceDef, IServiceDefLoader } from "unmock-core";
 import { resolveUnmockDirectories } from "./utils";
 
 const debugLog = debug("unmock:fs-service-def-loader");

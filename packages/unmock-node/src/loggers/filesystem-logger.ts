@@ -5,7 +5,7 @@ import {
   IListener,
   ISerializedRequest,
   ISerializedResponse,
-} from "unmock-core/dist/interfaces";
+} from "unmock-core";
 import { resolveUnmockRootDirectory } from "../utils";
 
 const fileSizeLimitOnInit = 5 * 1024 ** 2; // 5 MB

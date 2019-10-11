@@ -3,7 +3,7 @@ import * as fs from "fs";
 import { flatten, sortBy } from "lodash";
 import * as os from "os";
 import * as path from "path";
-import { IListenerInput } from "unmock-core/dist/interfaces";
+import { IListenerInput } from "unmock-core";
 
 const debugLog = debug("unmock:snapshotter:writer");
 

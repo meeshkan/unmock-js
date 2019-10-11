@@ -5,7 +5,7 @@ import { merge } from "lodash";
 import * as mkdirp from "mkdirp";
 import { homedir } from "os";
 import { resolve as pathResolve } from "path";
-import { IListener, IListenerInput } from "unmock-core/dist/interfaces";
+import { IListener, IListenerInput } from "unmock-core";
 import { unmockSnapshot } from "./expect-extend";
 import {
   FsSnapshotWriterReader,

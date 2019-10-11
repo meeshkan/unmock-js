@@ -1,4 +1,4 @@
-import { ILogger } from "unmock-core/dist/interfaces";
+import { ILogger } from "unmock-core";
 import * as winston from "winston";
 
 const logger = winston.createLogger({

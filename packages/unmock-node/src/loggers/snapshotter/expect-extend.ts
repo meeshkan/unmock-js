@@ -1,6 +1,6 @@
 import debug from "debug";
 import * as expect from "expect";
-import { IListenerInput } from "unmock-core/dist/interfaces";
+import { IListenerInput } from "unmock-core";
 import { ISnapshotWriterReader } from "./snapshot-writer-reader";
 
 const debugLog = debug("unmock:snapshotter:expect-extend");
