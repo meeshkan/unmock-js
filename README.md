@@ -16,7 +16,7 @@ Mock API dependencies in JavaScript.
   + [Specifying replies](#specifying-replies)
   + [Specifying reply headers](#specifying-reply-headers)
   + [Chaining](#chaining)
-  + [Trivial API calls](#trivial-api-calls)
+  + [Ignorable API calls](#ignorable-api-calls)
 * [Expectations](#expectations)
 * [Initializing Mocks](#initializing-mocks)
 * [Runner](#runner)
@@ -250,9 +250,9 @@ unmock. nock('http://myapp.iriscouch.com')
   })
 ```
 
-### Trivial API calls
+### Ignorable API calls
 
-For "trivial" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
+For ignorable API calls where you are passing through information but don't care about a response, you can instruct unmock to serve random `200` responses to those requests using `tldr`.
 
 ```js
 unmock
