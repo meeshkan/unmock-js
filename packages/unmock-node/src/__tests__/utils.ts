@@ -1,11 +1,11 @@
 import * as fs from "fs";
 import * as jsYaml from "js-yaml";
 import * as path from "path";
+import { ServiceCore } from "unmock-core";
 import {
   ISerializedRequest,
   ISerializedResponse,
 } from "unmock-core/dist/interfaces";
-import { ServiceCore } from "unmock-core";
 import { OpenAPIObject } from "unmock-core/dist/service/interfaces";
 
 export const PetStoreSpecLocation = path.join(
