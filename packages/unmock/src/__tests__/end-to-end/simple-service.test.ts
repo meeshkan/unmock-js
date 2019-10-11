@@ -1,6 +1,6 @@
 import axios from "axios";
-import unmock, { Arr, transform, u } from "../../";
 import { IService } from "unmock-core/dist/service/interfaces";
+import unmock, { Arr, transform, u } from "../../";
 const { responseBody } = transform;
 
 unmock
