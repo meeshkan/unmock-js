@@ -669,7 +669,7 @@ const toSchema = toSchemas.composeLens(valueLens());
  * - there is at most one path item in the schema
  * - there is at most one operation in the path item
  * It will still work if this is not the case, but it will
- * just pick a random schema, path item and operation, which
+ * pick a random schema, path item and operation, which
  * will lead to nonsensical results.
  * @param schemaRecord the Record<string, OpenAPISchema> that we
  *   are getting the operation from.

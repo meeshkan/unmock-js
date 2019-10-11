@@ -47,7 +47,7 @@ export class ServiceStore {
       this.cores[hostName] !== undefined &&
       this.cores[serviceName] === undefined
     ) {
-      // remove old service core and wrapper if a service is just renamed
+      // remove old service core and wrapper if a service is renamed
       delete this.cores[hostName];
       delete this.services[hostName];
     }

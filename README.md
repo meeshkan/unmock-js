@@ -36,7 +36,7 @@ $ npm install --save-dev unmock
 
 This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
 
-Here is a simple mock, a simple function, and a simple test in jest.
+Here is a mock, a function, and a test in jest.
 
 ```js
 const unmock = require("unmock");
@@ -363,7 +363,7 @@ test("my API always works as expected", runner(async () => {
 
 ## OpenAPI
 
-Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
+Unmock supports the reading of OpenAPI specifications out of the box. Place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
 
 ## Tutorials
 
