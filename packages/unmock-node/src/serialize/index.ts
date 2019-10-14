@@ -2,6 +2,7 @@ import * as http from "http";
 // @types/readable-stream not compatible with @types/node@8?
 // @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
+import queryString = require("query-string");
 import { isRESTMethod } from "unmock-core";
 import {
   HTTPMethod,
@@ -9,7 +10,7 @@ import {
   IIncomingQuery,
   ISerializedRequest,
 } from "unmock-core";
-import * as url from "url";
+import * as url from "whatwg-url";
 
 class BodySerializer extends readable.Transform {
   public static async fromIncoming(incomingMessage: http.IncomingMessage) {
@@ -36,8 +37,12 @@ function extractVars(
   host: string;
   path: string;
   pathname: string;
+  protocol: "https" | "http";
   query: IIncomingQuery;
 } {
+  const isEncrypted = (interceptedRequest.connection as any).encrypted;
+  const protocol = isEncrypted ? "https" : "http";
+
   const headers = interceptedRequest.headers;
 
   const hostWithPort = headers.host;
@@ -56,7 +61,18 @@ function extractVars(
     throw new Error("Missing method");
   }
 
-  const { path, pathname, query } = url.parse(requestUrl, true);
+  const baseURL = `${protocol}://${hostWithPort}`;
+
+  const parsedUrl = new url.URL(requestUrl, baseURL);
+
+  if (!parsedUrl) {
+    throw Error(`Could not parse URL: ${requestUrl}`);
+  }
+  const { pathname, search } = parsedUrl;
+
+  const path = `${pathname}${search}`;
+
+  const { query } = queryString.parseUrl(search);
 
   if (!path) {
     throw new Error("Could not parse path");
@@ -79,6 +95,7 @@ function extractVars(
     method,
     path,
     pathname,
+    protocol,
     query,
   };
 }
@@ -101,12 +118,15 @@ const jsonOrBust = (s: string | undefined) => {
 export const serializeRequest = async (
   interceptedRequest: http.IncomingMessage,
 ): Promise<ISerializedRequest> => {
-  const { headers, host, method, path, pathname, query } = extractVars(
-    interceptedRequest,
-  );
-
-  const isEncrypted = (interceptedRequest.connection as any).encrypted;
-  const protocol = isEncrypted ? "https" : "http";
+  const {
+    headers,
+    host,
+    method,
+    path,
+    pathname,
+    protocol,
+    query,
+  } = extractVars(interceptedRequest);
 
   const body = await BodySerializer.fromIncoming(interceptedRequest);
   const bodyAsJson = jsonOrBust(body);
