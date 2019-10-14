@@ -73,7 +73,7 @@ function extractVars(
 
   const path = `${pathname}${search}`;
 
-  const { query } = queryString.parseUrl(search);
+  const query = queryString.parse(search);
 
   const queryWithoutNull = mapValues(query, value =>
     value === null ? undefined : value,
