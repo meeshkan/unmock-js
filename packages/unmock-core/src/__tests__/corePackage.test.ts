@@ -3,7 +3,7 @@ import Backend from "../backend/";
 
 class TestBackend extends Backend {
   public constructor() {
-    super({ InterceptorCls: jest.fn() });
+    super({ interceptorFactory: jest.fn() });
   }
   public initialize(_: any): never {
     throw Error("Not implemented");
