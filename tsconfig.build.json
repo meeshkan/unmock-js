@@ -11,6 +11,7 @@
     { "path": "./packages/unmock-jest" },
     { "path": "./packages/unmock-node" },
     { "path": "./packages/unmock-fetch" },
+    { "path": "./packages/unmock-react-native" },
     { "path": "./packages/openapi-refinements" }
   ]
 }

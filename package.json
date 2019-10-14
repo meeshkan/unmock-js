@@ -94,6 +94,7 @@
     "unmock-fetch": "file:packages/unmock-fetch",
     "unmock-jest": "file:packages/unmock-jest",
     "unmock-node": "file:packages/unmock-node",
+    "unmock-react-native": "file:packages/unmock-react-native",
     "openapi-refinements": "file:packages/openapi-refinements"
   },
   "name": "unmock",
