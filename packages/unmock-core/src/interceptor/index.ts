@@ -1,5 +1,4 @@
 import { OnSerializedRequest } from "../interfaces";
-import NodeInterceptor from "./node-interceptor";
 
 export interface IInterceptorOptions {
   onSerializedRequest: OnSerializedRequest;
@@ -19,12 +18,4 @@ export type IInterceptorConstructor = new (
  */
 export interface IInterceptor {
   disable(): void;
-}
-
-/**
- * Create an interceptor and start intercepting requests.
- * @param options
- */
-export function createInterceptor(options: IInterceptorOptions): IInterceptor {
-  return new NodeInterceptor(options);
 }

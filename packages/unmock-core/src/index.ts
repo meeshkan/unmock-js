@@ -1,24 +1,19 @@
 // Sinon for asserts and matchers
-import * as fetch from "node-fetch";
 import * as sinon from "sinon";
-import Backend from "./backend";
-import NodeBackend from "./backend/node";
+import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import FsSnapshotter, { ISnapshot } from "./loggers/snapshotter";
-import WinstonLogger from "./loggers/winston-logger";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
 import { AllowedHosts, BooleanSetting } from "./settings";
 
-export { fetch };
+export * from "./interfaces";
 export * from "./types";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
-
-export { ISnapshot };
-const utils = { snapshotter: FsSnapshotter };
-export { utils };
+export { IService } from "./service/interfaces";
+export { ServiceCore } from "./service/serviceCore";
+export { Backend, buildRequestHandler };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
@@ -112,12 +107,3 @@ export class UnmockPackage implements IUnmockPackage {
     Object.values(this.backend.services).forEach(service => service.reset());
   }
 }
-
-export const unmock = new UnmockPackage(new NodeBackend(), {
-  logger: new WinstonLogger(),
-});
-
-export const nock = unmock.nock.bind(unmock);
-export const runner = unmock.runner.bind(unmock);
-
-export default unmock;

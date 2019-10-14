@@ -7,7 +7,6 @@
   "include": ["src/**/*"],
   "exclude": ["**/__tests__"],
   "references": [
-    { "path": "../unmock" },
-    { "path": "../unmock-node" }
+    { "path": "../unmock-core" }
   ]
 }

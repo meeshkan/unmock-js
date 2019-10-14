@@ -1,4 +1,4 @@
-import unmock from "../";
+import unmock from "../node";
 
 describe("Top level export", () => {
   it("should export unmock object", () => {
