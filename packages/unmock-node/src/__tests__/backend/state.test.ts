@@ -168,7 +168,7 @@ describe("Node.js interceptor", () => {
       expect(response.data).toBe("petstore.swagger.io");
     });
 
-    // this is just a no-op in the new version
+    // this is a no-op in the new version
     test("fails setting an array size for non-array elements", async () => {
       petstore.state(
         withCodes(200),
