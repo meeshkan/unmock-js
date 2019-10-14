@@ -1,15 +1,5 @@
-import axios from "axios";
-import { Backend, u, UnmockPackage } from "unmock-core";
-import { ServiceStore } from "../service/serviceStore";
-
-class TestBackend extends Backend {
-  public constructor() {
-    super({ InterceptorCls: jest.fn() });
-  }
-  public loadServices() {
-    this.serviceStore = new ServiceStore([]);
-  }
-}
+import { u, UnmockPackage } from "..";
+import { TestBackend } from "./utils";
 
 const unmock = new UnmockPackage(new TestBackend());
 
