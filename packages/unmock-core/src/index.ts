@@ -8,11 +8,9 @@ import { AllowedHosts, BooleanSetting } from "./settings";
 
 export * from "./interfaces";
 export * from "./types";
-export { ISnapshot } from "./interfaces";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
-export { isRESTMethod } from "./interfaces";
 export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };

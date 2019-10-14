@@ -1,6 +1,5 @@
 import debug from "debug";
 import * as fs from "fs";
-import * as _ from "lodash";
 import { flatMap } from "lodash";
 import * as path from "path";
 import { IServiceDef, IServiceDefLoader } from "unmock-core";
