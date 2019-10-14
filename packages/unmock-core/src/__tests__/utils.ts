@@ -6,9 +6,13 @@ import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
 
+export const interceptorMock = { on: jest.fn(), disable: jest.fn() };
+
+const TestInterceptor = jest.fn().mockReturnValue(interceptorMock);
+
 export class TestBackend extends Backend {
   public constructor() {
-    super({ InterceptorCls: jest.fn() });
+    super({ InterceptorCls: TestInterceptor });
   }
   public loadServices() {
     this.updateServiceDefs([]);
