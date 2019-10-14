@@ -1,14 +1,15 @@
 import * as http from "http";
+import { mapValues } from "lodash";
 // @types/readable-stream not compatible with @types/node@8?
 // @ts-ignore
 const readable = require("readable-stream"); // tslint:disable-line:no-var-requires
 import queryString = require("query-string");
-import { isRESTMethod } from "unmock-core";
 import {
   HTTPMethod,
   IIncomingHeaders,
   IIncomingQuery,
   ISerializedRequest,
+  isRESTMethod,
 } from "unmock-core";
 import * as url from "whatwg-url";
 
@@ -74,6 +75,10 @@ function extractVars(
 
   const { query } = queryString.parseUrl(search);
 
+  const queryWithoutNull = mapValues(query, value =>
+    value === null ? undefined : value,
+  );
+
   if (!path) {
     throw new Error("Could not parse path");
   }
@@ -96,7 +101,7 @@ function extractVars(
     path,
     pathname,
     protocol,
-    query,
+    query: queryWithoutNull,
   };
 }
 
