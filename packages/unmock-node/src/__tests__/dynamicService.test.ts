@@ -14,14 +14,14 @@ describe("Tests dynamic path tests", () => {
     it("Also handles multiple parameters", async () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
-        .get(["foo", ["baz", /\W+/], "bar", /\d+/, ["spam", /eggs/]])
+        .nock("https://www.breakfast.com", "menu")
+        .get(["menu", ["bacon", /\W+/], "pancakes", /\d+/, ["spam", /eggs/]])
         .reply(200);
       expectNServices(1);
-      const schema = getPrivateSchema("foo");
+      const schema = getPrivateSchema("menu");
       expect(Object.keys(schema.paths).length).toEqual(1);
       const path = Object.keys(schema.paths)[0];
-      expect(path).toMatch(/\/foo\/{baz}\/bar\/{\w+}\/{spam}/);
+      expect(path).toMatch(/\/menu\/{bacon}\/pancakes\/{\w+}\/{spam}/);
       const params = schema.paths[path].parameters;
       expect(params.length).toEqual(3);
       expect(params[0].schema.pattern).toEqual(/\W+/.source);
@@ -29,20 +29,20 @@ describe("Tests dynamic path tests", () => {
       expect(params[2].schema.pattern).toEqual(/eggs/.source);
       // basic E2E test:
       unmock.on();
-      const res = await axios("https://www.foo.com/foo/!@@!/bar/123/FeggsX");
+      const res = await axios("https://www.breakfast.com/menu/!@@!/pancakes/123/FeggsX");      
       expect(res.status).toEqual(200);
       unmock.off();
     });
   });
 
-  describe("schema generates valid stuff", () => {
+  describe("schema generates valid, random data", () => {
     it("faker works out of the box", async () => {
       unmock
-        .nock("https://www.foo.com")
+        .nock("https://www.calendar.com")
         .get("/")
         .reply(200, u.string("date.future"));
       unmock.on();
-      const res = await axios("https://www.foo.com");
+      const res = await axios("https://www.calendar.com");
       expect(Date.parse(res.data)).toBeGreaterThan(Date.now());
       unmock.off();
     });

@@ -28,7 +28,7 @@ describe("Imports", () => {
       };
       const response: UnmockResponse = {
         headers: {},
-        body: "asdf",
+        body: "example-test",
         statusCode: 200,
       };
       expect(request).toBeDefined();
