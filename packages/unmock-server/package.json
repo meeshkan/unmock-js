@@ -4,6 +4,9 @@
   "displayName": "unmock-server",
   "main": "dist/index.js",
   "license": "MIT",
+  "bin": {
+    "unmock-server": "node dist/index.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -13,6 +16,12 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@types/express": "^4.17.1",
+    "@types/http-proxy": "^1.17.0",
+    "concurrently": "^5.0.0",
+    "express": "^4.17.1",
+    "http-proxy": "^1.18.0",
+    "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   }
 }
