@@ -9,7 +9,7 @@ export interface IInterceptorOptions {
  * Create interceptor and start intercepting requests.
  * @param options
  */
-export type IInterceptorConstructor = new (
+export type IInterceptorFactory = (
   options: IInterceptorOptions,
 ) => IInterceptor;
 

@@ -1,6 +1,7 @@
 import { Backend, IServiceDef } from "unmock-core";
+import { IInterceptorOptions } from "unmock-core/src/interceptor";
 import createFsServiceDefLoader from "./fs-service-def-loader";
-import NodeInterceptorConstructor from "./interceptor/node-interceptor";
+import NodeInterceptor from "./interceptor/node-interceptor";
 import FSLogger from "./loggers/filesystem-logger";
 import FSSnapshotter from "./loggers/snapshotter";
 
@@ -23,7 +24,8 @@ export default class NodeBackend extends Backend {
       FSSnapshotter.getOrUpdateSnapshotter({}),
     ];
     super({
-      InterceptorCls: NodeInterceptorConstructor,
+      interceptorFactory: (options: IInterceptorOptions) =>
+        new NodeInterceptor(options),
       listeners,
     });
     this.servicesDirectory = config && config.servicesDirectory;

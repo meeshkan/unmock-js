@@ -2,7 +2,7 @@ import debug from "debug";
 import * as _ from "lodash";
 import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
-import { IInterceptor, IInterceptorConstructor } from "../interceptor";
+import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
   IListener,
   ISerializedRequest,
@@ -68,18 +68,18 @@ export const buildRequestHandler = (
 
 export abstract class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
-  public readonly InterceptorCls: IInterceptorConstructor;
+  public readonly interceptorFactory: IInterceptorFactory;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
 
   public constructor({
-    InterceptorCls,
+    interceptorFactory,
     listeners,
   }: {
-    InterceptorCls: IInterceptorConstructor;
+    interceptorFactory: IInterceptorFactory;
     listeners?: IListener[];
   }) {
-    this.InterceptorCls = InterceptorCls;
+    this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
   }
 
@@ -108,7 +108,7 @@ export abstract class Backend {
       store: this.serviceStore,
     });
 
-    this.interceptor = new this.InterceptorCls({
+    this.interceptor = this.interceptorFactory({
       onSerializedRequest: buildRequestHandler(createResponse),
       shouldBypassHost: options.isWhitelisted,
     });

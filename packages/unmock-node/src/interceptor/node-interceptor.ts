@@ -10,7 +10,6 @@ import * as net from "net";
 import { ISerializedRequest, ISerializedResponse } from "unmock-core";
 import {
   IInterceptor,
-  IInterceptorConstructor,
   IInterceptorOptions,
 } from "unmock-core/dist/interceptor";
 import { serializeRequest } from "../serialize";
@@ -35,8 +34,7 @@ interface IBypassableSocket extends net.Socket {
  * Node.js interceptor using node-mitm.
  * @param options Interceptor options
  */
-const NodeInterceptor: IInterceptorConstructor = class NodeInterceptorCls
-  implements IInterceptor {
+class NodeInterceptor implements IInterceptor {
   private mitm: any;
   /**
    * Create interceptor and start intercepting requests.
@@ -104,6 +102,6 @@ const NodeInterceptor: IInterceptorConstructor = class NodeInterceptorCls
       },
     );
   }
-};
+}
 
 export default NodeInterceptor;
