@@ -1,9 +1,23 @@
 import * as fs from "fs";
 import * as jsYaml from "js-yaml";
 import * as path from "path";
+import { Backend } from "..";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
+
+export const interceptorMock = { on: jest.fn(), disable: jest.fn() };
+
+const TestInterceptor = jest.fn().mockReturnValue(interceptorMock);
+
+export class TestBackend extends Backend {
+  public constructor() {
+    super({ InterceptorCls: TestInterceptor });
+  }
+  public loadServices() {
+    this.updateServiceDefs([]);
+  }
+}
 
 export const PetStoreSpecLocation = path.join(
   __dirname,

@@ -1,21 +1,5 @@
 import { UnmockPackage } from "..";
-import Backend from "../backend/";
-
-class TestBackend extends Backend {
-  public constructor() {
-    super({ interceptorFactory: jest.fn() });
-  }
-  public initialize(_: any): never {
-    throw Error("Not implemented");
-  }
-  public reset() {
-    return;
-  }
-  public get services() {
-    return {};
-  }
-  public loadServices() {}
-}
+import { TestBackend } from "./utils";
 
 const backend = new TestBackend();
 
