@@ -9,6 +9,8 @@
     { "path": "./packages/unmock-cli/src/__tests__" },
     { "path": "./packages/unmock-core/src/__tests__" },
     { "path": "./packages/unmock-jest/src/__tests__" },
+    { "path": "./packages/unmock-node/src/__tests__" },
+    { "path": "./packages/unmock-fetch/src/__tests__" },
     { "path": "./packages/openapi-refinements/src/__tests__" }
   ],
   "exclude": ["node_modules"]
