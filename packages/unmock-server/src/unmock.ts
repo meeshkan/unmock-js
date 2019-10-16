@@ -5,7 +5,7 @@ import {
 } from "unmock-core/src/interceptor";
 import { NodeBackend } from "unmock-node";
 
-export const create = () => {
+export const createUnmockAlgo = () => {
   const config: { onSerializedRequest?: OnSerializedRequest } = {
     onSerializedRequest: undefined,
   };

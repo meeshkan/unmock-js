@@ -14,23 +14,29 @@ const TARGET_HTTP_URL = `http://${TARGET_HOST}:${TARGET_HTTP_PORT}`;
 
 const proxy = httpProxy.createProxyServer({});
 
+proxy.on("error", (err, _, res) => {
+  log("proxy error", err);
+  res.end();
+});
+
+proxy.on(
+  "proxyReq",
+  (proxyReq: http.ClientRequest, req: http.IncomingMessage, __, ___) => {
+    proxyReq.setHeader("X-Forwarded-For", req.headers.host || "somehost");
+  },
+);
+
+/**
+ * HTTP proxy. Sets `X-Forwarded-For` header.
+ */
 const httpServerProxy = (
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) => {
-  proxy.on("error", (err, _, __) => {
-    log("proxy error", err);
-    res.end();
-  });
-
   log("Proxy HTTP request for:", req.url, "sending to", TARGET_HTTP_URL);
 
   proxy.web(req, res, { target: TARGET_HTTP_URL });
 };
-
-/**
- * HTTP proxy
- */
 
 /**
  * HTTPS proxy

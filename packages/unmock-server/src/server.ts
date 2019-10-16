@@ -4,7 +4,7 @@ import * as http from "http";
 import * as https from "https";
 import * as os from "os";
 import { ISerializedRequest, ISerializedResponse } from "unmock-core";
-import { create } from "./unmock";
+import { createUnmockAlgo } from "./unmock";
 
 const httpPort = 8000;
 const httpsPort = 8443;
@@ -14,11 +14,12 @@ const log = (...args: any[]) => console.log(...args); //tslint:disable-line
 export const serialize = async (
   req: express.Request,
 ): Promise<ISerializedRequest> => {
+  log(`Parsing query string from ${req.originalUrl}`);
   const serializedRequest: ISerializedRequest = {
     method: req.method.toLowerCase() as any,
-    headers: {},
-    host: req.hostname,
-    path: req.path,
+    headers: req.headers,
+    host: req.get("x-forwarded-for") || req.hostname,
+    path: `${req.originalUrl}`,
     pathname: req.path, // TODO
     query: req.query,
     protocol: req.protocol as any,
@@ -26,12 +27,8 @@ export const serialize = async (
   return serializedRequest;
 };
 
-// At startup:
-// Load services
-// Create request handler
-
 export const requestResponseHandler = () => {
-  const config = create();
+  const algo = createUnmockAlgo();
 
   return async (req: express.Request, res: express.Response) => {
     // Serialize request
@@ -40,17 +37,16 @@ export const requestResponseHandler = () => {
     const serializedRequest: ISerializedRequest = await serialize(req);
 
     const sendResponse = (serializedResponse: ISerializedResponse) => {
-      // TODO Headers etc.
       res.set(serializedResponse.headers);
       res.status(serializedResponse.statusCode).send(serializedResponse.body);
     };
 
-    const emitError = (e: Error) => res.status(500).send(e.message); // TODO
+    const emitError = (e: Error) => res.status(500).send(e.message);
 
-    if (!config.onSerializedRequest) {
+    if (!algo.onSerializedRequest) {
       throw Error("No serialized request");
     }
-    config.onSerializedRequest(serializedRequest, sendResponse, emitError);
+    algo.onSerializedRequest(serializedRequest, sendResponse, emitError);
   };
 };
 
