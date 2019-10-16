@@ -14,14 +14,13 @@ first=true
 
 for i in "${arr[@]}"
 do
-   first=false
-   echo "$i"
-   SAN+=DNS:$i
-   if [ ! first ];
-   then
+  if [ ${first} = false ];
+  then
     SAN+=,
-   fi
-   echo $SAN
+  fi
+  first=false
+  SAN+=DNS:$i
+  echo $SAN
 done
 
 openssl req -x509 -newkey rsa:4096 -subj "/C=FI/ST=HE/O=Meeshkan/CN=*" -reqexts SAN -extensions SAN -config <(cat /etc/ssl/openssl.cnf <(printf "[SAN]\nsubjectAltName=${SAN}")) -nodes -keyout key.pem -out cert.pem
