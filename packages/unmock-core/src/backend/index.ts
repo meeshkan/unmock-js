@@ -69,6 +69,7 @@ export const buildRequestHandler = (
 export abstract class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
+  public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
 
@@ -108,8 +109,10 @@ export abstract class Backend {
       store: this.serviceStore,
     });
 
+    this.handleRequest = buildRequestHandler(createResponse);
+
     this.interceptor = this.interceptorFactory({
-      onSerializedRequest: buildRequestHandler(createResponse),
+      onSerializedRequest: this.handleRequest,
       shouldBypassHost: options.isWhitelisted,
     });
   }
@@ -119,6 +122,7 @@ export abstract class Backend {
       this.interceptor.disable();
       this.interceptor = undefined;
     }
+    this.handleRequest = undefined;
     if (this.serviceStore) {
       // TODO - this is quite ugly :shrug:
       Object.values(this.serviceStore.services).forEach(service =>
