@@ -1,4 +1,4 @@
-import * as url from "url";
+import * as url from "whatwg-url";
 import { IObjectToService, IServiceCore, OpenAPIObject } from "./interfaces";
 import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
@@ -26,7 +26,7 @@ export class ServiceStore {
 
   public updateOrAdd(input: IObjectToService): ServiceStore {
     // TODO: Tighly coupled with OpenAPI at the moment... resolve this at a later time
-    const hostName = url.parse(input.baseUrl).hostname || input.baseUrl;
+    const hostName = new url.URL(input.baseUrl).hostname || input.baseUrl;
     const serviceName = input.name || hostName || input.baseUrl;
     const baseSchema: OpenAPIObject =
       serviceName !== undefined && this.cores[serviceName] !== undefined

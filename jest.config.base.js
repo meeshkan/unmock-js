@@ -21,6 +21,10 @@ module.exports = {
     "**/packages/*/src/**/*.ts",
     "!**/node_modules/**",
   ],
+  coveragePathIgnorePatterns: [
+    "node_modules",
+    "__tests__",
+  ],
   globals: {
     "ts-jest": {
       tsConfig: "<rootDir>/src/__tests__/tsconfig.json",
