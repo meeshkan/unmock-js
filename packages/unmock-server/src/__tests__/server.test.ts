@@ -6,9 +6,13 @@ import { buildApp } from "../server";
 const servicesDirectory = path.resolve(__dirname, "__unmock__");
 
 describe("Express server", () => {
-  it("builds app", async () => {
-    const { app, unmock } = buildApp({ servicesDirectory });
+  const { app, unmock } = buildApp({ servicesDirectory });
 
+  beforeEach(() => {
+    unmock.reset();
+  });
+
+  it("builds app", async () => {
     unmock.services["petstore.swagger.io"].state(transform.withCodes(200));
     const response = await request(app)
       .get("/v2/pet/23")
