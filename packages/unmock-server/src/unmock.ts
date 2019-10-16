@@ -1,36 +1,41 @@
+import debug from "debug";
 import { OnSerializedRequest, UnmockPackage } from "unmock-core";
 import {
   IInterceptorFactory,
   IInterceptorOptions,
-} from "unmock-core/src/interceptor";
+} from "unmock-core/dist/interceptor";
 import { NodeBackend } from "unmock-node";
+
+const debugLog = debug("unmock-server:algo");
 
 export const createUnmockAlgo = ({
   servicesDirectory,
 }: {
   servicesDirectory?: string;
 }) => {
-  const config: { onSerializedRequest?: OnSerializedRequest } = {
+  const algo: { onSerializedRequest?: OnSerializedRequest } = {
     onSerializedRequest: undefined,
   };
   // Uglyish hack to access onSerializedRequest
   const interceptorFactory: IInterceptorFactory = (
     options: IInterceptorOptions,
   ) => {
-    config.onSerializedRequest = options.onSerializedRequest;
+    algo.onSerializedRequest = options.onSerializedRequest;
     return {
       disable() {
-        config.onSerializedRequest = undefined;
+        algo.onSerializedRequest = undefined;
       },
     };
   };
+
+  debugLog(`Building backend with services directory: ${servicesDirectory}`);
   const backend = new NodeBackend({ interceptorFactory, servicesDirectory });
-  // const createResponse = responseCreatorFactory(backend.serviceStore);
   const unmock = new UnmockPackage(backend);
-  unmock
+  /* unmock
     .nock("https://example.com", "example")
     .get("/")
-    .reply("Hello world!");
+    .reply("Hello world!"); */
+  // unmock.services["petstore.swagger.io"].state(transform.withCodes(200));
   unmock.on();
-  return config;
+  return { unmock, algo };
 };

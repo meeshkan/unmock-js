@@ -1,3 +1,4 @@
+import debug from "debug";
 import express = require("express");
 import * as fs from "fs";
 import * as http from "http";
@@ -10,14 +11,18 @@ const httpPort = 8000;
 const httpsPort = 8443;
 
 const log = (...args: any[]) => console.log(...args); //tslint:disable-line
+const debugLog = debug("unmock-server:express");
+
+export interface IServerOptions {
+  servicesDirectory?: string;
+}
 
 export const serialize = async (
   req: express.Request,
 ): Promise<ISerializedRequest> => {
-  log(`Parsing query string from ${req.originalUrl}`);
   const serializedRequest: ISerializedRequest = {
     method: req.method.toLowerCase() as any,
-    headers: req.headers,
+    headers: {},
     host: req.get("x-forwarded-for") || req.hostname,
     path: `${req.originalUrl}`,
     pathname: req.path, // TODO
@@ -27,17 +32,10 @@ export const serialize = async (
   return serializedRequest;
 };
 
-export const requestResponseHandler = ({
-  servicesDirectory,
-}: {
-  servicesDirectory?: string;
-}) => {
-  const algo = createUnmockAlgo({ servicesDirectory });
+export const requestResponseHandler = (opts: IServerOptions) => {
+  const { unmock, algo } = createUnmockAlgo(opts);
 
-  return async (req: express.Request, res: express.Response) => {
-    // Serialize request
-    // Call config.onSerializeRequest
-
+  const handler = async (req: express.Request, res: express.Response) => {
     const serializedRequest: ISerializedRequest = await serialize(req);
 
     const sendResponse = (serializedResponse: ISerializedResponse) => {
@@ -45,16 +43,21 @@ export const requestResponseHandler = ({
       res.status(serializedResponse.statusCode).send(serializedResponse.body);
     };
 
-    const emitError = (e: Error) => res.status(500).send(e.message);
+    const emitError = (e: Error) => {
+      debugLog(`Error: ${e.message}, ${e.stack}`);
+      res.status(500).send(e.message);
+    };
 
     if (!algo.onSerializedRequest) {
       throw Error("No serialized request");
     }
     algo.onSerializedRequest(serializedRequest, sendResponse, emitError);
   };
+
+  return { unmock, handler };
 };
 
-export const buildApp = () => {
+export const buildApp = (opts?: IServerOptions) => {
   const app = express();
 
   const domain = process.env.UNMOCK_SERVER_DOMAIN || "localhost";
@@ -78,9 +81,11 @@ export const buildApp = () => {
     },
   );
 
-  app.all("*", requestResponseHandler({}));
+  const { unmock, handler } = requestResponseHandler(opts || {});
 
-  return app;
+  app.all("*", handler);
+
+  return { unmock, app };
 };
 
 export const startServer = (app: express.Express) => {

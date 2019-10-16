@@ -4,7 +4,7 @@ import { startProxy } from "./proxy";
 import { buildApp, startServer } from "./server";
 
 export const run = () => {
-  const app = buildApp();
+  const { app } = buildApp();
   startServer(app);
   startProxy();
 };
