@@ -90,8 +90,8 @@ export const buildApp = (opts?: IServerOptions) => {
 
 export const startServer = (app: express.Express) => {
   const options = {
-    key: fs.readFileSync("key.pem"),
-    cert: fs.readFileSync("cert.pem"),
+    key: fs.readFileSync(`${process.cwd()}/key.pem`),
+    cert: fs.readFileSync(`${process.cwd()}/cert.pem`),
   };
   const httpServer = http.createServer(app);
   const httpsServer = https.createServer(options, app);
