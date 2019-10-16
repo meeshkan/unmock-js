@@ -38,7 +38,7 @@ import {
   valueLens,
 } from "openapi-refinements";
 import * as seedrandom from "seedrandom";
-import * as url from "url";
+import * as url from "whatwg-url";
 import {
   CreateResponse,
   IListener,
