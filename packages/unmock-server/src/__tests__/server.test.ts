@@ -10,9 +10,10 @@ describe("Express server", () => {
     const { app, unmock } = buildApp({ servicesDirectory });
 
     unmock.services["petstore.swagger.io"].state(transform.withCodes(200));
-    await request(app)
+    const response = await request(app)
       .get("/v2/pet/23")
       .set("X-Forwarded-For", "petstore.swagger.io")
       .expect(200);
+    expect(JSON.parse(response.text)).toHaveProperty("id", expect.any(Number));
   });
 });
