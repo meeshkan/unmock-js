@@ -5,7 +5,11 @@ import {
 } from "unmock-core/src/interceptor";
 import { NodeBackend } from "unmock-node";
 
-export const createUnmockAlgo = () => {
+export const createUnmockAlgo = ({
+  servicesDirectory,
+}: {
+  servicesDirectory?: string;
+}) => {
   const config: { onSerializedRequest?: OnSerializedRequest } = {
     onSerializedRequest: undefined,
   };
@@ -20,7 +24,7 @@ export const createUnmockAlgo = () => {
       },
     };
   };
-  const backend = new NodeBackend({ interceptorFactory });
+  const backend = new NodeBackend({ interceptorFactory, servicesDirectory });
   // const createResponse = responseCreatorFactory(backend.serviceStore);
   const unmock = new UnmockPackage(backend);
   unmock

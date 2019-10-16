@@ -22,7 +22,7 @@ proxy.on("error", (err, _, res) => {
 proxy.on(
   "proxyReq",
   (proxyReq: http.ClientRequest, req: http.IncomingMessage, __, ___) => {
-    proxyReq.setHeader("X-Forwarded-For", req.headers.host || "somehost");
+    proxyReq.setHeader("X-Forwarded-For", req.headers.host || "");
   },
 );
 

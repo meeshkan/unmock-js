@@ -27,8 +27,12 @@ export const serialize = async (
   return serializedRequest;
 };
 
-export const requestResponseHandler = () => {
-  const algo = createUnmockAlgo();
+export const requestResponseHandler = ({
+  servicesDirectory,
+}: {
+  servicesDirectory?: string;
+}) => {
+  const algo = createUnmockAlgo({ servicesDirectory });
 
   return async (req: express.Request, res: express.Response) => {
     // Serialize request
@@ -74,7 +78,7 @@ export const buildApp = () => {
     },
   );
 
-  app.all("*", requestResponseHandler());
+  app.all("*", requestResponseHandler({}));
 
   return app;
 };
