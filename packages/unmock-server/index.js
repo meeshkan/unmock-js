@@ -1,1 +1,1 @@
-require(`${__dirname}/dist`).run();
+require(__dirname + `/dist`).run();
