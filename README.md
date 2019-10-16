@@ -4,9 +4,10 @@
 
 # Unmock
 
-Mock API dependencies in JavaScript.
+Property test and fuzz test for your API calls.
 
 * [Install](#install)
+* [When to Use UnmockJS](#when-to-use-unmockjs)
 * [Usage](#usage)
   + [Specifying hostname](#specifying-hostname)
   + [Specifying the path](#specifying-the-path)
@@ -32,6 +33,16 @@ Mock API dependencies in JavaScript.
 $ npm install --save-dev unmock
 ```
 
+## When to Use UnmockJS
+
+If the answers to all these questions are yes, using UnmockJS may be a great option in your stack.
+
+- Is my code base in JavaScript or TypeScript?
+- Does my code base have tests written in Jest, Mocha, Jasmine, Tap or Ava?
+- Do I make an API call from my codebase to a REST API?
+
+If the answer is yes to all of these questions, UnmockJS could help you test code paths in your code that make REST API calls and use the responses from those API.
+
 ## Usage
 
 This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
@@ -39,6 +50,7 @@ This README contains all the essential information about unmock. For more exampl
 Here is a mock, a function, and a test in jest.
 
 ```js
+const fetch = require("node-fetch");
 const unmock = require("unmock");
 const { nock, runner, transform, u } = unmock;
 const { withCodes } = transform;
@@ -53,7 +65,7 @@ nock("https://zodiac.com", "zodiac")
 
 async function getHoroscope(sign) {
   // use unmock.fetch, request, fetch, axios or any similar library
-  const result = await unmock.fetch("https://zodiac.com/horoscope/" + sign);
+  const result = await fetch("https://zodiac.com/horoscope/" + sign);
   const json = await result.json();
   return { ...json, seen: false };
 }
