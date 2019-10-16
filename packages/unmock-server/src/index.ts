@@ -3,10 +3,8 @@
 import { startProxy } from "./proxy";
 import { buildApp, startServer } from "./server";
 
-const main = () => {
+export const run = () => {
   const app = buildApp();
   startServer(app);
   startProxy();
 };
-
-main();
