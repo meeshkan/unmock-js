@@ -47,8 +47,10 @@ export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
   }
 
   const req: ISerializedRequest = {
+    body: undefined,  // TODO
+    bodyAsJson: undefined,  // TODO
     method,
-    headers: {},
+    headers: {},  // TODO
     host: parsedUrl.host,
     path: parsedUrl.pathname, // TODO
     pathname: parsedUrl.pathname,
