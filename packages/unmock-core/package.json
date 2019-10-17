@@ -42,5 +42,8 @@
     "swagger2openapi": "^5.3.0",
     "whatwg-url": "^7.0.0",
     "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "unmock-fetch": "file:../unmock-fetch"
   }
 }
