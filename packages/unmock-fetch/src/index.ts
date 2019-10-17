@@ -23,12 +23,12 @@ declare namespace window {
   let fetch: Fetch;
 }
 
-let mitm: Mitm | undefined;
+let fetchInterceptor: FetchInterceptor | undefined;
 
 /**
  * Fill global `fetch` object with mock fetch.
  */
-export class Mitm {
+export class FetchInterceptor {
   public readonly fetch: Fetch;
   private originalFetch?: { where: any; fetch: any };
   constructor(onSerializedRequest: OnSerializedRequest) {
@@ -61,17 +61,17 @@ export default {
    */
   on(onSerializedRequest: OnSerializedRequest) {
     this.off();
-    mitm = new Mitm(onSerializedRequest);
-    return mitm;
+    fetchInterceptor = new FetchInterceptor(onSerializedRequest);
+    return fetchInterceptor;
   },
 
   /**
    * Stop intercepting `fetch`, restore original `fetch`.
    */
   off() {
-    if (mitm) {
-      mitm.disable();
-      mitm = undefined;
+    if (fetchInterceptor) {
+      fetchInterceptor.disable();
+      fetchInterceptor = undefined;
     }
   },
 };
