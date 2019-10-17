@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+# 0.3.9 (2019-10-17)
+
+Features:
+
+  - Extract `unmock-node` from `unmock-core` for better portability to other environments
+  - Add `unmock-fetch` package
+
 ## 0.3.8 (2019-9-27)
 
 Features:
