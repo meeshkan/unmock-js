@@ -1,10 +1,17 @@
 import debug from "debug";
 import express = require("express");
 import * as fs from "fs";
+// @ts-ignore
+import helmet = require("helmet");
 import * as http from "http";
 import * as https from "https";
-import * as os from "os";
-import { ISerializedRequest, ISerializedResponse } from "unmock-core";
+// import * as os from "os";
+
+import {
+  ISerializedRequest,
+  ISerializedResponse,
+  transform,
+} from "unmock-core";
 import { createUnmockAlgo } from "./unmock";
 
 const httpPort = 8000;
@@ -59,29 +66,37 @@ export const requestResponseHandler = (opts: IServerOptions) => {
 
 export const buildApp = (opts?: IServerOptions) => {
   const app = express();
+  app.use(helmet());
 
   const domain = process.env.UNMOCK_SERVER_DOMAIN || "localhost";
 
-  app.get(
-    "/unmock-api",
+  const { unmock, handler } = requestResponseHandler(opts || {});
+
+  app.post(
+    "/api",
     (
       req: express.Request,
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      if (req.hostname === domain) {
-        res.send(
-          `unmock-api: host ${req.headers.host}, url: ${
-            req.url
-          }, own hostname: ${os.hostname()}, req.hostname: ${req.hostname}`,
-        );
-      } else {
-        next();
+      if (req.hostname !== domain) {
+        return next();
       }
+      if (req.query && req.query.code) {
+        debugLog(`Setting response code to ${req.query.code}`);
+        const asNumber = parseInt(req.query.code, 10);
+        Object.values(unmock.services).forEach(service =>
+          service.state(
+            // @ts-ignore
+            transform.withCodes(asNumber),
+          ),
+        );
+        res.json({ code: req.query.code });
+        return;
+      }
+      return res.sendStatus(400);
     },
   );
-
-  const { unmock, handler } = requestResponseHandler(opts || {});
 
   app.all("*", handler);
 
