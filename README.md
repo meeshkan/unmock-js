@@ -4,7 +4,7 @@
 
 # Unmock
 
-Property test and fuzz test for your API calls.
+Fuzz test your REST API calls.
 
 * [Install](#install)
 * [When to Use UnmockJS](#when-to-use-unmockjs)
@@ -33,15 +33,15 @@ Property test and fuzz test for your API calls.
 $ npm install --save-dev unmock
 ```
 
-## When to Use UnmockJS
+## When to Use Unmock
 
-If the answers to all these questions are yes, using UnmockJS may be a great option in your stack.
+Below are some questions to ask when determining if Unmock is a good fit for your development process.
 
 - Is my code base in JavaScript or TypeScript?
 - Does my code base have tests written in Jest, Mocha, Jasmine, Tap or Ava?
-- Do I make an API call from my codebase to a REST API?
+- Do I make a network call from my codebase to a REST API?
 
-If the answer is yes to all of these questions, UnmockJS could help you test code paths in your code that make REST API calls and use the responses from those API.
+If the answer is yes to all of these questions, Unmock could help you test code paths in your code that make REST API calls and use the responses from those API.
 
 ## Usage
 
