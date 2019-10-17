@@ -1,5 +1,5 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.9",
   "name": "unmock-jest",
   "displayName": "unmock-jest",
   "main": "dist/index.js",
@@ -28,9 +28,11 @@
   ],
   "peerDependencies": {
     "jest": ">= 22.0.0",
-    "unmock": ">= 0.2.2"
+    "unmock": ">= 0.3.8",
+    "unmock-node": ">= 0.3.8"
   },
   "devDependencies": {
-    "unmock": "file:../unmock"
+    "unmock": "file:../unmock",
+    "unmock-node": "file:../unmock-node"
   }
 }

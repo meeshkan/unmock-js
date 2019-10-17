@@ -8,6 +8,8 @@ module.exports = {
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
   moduleNameMapper: {
+    "^(unmock)$":
+      "<rootDir>/../../packages/$1/src/node",
     "^(unmock(?:-[A-Za-z]+)?|openapi-refinements)(?:/dist)?((?:/.*)|$)":
       "<rootDir>/../../packages/$1/src"
   },
@@ -18,6 +20,10 @@ module.exports = {
   collectCoverageFrom: [
     "**/packages/*/src/**/*.ts",
     "!**/node_modules/**",
+  ],
+  coveragePathIgnorePatterns: [
+    "node_modules",
+    "__tests__",
   ],
   globals: {
     "ts-jest": {

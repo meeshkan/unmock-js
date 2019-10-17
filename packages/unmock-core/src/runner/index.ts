@@ -1,4 +1,4 @@
-import NodeBackend from "../backend";
+import Backend from "../backend";
 import { runnerConfiguration } from "../generator";
 export interface IRunnerOptions {
   maxLoop: number;
@@ -39,7 +39,7 @@ const errorHandler = (
   }
 };
 
-export default (backend: NodeBackend) => (
+export default (backend: Backend) => (
   fn?: jest.ProvidesCallback,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: jest.DoneCallback) => {

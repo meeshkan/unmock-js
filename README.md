@@ -4,9 +4,10 @@
 
 # Unmock
 
-Mock API dependencies in JavaScript.
+Property test and fuzz test for your API calls.
 
 * [Install](#install)
+* [When to Use UnmockJS](#when-to-use-unmockjs)
 * [Usage](#usage)
   + [Specifying hostname](#specifying-hostname)
   + [Specifying the path](#specifying-the-path)
@@ -16,7 +17,7 @@ Mock API dependencies in JavaScript.
   + [Specifying replies](#specifying-replies)
   + [Specifying reply headers](#specifying-reply-headers)
   + [Chaining](#chaining)
-  + [Passthrough](#passthrough)
+  + [Ignorable API calls](#ignorable-api-calls)
 * [Expectations](#expectations)
 * [Initializing Mocks](#initializing-mocks)
 * [Runner](#runner)
@@ -32,13 +33,24 @@ Mock API dependencies in JavaScript.
 $ npm install --save-dev unmock
 ```
 
+## When to Use UnmockJS
+
+If the answers to all these questions are yes, using UnmockJS may be a great option in your stack.
+
+- Is my code base in JavaScript or TypeScript?
+- Does my code base have tests written in Jest, Mocha, Jasmine, Tap or Ava?
+- Do I make an API call from my codebase to a REST API?
+
+If the answer is yes to all of these questions, UnmockJS could help you test code paths in your code that make REST API calls and use the responses from those API.
+
 ## Usage
 
 This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
 
-Here is a simple mock, a simple function, and a simple test in jest.
+Here is a mock, a function, and a test in jest.
 
 ```js
+const fetch = require("node-fetch");
 const unmock = require("unmock");
 const { nock, runner, transform, u } = unmock;
 const { withCodes } = transform;
@@ -53,7 +65,7 @@ nock("https://zodiac.com", "zodiac")
 
 async function getHoroscope(sign) {
   // use unmock.fetch, request, fetch, axios or any similar library
-  const result = await unmock.fetch("https://zodiac.com/horoscope/" + sign);
+  const result = await fetch("https://zodiac.com/horoscope/" + sign);
   const json = await result.json();
   return { ...json, seen: false };
 }
@@ -140,7 +152,7 @@ unmock.nock('http://www.example.com')
 
 Unmock automatically ignores query strings. However, it understands query strings if you would like to match against them.
 
-> You should avoid matching against query strings, as they will act as required. Most APIs do not have required query strings. If you want to use query strings to compose the return value of an API, use the `state`.
+> When query strings are included in Unmock, they will act as if they are required. Most APIs do not have required query strings, so make sure to double-check the API documentation before indicating a required query string.
 
 These parameters can be included as part of the path:
 
@@ -250,9 +262,9 @@ unmock. nock('http://myapp.iriscouch.com')
   })
 ```
 
-### Passthrough
+### Ignorable API calls
 
-For "boring" API calls where you are just passing through information, you can instruct unmock to serve random `200` resposnes to those requests using `tldr`.
+For ignorable API calls where you are passing through information but don't care about a response, you can instruct unmock to serve random `200` responses to those requests using `tldr`.
 
 ```js
 unmock
@@ -363,7 +375,7 @@ test("my API always works as expected", runner(async () => {
 
 ## OpenAPI
 
-Unmock supports the reading of OpenAPI specifications out of the box. Simply place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
+Unmock supports the reading of OpenAPI specifications out of the box. Place your specification in a folder at the root of your project called `__unmock__/<myspecname>`, where `<myspecname>` is the name of the spec on the `unmock.on().services` object.  Several examples of this exist on the internet, most notably [here](https://github.com/unmock/unmock-examples/tree/master/using-service-repository).
 
 ## Tutorials
 
@@ -374,8 +386,7 @@ Unmock supports the reading of OpenAPI specifications out of the box. Simply pla
 
 Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRIBUTING.md) for notes on our commit message conventions and how to run tests.
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
-By participating in this project you agree to abide by its terms.
+Please note that this project is governed by the [Unmock Community Code of Conduct](https://github.com/unmock/code-of-conduct). By participating in this project, you agree to abide by its terms.
 
 ## Development
 

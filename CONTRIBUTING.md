@@ -2,7 +2,7 @@
 
 👋 Thanks for thinking about contributing to unmock! We, the maintainers, are glad you're here and will be excited to help you get started if you have any questions. For now, here are some basic instructions for how we manage this project.
 
-Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md). By participating in this project you agree to abide by its terms.
+Please note that this project is governed by the [Unmock Community Code of Conduct](https://github.com/unmock/code-of-conduct). By participating in this project, you agree to abide by its terms.
 
 **Table of Contents**
 
@@ -121,7 +121,7 @@ All of our releases are automated using [semantic-release](https://github.com/se
 
 ## GitHub Apps
 
-We use several GitHub apps to help maintain this repository. While we would like to address every issue and while we would like to be on hand to support every person, unmock is pretty much entirely volunteer run, and we simply don't have the time to do everything. Please don't be offended if an automated app posts in your issue! We're doing what we can with with we have.
+We use several GitHub apps to help maintain this repository. While we would like to address every issue and while we would like to be on hand to support every person, unmock is pretty much entirely volunteer run, and we don't have the time to do everything. Please don't be offended if an automated app posts in your issue! We're doing what we can with with we have.
 
 Currently, we use the [Stale](https://github.com/apps/stale) and [Lock](https://github.com/apps/lock) apps to mark old issues as stale, and to lock issues which have been closed to stop drive-by comments. You can see the configuration files for these in [.github/](.github).
 
@@ -137,7 +137,7 @@ Here are some things you can do today to actively show the unmock team that you'
 - **Review PRs.** We have a lot of open PRs! Some of these are probably ready to merge, and some of them probably need more work. Any extra eyes on PRs are encouraged. Comment on code patterns you think need work, suggest extra tests, and let us know if a PR 'LGTM' ("looks good to me"). The more reviewers we have, the faster we can merge issues, the better this project becomes.
 - **Help out!** If someone files a bug and no one has responded yet, see if you can resolve it! Suggest PRs, or file them yourself. While most contributors are going to only be interested in their own bugs, great maintainers help out with other people's bugs. This is one of the best ways to become an expert at unmock (and Node.js, JavaScript, or pretty much any project) - helping others.
 - **Write docs.** Are our docs missing something important? Are they not clear? Could they be better? Open a PR!
-- **Suggest examples.** Right now, we have a few examples, but we could always have more. Submit small example files and tutorials. At some point, we'll have to work on a better way to display these - for now, it's great to show others how to solve difficult mocking problems easily with unmock.
+- **Suggest examples.** Right now, we have a few examples, but we could always have more. Submit small example files and tutorials. At some point, we'll have to work on a better way to display these - for now, it's great to show others how to solve difficult mocking problems with unmock.
 - **Refactor.** This is one of the hardest things to do, but one of the most useful. Go through the code, and find examples where it could be written better - with better variable names, more useful abstractions, and more elegant patterns. Taking away ten lines of code that are unnecessary is more valuable than submitting a hundred new lines, sometimes. Open a PR or a comment and defend your position; ask for feedback.
 
 Once you've been around for a bit, ask a current Maintainer - one of [the team members](https://github.com/orgs/unmock/people) - whether you can be elevated to Maintainer status and given permissions to close issues and merge PRs. We're interested in how well you know what unmock is about, and how involved you are in the community - not where you're from, how good your English is, or whether or not you can pass a whiteboard test blindfolded. If you think that you've been helpful, let us know. We're friendly, promise. :)

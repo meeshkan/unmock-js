@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { utils as unmockUtils } from "unmock";
+import { utils as unmockUtils } from "unmock-node";
 import { IReporterOptions, resolveOptions } from "./options";
 import { IJestData } from "./types";
 import writeReport from "./write-report";

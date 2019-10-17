@@ -1,9 +1,40 @@
 import * as fs from "fs";
 import * as jsYaml from "js-yaml";
 import * as path from "path";
+import { Backend, IServiceDef, IServiceDefLoader } from "..";
+import { IInterceptor } from "../interceptor";
 import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
+
+export const testServiceDefLoader: IServiceDefLoader = {
+  loadSync() {
+    const petstoreDirectory = path.resolve(__dirname, "__unmock__", "petstore");
+
+    const spec = fs.readFileSync(path.join(petstoreDirectory, "spec.yaml"));
+
+    const petstoreServiceDef: IServiceDef = {
+      absolutePath: petstoreDirectory,
+      directoryName: "petstore",
+      serviceFiles: [{ basename: "spec.yaml", contents: spec }],
+    };
+
+    return [petstoreServiceDef];
+  },
+};
+
+export const interceptorMock: IInterceptor = {
+  disable: jest.fn(),
+};
+
+const TestInterceptor: () => jest.Mock<IInterceptor> = () =>
+  jest.fn().mockReturnValue(interceptorMock);
+
+export class TestBackend extends Backend {
+  public constructor() {
+    super({ interceptorFactory: TestInterceptor() });
+  }
+}
 
 export const PetStoreSpecLocation = path.join(
   __dirname,

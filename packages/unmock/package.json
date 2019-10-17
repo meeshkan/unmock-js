@@ -1,12 +1,12 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.9",
   "name": "unmock",
   "displayName": "unmock",
   "license": "MIT",
   "bin": {
     "unmock": "./index.js"
   },
-  "main": "dist/index.js",
+  "main": "dist/node/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "unmock-cli": "file:../unmock-cli",
-    "unmock-core": "file:../unmock-core"
+    "unmock-core": "file:../unmock-core",
+    "unmock-node": "file:../unmock-node"
   }
 }

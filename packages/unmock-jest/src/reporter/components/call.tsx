@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ISnapshot, UnmockRequest, UnmockResponse } from "unmock";
-import { IIncomingHeaders } from "unmock-core/dist/interfaces";
+import { IIncomingHeaders } from "unmock-core";
 
 const Headers = ({ headers }: { headers: IIncomingHeaders }) => {
   return <div className={"call__request-headers"}>

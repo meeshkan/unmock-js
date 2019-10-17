@@ -1,17 +1,6 @@
 import { UnmockPackage } from "..";
-import NodeBackend from "../backend/index";
+import { TestBackend } from "./utils";
 
-class TestBackend extends NodeBackend {
-  public initialize(_: any): never {
-    throw Error("Not implemented");
-  }
-  public reset() {
-    return;
-  }
-  public get services() {
-    return {};
-  }
-}
 const backend = new TestBackend();
 
 describe("Tests core package", () => {

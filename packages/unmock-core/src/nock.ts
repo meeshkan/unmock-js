@@ -20,7 +20,7 @@ import {
 import { fromTraversable, Iso, Prism } from "monocle-ts";
 import { valAsConst } from "openapi-refinements";
 import * as querystring from "query-string";
-import NodeBackend from "./backend";
+import Backend from "./backend";
 import { identityGetter } from "./generator";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
@@ -711,7 +711,7 @@ export const nockify = ({
   requestHeaders,
   name,
 }: {
-  backend: NodeBackend;
+  backend: Backend;
   baseUrl: string;
   requestHeaders: Record<string, JSSTAnything<EJSEmpty, {}>>;
   name?: string;
