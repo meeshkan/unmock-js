@@ -18,9 +18,6 @@ export class TestBackend extends Backend {
   public constructor() {
     super({ interceptorFactory: TestInterceptor() });
   }
-  public loadServices() {
-    this.updateServiceDefs([]);
-  }
 }
 
 export const PetStoreSpecLocation = path.join(

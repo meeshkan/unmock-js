@@ -19,7 +19,7 @@ export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
-  protected readonly backend: Backend;
+  public readonly backend: Backend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
     backend: Backend,
