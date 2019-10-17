@@ -4,7 +4,7 @@ import {
   IProtocol,
   ISerializedRequest,
 } from "unmock-core/dist/interfaces";
-import URL = require("url-parse");
+import URLParse = require("url-parse");
 
 const isKnownProtocol = (maybeProtocol: string): maybeProtocol is IProtocol =>
   /^https?$/.test(maybeProtocol);
@@ -38,7 +38,7 @@ export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
     throw new Error(`Unknown method: ${method}`);
   }
 
-  const parsedUrl = new URL(url);
+  const parsedUrl = new URLParse(url, true);
 
   const protocolWithoutColon = parsedUrl.protocol.replace(":", "");
 
