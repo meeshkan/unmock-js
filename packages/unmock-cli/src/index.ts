@@ -1,5 +1,5 @@
 import * as program from "commander";
-import { curl, list, open } from "./commands/";
+import { init, curl, list, open } from "./commands/";
 
 export default () => {
   const collect = (val: string, memo: string[]) => {
@@ -8,6 +8,13 @@ export default () => {
   };
 
   program.usage("unmock <command>");
+
+  program
+    .command("init [dirname]")
+    .option("--installer [installer]", "Specify Package Manager (yarn/npm)")
+    .option("--offline", "Specify whether to allow install from cache")
+    .option("--verbose", "Specify verbosity of output messages")
+    .action(init);
 
   program
     .command("curl <url>")
