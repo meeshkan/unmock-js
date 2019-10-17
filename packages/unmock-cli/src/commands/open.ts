@@ -1,6 +1,6 @@
 import * as child_process from "child_process";
 import * as glob from "glob";
-import WinstonLogger from "../logger";
+import WinstonLogger from "../utils/logger";
 
 export const open = (hash: string, options: any) => {
   const logger = new WinstonLogger();

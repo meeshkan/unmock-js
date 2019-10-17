@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import * as glob from "glob";
 import * as path from "path";
 import { ILogger } from "unmock-core";
-import WinstonLogger from "../logger";
+import WinstonLogger from "../utils/logger";
 
 const removeTrailingNumber = (s: string) =>
   s
