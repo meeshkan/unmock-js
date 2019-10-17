@@ -7,7 +7,6 @@ import { ISerializedRequest, ISerializedResponse } from "../interfaces";
 import { OpenAPIObject } from "../service/interfaces";
 import { ServiceCore } from "../service/serviceCore";
 
-// TODO Use `FsServiceDefLoader` from unmock-node?
 export const testServiceDefLoader: IServiceDefLoader = {
   loadSync() {
     const petstoreDirectory = path.resolve(__dirname, "__unmock__", "petstore");
