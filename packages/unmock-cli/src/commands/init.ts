@@ -1,5 +1,6 @@
 import * as path from "path";
 import { mkdirSync, rmdirSync, writeFileSync, accessSync, constants } from "fs";
+import { execSync } from "child_process";
 import { question as prompt } from "readline-sync";
 import chalk from "chalk";
 
@@ -53,15 +54,16 @@ export const init = (dirname: string = "__tests__", options: any) => {
   // Start dependency installation process
   logger.log("Installing dependencies...");
 
+  const dependencies = ["unmock", "jest", "unmock-jest"];
+  const useYarn = yarnExists() && options.installer != "npm" ? true : false;
   const installer = new NodePkgInstaller(<INodePkgInstallerOpts>{
     root: CWD,
-    useYarn: options.installer != "npm" ? true : false,
+    useYarn,
     usePnp: false,
     verbose: options.verbose,
     isOnline: !options.offline,
     isDev: true,
   });
-  const dependencies = ["unmock", "jest", "unmock-jest"];
 
   installer
     .install(dependencies)
@@ -128,4 +130,13 @@ function fileExistsSync(path: string) {
   }
 
   return result;
+}
+
+function yarnExists(): boolean {
+  try {
+    execSync("yarnpkg --version", { stdio: "ignore" });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
