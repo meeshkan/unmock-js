@@ -32,10 +32,9 @@ export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
           try {
             const res = cb(req);
             if (typeof res === "undefined") {
-              reject("Empty response");
-            } else {
-              sendResponse(res);
+              return reject("Empty response");
             }
+            sendResponse(res);
           } catch (err) {
             reject(err);
           }

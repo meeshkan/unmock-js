@@ -7,8 +7,6 @@ import {
 import buildFetch from "./fetch";
 export { buildFetch };
 
-// export type CreateResponse = (req: ISerializedRequest) => ISerializedResponse;
-
 export type Listener = (
   req: ISerializedRequest,
   respond: (res: ISerializedResponse) => void,
