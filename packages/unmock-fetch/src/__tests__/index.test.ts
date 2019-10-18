@@ -3,7 +3,7 @@ import {
   ISerializedResponse,
   OnSerializedRequest,
 } from "unmock-core/dist/interfaces";
-import UnmockFetch, { buildFetch } from "../";
+import UnmockFetch, { buildFetch, CreateResponse } from "../";
 
 const testUrl = "http://example.com";
 
@@ -32,11 +32,29 @@ const respondOk: OnSerializedRequest = (
   }
 };
 
+const okResponseCreator: CreateResponse = (
+  _: ISerializedRequest,
+): ISerializedResponse => {
+  return {
+    headers: {},
+    statusCode: 200,
+    body: JSON.stringify({
+      ok: true,
+    }),
+  };
+};
+
 const fetch = buildFetch(respondOk);
+const fetchFromResponseCreator = buildFetch(okResponseCreator);
 
 describe("Built fetch", () => {
-  it("should respond as expected", async () => {
+  it("should respond as expected when used with callback", async () => {
     const response = await fetch(testUrl);
+    expect(response.ok).toBe(true);
+  });
+
+  it("should respond as expected when used with response creator", async () => {
+    const response = await fetchFromResponseCreator(testUrl);
     expect(response.ok).toBe(true);
   });
 });
