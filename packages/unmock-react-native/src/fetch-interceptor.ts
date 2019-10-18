@@ -1,15 +1,15 @@
 import { IInterceptorOptions } from "unmock-core/dist/interceptor";
-import FetchMitm from "unmock-fetch";
+import FetchInterceptor from "unmock-fetch";
 
-export class FetchInterceptor {
+export class FetchInterceptorWrapper {
   private readonly config: IInterceptorOptions;
   constructor(options: IInterceptorOptions) {
     this.config = options;
     // TODO Respect shouldBypassHost
-    FetchMitm.on(this.config.onSerializedRequest);
+    FetchInterceptor.on(this.config.onSerializedRequest);
   }
 
   public disable() {
-    FetchMitm.off();
+    FetchInterceptor.off();
   }
 }

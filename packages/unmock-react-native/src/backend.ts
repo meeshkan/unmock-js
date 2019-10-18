@@ -3,10 +3,10 @@ import {
   IInterceptorFactory,
   IInterceptorOptions,
 } from "unmock-core/dist/interceptor";
-import { FetchInterceptor } from "./fetch-interceptor";
+import { FetchInterceptorWrapper } from "./fetch-interceptor";
 
 const interceptorFactory: IInterceptorFactory = (opts: IInterceptorOptions) => {
-  return new FetchInterceptor(opts);
+  return new FetchInterceptorWrapper(opts);
 };
 
 /**
@@ -20,6 +20,4 @@ export default class ReactNativeBackend extends Backend {
       listeners,
     });
   }
-
-  public loadServices() {} // tslint:disable-line:no-empty
 }
