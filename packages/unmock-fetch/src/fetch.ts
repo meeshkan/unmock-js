@@ -21,7 +21,7 @@ export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
 
     return new Promise((resolve, reject) => {
       const sendResponse = (res: ISerializedResponse): void => {
-        const responseInit: ResponseInit = { status: res.statusCode };
+        const responseInit: ResponseInit = { status: res.statusCode }; // TODO Headers
         resolve(new Response(res.body, responseInit));
       };
 
