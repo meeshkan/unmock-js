@@ -3,7 +3,7 @@ import {
   ISerializedResponse,
   OnSerializedRequest,
 } from "unmock-core/dist/interfaces";
-import UnmockFetch, { buildFetch, CreateResponse } from "../";
+import UnmockFetch, { buildFetch } from "../";
 
 const testUrl = "http://example.com";
 
