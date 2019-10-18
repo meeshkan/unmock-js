@@ -1,0 +1,27 @@
+{
+  "name": "unmock-react-native",
+  "version": "0.3.8",
+  "description": "Unmock React Native",
+  "keywords": [
+    "unmock",
+    "mock",
+    "http"
+  ],
+  "homepage": "https://github.com/unmock/unmock-js",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "unmock-core": "file:../unmock-core",
+    "unmock-fetch": "file:../unmock-fetch"
+  }
+}
