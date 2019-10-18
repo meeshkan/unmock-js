@@ -7,7 +7,9 @@
 Fuzz test your REST API calls.
 
 * [Install](#install)
-* [When to Use UnmockJS](#when-to-use-unmockjs)
+* [When to Use Unmock](#when-to-use-unmock)
+* [What Does Unmock Do](#what-does-unmock-do)
+* [The Docs](#the-docs)
 * [Usage](#usage)
   + [Specifying hostname](#specifying-hostname)
   + [Specifying the path](#specifying-the-path)
@@ -43,25 +45,32 @@ Below are some questions to ask when determining if Unmock is a good fit for you
 
 If the answer is yes to all of these questions, Unmock could help you test code paths in your code that make REST API calls and use the responses from those API.
 
-## Usage
+## What Does Unmock Do
 
-This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
+Unmock helps you fuzz test REST API calls. Fuzz testing, or fuzzing, is a form of testing where you verify the correctness of code by asserting that it behaves correctly with variable and unexpected input. The response of a REST API is, in all but the most exotic of circumstances, variable and unexpected.
+
+## The Docs
+
+If you don't like reading READMEs, check out our [docs](https://unmock.io/docs/introduction)!
+
+## Usage
 
 Here is a mock, a function, and a test in jest.
 
 ```js
 const fetch = require("node-fetch");
 const unmock = require("unmock");
-const { nock, runner, transform, u } = unmock;
+const { runner, transform, u } = unmock;
 const { withCodes } = transform;
 
-nock("https://zodiac.com", "zodiac")
-  .get("/horoscope/{sign}")
+unmock
+  .nock("https://zodiac.com", "zodiac")
+  .get("/horoscope/{sign}") // 1
   .reply(200, {
-    horoscope: u.string(),
-    ascendant: u.opt(u.string())
+    horoscope: u.string(), // 2
+    ascendant: u.opt(u.string()) // 3
   })
-  .reply(404, { message: "Not authorized" });
+  .reply(404, { message: "Not authorized" }); // 4
 
 async function getHoroscope(sign) {
   // use unmock.fetch, request, fetch, axios or any similar library
@@ -79,18 +88,17 @@ afterAll(() => unmock.default.off());
 describe("getHoroscope", () => {
   it(
     "augments the API call with seen=false",
-    runner(async () => {
-      zodiac.spy.resetHistory();
-      zodiac.state(withCodes(200));
+    runner(async () => { // 5
+      zodiac.state(withCodes(200)); // 6
       const res = await getHoroscope();
-      expect(res).toMatchObject(JSON.parse(zodiac.spy.getResponseBody()));
+      expect(res).toMatchObject(JSON.parse(zodiac.spy.getResponseBody())); // 7
       expect(res.seen).toBe(false);
     }),
   );
 });
 ```
 
-This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope of type `string` and optionally an ascendant of type `string`.
+This shows the anatomy of an unmock test. With unmock, you can (1) override a REST endpoint to provide (2) variable and (3) optional responses in addition to (4) different status codes. Then, one uses the (5) runner to automatically run a test multiple times with subtly different responses from the API. One can also (6) initialize the API to a given state and (7) make assertions about how an API was used.
 
 ### Specifying hostname
 
