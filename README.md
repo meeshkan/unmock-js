@@ -4,10 +4,12 @@
 
 # Unmock
 
-Property test and fuzz test for your API calls.
+Fuzz test your REST API calls.
 
 * [Install](#install)
-* [When to Use UnmockJS](#when-to-use-unmockjs)
+* [What Does Unmock Do](#what-does-unmock-do)
+* [When To Use Unmock](#when-to-use-unmock)
+* [The Docs](#the-docs)
 * [Usage](#usage)
   + [Specifying hostname](#specifying-hostname)
   + [Specifying the path](#specifying-the-path)
@@ -33,35 +35,42 @@ Property test and fuzz test for your API calls.
 $ npm install --save-dev unmock
 ```
 
-## When to Use UnmockJS
+## What Does Unmock Do
 
-If the answers to all these questions are yes, using UnmockJS may be a great option in your stack.
+Unmock helps you fuzz test REST API calls. Fuzz testing, or fuzzing, is a form of testing where you verify the correctness of code by asserting that it behaves correctly with variable and unexpected input. The response of a REST API is most often variable and unexpected. So, in most cases, fuzz testing is a useful way to test integrations with APIs.
+
+## When To Use Unmock
+
+Below are some questions to ask when determining if Unmock is a good fit for your development process.
 
 - Is my code base in JavaScript or TypeScript?
 - Does my code base have tests written in Jest, Mocha, Jasmine, Tap or Ava?
-- Do I make an API call from my codebase to a REST API?
+- Do I make a network call from my codebase to a REST API?
 
-If the answer is yes to all of these questions, UnmockJS could help you test code paths in your code that make REST API calls and use the responses from those API.
+If the answer is yes to all of these questions, Unmock could help you test code paths in your code that make REST API calls and use the responses from those API.
+
+## The Docs
+
+If you don't like reading READMEs, check out our [docs](https://unmock.io/docs/introduction)!
 
 ## Usage
 
-This README contains all the essential information about unmock. For more examples an in-depth explanations, see the [documentation](https://unmock.io/docs/introduction).
-
-Here is a mock, a function, and a test in jest.
+Here is a mock defined using unmock, a function to be tested, and a test written in jest. The commented numbers are explained in the text below this code example.
 
 ```js
 const fetch = require("node-fetch");
 const unmock = require("unmock");
-const { nock, runner, transform, u } = unmock;
+const { runner, transform, u } = unmock;
 const { withCodes } = transform;
 
-nock("https://zodiac.com", "zodiac")
-  .get("/horoscope/{sign}")
+unmock
+  .nock("https://zodiac.com", "zodiac")
+  .get("/horoscope/{sign}") // 1
   .reply(200, {
-    horoscope: u.string(),
-    ascendant: u.opt(u.string())
+    horoscope: u.string(), // 2
+    ascendant: u.opt(u.string()) // 3
   })
-  .reply(404, { message: "Not authorized" });
+  .reply(404, { message: "Not authorized" }); // 4
 
 async function getHoroscope(sign) {
   // use unmock.fetch, request, fetch, axios or any similar library
@@ -79,18 +88,17 @@ afterAll(() => unmock.default.off());
 describe("getHoroscope", () => {
   it(
     "augments the API call with seen=false",
-    runner(async () => {
-      zodiac.spy.resetHistory();
-      zodiac.state(withCodes(200));
+    runner(async () => { // 5
+      zodiac.state(withCodes(200)); // 6
       const res = await getHoroscope();
-      expect(res).toMatchObject(JSON.parse(zodiac.spy.getResponseBody()));
+      expect(res).toMatchObject(JSON.parse(zodiac.spy.getResponseBody())); // 7
       expect(res.seen).toBe(false);
     }),
   );
 });
 ```
 
-This setup says that we will intercept every HTTPS GET request to `https://zodiac.com/horoscope/{sign}`. We instruct it to reply with a status 200, and the body will contain a response in JSON corresponding to the spec - in this case, an object with a horoscope of type `string` and optionally an ascendant of type `string`.
+With unmock, you can (1) override a REST endpoint to provide (2) variable and (3) optional responses in addition to (4) different status codes. Then, one uses the (5) runner to automatically run a test multiple times with subtly different responses from the API. One can also (6) initialize the API to a given state and (7) make assertions about how an API was used.
 
 ### Specifying hostname
 
