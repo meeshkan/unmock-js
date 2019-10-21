@@ -7,8 +7,8 @@
 Fuzz test your REST API calls.
 
 * [Install](#install)
-* [When to Use Unmock](#when-to-use-unmock)
 * [What Does Unmock Do](#what-does-unmock-do)
+* [When To Use Unmock](#when-to-use-unmock)
 * [The Docs](#the-docs)
 * [Usage](#usage)
   + [Specifying hostname](#specifying-hostname)
@@ -35,7 +35,11 @@ Fuzz test your REST API calls.
 $ npm install --save-dev unmock
 ```
 
-## When to Use Unmock
+## What Does Unmock Do
+
+Unmock helps you fuzz test REST API calls. Fuzz testing, or fuzzing, is a form of testing where you verify the correctness of code by asserting that it behaves correctly with variable and unexpected input. The response of a REST API is most often variable and unexpected. So, in most cases, fuzz testing is a useful way to test integrations with APIs.
+
+## When To Use Unmock
 
 Below are some questions to ask when determining if Unmock is a good fit for your development process.
 
@@ -45,17 +49,13 @@ Below are some questions to ask when determining if Unmock is a good fit for you
 
 If the answer is yes to all of these questions, Unmock could help you test code paths in your code that make REST API calls and use the responses from those API.
 
-## What Does Unmock Do
-
-Unmock helps you fuzz test REST API calls. Fuzz testing, or fuzzing, is a form of testing where you verify the correctness of code by asserting that it behaves correctly with variable and unexpected input. The response of a REST API is, in all but the most exotic of circumstances, variable and unexpected.
-
 ## The Docs
 
 If you don't like reading READMEs, check out our [docs](https://unmock.io/docs/introduction)!
 
 ## Usage
 
-Here is a mock, a function, and a test in jest.
+Here is a mock defined using unmock, a function to be tested, and a test written in jest. The commented numbers are explained in the text below this code example.
 
 ```js
 const fetch = require("node-fetch");
@@ -98,7 +98,7 @@ describe("getHoroscope", () => {
 });
 ```
 
-This shows the anatomy of an unmock test. With unmock, you can (1) override a REST endpoint to provide (2) variable and (3) optional responses in addition to (4) different status codes. Then, one uses the (5) runner to automatically run a test multiple times with subtly different responses from the API. One can also (6) initialize the API to a given state and (7) make assertions about how an API was used.
+With unmock, you can (1) override a REST endpoint to provide (2) variable and (3) optional responses in addition to (4) different status codes. Then, one uses the (5) runner to automatically run a test multiple times with subtly different responses from the API. One can also (6) initialize the API to a given state and (7) make assertions about how an API was used.
 
 ### Specifying hostname
 
