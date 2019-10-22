@@ -1,12 +1,7 @@
 import * as program from "commander";
-import { curl, init, list, open } from "./commands/";
+import { init, list, open } from "./commands/";
 
 export default () => {
-  const collect = (val: string, memo: string[]) => {
-    memo.push(val);
-    return memo;
-  };
-
   program.usage("unmock <command>");
 
   program
@@ -15,23 +10,6 @@ export default () => {
     .option("--offline", "Specify whether to allow install from cache")
     .option("--verbose", "Specify verbosity of output messages")
     .action(init);
-
-  program
-    .command("curl <url>")
-    .option("-d, --data [data]", "HTTP POST data")
-    .option(
-      "-H, --header [header]",
-      "Pass custom header(s) to server",
-      collect,
-      [],
-    )
-    .option("-X", "--request [command]", "Specify request command to use")
-    .option(
-      "-S",
-      "--signature [signature]",
-      "Specify a signature for a request in tokenless mode",
-    )
-    .action(curl);
 
   program
     .command("open <hash>")
