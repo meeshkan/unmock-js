@@ -39,7 +39,8 @@ export const init = (dirname: string = "__tests__", options: any) => {
         "Warning: this will result in the loss of previous tests",
       )})\n        [Y/n]`,
     );
-    const deletePreviousTests = deletePreviousTestsAnwser === "Y" ? true : false;
+    const deletePreviousTests =
+      deletePreviousTestsAnwser === "Y" ? true : false;
 
     if (deletePreviousTests) {
       // delete and continue
