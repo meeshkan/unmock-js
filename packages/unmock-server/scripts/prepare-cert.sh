@@ -1,13 +1,15 @@
-string=$1
+domains=$1
 
-if [ -z ${string} ];
+if [ -z ${domains} ];
 then
   echo "Add domain names like this: bash prepare-cert.sh domain.io,domain.io2"
   exit 1
 fi
 
-arr=(${string//,/ })
+# Split names
+arr=(${domains//,/ })
 
+# Build SAN of the form "DNS:domain1,DNS:domain2"
 SAN=""
 
 first=true
@@ -20,7 +22,6 @@ do
   fi
   first=false
   SAN+=DNS:$i
-  echo $SAN
 done
 
 openssl req -x509 -newkey rsa:4096 -subj "/C=FI/ST=HE/O=Meeshkan/CN=*" -reqexts SAN -extensions SAN -config <(cat /etc/ssl/openssl.cnf <(printf "[SAN]\nsubjectAltName=${SAN}")) -nodes -keyout key.pem -out cert.pem
