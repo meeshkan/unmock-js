@@ -1,6 +1,7 @@
-import { spawn } from "child_process";
 import chalk from "chalk";
-
+import { spawn } from "child_process";
+import WinstonLogger from "../utils/logger";
+const logger = new WinstonLogger();
 /**
  * NodePkgInstaller
  *
@@ -20,9 +21,15 @@ export default class NodePkgInstaller {
         command = "yarnpkg";
         args = ["add", "--exact"];
 
-        if (!isOnline) args.push("--offline");
-        if (usePnp) args.push("--enable-pnp");
-        if (isDev) args.push("-D");
+        if (!isOnline) {
+          args.push("--offline");
+        }
+        if (usePnp) {
+          args.push("--enable-pnp");
+        }
+        if (isDev) {
+          args.push("-D");
+        }
 
         args = args.concat(dependencies);
 
@@ -30,8 +37,8 @@ export default class NodePkgInstaller {
         args.push(root);
 
         if (!isOnline) {
-          console.log(chalk.yellow("You appear to be offline."));
-          console.log(
+          logger.log(chalk.yellow("You appear to be offline."));
+          logger.log(
             chalk.yellow("Falling back to the local Yarn cache.") + "\n",
           );
         }
@@ -39,19 +46,23 @@ export default class NodePkgInstaller {
         command = "npm";
         args = ["install", "--save", "--save-exact", "--loglevel", "error"];
 
-        if (isDev) args.push("--save-dev");
+        if (isDev) {
+          args.push("--save-dev");
+        }
 
         args = args.concat(dependencies);
 
         if (usePnp) {
-          console.log(chalk.yellow("NPM doesn't support PnP."));
-          console.log(
+          logger.log(chalk.yellow("NPM doesn't support PnP."));
+          logger.log(
             chalk.yellow("Falling back to the regular installs.") + "\n",
           );
         }
       }
 
-      if (verbose) args.push("--verbose");
+      if (verbose) {
+        args.push("--verbose");
+      }
 
       const child = spawn(command, args, { stdio: "inherit" });
 

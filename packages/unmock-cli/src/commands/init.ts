@@ -1,8 +1,8 @@
-import * as path from "path";
-import { mkdirSync, rmdirSync, writeFileSync, accessSync, constants } from "fs";
-import { execSync } from "child_process";
-import { question as prompt } from "readline-sync";
 import chalk from "chalk";
+import { execSync } from "child_process";
+import { accessSync, constants, mkdirSync, rmdirSync, writeFileSync } from "fs";
+import * as path from "path";
+import { question as prompt } from "readline-sync";
 
 import WinstonLogger from "../utils/logger";
 import NodePkgInstaller, {
@@ -39,7 +39,7 @@ export const init = (dirname: string = "__tests__", options: any) => {
         "Warning: this will result in the loss of previous tests",
       )})\n        [Y/n]`,
     );
-    const deletePreviousTests = deletePreviousTestsAnwser == "Y" ? true : false;
+    const deletePreviousTests = deletePreviousTestsAnwser === "Y" ? true : false;
 
     if (deletePreviousTests) {
       // delete and continue
@@ -55,15 +55,15 @@ export const init = (dirname: string = "__tests__", options: any) => {
   logger.log("Installing dependencies...");
 
   const dependencies = ["unmock", "jest", "unmock-jest"];
-  const useYarn = yarnExists() && options.installer != "npm" ? true : false;
-  const installer = new NodePkgInstaller(<INodePkgInstallerOpts>{
+  const useYarn = yarnExists() && options.installer !== "npm" ? true : false;
+  const installer = new NodePkgInstaller({
     root: CWD,
     useYarn,
     usePnp: false,
     verbose: options.verbose,
     isOnline: !options.offline,
     isDev: true,
-  });
+  } as INodePkgInstallerOpts);
 
   installer
     .install(dependencies)
@@ -80,7 +80,7 @@ export const init = (dirname: string = "__tests__", options: any) => {
       logger.log("Setup complete!");
 
       // guides...
-      console.info(
+      logger.log(
         `\n    Start writing tests in ${chalk.grey(`./${dirname}/`) +
           chalk.grey.bold("1.test.js")}\n    Enjoy testing APIs with unmock!\n`,
       );
@@ -120,11 +120,11 @@ function jestConfigTmp(projectName: string, outputDirectory: string) {
 }\n`;
 }
 
-function fileExistsSync(path: string) {
+function fileExistsSync(myPath: string) {
   let result = true;
 
   try {
-    accessSync(path, constants.F_OK);
+    accessSync(myPath, constants.F_OK);
   } catch (e) {
     result = false;
   }

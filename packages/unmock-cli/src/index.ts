@@ -1,5 +1,5 @@
 import * as program from "commander";
-import { init, curl, list, open } from "./commands/";
+import { curl, init, list, open } from "./commands/";
 
 export default () => {
   const collect = (val: string, memo: string[]) => {
