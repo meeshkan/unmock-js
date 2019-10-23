@@ -1,9 +1,9 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
+  CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
@@ -41,7 +41,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
 };
 
 export const buildRequestHandler = (
-  createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
+  createResponse: CreateResponse,
 ): OnSerializedRequest => (
   serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
