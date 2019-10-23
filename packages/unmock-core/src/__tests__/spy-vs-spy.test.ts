@@ -31,7 +31,7 @@ const unmock = new UnmockPackage(backend);
 let foo: IService;
 beforeAll(() => {
   unmock
-    .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
+    .nock("https://www.foo.com", "foo")
     .get("/hello")
     .reply(200, { foo: "bar" }, { my: "header" })
     .post("/hello")
@@ -47,12 +47,7 @@ afterAll(() => unmock.off());
 
 describe("tests spies", () => {
   it("spies get attributes correctly", async () => {
-    await fetch("https://www.foo.com/hello?alpha=omega", {
-      headers: { hello: "world" },
-    });
-    const getRequestHeaders = foo.spy.getRequestHeaders();
-    expect(getRequestHeaders && getRequestHeaders.hello).toBe("world");
-    expect(foo.spy.getRequestPath()).toBe("/hello?alpha=omega");
+    await fetch("https://www.foo.com/hello?alpha=omega");
     expect(foo.spy.getRequestPathname()).toBe("/hello");
     expect(foo.spy.getRequestProtocol()).toBe("https");
     expect(foo.spy.getRequestHost()).toBe("www.foo.com");
@@ -66,11 +61,7 @@ describe("tests spies", () => {
   it("spies delete attributes correctly", async () => {
     await fetch("https://www.foo.com/hello?alpha=omega", {
       method: "delete",
-      headers: { hello: "world" },
     });
-    const deleteRequestHeaders = foo.spy.deleteRequestHeaders();
-    expect(deleteRequestHeaders && deleteRequestHeaders.hello).toBe("world");
-    expect(foo.spy.deleteRequestPath()).toBe("/hello?alpha=omega");
     expect(foo.spy.deleteRequestPathname()).toBe("/hello");
     expect(foo.spy.deleteRequestProtocol()).toBe("https");
     expect(foo.spy.deleteRequestHost()).toBe("www.foo.com");
