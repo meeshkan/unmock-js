@@ -49,17 +49,10 @@ export const buildRequestHandler = (
 ) => {
   try {
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse: ISerializedResponse | undefined = createResponse(
+    const serializedResponse: ISerializedResponse = createResponse(
       serializedRequest,
     );
 
-    if (serializedResponse === undefined) {
-      debugLog("No match found, emitting error");
-      const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = formatMsg("instruct", errMsg);
-      emitError(Error(formatted));
-      return;
-    }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
     sendResponse(serializedResponse);
   } catch (err) {
