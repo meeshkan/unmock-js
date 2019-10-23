@@ -12,7 +12,7 @@ const debugLog = debug("unmock:fetch-mitm");
 
 const isCreateResponse = (
   cb: CreateResponse | OnSerializedRequest,
-): cb is CreateResponse => cb.length === 1;
+): cb is CreateResponse => cb.length === 1; // Check the number of function arguments
 
 export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
   function fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
