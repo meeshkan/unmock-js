@@ -16,7 +16,7 @@ const isCreateResponse = (
 
 export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
   function fetch(url: RequestInfo, init?: RequestInit): Promise<Response> {
-    const req = serialize(url);
+    const req = serialize(url, init);
     debugLog(`Serialized request: ${JSON.stringify(req)}, init: ${init}`);
 
     return new Promise((resolve, reject) => {
