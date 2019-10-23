@@ -78,14 +78,8 @@ describe("tests spies", () => {
       body: JSON.stringify({ the: "end" }),
       headers: { "Content-Type": "application/json", hello: "world" },
     });
-    const putRequestHeaders = foo.spy.putRequestHeaders();
-    expect(putRequestHeaders && putRequestHeaders.hello).toBe("world");
-    expect(foo.spy.putRequestPath()).toBe("/hello?alpha=omega");
     expect(foo.spy.putRequestPathname()).toBe("/hello");
     expect(foo.spy.putRequestProtocol()).toBe("https");
-    const putRequestBody = foo.spy.putRequestBody();
-    expect(JSON.parse(putRequestBody || "{}")).toEqual({ the: "end" });
-    expect(foo.spy.putRequestBodyAsJson()).toEqual({ the: "end" });
     expect(foo.spy.putRequestHost()).toBe("www.foo.com");
     expect(foo.spy.putRequestQuery()).toEqual({ alpha: "omega" });
     expect(foo.spy.putResponseCode()).toBe(200);
@@ -101,14 +95,8 @@ describe("tests spies", () => {
       body: JSON.stringify({ the: "end" }),
       headers: { "Content-Type": "application/json", hello: "world" },
     });
-    const postRequestHeaders = foo.spy.postRequestHeaders();
-    expect(postRequestHeaders && postRequestHeaders.hello).toBe("world");
-    expect(foo.spy.postRequestPath()).toBe("/hello?alpha=omega");
     expect(foo.spy.postRequestPathname()).toBe("/hello");
     expect(foo.spy.postRequestProtocol()).toBe("https");
-    const postRequestBody = foo.spy.postRequestBody();
-    expect(JSON.parse(postRequestBody || "{}")).toEqual({ the: "end" });
-    expect(foo.spy.postRequestBodyAsJson()).toEqual({ the: "end" });
     expect(foo.spy.postRequestHost()).toBe("www.foo.com");
     expect(foo.spy.postRequestQuery()).toEqual({ alpha: "omega" });
     expect(foo.spy.postResponseCode()).toBe(200);
