@@ -1,7 +1,7 @@
 import { ISerializedRequest } from "unmock-core";
 import serialize from "../serialize";
 
-describe("Fetch request serializer", () => {
+describe.skip("Fetch request serializer", () => {
   it("should serialize a plain request URL", () => {
     const req: ISerializedRequest = serialize("https://example.com/v1?q=a");
     expect(req).toMatchObject({
