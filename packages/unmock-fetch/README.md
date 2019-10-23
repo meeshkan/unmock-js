@@ -20,34 +20,23 @@ yarn add unmock-fetch -D
 
 ```ts
 import { buildFetch } from "unmock-fetch";
-import { ISerializedRequest, ISerializedResponse, OnSerializedRequest } from "unmock-core";
+import { CreateResponse, ISerializedRequest, ISerializedResponse, OnSerializedRequest } from "unmock-core";
 
 // Define what to do with the intercepted request
-const requestCb: OnSerializedRequest = (
-  req: ISerializedRequest,
-  sendResponse: (res: ISerializedResponse) => void,
-  emitError: (e: Error) => void,
-) => {
-  try {
-    // Use `req` to determine how to respond
-    // and create an `ISerializedResponse`
-    const res: ISerializedResponse = {
-      headers: {},
-      statusCode: 200,
-      body: JSON.stringify({
-        ok: true,
-      }),
-    };
-    // Send response with `sendResponse`
-    sendResponse(res);
-  } catch (err) {
-    // If things go wrong, emit an error from the call with `emitError`  
-    emitError(err);
-  }
+const responseCreator: CreateResponse = (
+  req: ISerializedRequest
+): ISerializedResponse => {
+  return {
+    headers: {},
+    statusCode: 200,
+    body: JSON.stringify({
+      ok: true,
+    }),
+  };
 };
 
 // Build `fetch` with your callback
-const fetch = buildFetch(requestCb);
+const fetch = buildFetch(responseCreator);
 
 // Make API calls!
 const response = await fetch("https://example.com");
@@ -65,7 +54,7 @@ To override `global.fetch` or `window.fetch`, use the default import:
 import FetchInterceptor from "unmock-fetch";
 
 // What to do with serialized request
-const requestCb: OnSerializedRequest = /* as above */
+const requestCb: CreateResponse = /* as above */
 
 // Intercept `global.fetch` or `window.fetch`
 FetchInterceptor.on(requestCb);
