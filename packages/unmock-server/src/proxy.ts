@@ -28,7 +28,7 @@ proxy.on(
 /**
  * HTTP proxy. Sets `X-Forwarded-Host` header.
  */
-export const httpServerProxy = (
+const httpServerProxy = (
   req: http.IncomingMessage,
   res: http.ServerResponse,
 ) => {
@@ -40,7 +40,7 @@ export const httpServerProxy = (
 /**
  * HTTPS proxy
  */
-export const connectListener = (
+const connectListener = (
   req: http.IncomingMessage,
   socket: net.Socket,
   bodyhead: any,
