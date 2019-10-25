@@ -31,11 +31,6 @@ export const createUnmockAlgo = ({
   debugLog(`Building backend with services directory: ${servicesDirectory}`);
   const backend = new NodeBackend({ interceptorFactory, servicesDirectory });
   const unmock = new UnmockPackage(backend);
-  /* unmock
-    .nock("https://example.com", "example")
-    .get("/")
-    .reply("Hello world!"); */
-  // unmock.services["petstore.swagger.io"].state(transform.withCodes(200));
   unmock.on();
   return { unmock, algo };
 };

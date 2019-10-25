@@ -30,7 +30,7 @@ export const serialize = async (
   const serializedRequest: ISerializedRequest = {
     method: req.method.toLowerCase() as any,
     headers: {},
-    host: req.get("x-forwarded-for") || req.hostname,
+    host: req.get("x-forwarded-host") || req.hostname,
     path: `${req.originalUrl}`,
     pathname: req.path, // TODO
     query: req.query,
@@ -68,8 +68,6 @@ export const buildApp = (opts?: IServerOptions) => {
   const app = express();
   app.use(helmet());
 
-  const domain = process.env.UNMOCK_SERVER_DOMAIN || "localhost";
-
   const { unmock, handler } = requestResponseHandler(opts || {});
 
   app.post(
@@ -79,22 +77,28 @@ export const buildApp = (opts?: IServerOptions) => {
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      if (req.hostname !== domain) {
+      // TODO Better way to check if this request was proxied or not
+      if (typeof req.get("x-forwarded-host") !== "undefined") {
         return next();
       }
-      if (req.query && req.query.code) {
-        debugLog(`Setting response code to ${req.query.code}`);
-        const asNumber = parseInt(req.query.code, 10);
-        Object.values(unmock.services).forEach(service =>
-          service.state(
-            // @ts-ignore
-            transform.withCodes(asNumber),
-          ),
-        );
-        res.json({ code: req.query.code });
-        return;
+      try {
+        if (req.query && req.query.code) {
+          debugLog(`Setting response code to ${req.query.code}`);
+          const asNumber = parseInt(req.query.code, 10);
+          Object.values(unmock.services).forEach(service =>
+            service.state(
+              // @ts-ignore
+              transform.withCodes(asNumber),
+            ),
+          );
+          res.json({ code: req.query.code });
+          return;
+        }
+        return res.sendStatus(400);
+      } catch (err) {
+        console.error(err);
+        next(err);
       }
-      return res.sendStatus(400);
     },
   );
 

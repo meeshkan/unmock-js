@@ -1,7 +1,6 @@
 import http = require("http");
 import httpProxy = require("http-proxy");
 import net = require("net");
-// import url = require("url");
 
 const port = 8008;
 
@@ -22,12 +21,12 @@ proxy.on("error", (err, _, res) => {
 proxy.on(
   "proxyReq",
   (proxyReq: http.ClientRequest, req: http.IncomingMessage, __, ___) => {
-    proxyReq.setHeader("X-Forwarded-For", req.headers.host || "");
+    proxyReq.setHeader("X-Forwarded-host", req.headers.host || "");
   },
 );
 
 /**
- * HTTP proxy. Sets `X-Forwarded-For` header.
+ * HTTP proxy. Sets `X-Forwarded-Host` header.
  */
 const httpServerProxy = (
   req: http.IncomingMessage,
