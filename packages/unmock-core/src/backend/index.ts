@@ -3,6 +3,7 @@ import * as _ from "lodash";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
+  CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
@@ -40,7 +41,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
 };
 
 export const buildRequestHandler = (
-  createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
+  createResponse: CreateResponse,
 ): OnSerializedRequest => (
   serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
@@ -48,16 +49,10 @@ export const buildRequestHandler = (
 ) => {
   try {
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse: ISerializedResponse | undefined = createResponse(
+    const serializedResponse: ISerializedResponse = createResponse(
       serializedRequest,
     );
 
-    if (serializedResponse === undefined) {
-      debugLog("No match found, emitting error");
-      const errMsg = errorForMissingTemplate(serializedRequest);
-      emitError(Error(errMsg));
-      return;
-    }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
     sendResponse(serializedResponse);
   } catch (err) {
