@@ -24,6 +24,7 @@ module.exports = {
   coveragePathIgnorePatterns: [
     "node_modules",
     "__tests__",
+    "interfaces.ts"
   ],
   globals: {
     "ts-jest": {
