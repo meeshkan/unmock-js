@@ -671,7 +671,7 @@ export interface ISerializedResponse {
 
 export type CreateResponse = (
   request: ISerializedRequest,
-) => ISerializedResponse | undefined;
+) => ISerializedResponse;
 
 export type IStateTransformer = (
   req: ISerializedRequest,

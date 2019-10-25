@@ -1,13 +1,14 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
+  CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
   IServiceDef,
+  IServiceDefLoader,
   IUnmockOptions,
   OnSerializedRequest,
   ServiceStoreType,
@@ -40,7 +41,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
 };
 
 export const buildRequestHandler = (
-  createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
+  createResponse: CreateResponse,
 ): OnSerializedRequest => (
   serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
@@ -48,17 +49,10 @@ export const buildRequestHandler = (
 ) => {
   try {
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse: ISerializedResponse | undefined = createResponse(
+    const serializedResponse: ISerializedResponse = createResponse(
       serializedRequest,
     );
 
-    if (serializedResponse === undefined) {
-      debugLog("No match found, emitting error");
-      const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = formatMsg("instruct", errMsg);
-      emitError(Error(formatted));
-      return;
-    }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
     sendResponse(serializedResponse);
   } catch (err) {
@@ -66,21 +60,35 @@ export const buildRequestHandler = (
   }
 };
 
-export abstract class Backend {
+export interface IBackendOptions {
+  interceptorFactory: IInterceptorFactory;
+  listeners?: IListener[];
+  serviceDefLoader?: IServiceDefLoader;
+}
+
+const NoopServiceDefLoader: IServiceDefLoader = {
+  loadSync() {
+    return [];
+  },
+};
+
+export class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
+  public readonly serviceDefLoader: IServiceDefLoader;
+  public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
 
   public constructor({
     interceptorFactory,
     listeners,
-  }: {
-    interceptorFactory: IInterceptorFactory;
-    listeners?: IListener[];
-  }) {
+    serviceDefLoader,
+  }: IBackendOptions) {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
+    this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
+    this.loadServices();
   }
 
   public get services(): ServiceStoreType {
@@ -108,8 +116,10 @@ export abstract class Backend {
       store: this.serviceStore,
     });
 
+    this.handleRequest = buildRequestHandler(createResponse);
+
     this.interceptor = this.interceptorFactory({
-      onSerializedRequest: buildRequestHandler(createResponse),
+      onSerializedRequest: this.handleRequest,
       shouldBypassHost: options.isWhitelisted,
     });
   }
@@ -119,6 +129,7 @@ export abstract class Backend {
       this.interceptor.disable();
       this.interceptor = undefined;
     }
+    this.handleRequest = undefined;
     if (this.serviceStore) {
       // TODO - this is quite ugly :shrug:
       Object.values(this.serviceStore.services).forEach(service =>
@@ -127,7 +138,10 @@ export abstract class Backend {
     }
   }
 
-  public abstract loadServices(): void;
+  public loadServices(): void {
+    const serviceDefs = this.serviceDefLoader.loadSync();
+    this.updateServiceDefs(serviceDefs);
+  }
 
   protected updateServiceDefs(serviceDefs: IServiceDef[]) {
     const coreServices: IServiceCore[] = serviceDefs.map(serviceDef =>

@@ -10,3 +10,18 @@
 [coverage]: https://coveralls.io/github/unmock/unmock-js
 
 This package contains the base functions needed to build or extend the [unmock](../unmock/README.md) CLI.  It also contains the cli itself for testing purposes.
+
+## Usage: unmock `<command>`
+
+### Options:
+  - `-h, --help` output usage information
+
+### Commands:
+  - `init [options] [dirname]` Sets up a new test suite
+    - `--installer [installer]`  Specify Package Manager (yarn/npm)
+    - `--offline` Specify whether to allow install from cache
+    - `--verbose` Specify verbosity of output messages
+
+  - `curl [options] <url>`
+  - `open [options] <hash>`
+  - `list`

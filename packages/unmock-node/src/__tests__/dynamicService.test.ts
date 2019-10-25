@@ -2,8 +2,7 @@ import axios from "axios";
 import { u } from "unmock-core";
 import unmock from "..";
 
-const expectNServices = (expectedLength: number) =>
-  expect(Object.keys(unmock.services).length).toEqual(expectedLength);
+const nServices = () => Object.keys(unmock.services).length;
 
 // @ts-ignore // we access private fields in this test for simplicity; it would probably be cleaner to have some of these as E2E tests
 const getPrivateSchema = (name: string) => unmock.services[name].core.oasSchema;
@@ -12,12 +11,12 @@ describe("Tests dynamic path tests", () => {
   beforeEach(() => unmock.reloadServices());
   describe("Paths can be defined using arrays and regexs", () => {
     it("Also handles multiple parameters", async () => {
-      expectNServices(0);
+      expect(nServices()).toEqual(0);
       unmock
         .nock("https://www.foo.com", "foo")
         .get(["foo", ["baz", /\W+/], "bar", /\d+/, ["spam", /eggs/]])
         .reply(200);
-      expectNServices(1);
+      expect(nServices()).toEqual(1);
       const schema = getPrivateSchema("foo");
       expect(Object.keys(schema.paths).length).toEqual(1);
       const path = Object.keys(schema.paths)[0];
