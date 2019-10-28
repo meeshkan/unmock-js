@@ -3,10 +3,6 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
-import {
-  IRandomNumberGenerator,
-  randomNumberGenerator,
-} from "./random-number-generator";
 import internalRunner, { IRunnerOptions } from "./runner";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 
@@ -22,7 +18,6 @@ export { Backend, buildRequestHandler };
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public useInProduction: BooleanSetting;
-  public randomNumberGenerator: IRandomNumberGenerator;
   /**
    * Always return a new randomized response instead of using a fixed seed.
    */
@@ -41,8 +36,6 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.useInProduction = new BooleanSetting(false);
 
-    const rng = randomNumberGenerator({ seed: 0 });
-    this.randomNumberGenerator = rng;
     this.randomize = new BooleanSetting(false);
   }
 
@@ -53,7 +46,7 @@ export class UnmockPackage implements IUnmockPackage {
       log: (message: string) => this.logger.log(message),
       randomize: () => this.randomize.get(),
     };
-    this.backend.initialize(opts, this.randomNumberGenerator);
+    this.backend.initialize(opts);
     return this;
   }
   public init() {
@@ -73,10 +66,7 @@ export class UnmockPackage implements IUnmockPackage {
 
   public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
     const f = async (cb?: jest.DoneCallback) => {
-      return internalRunner(this.backend, this.randomNumberGenerator)(
-        fn,
-        options,
-      )(cb);
+      return internalRunner(this.backend)(fn, options)(cb);
     };
     return f;
   }

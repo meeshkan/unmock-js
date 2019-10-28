@@ -68,6 +68,7 @@ export interface IBackendOptions {
   interceptorFactory: IInterceptorFactory;
   listeners?: IListener[];
   serviceDefLoader?: IServiceDefLoader;
+  randomNumberGenerator?: IRandomNumberGenerator;
 }
 
 const NoopServiceDefLoader: IServiceDefLoader = {
@@ -80,6 +81,7 @@ export class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
   public readonly serviceDefLoader: IServiceDefLoader;
+  public readonly randomNumberGenerator: IRandomNumberGenerator;
   public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
@@ -87,11 +89,13 @@ export class Backend {
   public constructor({
     interceptorFactory,
     listeners,
+    randomNumberGenerator: rng,
     serviceDefLoader,
   }: IBackendOptions) {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
+    this.randomNumberGenerator = rng || randomNumberGenerator({ seed: 0 });
     this.loadServices();
   }
 
@@ -104,8 +108,7 @@ export class Backend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: IUnmockOptions, rngOpt?: IRandomNumberGenerator) {
-    const rng = rngOpt || randomNumberGenerator({ seed: 0 });
+  public initialize(options: IUnmockOptions) {
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
@@ -118,7 +121,7 @@ export class Backend {
     const createResponse = responseCreatorFactory({
       listeners: this.requestResponseListeners,
       options,
-      rng,
+      rng: this.randomNumberGenerator,
       store: this.serviceStore,
     });
 
