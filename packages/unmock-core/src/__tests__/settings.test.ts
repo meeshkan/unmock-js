@@ -1,4 +1,4 @@
-import { BooleanSetting } from "../settings/boolean";
+import { BooleanSetting } from "../settings";
 
 describe("Boolean setting", () => {
   it("should be false by default", () => {
