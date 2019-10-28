@@ -3,8 +3,12 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
+import {
+  IRandomNumberGenerator,
+  randomNumberGenerator,
+} from "./random-number-generator";
 import internalRunner, { IRunnerOptions } from "./runner";
-import { AllowedHosts, BooleanSetting } from "./settings";
+import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 
 export * from "./interfaces";
 export * from "./types";
@@ -15,14 +19,32 @@ export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 
+const randomizeSetting = (rng: IRandomNumberGenerator): IBooleanSetting => {
+  let value = false;
+  return {
+    get() {
+      return value;
+    },
+    on() {
+      value = true;
+      rng.unfreeze();
+    },
+    off() {
+      value = false;
+      rng.freeze();
+    },
+  };
+};
+
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
+  public randomNumberGenerator: IRandomNumberGenerator;
   /**
    * Always return a new randomized response instead of using a fixed seed.
    */
-  public randomize: BooleanSetting;
+  public randomize: IBooleanSetting;
   public readonly backend: Backend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
@@ -37,7 +59,10 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.flaky = new BooleanSetting();
     this.useInProduction = new BooleanSetting();
-    this.randomize = new BooleanSetting(false);
+
+    const rng = randomNumberGenerator({ frozen: true, seed: 0 });
+    this.randomNumberGenerator = rng;
+    this.randomize = randomizeSetting(rng);
   }
 
   public on() {
@@ -48,7 +73,7 @@ export class UnmockPackage implements IUnmockPackage {
       flaky: () => this.flaky.get(),
       randomize: () => this.randomize.get(),
     };
-    this.backend.initialize(opts);
+    this.backend.initialize(opts, this.randomNumberGenerator);
     return this;
   }
   public init() {
@@ -68,7 +93,10 @@ export class UnmockPackage implements IUnmockPackage {
 
   public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
     const f = async (cb?: jest.DoneCallback) => {
-      return internalRunner(this.backend)(fn, options)(cb);
+      return internalRunner(this.backend, this.randomNumberGenerator)(
+        fn,
+        options,
+      )(cb);
     };
     return f;
   }

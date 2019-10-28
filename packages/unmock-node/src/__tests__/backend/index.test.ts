@@ -28,6 +28,7 @@ describe("Node.js interceptor", () => {
         flaky: () => false,
         isWhitelisted: (_: string) => false,
         log: (_: string) => undefined,
+        randomize: () => false,
         useInProduction: () => false,
       });
       const petstore = nodeInterceptor.services.petstore;

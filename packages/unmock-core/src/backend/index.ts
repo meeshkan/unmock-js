@@ -14,6 +14,10 @@ import {
   ServiceStoreType,
 } from "../interfaces";
 import { ServiceParser } from "../parser";
+import {
+  IRandomNumberGenerator,
+  randomNumberGenerator,
+} from "../random-number-generator";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 
@@ -100,7 +104,8 @@ export class Backend {
    * @param options
    * @returns `states` object, with which one can modify states of various services.
    */
-  public initialize(options: IUnmockOptions) {
+  public initialize(options: IUnmockOptions, rngOpt?: IRandomNumberGenerator) {
+    const rng = rngOpt || randomNumberGenerator({ frozen: false });
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }
@@ -113,6 +118,7 @@ export class Backend {
     const createResponse = responseCreatorFactory({
       listeners: this.requestResponseListeners,
       options,
+      rng,
       store: this.serviceStore,
     });
 

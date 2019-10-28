@@ -1,5 +1,6 @@
 import Backend from "../backend";
 import { runnerConfiguration } from "../generator";
+import { IRandomNumberGenerator } from "../random-number-generator";
 export interface IRunnerOptions {
   maxLoop: number;
 }
@@ -39,7 +40,7 @@ const errorHandler = (
   }
 };
 
-export default (backend: Backend) => (
+export default (backend: Backend, rng: IRandomNumberGenerator) => (
   fn?: jest.ProvidesCallback,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: jest.DoneCallback) => {
@@ -57,7 +58,7 @@ export default (backend: Backend) => (
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
-    runnerConfiguration.seed = i;
+    rng.setSeed(i);
     runnerConfiguration.optionalsProbability = Math.random();
     runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
     try {

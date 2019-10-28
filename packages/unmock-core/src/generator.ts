@@ -37,7 +37,6 @@ import {
   objectToArray,
   valueLens,
 } from "openapi-refinements";
-import * as seedrandom from "seedrandom";
 import * as url from "whatwg-url";
 import {
   CreateResponse,
@@ -46,6 +45,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
 } from "./interfaces";
+import { IRandomNumberGenerator } from "./random-number-generator";
 import {
   Header,
   isReference,
@@ -59,14 +59,13 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
+
 export const runnerConfiguration = {
-  seed: 0,
   optionalsProbability: 1.0,
   minItems: 0,
   reset() {
     this.minItems = 0;
     this.optionalsProbability = 1.0;
-    this.seed = 0;
   },
 };
 /**
@@ -788,10 +787,12 @@ const bodyFromResponse = (
 
 export function responseCreatorFactory({
   listeners = [],
+  rng: seedGenerator,
   store,
 }: {
   listeners?: IListener[];
   options: IUnmockOptions;
+  rng: IRandomNumberGenerator;
   store: ServiceStore;
 }): CreateResponse {
   return (req: ISerializedRequest) => {
@@ -842,7 +843,9 @@ export function responseCreatorFactory({
         {},
       ),
     };
+
     const res = generateMockFromTemplate({
+      seedGenerator,
       statusCode,
       headerSchema: {
         definitions,
@@ -859,6 +862,7 @@ export function responseCreatorFactory({
               : changeRefs(bodySchema.value)),
           },
     });
+
     // Notify call tracker
     const serviceName = toSchemas
       .composeLens(keyLens())
@@ -874,10 +878,12 @@ export function responseCreatorFactory({
 }
 
 const generateMockFromTemplate = ({
+  seedGenerator,
   statusCode,
   headerSchema,
   bodySchema,
 }: {
+  seedGenerator: IRandomNumberGenerator;
   statusCode: number;
   headerSchema?: any;
   bodySchema?: any;
@@ -894,7 +900,7 @@ const generateMockFromTemplate = ({
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
+  jsf.option("random", seedGenerator);
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
   const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);
