@@ -39,11 +39,11 @@ export class UnmockPackage implements IUnmockPackage {
     this.logger = (options && options.logger) || this.logger;
 
     this.allowedHosts = new AllowedHosts();
-    this.useInProduction = new BooleanSetting();
+    this.useInProduction = new BooleanSetting(false);
 
     const rng = randomNumberGenerator({ seed: 0 });
     this.randomNumberGenerator = rng;
-    this.randomize = new BooleanSetting();
+    this.randomize = new BooleanSetting(false);
   }
 
   public on() {

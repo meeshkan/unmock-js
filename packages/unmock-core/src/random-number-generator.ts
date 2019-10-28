@@ -16,7 +16,7 @@ export interface IRandomNumberGenerator {
 }
 
 const createSeedRandom = (seed?: number): seedrandom.prng => {
-  return seedRandom((seed && seed.toString()) || "0", { state: true });
+  return seedRandom((seed && seed.toString()) || "0");
 };
 
 /**

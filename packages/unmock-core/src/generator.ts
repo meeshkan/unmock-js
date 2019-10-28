@@ -855,7 +855,7 @@ export function responseCreatorFactory({
     }
 
     const res = generateMockFromTemplate({
-      rng,
+      rng: () => rng.get(),
       statusCode,
       headerSchema: {
         definitions,
@@ -893,7 +893,7 @@ const generateMockFromTemplate = ({
   headerSchema,
   bodySchema,
 }: {
-  rng: IRandomNumberGenerator;
+  rng: () => number;
   statusCode: number;
   headerSchema?: any;
   bodySchema?: any;
@@ -910,7 +910,7 @@ const generateMockFromTemplate = ({
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", () => rng.get());
+  jsf.option("random", rng);
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
   const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);

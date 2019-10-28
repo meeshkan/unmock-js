@@ -30,8 +30,6 @@ beforeAll(() => {
 });
 afterAll(() => unmock.off());
 
-jest.setTimeout(10000);
-
 describe("Simple service test with runner", () => {
   it(
     "Should reset spies correctly",
