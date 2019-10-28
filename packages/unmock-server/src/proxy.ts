@@ -1,14 +1,15 @@
 import http = require("http");
 import httpProxy = require("http-proxy");
 import net = require("net");
+import { PROXY_PORT, SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
 
-const port = 8008;
+const port = PROXY_PORT;
 
 const log = (...args: any[]) => console.log(...args); // tslint:disable-line
 
 const TARGET_HOST = "localhost";
-const TARGET_HTTP_PORT = 8000;
-const TARGET_HTTPS_PORT = 8443;
+const TARGET_HTTP_PORT = SERVER_HTTP_PORT;
+const TARGET_HTTPS_PORT = SERVER_HTTPS_PORT;
 const TARGET_HTTP_URL = `http://${TARGET_HOST}:${TARGET_HTTP_PORT}`;
 
 const proxy = httpProxy.createProxyServer({});

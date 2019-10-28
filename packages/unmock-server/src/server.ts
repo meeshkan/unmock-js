@@ -5,7 +5,7 @@ import * as fs from "fs";
 import helmet = require("helmet");
 import * as http from "http";
 import * as https from "https";
-// import * as os from "os";
+import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
 
 import {
   ISerializedRequest,
@@ -14,8 +14,8 @@ import {
 } from "unmock-core";
 import { createUnmockAlgo } from "./unmock";
 
-const httpPort = 8000;
-const httpsPort = 8443;
+const httpPort = SERVER_HTTP_PORT;
+const httpsPort = SERVER_HTTPS_PORT;
 
 const log = (...args: any[]) => console.log(...args); //tslint:disable-line
 const debugLog = debug("unmock-server:express");
@@ -96,7 +96,6 @@ export const buildApp = (opts?: IServerOptions) => {
         }
         return res.sendStatus(400);
       } catch (err) {
-        console.error(err);
         next(err);
       }
     },
@@ -109,8 +108,12 @@ export const buildApp = (opts?: IServerOptions) => {
 
 export const startServer = (app: express.Express) => {
   const options = {
-    key: fs.readFileSync(`${process.cwd()}/key.pem`),
-    cert: fs.readFileSync(`${process.cwd()}/cert.pem`),
+    key: fs.readFileSync(
+      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/key.pem`,
+    ),
+    cert: fs.readFileSync(
+      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/cert.pem`,
+    ),
   };
   const httpServer = http.createServer(app);
   const httpsServer = https.createServer(options, app);
