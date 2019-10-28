@@ -58,7 +58,7 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.useInProduction = new BooleanSetting();
 
-    const rng = randomNumberGenerator({ frozen: true, seed: 0 });
+    const rng = randomNumberGenerator({ frozen: false, seed: 0 });
     this.randomNumberGenerator = rng;
     this.randomize = randomizeSetting(rng);
   }

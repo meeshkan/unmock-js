@@ -188,7 +188,7 @@ describe("Node.js interceptor", () => {
       }
     });
 
-    test.skip("updates times correctly", async () => {
+    test("updates times correctly", async () => {
       const text = "foo";
       const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {
@@ -214,7 +214,7 @@ describe("Node.js interceptor", () => {
       expect(resp.data.message.text).not.toEqual(text);
     });
 
-    test.skip("updates times after n", async () => {
+    test("updates times after n", async () => {
       const text = "foo";
       const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {
