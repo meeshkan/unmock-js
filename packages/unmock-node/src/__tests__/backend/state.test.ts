@@ -25,8 +25,8 @@ const servicesDirectory = path.join(__dirname, "..", "__unmock__");
 
 describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
-    const nodeInterceptor = new NodeBackend({ servicesDirectory });
-    const unmock = new UnmockPackage(nodeInterceptor);
+    const nodeBackend = new NodeBackend({ servicesDirectory });
+    const unmock = new UnmockPackage(nodeBackend);
     let petstore: Service;
     let filestackApi: Service;
     let slack: Service;
@@ -188,7 +188,7 @@ describe("Node.js interceptor", () => {
       }
     });
 
-    test("updates times correctly", async () => {
+    test.skip("updates times correctly", async () => {
       const text = "foo";
       const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {
@@ -214,7 +214,7 @@ describe("Node.js interceptor", () => {
       expect(resp.data.message.text).not.toEqual(text);
     });
 
-    test("updates times after n", async () => {
+    test.skip("updates times after n", async () => {
       const text = "foo";
       const postMessage = () =>
         axios.post("https://slack.com/api/chat.postMessage", {

@@ -105,7 +105,7 @@ export class Backend {
    * @returns `states` object, with which one can modify states of various services.
    */
   public initialize(options: IUnmockOptions, rngOpt?: IRandomNumberGenerator) {
-    const rng = rngOpt || randomNumberGenerator({ frozen: false });
+    const rng = rngOpt || randomNumberGenerator({ frozen: true, seed: 0 });
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
       throw new Error("Are you trying to run unmock in production?");
     }

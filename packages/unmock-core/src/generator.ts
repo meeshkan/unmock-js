@@ -787,7 +787,7 @@ const bodyFromResponse = (
 
 export function responseCreatorFactory({
   listeners = [],
-  rng: seedGenerator,
+  rng,
   store,
 }: {
   listeners?: IListener[];
@@ -845,7 +845,7 @@ export function responseCreatorFactory({
     };
 
     const res = generateMockFromTemplate({
-      seedGenerator,
+      rng,
       statusCode,
       headerSchema: {
         definitions,
@@ -878,12 +878,12 @@ export function responseCreatorFactory({
 }
 
 const generateMockFromTemplate = ({
-  seedGenerator,
+  rng,
   statusCode,
   headerSchema,
   bodySchema,
 }: {
-  seedGenerator: IRandomNumberGenerator;
+  rng: IRandomNumberGenerator;
   statusCode: number;
   headerSchema?: any;
   bodySchema?: any;
@@ -900,7 +900,7 @@ const generateMockFromTemplate = ({
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", seedGenerator);
+  jsf.option("random", () => rng.get());
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
   const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);
