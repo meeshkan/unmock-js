@@ -1,0 +1,25 @@
+{
+  "version": "0.3.8",
+  "name": "unmock-server",
+  "displayName": "unmock-server",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.1",
+    "@types/http-proxy": "^1.17.0",
+    "concurrently": "^5.0.0",
+    "express": "^4.17.1",
+    "helmet": "^3.21.1",
+    "http-proxy": "^1.18.0",
+    "unmock-core": "file:../unmock-core",
+    "unmock-node": "file:../unmock-node"
+  }
+}

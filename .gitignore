@@ -9,3 +9,4 @@ coverage
 unmock.log
 # Reports
 *.html
+*.pem
