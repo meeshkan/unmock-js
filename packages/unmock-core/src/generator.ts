@@ -842,17 +842,15 @@ export function responseCreatorFactory({
         {},
       ),
     };
-    const res = generateMockFromTemplate2(
+    const res = generateMockFromTemplate({
       statusCode,
-      // headers as an object for generation
-      {
+      headerSchema: {
         definitions,
         type: "object",
         properties: headerProperties,
         required: Object.keys(headerProperties),
       },
-      // body as an object for generation
-      isNone(bodySchema)
+      bodySchema: isNone(bodySchema)
         ? undefined
         : {
             definitions,
@@ -860,7 +858,7 @@ export function responseCreatorFactory({
               ? changeRef(bodySchema.value)
               : changeRefs(bodySchema.value)),
           },
-    );
+    });
     // Notify call tracker
     const serviceName = toSchemas
       .composeLens(keyLens())
@@ -875,11 +873,15 @@ export function responseCreatorFactory({
   };
 }
 
-const generateMockFromTemplate2 = (
-  statusCode: number,
-  headerSchema?: any,
-  bodySchema?: any,
-): ISerializedResponse => {
+const generateMockFromTemplate = ({
+  statusCode,
+  headerSchema,
+  bodySchema,
+}: {
+  statusCode: number;
+  headerSchema?: any;
+  bodySchema?: any;
+}): ISerializedResponse => {
   jsf.extend("faker", () => require("faker"));
   jsf.option("optionalsProbability", runnerConfiguration.optionalsProbability);
   // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.

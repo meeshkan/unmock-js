@@ -19,6 +19,10 @@ export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
+  /**
+   * Always return a new randomized response instead of using a fixed seed.
+   */
+  public randomize: BooleanSetting;
   public readonly backend: Backend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
@@ -33,6 +37,7 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.flaky = new BooleanSetting();
     this.useInProduction = new BooleanSetting();
+    this.randomize = new BooleanSetting(false);
   }
 
   public on() {
@@ -41,6 +46,7 @@ export class UnmockPackage implements IUnmockPackage {
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
       flaky: () => this.flaky.get(),
+      randomize: () => this.randomize.get(),
     };
     this.backend.initialize(opts);
     return this;
