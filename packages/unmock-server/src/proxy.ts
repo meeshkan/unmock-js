@@ -37,6 +37,9 @@ const httpServerProxy = (
   proxy.web(req, res, { target: TARGET_HTTP_URL });
 };
 
+const formatHttpResponse = (httpVersion: string, msg: string) =>
+  `HTTP/${httpVersion} ${msg}\r\n\r\n`;
+
 /**
  * HTTPS proxy
  */
@@ -54,7 +57,7 @@ const connectListener = (
     );
     proxySocket.write(bodyhead);
     socket.write(
-      "HTTP/" + req.httpVersion + " 200 Connection established\r\n\r\n",
+      formatHttpResponse(req.httpVersion, "200 Connection established"),
     );
   });
 
@@ -67,7 +70,7 @@ const connectListener = (
   });
 
   proxySocket.on("error", () => {
-    socket.write("HTTP/" + req.httpVersion + " 500 Connection error\r\n\r\n");
+    socket.write(formatHttpResponse(req.httpVersion, "500 Connection error"));
     socket.end();
   });
 
