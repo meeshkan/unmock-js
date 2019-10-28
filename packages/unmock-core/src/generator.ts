@@ -850,7 +850,7 @@ export function responseCreatorFactory({
     /**
      * Ensure that every generation starts from the same seed if not randomizing.
      */
-    if (!options.randomize) {
+    if (!options.randomize()) {
       rng.setSeed(runnerConfiguration.defaultSeed);
     }
 
