@@ -38,7 +38,6 @@ const randomizeSetting = (rng: IRandomNumberGenerator): IBooleanSetting => {
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
-  public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
   public randomNumberGenerator: IRandomNumberGenerator;
   /**
@@ -57,7 +56,6 @@ export class UnmockPackage implements IUnmockPackage {
     this.logger = (options && options.logger) || this.logger;
 
     this.allowedHosts = new AllowedHosts();
-    this.flaky = new BooleanSetting();
     this.useInProduction = new BooleanSetting();
 
     const rng = randomNumberGenerator({ frozen: true, seed: 0 });
@@ -70,7 +68,6 @@ export class UnmockPackage implements IUnmockPackage {
       useInProduction: () => this.useInProduction.get(),
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
-      flaky: () => this.flaky.get(),
       randomize: () => this.randomize.get(),
     };
     this.backend.initialize(opts, this.randomNumberGenerator);
