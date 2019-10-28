@@ -19,23 +19,6 @@ export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 
-const randomizeSetting = (rng: IRandomNumberGenerator): IBooleanSetting => {
-  let value = false;
-  return {
-    get() {
-      return value;
-    },
-    on() {
-      value = true;
-      rng.unfreeze();
-    },
-    off() {
-      value = false;
-      rng.freeze();
-    },
-  };
-};
-
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
   public useInProduction: BooleanSetting;
@@ -58,9 +41,9 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.useInProduction = new BooleanSetting();
 
-    const rng = randomNumberGenerator({ frozen: false, seed: 0 });
+    const rng = randomNumberGenerator({ seed: 0 });
     this.randomNumberGenerator = rng;
-    this.randomize = randomizeSetting(rng);
+    this.randomize = new BooleanSetting();
   }
 
   public on() {
