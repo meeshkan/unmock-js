@@ -25,9 +25,9 @@ describe("Node.js interceptor", () => {
     beforeAll(() => {
       nodeInterceptor = new NodeBackend({ servicesDirectory });
       nodeInterceptor.initialize({
-        flaky: () => false,
         isWhitelisted: (_: string) => false,
         log: (_: string) => undefined,
+        randomize: () => false,
         useInProduction: () => false,
       });
       const petstore = nodeInterceptor.services.petstore;

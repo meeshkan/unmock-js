@@ -14,6 +14,10 @@ import {
   ServiceStoreType,
 } from "../interfaces";
 import { ServiceParser } from "../parser";
+import {
+  IRandomNumberGenerator,
+  randomNumberGenerator,
+} from "../random-number-generator";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 
@@ -64,6 +68,7 @@ export interface IBackendOptions {
   interceptorFactory: IInterceptorFactory;
   listeners?: IListener[];
   serviceDefLoader?: IServiceDefLoader;
+  randomNumberGenerator?: IRandomNumberGenerator;
 }
 
 const NoopServiceDefLoader: IServiceDefLoader = {
@@ -76,6 +81,7 @@ export class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
   public readonly serviceDefLoader: IServiceDefLoader;
+  public readonly randomNumberGenerator: IRandomNumberGenerator;
   public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
@@ -83,11 +89,13 @@ export class Backend {
   public constructor({
     interceptorFactory,
     listeners,
+    randomNumberGenerator: rng,
     serviceDefLoader,
   }: IBackendOptions) {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
+    this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.loadServices();
   }
 
@@ -113,6 +121,7 @@ export class Backend {
     const createResponse = responseCreatorFactory({
       listeners: this.requestResponseListeners,
       options,
+      rng: this.randomNumberGenerator,
       store: this.serviceStore,
     });
 

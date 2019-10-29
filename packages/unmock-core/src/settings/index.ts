@@ -1,2 +1,2 @@
 export { AllowedHosts } from "./allowedHosts";
-export { BooleanSetting } from "./boolean";
+export { BooleanSetting, IBooleanSetting } from "./boolean";
