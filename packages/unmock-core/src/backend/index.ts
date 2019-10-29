@@ -95,7 +95,7 @@ export class Backend {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
-    this.randomNumberGenerator = rng || randomNumberGenerator({ seed: 0 });
+    this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.loadServices();
   }
 

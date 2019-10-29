@@ -35,7 +35,6 @@ export class UnmockPackage implements IUnmockPackage {
 
     this.allowedHosts = new AllowedHosts();
     this.useInProduction = new BooleanSetting(false);
-
     this.randomize = new BooleanSetting(false);
   }
 

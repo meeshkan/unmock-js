@@ -45,7 +45,10 @@ import {
   ISerializedResponse,
   IUnmockOptions,
 } from "./interfaces";
-import { IRandomNumberGenerator } from "./random-number-generator";
+import {
+  DEFAULT_SEED,
+  IRandomNumberGenerator,
+} from "./random-number-generator";
 import {
   Header,
   isReference,
@@ -61,11 +64,9 @@ import {
 import { ServiceStore } from "./service/serviceStore";
 
 export const runnerConfiguration = {
-  defaultSeed: 0,
   optionalsProbability: 1.0,
   minItems: 0,
   reset() {
-    this.defaultSeed = 0;
     this.minItems = 0;
     this.optionalsProbability = 1.0;
   },
@@ -851,7 +852,7 @@ export function responseCreatorFactory({
      * Ensure that every generation starts from the same seed if not randomizing.
      */
     if (!options.randomize()) {
-      rng.setSeed(runnerConfiguration.defaultSeed);
+      rng.setSeed(DEFAULT_SEED);
     }
 
     const res = generateMockFromTemplate({
