@@ -15,4 +15,11 @@ describe("Random number generator", () => {
     const n2 = rng.get();
     expect(n1).toEqual(n2);
   });
+  it("should create the same number after restoring", () => {
+    const rng = randomNumberGenerator({ seed: 5 });
+    const n1 = rng.get();
+    rng.restore();
+    const n2 = rng.get();
+    expect(n1).toEqual(n2);
+  });
 });

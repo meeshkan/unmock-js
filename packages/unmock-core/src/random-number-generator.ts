@@ -1,5 +1,5 @@
 import * as seedRandom from "seedrandom";
-export const DEFAULT_SEED = 0;
+const DEFAULT_SEED = 0;
 
 /**
  * Representation for random number generator with mutable state.
@@ -14,6 +14,10 @@ export interface IRandomNumberGenerator {
    * @param seed New seed
    */
   setSeed(seed: number): void;
+  /**
+   * Restore original seed (default seed if none was given).
+   */
+  restore(): void;
 }
 
 const createSeedRandom = (seed?: number): seedrandom.prng => {
@@ -37,6 +41,10 @@ export const randomNumberGenerator = ({
     },
     setSeed(newSeed: number) {
       rng = createSeedRandom(newSeed);
+      return this;
+    },
+    restore() {
+      rng = createSeedRandom(seed);
       return this;
     },
   };
