@@ -34,11 +34,15 @@ To use the mock server for mocking API responses, you need to
 
 ## How to use it
 
+### Docker
+
+See our [Docker image](https://hub.docker.com/r/unmock/unmock-server).
+
 ### CLI usage via `npm`
 
 Coming soon 👷‍♀️ 
 
-### Stand-alone usage
+### Stand-alone
 
 1. Clone [unmock-js](https://github.com/unmock/unmock-js) repository.
 1. Install dependencies: `npm i`
