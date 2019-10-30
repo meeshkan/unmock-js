@@ -32,5 +32,6 @@ export const createUnmockAlgo = ({
   const backend = new NodeBackend({ interceptorFactory, servicesDirectory });
   const unmock = new UnmockPackage(backend);
   unmock.on();
+  unmock.randomize.on(); // To not always return the same mock
   return { unmock, algo };
 };
