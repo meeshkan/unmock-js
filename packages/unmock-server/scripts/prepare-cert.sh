@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+# Usage: ./prepare-cert.sh DOMAINS
+# Example: ./prepare-cert.sh api.github.com,petstore.swagger.io
+
 domains=$1
 
 if [ -z ${domains} ];
