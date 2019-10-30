@@ -32,7 +32,9 @@ To use the mock server for mocking API responses, you need to
     > `curl`: set environment variable
     > - `SSL_CERT_FILE=cert.pem`
 
-### CLI usage
+## How to use it
+
+### CLI usage via `npm`
 
 Coming soon 👷‍♀️ 
 
