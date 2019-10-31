@@ -10,7 +10,7 @@ basicConstraints = critical,CA:true
 distinguished_name	= req_distinguished_name
 [ req_distinguished_name ]
 countryName			= Country Name (2 letter code)
-countryName_default		= IL
+countryName_default		= FI
 countryName_min			= 2
 countryName_max			= 2
 
@@ -18,7 +18,7 @@ stateOrProvinceName		= State or Province Name (full name)
 stateOrProvinceName_default	= Center
 
 localityName			= Locality Name (eg, city)
-localityName_default		= Lod
+localityName_default		= Hel
 
 0.organizationName		= Organization Name (eg, company)
 0.organizationName_default	= UnmockServer
@@ -27,13 +27,13 @@ localityName_default		= Lod
 #1.organizationName		= Second Organization Name (eg, company)
 #1.organizationName_default	= World Wide Web Pty Ltd
 
-organizationalUnitName		= Organizational Unit Name (eg, section)
-organizationalUnitName_default	= UnmockServer
+# organizationalUnitName		= Organizational Unit Name (eg, section)
+# organizationalUnitName_default	= UnmockServer
 
 commonName			= Common Name (e.g. server FQDN or YOUR name)
-commonName_default		= unmock.github.io
+commonName_default		= unmock.server
 commonName_max			= 64
 
 emailAddress			= Email Address
-emailAddress_default		= kimmo@meeshkan.com
+emailAddress_default		= dev@unmock.io
 emailAddress_max		= 64
