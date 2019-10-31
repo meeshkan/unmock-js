@@ -1,4 +1,5 @@
 #!/bin/bash
+# https://github.com/elazarl/goproxy/blob/master/certs/openssl-gen.sh
 set -ex
 # generate CA's  key
 openssl genrsa -aes256 -passout pass:1 -out ca.key.pem 4096

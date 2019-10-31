@@ -60,3 +60,12 @@ Coming soon 👷‍♀️
     - to mock server: `curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos`
     - to proxy with HTTP: `http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos`
     - to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=cert.pem curl -i https://api.github.com/user/repos`
+
+## Development
+
+### Creating new CA certificates
+
+```bash
+cd certs/
+./openssl-gen.sh
+```
