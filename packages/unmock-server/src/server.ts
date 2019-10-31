@@ -1,6 +1,5 @@
 import debug from "debug";
 import express = require("express");
-import * as fs from "fs";
 // @ts-ignore
 import helmet = require("helmet");
 import * as http from "http";
@@ -118,6 +117,7 @@ export const generateContext = (servername: string) => {
 };
 
 export const startServer = (app: express.Express) => {
+  const { privateKey, signedCrt } = create("localhost");
   const options = {
     SNICallback: (
       servername: string,
@@ -133,12 +133,8 @@ export const startServer = (app: express.Express) => {
       return context;
     },
     // must list a default key and cert because required by tls.createServer()
-    key: fs.readFileSync(
-      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/server.key`,
-    ),
-    cert: fs.readFileSync(
-      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/server.crt`,
-    ),
+    key: privateKey,
+    cert: signedCrt,
   };
 
   const httpServer = http.createServer(app);
