@@ -5,6 +5,7 @@ import * as fs from "fs";
 import helmet = require("helmet");
 import * as http from "http";
 import * as https from "https";
+import * as tls from "tls";
 import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
 
 import {
@@ -106,15 +107,42 @@ export const buildApp = (opts?: IServerOptions) => {
   return { unmock, app };
 };
 
-export const startServer = (app: express.Express) => {
-  const options = {
+export const generateContext = (domain: string) => {
+  debugLog(`Generating context for ${domain}`);
+  return tls.createSecureContext({
     key: fs.readFileSync(
-      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/key.pem`,
+      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/server.key`,
     ),
     cert: fs.readFileSync(
-      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/cert.pem`,
+      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/server-github.crt`,
+    ),
+  });
+};
+
+export const startServer = (app: express.Express) => {
+  const options = {
+    SNICallback: (
+      servername: string,
+      cb: (err: Error | null, ctx: tls.SecureContext) => void,
+    ) => {
+      debugLog(`SNICallback to ${servername}`);
+      const context = generateContext(servername);
+      debugLog(`Found certificate for ${servername}`);
+      if (cb) {
+        return cb(null, context);
+      }
+      // Compatibility with older versions of node
+      return context;
+    },
+    // must list a default key and cert because required by tls.createServer()
+    key: fs.readFileSync(
+      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/server.key`,
+    ),
+    cert: fs.readFileSync(
+      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/server.crt`,
     ),
   };
+
   const httpServer = http.createServer(app);
   const httpsServer = https.createServer(options, app);
 
