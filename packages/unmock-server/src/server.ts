@@ -7,6 +7,7 @@ import * as http from "http";
 import * as https from "https";
 import * as tls from "tls";
 import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
+import { create } from "./forge";
 
 import {
   ISerializedRequest,
@@ -107,15 +108,12 @@ export const buildApp = (opts?: IServerOptions) => {
   return { unmock, app };
 };
 
-export const generateContext = (domain: string) => {
-  debugLog(`Generating context for ${domain}`);
+export const generateContext = (servername: string) => {
+  debugLog(`Generating context for ${servername}`);
+  const { privateKey, signedCrt } = create(servername);
   return tls.createSecureContext({
-    key: fs.readFileSync(
-      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/server.key`,
-    ),
-    cert: fs.readFileSync(
-      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/server-github.crt`,
-    ),
+    key: privateKey,
+    cert: signedCrt,
   });
 };
 
