@@ -104,7 +104,7 @@ const createCsr = () => {
   ]);
 
   // sign certification request
-  csr.sign(keys.privateKey);
+  csr.sign(keys.privateKey, forge.md.sha256.create());
   debugLog("Certification request (CSR) created.");
 
   // PEM-format keys and csr (for viewing or output as needed)
@@ -167,7 +167,7 @@ const signWithCA = ({ csr, domain }: { csr: any; domain: string }) => {
   ]);
   cert.publicKey = csr.publicKey;
 
-  cert.sign(caKey);
+  cert.sign(caKey, forge.md.sha256.create());
   debugLog("Certificate created.");
   const pem = {
     publicKey: forge.pki.publicKeyToPem(cert.publicKey),
