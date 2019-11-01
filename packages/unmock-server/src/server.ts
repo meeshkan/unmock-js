@@ -6,7 +6,7 @@ import * as http from "http";
 import * as https from "https";
 import * as tls from "tls";
 import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
-import { create } from "./forge";
+import { createSignedCertificate } from "./forge";
 
 import {
   ISerializedRequest,
@@ -109,7 +109,7 @@ export const buildApp = (opts?: IServerOptions) => {
 
 export const generateContext = (servername: string) => {
   debugLog(`Generating context for ${servername}`);
-  const { privateKey, signedCrt } = create(servername);
+  const { privateKey, signedCrt } = createSignedCertificate(servername);
   return tls.createSecureContext({
     key: privateKey,
     cert: signedCrt,
@@ -117,7 +117,7 @@ export const generateContext = (servername: string) => {
 };
 
 export const startServer = (app: express.Express) => {
-  const { privateKey, signedCrt } = create("localhost");
+  const { privateKey, signedCrt } = createSignedCertificate("localhost");
   const options = {
     SNICallback: (
       servername: string,
