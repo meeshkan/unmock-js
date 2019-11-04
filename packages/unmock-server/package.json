@@ -1,5 +1,5 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.10",
   "name": "unmock-server",
   "displayName": "unmock-server",
   "main": "dist/index.js",
