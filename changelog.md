@@ -6,6 +6,7 @@ Features:
 
   - Add `unmock-server`, a mock server
   - Add `unmock.randomize.on()` option for randomizing responses
+  - Introduce `unmock` CLI in `unmock-cli` package
 
 ## 0.3.9 (2019-10-17)
 
