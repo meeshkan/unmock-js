@@ -25,12 +25,14 @@ To use the mock server for mocking API responses, you need to
    >  `curl`: set environment variables
    > - `http_proxy=http://localhost:8008`
    > - `https_proxy=http://localhost:8008`
-   > - Some other clients expect `HTTP_PROXY` and `HTTPS_PROXY` environment variables instead
+   > - Other clients may expect `HTTP_PROXY` and `HTTPS_PROXY` environment variables instead
 
-1. Trust the certificate served by the mock proxy if using HTTPS (see below).
+1. Trust the certificates served by the mock proxy if using HTTPS:
 
-    > `curl`: set environment variable
-    > - `SSL_CERT_FILE=cert.pem`
+    > Fetch certificate:
+    > `wget https://raw.githubusercontent.com/unmock/unmock-js/snicallback/packages/unmock-server/certs/ca.pem`
+    > For `curl`: set environment variable
+    > - `SSL_CERT_FILE=ca.pem`
 
 ## How to use it
 
@@ -47,7 +49,10 @@ Coming soon 👷‍♀️
 1. Clone [unmock-js](https://github.com/unmock/unmock-js) repository.
 1. Install dependencies: `npm i`
 1. Build TypeScript: `npm run compile`
-1. Create certificates for the domains you want to mock, for example: `bash packages/unmock-server/scripts/prepare-cert.sh api.github.com,petstore.swagger.io`
+1. If mocking HTTPS server, fetch the Unmock certificate used for signing certificates:
+
+    > `wget https://raw.githubusercontent.com/unmock/unmock-js/snicallback/packages/unmock-server/certs/ca.pem`
+
 1. Prepare `__unmock__` folder with [OpenAPI specifications](https://www.unmock.io/docs/openapi)
 
     > To mock `api.github.com`:
@@ -59,4 +64,13 @@ Coming soon 👷‍♀️
 1. Start making calls
     - to mock server: `curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos`
     - to proxy with HTTP: `http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos`
-    - to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=cert.pem curl -i https://api.github.com/user/repos`
+    - to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=ca.pem curl -i https://api.github.com/user/repos`
+
+## Development
+
+### Creating new CA certificate
+
+```bash
+cd certs/
+./openssl-gen.sh
+```

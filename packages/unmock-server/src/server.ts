@@ -1,11 +1,12 @@
 import debug from "debug";
 import express = require("express");
-import * as fs from "fs";
 // @ts-ignore
 import helmet = require("helmet");
 import * as http from "http";
 import * as https from "https";
+import * as tls from "tls";
 import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
+import { createSignedCertificate } from "./forge";
 
 import {
   ISerializedRequest,
@@ -106,15 +107,36 @@ export const buildApp = (opts?: IServerOptions) => {
   return { unmock, app };
 };
 
+export const generateContext = (servername: string) => {
+  debugLog(`Generating context for ${servername}`);
+  const { privateKey, signedCrt } = createSignedCertificate(servername);
+  return tls.createSecureContext({
+    key: privateKey,
+    cert: signedCrt,
+  });
+};
+
 export const startServer = (app: express.Express) => {
+  const { privateKey, signedCrt } = createSignedCertificate("localhost");
   const options = {
-    key: fs.readFileSync(
-      process.env.PRIVATE_KEY_PATH || `${process.cwd()}/key.pem`,
-    ),
-    cert: fs.readFileSync(
-      process.env.PUBLIC_KEY_PATH || `${process.cwd()}/cert.pem`,
-    ),
+    SNICallback: (
+      servername: string,
+      cb: (err: Error | null, ctx: tls.SecureContext) => void,
+    ) => {
+      debugLog(`SNICallback to ${servername}`);
+      const context = generateContext(servername);
+      debugLog(`Found certificate for ${servername}`);
+      if (cb) {
+        return cb(null, context);
+      }
+      // Compatibility with older versions of node
+      return context;
+    },
+    // must list a default key and cert because required by tls.createServer()
+    key: privateKey,
+    cert: signedCrt,
   };
+
   const httpServer = http.createServer(app);
   const httpsServer = https.createServer(options, app);
 

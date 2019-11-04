@@ -15,10 +15,12 @@
   "dependencies": {
     "@types/express": "^4.17.1",
     "@types/http-proxy": "^1.17.0",
+    "@types/node-forge": "^0.8.6",
     "concurrently": "^5.0.0",
     "express": "^4.17.1",
     "helmet": "^3.21.1",
     "http-proxy": "^1.18.0",
+    "node-forge": "^0.9.1",
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   }
