@@ -3,6 +3,9 @@
   "name": "unmock-server",
   "displayName": "unmock-server",
   "main": "dist/index.js",
+  "bin": {
+    "unmock-server": "./index.js"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
