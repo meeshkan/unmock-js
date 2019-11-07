@@ -15,7 +15,7 @@ import { testResponse } from "./utils";
 describe("Node.js interceptor", () => {
   let nodeInterceptor: IInterceptor;
   const createResponse: jest.Mock<
-    ISerializedResponse | undefined,
+    ISerializedResponse,
     [ISerializedRequest]
   > = jest.fn();
   const shouldBypassHost: jest.Mock<boolean, [string]> = jest.fn();

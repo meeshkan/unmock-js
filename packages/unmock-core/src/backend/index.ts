@@ -1,9 +1,9 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { formatMsg } from "../console";
 import { responseCreatorFactory } from "../generator";
 import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
+  CreateResponse,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
@@ -14,6 +14,10 @@ import {
   ServiceStoreType,
 } from "../interfaces";
 import { ServiceParser } from "../parser";
+import {
+  IRandomNumberGenerator,
+  randomNumberGenerator,
+} from "../random-number-generator";
 import { IServiceCore } from "../service/interfaces";
 import { ServiceStore } from "../service/serviceStore";
 
@@ -41,7 +45,7 @@ export const errorForMissingTemplate = (sreq: ISerializedRequest) => {
 };
 
 export const buildRequestHandler = (
-  createResponse: (req: ISerializedRequest) => ISerializedResponse | undefined,
+  createResponse: CreateResponse,
 ): OnSerializedRequest => (
   serializedRequest: ISerializedRequest,
   sendResponse: (res: ISerializedResponse) => void,
@@ -49,17 +53,10 @@ export const buildRequestHandler = (
 ) => {
   try {
     debugLog("Serialized request", JSON.stringify(serializedRequest));
-    const serializedResponse: ISerializedResponse | undefined = createResponse(
+    const serializedResponse: ISerializedResponse = createResponse(
       serializedRequest,
     );
 
-    if (serializedResponse === undefined) {
-      debugLog("No match found, emitting error");
-      const errMsg = errorForMissingTemplate(serializedRequest);
-      const formatted = formatMsg("instruct", errMsg);
-      emitError(Error(formatted));
-      return;
-    }
     debugLog("Responding with response", JSON.stringify(serializedResponse));
     sendResponse(serializedResponse);
   } catch (err) {
@@ -71,6 +68,7 @@ export interface IBackendOptions {
   interceptorFactory: IInterceptorFactory;
   listeners?: IListener[];
   serviceDefLoader?: IServiceDefLoader;
+  randomNumberGenerator?: IRandomNumberGenerator;
 }
 
 const NoopServiceDefLoader: IServiceDefLoader = {
@@ -83,6 +81,7 @@ export class Backend {
   public serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
   public readonly serviceDefLoader: IServiceDefLoader;
+  public readonly randomNumberGenerator: IRandomNumberGenerator;
   public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
@@ -90,11 +89,13 @@ export class Backend {
   public constructor({
     interceptorFactory,
     listeners,
+    randomNumberGenerator: rng,
     serviceDefLoader,
   }: IBackendOptions) {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
+    this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.loadServices();
   }
 
@@ -120,6 +121,7 @@ export class Backend {
     const createResponse = responseCreatorFactory({
       listeners: this.requestResponseListeners,
       options,
+      rng: this.randomNumberGenerator,
       store: this.serviceStore,
     });
 

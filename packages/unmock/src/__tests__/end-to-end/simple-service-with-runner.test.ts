@@ -29,6 +29,7 @@ beforeAll(() => {
   foo = unmock.on().services.foo;
 });
 afterAll(() => unmock.off());
+
 describe("Simple service test with runner", () => {
   it(
     "Should reset spies correctly",

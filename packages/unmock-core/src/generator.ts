@@ -37,7 +37,6 @@ import {
   objectToArray,
   valueLens,
 } from "openapi-refinements";
-import * as seedrandom from "seedrandom";
 import * as url from "whatwg-url";
 import {
   CreateResponse,
@@ -46,6 +45,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
 } from "./interfaces";
+import { IRandomNumberGenerator } from "./random-number-generator";
 import {
   Header,
   isReference,
@@ -59,14 +59,13 @@ import {
   Schema,
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
+
 export const runnerConfiguration = {
-  seed: 0,
   optionalsProbability: 1.0,
   minItems: 0,
   reset() {
     this.minItems = 0;
     this.optionalsProbability = 1.0;
-    this.seed = 0;
   },
 };
 /**
@@ -788,10 +787,13 @@ const bodyFromResponse = (
 
 export function responseCreatorFactory({
   listeners = [],
+  options,
+  rng,
   store,
 }: {
   listeners?: IListener[];
   options: IUnmockOptions;
+  rng: IRandomNumberGenerator;
   store: ServiceStore;
 }): CreateResponse {
   return (req: ISerializedRequest) => {
@@ -842,17 +844,24 @@ export function responseCreatorFactory({
         {},
       ),
     };
-    const res = generateMockFromTemplate2(
+
+    /**
+     * Ensure that every generation starts from the same seed if not randomizing.
+     */
+    if (!options.randomize()) {
+      rng.restore();
+    }
+
+    const res = generateMockFromTemplate({
+      rng: () => rng.get(),
       statusCode,
-      // headers as an object for generation
-      {
+      headerSchema: {
         definitions,
         type: "object",
         properties: headerProperties,
         required: Object.keys(headerProperties),
       },
-      // body as an object for generation
-      isNone(bodySchema)
+      bodySchema: isNone(bodySchema)
         ? undefined
         : {
             definitions,
@@ -860,7 +869,8 @@ export function responseCreatorFactory({
               ? changeRef(bodySchema.value)
               : changeRefs(bodySchema.value)),
           },
-    );
+    });
+
     // Notify call tracker
     const serviceName = toSchemas
       .composeLens(keyLens())
@@ -875,11 +885,17 @@ export function responseCreatorFactory({
   };
 }
 
-const generateMockFromTemplate2 = (
-  statusCode: number,
-  headerSchema?: any,
-  bodySchema?: any,
-): ISerializedResponse => {
+const generateMockFromTemplate = ({
+  rng,
+  statusCode,
+  headerSchema,
+  bodySchema,
+}: {
+  rng: () => number;
+  statusCode: number;
+  headerSchema?: any;
+  bodySchema?: any;
+}): ISerializedResponse => {
   jsf.extend("faker", () => require("faker"));
   jsf.option("optionalsProbability", runnerConfiguration.optionalsProbability);
   // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
@@ -892,7 +908,7 @@ const generateMockFromTemplate2 = (
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", seedrandom(`${runnerConfiguration.seed}`));
+  jsf.option("random", rng);
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
   const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);

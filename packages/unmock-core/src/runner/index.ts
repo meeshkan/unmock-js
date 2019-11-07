@@ -1,5 +1,6 @@
 import Backend from "../backend";
 import { runnerConfiguration } from "../generator";
+
 export interface IRunnerOptions {
   maxLoop: number;
 }
@@ -57,7 +58,7 @@ export default (backend: Backend) => (
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
-    runnerConfiguration.seed = i;
+    backend.randomNumberGenerator.setSeed(i);
     runnerConfiguration.optionalsProbability = Math.random();
     runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
     try {

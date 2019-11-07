@@ -7,6 +7,7 @@ import WinstonLogger from "./loggers/winston-logger";
 const utils = { snapshotter: FsSnapshotter };
 export { utils };
 export { fetch };
+export { NodeBackend };
 
 export const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),

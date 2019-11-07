@@ -4,7 +4,7 @@ import Backend, { buildRequestHandler } from "./backend";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
-import { AllowedHosts, BooleanSetting } from "./settings";
+import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 
 export * from "./interfaces";
 export * from "./types";
@@ -17,8 +17,11 @@ export { Backend, buildRequestHandler };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
-  public flaky: BooleanSetting;
   public useInProduction: BooleanSetting;
+  /**
+   * Always return a new randomized response instead of using a fixed seed.
+   */
+  public randomize: IBooleanSetting;
   public readonly backend: Backend;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
@@ -31,8 +34,8 @@ export class UnmockPackage implements IUnmockPackage {
     this.logger = (options && options.logger) || this.logger;
 
     this.allowedHosts = new AllowedHosts();
-    this.flaky = new BooleanSetting();
-    this.useInProduction = new BooleanSetting();
+    this.useInProduction = new BooleanSetting(false);
+    this.randomize = new BooleanSetting(false);
   }
 
   public on() {
@@ -40,7 +43,7 @@ export class UnmockPackage implements IUnmockPackage {
       useInProduction: () => this.useInProduction.get(),
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
-      flaky: () => this.flaky.get(),
+      randomize: () => this.randomize.get(),
     };
     this.backend.initialize(opts);
     return this;
