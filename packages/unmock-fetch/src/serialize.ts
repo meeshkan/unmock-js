@@ -1,6 +1,7 @@
 import debug from "debug";
 import {
   HTTPMethod,
+  IIncomingHeaders,
   IProtocol,
   ISerializedRequest,
 } from "unmock-core/dist/interfaces";
@@ -25,6 +26,46 @@ export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
 
 const debugLog = debug("unmock:fetch-mitm");
 
+const isRequest = (url: RequestInfo): url is Request => {
+  return false;
+};
+
+export const parseHeaders = (
+  url: RequestInfo,
+  init?: RequestInit,
+): IIncomingHeaders => {
+  const parseInternalHeaders = (headers: Headers): IIncomingHeaders => {
+    return {};
+  };
+
+  if (isRequest(url)) {
+    return parseInternalHeaders(url.headers);
+  } else if (typeof init !== "undefined") {
+    const headers = init.headers;
+    if (typeof headers === "undefined") {
+      return {};
+    }
+
+    if (Array.isArray(headers)) {
+      // TODO
+      return {};
+    }
+
+    if (headers instanceof Headers) {
+      // TODO
+      const heads: Record<string, string> = {};
+      headers.forEach((value, key) => {
+        heads[key] = value;
+      });
+      return heads;
+    }
+
+    return headers;
+  }
+
+  return {};
+};
+
 export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
   if (typeof url !== "string") {
     throw new Error(`Request instance not yet supported`);
@@ -46,11 +87,13 @@ export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
     throw new Error(`Unknown protocol: ${protocolWithoutColon}`);
   }
 
+  const headers = parseHeaders(url, init);
+
   const req: ISerializedRequest = {
     body: undefined, // TODO
     bodyAsJson: undefined, // TODO
     method,
-    headers: {}, // TODO
+    headers,
     host: parsedUrl.host,
     path: parsedUrl.pathname, // TODO
     pathname: parsedUrl.pathname,

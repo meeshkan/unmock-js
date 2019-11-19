@@ -21,7 +21,7 @@ describe("Fetch request serializer", () => {
     });
   });
 
-  it.skip("should serialize a request with headers", () => {
+  it("should serialize a request with headers", () => {
     const headers = { "x-accept": "anything " };
     const req: ISerializedRequest = serialize("https://example.com", {
       headers,
