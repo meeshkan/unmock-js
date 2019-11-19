@@ -4,6 +4,7 @@ import express = require("express");
 import helmet = require("helmet");
 import * as http from "http";
 import * as https from "https";
+import * as path from "path";
 import * as tls from "tls";
 import { SERVER_HTTP_PORT, SERVER_HTTPS_PORT } from "./constants";
 import { createSignedCertificate } from "./forge";
@@ -25,13 +26,16 @@ export interface IServerOptions {
   servicesDirectory?: string;
 }
 
+export const hostFromHeader = (req: express.Request): string | undefined =>
+  req.get("x-forwarded-host");
+
 export const serialize = async (
   req: express.Request,
 ): Promise<ISerializedRequest> => {
   const serializedRequest: ISerializedRequest = {
     method: req.method.toLowerCase() as any,
     headers: {},
-    host: req.get("x-forwarded-host") || req.hostname,
+    host: hostFromHeader(req) || req.hostname,
     path: `${req.originalUrl}`,
     pathname: req.path, // TODO
     query: req.query,
@@ -65,11 +69,29 @@ export const requestResponseHandler = (opts: IServerOptions) => {
   return { unmock, handler };
 };
 
+export const uiHandler = () => (_: express.Request, res: express.Response) => {
+  res.sendFile(path.join(__dirname + "/../client-ui/build/index.html"));
+};
+
 export const buildApp = (opts?: IServerOptions) => {
   const app = express();
   app.use(helmet());
 
   const { unmock, handler } = requestResponseHandler(opts || {});
+
+  // TODO Should only use own static when
+  // not working as server
+  app.use(express.static(path.join(__dirname, "../client/build")));
+
+  const ui = uiHandler();
+
+  app.get("/", (req, res, next) => {
+    if (typeof hostFromHeader(req) !== "undefined") {
+      return next();
+    } else {
+      return ui(req, res);
+    }
+  });
 
   app.post(
     "/api",
@@ -79,7 +101,7 @@ export const buildApp = (opts?: IServerOptions) => {
       next: express.NextFunction,
     ) => {
       // TODO Better way to check if this request was proxied or not
-      if (typeof req.get("x-forwarded-host") !== "undefined") {
+      if (typeof hostFromHeader(req) !== "undefined") {
         return next();
       }
       try {
