@@ -5,22 +5,22 @@
 [![codecov](https://codecov.io/gh/unmock/unmock-js/branch/dev/graph/badge.svg)](https://codecov.io/gh/unmock/unmock-js)
 [![Known Vulnerabilities](https://snyk.io/test/github/unmock/unmock-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/unmock/unmock-js?targetFile=package.json)
 
-Unmock server.
-
-## What it does
-
 Unmock server mocks APIs using [unmock-js](https://github.com/unmock/unmock-js).
 
 ## How it works
 
-At startup, Unmock server starts
+Unmock server consists of
 
 1. a proxy server at port 8008
 1. a mock server at port 8000 (HTTP) and 8443 (HTTPS)
 
-To use the mock server for mocking API responses, you need to 
+Once the server and proxy are running, you can use the proxy to mock an API. For that, you need to:
 
-1. Set your HTTP client to use the local proxy
+1. Prepare specifications for your [services](https://www.unmock.io/docs/openapi) in `__unmock__` directory
+
+1. Start Unmock server and proxy (see below)
+
+1. Set your HTTP client to use the locally running proxy
 
    >  `curl`: set environment variables
    > - `http_proxy=http://localhost:8008`
@@ -30,41 +30,97 @@ To use the mock server for mocking API responses, you need to
 1. Trust the certificates served by the mock proxy if using HTTPS:
 
     > Fetch certificate:
-    > `wget https://raw.githubusercontent.com/unmock/unmock-js/snicallback/packages/unmock-server/certs/ca.pem`
+    > ```bas
+    > wget https://raw.githubusercontent.com/unmock/unmock-js/dev/packages/unmock-server/certs/ca.pem`
+    > ```
     > For `curl`: set environment variable
     > - `SSL_CERT_FILE=ca.pem`
 
-## How to use it
+## Installation
 
-### Docker
+### `npm`
 
-See documentation for the [unmock/unmock-server](https://hub.docker.com/r/unmock/unmock-server) Docker image.
+The npm package ships with `unmock-server` binary that you can add either in project or globally.
 
-### CLI usage via `npm`
+#### Install to a project
 
-Coming soon 👷‍♀️ 
+```bash
+npm install unmock-server
+# OR
+yarn add unmock-server
+```
 
-### Stand-alone
+Invoke CLI via `npx` or `yarn`:
+
+```bash
+npx unmock-server --help
+# OR
+yarn unmock-server --help
+```
+
+#### Install globally
+
+```bash
+npm install -g unmock-server
+# OR
+yarn global add unmock-server
+```
+
+In this case, you can invoke `unmock-server` without `npx` or `yarn`:
+
+```bash
+unmock-server --help
+```
+
+### Install from source
 
 1. Clone [unmock-js](https://github.com/unmock/unmock-js) repository.
 1. Install dependencies: `npm i`
 1. Build TypeScript: `npm run compile`
-1. If mocking HTTPS server, fetch the Unmock certificate used for signing certificates:
+1. Invoke the CLI: `node packages/unmock-server/bin/run`
 
-    > `wget https://raw.githubusercontent.com/unmock/unmock-js/snicallback/packages/unmock-server/certs/ca.pem`
+## How to use it
 
-1. Prepare `__unmock__` folder with [OpenAPI specifications](https://www.unmock.io/docs/openapi)
+### 1. Prepare the certificate (HTTPS only)
 
-    > To mock `api.github.com`:
-    > 1. Fetch OpenAPI specification: `wget https://raw.githubusercontent.com/unmock/DefinitelyMocked/master/services/githubv3/openapi.yaml`
-    > 1. Prepare `__unmock__` folder: `mkdir -p __unmock__/githubv3`
-    > 1. `mv openapi.yaml __unmock__/githubv3`
+If mocking HTTPS server, fetch the Unmock certificate used for signing certificates:
 
-1. Start proxy and servers: `node packages/unmock-server/index.js`
-1. Start making calls
-    - to mock server: `curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos`
-    - to proxy with HTTP: `http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos`
-    - to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=ca.pem curl -i https://api.github.com/user/repos`
+```bash
+wget https://raw.githubusercontent.com/unmock/unmock-js/dev/packages/unmock-server/certs/ca.pem
+```
+
+### 2. Prepare services
+
+Prepare `__unmock__` folder with [OpenAPI specifications](https://www.unmock.io/docs/openapi).
+
+> To mock `api.github.com`:
+> 1. Prepare `__unmock__` folder:
+> > ```bash
+> > mkdir -p __unmock__/githubv3
+> > ```
+> 1. Fetch OpenAPI specification:
+> > ```bash
+> > wget https://raw.githubusercontent.com/unmock/DefinitelyMocked/master/services/githubv3/openapi.yaml -O __unmock__/githubv3/openapi.yaml`
+> > ```
+
+### Start server
+
+Start Unmock server and proxy:
+
+```bash
+unmock-server start
+```
+
+### Start making calls
+
+Make calls
+- to proxy with HTTP: `http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos`
+- to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=ca.pem curl -i https://api.github.com/user/repos`
+- to mock server directly: `curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos`
+
+## Docker
+
+Unmock server can also be used via Docker. See documentation for the [unmock/unmock-server](https://hub.docker.com/r/unmock/unmock-server) Docker image.
 
 ## Development
 
