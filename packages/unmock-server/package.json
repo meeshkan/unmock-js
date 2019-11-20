@@ -32,7 +32,6 @@
     "helmet": "^3.21.1",
     "http-proxy": "^1.18.0",
     "node-forge": "^0.9.1",
-    "oclif": "^1.15.1",
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   },
