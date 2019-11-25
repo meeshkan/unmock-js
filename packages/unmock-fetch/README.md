@@ -20,10 +20,10 @@ yarn add unmock-fetch -D
 
 ```ts
 import { buildFetch } from "unmock-fetch";
-import { CreateResponse, ISerializedRequest, ISerializedResponse, OnSerializedRequest } from "unmock-core";
+import { ISerializedRequest, ISerializedResponse, OnSerializedRequest } from "unmock-core";
 
 // Define what to do with the intercepted request
-const responseCreator: CreateResponse = (
+const responseCreator = (
   req: ISerializedRequest
 ): ISerializedResponse => {
   return {
@@ -54,7 +54,9 @@ To override `global.fetch` or `window.fetch`, use the default import:
 import FetchInterceptor from "unmock-fetch";
 
 // What to do with serialized request
-const requestCb: CreateResponse = /* as above */
+const requestCb: (
+  req: ISerializedRequest
+) => ISerializedResponse  = /* as above */
 
 // Intercept `global.fetch` or `window.fetch`
 FetchInterceptor.on(requestCb);
