@@ -1,29 +1,11 @@
 import debug from "debug";
+import { typeUtils } from "unmock-core";
 import {
-  HTTPMethod,
   IIncomingHeaders,
-  IProtocol,
   ISerializedRequest,
 } from "unmock-core/dist/interfaces";
 import URLParse = require("url-parse");
 import { Headers } from "./types";
-
-const isKnownProtocol = (maybeProtocol: string): maybeProtocol is IProtocol =>
-  /^https?$/.test(maybeProtocol);
-
-// TODO Importing this from "unmock-core/dist/interfaces" does not work, it
-// probably needs to be properly exported from the top-level package
-export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
-  [
-    "get",
-    "head",
-    "post",
-    "put",
-    "patch",
-    "delete",
-    "options",
-    "trace",
-  ].includes(maybeMethod);
 
 const debugLog = debug("unmock:fetch-mitm");
 
@@ -34,9 +16,23 @@ const isRequest = (url: RequestInfo): url is Request => {
 const parseHeadersObject = (headers: Headers): IIncomingHeaders => {
   const heads: Record<string, string> = {};
   headers.forEach((value, key) => {
-    heads[key] = value;
+    heads[typeUtils.normalizeHeaderKey(key)] = value;
   });
   return heads;
+};
+
+/**
+ * Normalize headers by mapping all key values
+ * as expected by unmock.
+ * @param headers
+ */
+const normalizeHeaders = (headers: IIncomingHeaders): IIncomingHeaders => {
+  const newHeaders: IIncomingHeaders = {};
+  Object.keys(headers).forEach((key: string) => {
+    const normalizedKey = typeUtils.normalizeHeaderKey(key);
+    newHeaders[normalizedKey] = headers[key];
+  });
+  return newHeaders;
 };
 
 export const parseHeaders = (
@@ -57,47 +53,45 @@ export const parseHeaders = (
 
     if (Array.isArray(headers)) {
       // string[][]
-      const heads: Record<string, string> = {};
+      const heads: Record<string, string | string[]> = {};
       headers.forEach((arr: string[]) => {
-        const key = arr[0];
-        const value = arr[1];
-        heads[key] = value;
+        if (arr.length < 2) {
+          throw new Error(`Too short list as header, length: {arr.length}`);
+        }
+        const key = typeUtils.normalizeHeaderKey(arr[0]);
+        const values = arr.slice(1);
+        heads[key] = values;
       });
       return heads;
     }
 
     // Record<string, string>
-    return headers;
+    return normalizeHeaders(headers);
   }
 
   return {};
 };
 
-export default (
-  urlOrRequest: RequestInfo,
+const serializeFromUrlAndInit = (
+  url: string,
   init?: RequestInit,
 ): ISerializedRequest => {
-  if (isRequest(urlOrRequest)) {
-    throw new Error(`Request instance not yet serializable`);
-  }
-
-  debugLog(`Serializing request to: ${urlOrRequest}`);
-
+  debugLog(`Serializing request to: ${url}`);
   const method = (init && init.method && init.method.toLowerCase()) || "get";
 
-  if (!isRESTMethod(method)) {
+  if (!typeUtils.isRESTMethod(method)) {
     throw new Error(`Unknown method: ${method}`);
   }
 
-  const parsedUrl = new URLParse(urlOrRequest, true);
+  const parsedUrl = new URLParse(url, true);
 
   const protocolWithoutColon = parsedUrl.protocol.replace(":", "");
 
-  if (!isKnownProtocol(protocolWithoutColon)) {
+  if (!typeUtils.isKnownProtocol(protocolWithoutColon)) {
     throw new Error(`Unknown protocol: ${protocolWithoutColon}`);
   }
 
-  const headers = parseHeaders(urlOrRequest, init);
+  const headers = parseHeaders(url, init);
 
   const req: ISerializedRequest = {
     body: undefined, // TODO
@@ -113,4 +107,15 @@ export default (
 
   debugLog(`Serialized request: ${JSON.stringify(req)}`);
   return req;
+};
+
+export default (
+  urlOrRequest: RequestInfo,
+  init?: RequestInit,
+): ISerializedRequest => {
+  if (isRequest(urlOrRequest)) {
+    throw new Error(`Request instance not yet serializable`);
+  }
+
+  return serializeFromUrlAndInit(urlOrRequest, init);
 };

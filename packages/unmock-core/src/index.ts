@@ -5,6 +5,7 @@ import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
+import * as typeUtils from "./utils";
 
 export * from "./interfaces";
 export * from "./types";
@@ -14,6 +15,7 @@ export { transform, Addl, Arr } from "./generator-utils";
 export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
+export { typeUtils };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
