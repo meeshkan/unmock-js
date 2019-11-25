@@ -55,5 +55,16 @@ describe("Fetch request serializer", () => {
         },
       });
     });
+    it("should serialize a request with headers given as array", () => {
+      const headers = [["x-accept", "anything"]];
+      const req: ISerializedRequest = serialize("https://example.com", {
+        headers,
+      });
+      expect(req).toMatchObject({
+        headers: {
+          "x-accept": ["anything"],
+        },
+      });
+    });
   });
 });
