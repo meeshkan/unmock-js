@@ -6,6 +6,7 @@ import {
   ISerializedRequest,
 } from "unmock-core/dist/interfaces";
 import URLParse = require("url-parse");
+import { Headers } from "./types";
 
 const isKnownProtocol = (maybeProtocol: string): maybeProtocol is IProtocol =>
   /^https?$/.test(maybeProtocol);
@@ -27,51 +28,60 @@ export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
 const debugLog = debug("unmock:fetch-mitm");
 
 const isRequest = (url: RequestInfo): url is Request => {
-  return false;
+  return typeof url !== "string";
+};
+
+const parseHeadersObject = (headers: Headers): IIncomingHeaders => {
+  const heads: Record<string, string> = {};
+  headers.forEach((value, key) => {
+    heads[key] = value;
+  });
+  return heads;
 };
 
 export const parseHeaders = (
-  url: RequestInfo,
+  urlOrRequest: RequestInfo,
   init?: RequestInit,
 ): IIncomingHeaders => {
-  const parseInternalHeaders = (headers: Headers): IIncomingHeaders => {
-    return {};
-  };
-
-  if (isRequest(url)) {
-    return parseInternalHeaders(url.headers);
+  if (isRequest(urlOrRequest)) {
+    return parseHeadersObject(urlOrRequest.headers);
   } else if (typeof init !== "undefined") {
     const headers = init.headers;
     if (typeof headers === "undefined") {
       return {};
     }
 
-    if (Array.isArray(headers)) {
-      // TODO
-      return {};
+    if (headers instanceof Headers) {
+      return parseHeadersObject(headers);
     }
 
-    if (headers instanceof Headers) {
-      // TODO
+    if (Array.isArray(headers)) {
+      // string[][]
       const heads: Record<string, string> = {};
-      headers.forEach((value, key) => {
+      headers.forEach((arr: string[]) => {
+        const key = arr[0];
+        const value = arr[1];
         heads[key] = value;
       });
       return heads;
     }
 
+    // Record<string, string>
     return headers;
   }
 
   return {};
 };
 
-export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
-  if (typeof url !== "string") {
-    throw new Error(`Request instance not yet supported`);
+export default (
+  urlOrRequest: RequestInfo,
+  init?: RequestInit,
+): ISerializedRequest => {
+  if (isRequest(urlOrRequest)) {
+    throw new Error(`Request instance not yet serializable`);
   }
 
-  debugLog(`Serializing request to: ${url}`);
+  debugLog(`Serializing request to: ${urlOrRequest}`);
 
   const method = (init && init.method && init.method.toLowerCase()) || "get";
 
@@ -79,7 +89,7 @@ export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
     throw new Error(`Unknown method: ${method}`);
   }
 
-  const parsedUrl = new URLParse(url, true);
+  const parsedUrl = new URLParse(urlOrRequest, true);
 
   const protocolWithoutColon = parsedUrl.protocol.replace(":", "");
 
@@ -87,7 +97,7 @@ export default (url: RequestInfo, init?: RequestInit): ISerializedRequest => {
     throw new Error(`Unknown protocol: ${protocolWithoutColon}`);
   }
 
-  const headers = parseHeaders(url, init);
+  const headers = parseHeaders(urlOrRequest, init);
 
   const req: ISerializedRequest = {
     body: undefined, // TODO
