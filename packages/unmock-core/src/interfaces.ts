@@ -624,7 +624,7 @@ export interface IUnmockPackage {
 
 /**
  * Analogous to `IncomingHttpHeaders` in @types/node.
- * Header names are expected to be _lowercased_.
+ * Header keys are expected to be _lowercased_.
  */
 export interface IIncomingHeaders {
   [header: string]: string | string[] | undefined;
