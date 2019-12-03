@@ -4,7 +4,7 @@
   "displayName": "unmock-server",
   "main": "dist/index.js",
   "bin": {
-    "unmock-server": "./index.js"
+    "unmock-server": "./bin/run"
   },
   "license": "MIT",
   "repository": {
@@ -15,7 +15,15 @@
   "bugs": {
     "url": "https://github.com/unmock/unmock-js/issues"
   },
+  "files": [
+    "/bin",
+    "/src",
+    "/dist"
+  ],
   "dependencies": {
+    "@oclif/command": "^1.5.19",
+    "@oclif/config": "^1.13.3",
+    "@oclif/plugin-help": "^2.2.1",
     "@types/express": "^4.17.1",
     "@types/http-proxy": "^1.17.0",
     "@types/node-forge": "^0.8.6",
@@ -26,5 +34,12 @@
     "node-forge": "^0.9.1",
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
+  },
+  "oclif": {
+    "commands": "./src/commands",
+    "bin": "unmock-server",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
   }
 }
