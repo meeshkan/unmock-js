@@ -7,6 +7,8 @@
     "unmock": "./index.js"
   },
   "main": "dist/node/index.js",
+  "browser": "dist/browser/index.js",
+  "react-native": "dist/browser/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -18,6 +20,7 @@
   "dependencies": {
     "unmock-cli": "file:../unmock-cli",
     "unmock-core": "file:../unmock-core",
-    "unmock-node": "file:../unmock-node"
+    "unmock-node": "file:../unmock-node",
+    "unmock-browser": "file:../unmock-browser"
   }
 }
