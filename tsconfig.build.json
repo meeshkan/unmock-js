@@ -12,7 +12,7 @@
     { "path": "./packages/unmock-node" },
     { "path": "./packages/unmock-fetch" },
     { "path": "./packages/unmock-server" },
-    { "path": "./packages/unmock-react-native" },
+    { "path": "./packages/unmock-browser" },
     { "path": "./packages/openapi-refinements" }
   ]
 }

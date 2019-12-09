@@ -1,7 +1,7 @@
 {
-  "name": "unmock-react-native",
+  "name": "unmock-browser",
   "version": "0.3.8",
-  "description": "Unmock React Native",
+  "description": "Unmock for browser and React Native",
   "keywords": [
     "unmock",
     "mock",
