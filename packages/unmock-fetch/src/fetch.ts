@@ -27,7 +27,7 @@ export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
 
       const emitError = (e: Error) => reject(e);
 
-      setImmediate(() => {
+      setTimeout(() => {
         if (isCreateResponse(cb)) {
           try {
             const res = cb(req);
@@ -38,7 +38,7 @@ export const buildFetch = (cb: CreateResponse | OnSerializedRequest): Fetch =>
         } else {
           cb(req, sendResponse, emitError);
         }
-      });
+      }, 0);
     });
   };
 
