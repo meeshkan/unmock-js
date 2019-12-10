@@ -7,6 +7,7 @@
     "unmock": "./index.js"
   },
   "main": "dist/node/index.js",
+  "browser": "dist/browser/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
