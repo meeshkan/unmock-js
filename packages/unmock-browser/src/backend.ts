@@ -10,9 +10,9 @@ const interceptorFactory: IInterceptorFactory = (opts: IInterceptorOptions) => {
 };
 
 /**
- * React Native backend.
+ * Browser backend.
  */
-export default class ReactNativeBackend extends Backend {
+export default class BrowserBackend extends Backend {
   public constructor() {
     const listeners: IListener[] = [];
     super({
