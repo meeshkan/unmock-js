@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base",
+  "compilerOptions": {
+    "rootDir": "./src/browser",
+    "outDir": "./dist/browser"
+  },
+  "include": ["src/browser/**/*"],
+  "exclude": ["**/__tests__"],
+  "references": [
+    { "path": "../unmock-cli" },
+    { "path": "../unmock-core" },
+    { "path": "../unmock-browser" }
+  ]
+}

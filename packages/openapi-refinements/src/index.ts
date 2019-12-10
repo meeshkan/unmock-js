@@ -19,7 +19,7 @@ import {
   Schema,
 } from "loas3/dist/generated/full";
 
-import * as jsonschema from "jsonschema";
+import * as jsonschema from "@meeshkanml/jsonschema";
 
 import { array } from "fp-ts/lib/Array";
 import { fold, isNone, none, Option, some } from "fp-ts/lib/Option";

@@ -19,6 +19,6 @@
     "monocle-ts": "^2.0.0"
   },
   "dependencies": {
-    "jsonschema": "^1.2.4"
+    "@meeshkanml/jsonschema": "^0.0.1"
   }
 }
