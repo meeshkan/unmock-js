@@ -58,7 +58,6 @@ export abstract class ServiceParser {
     const name = serviceDef.directoryName;
 
     return new ServiceCore({
-      absPath: serviceDef.absolutePath,
       name,
       schema: schema.right,
     });

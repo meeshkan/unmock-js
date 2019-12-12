@@ -145,15 +145,13 @@ export class ServiceCore implements IServiceCore {
   }
 
   public readonly name: string;
-  public readonly absPath: string;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly callTracker: ICallTracker;
 
-  constructor(opts: { schema: OpenAPIObject; name: string; absPath?: string }) {
+  constructor(opts: { schema: OpenAPIObject; name: string }) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
-    this.absPath = opts.absPath || process.cwd();
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&
