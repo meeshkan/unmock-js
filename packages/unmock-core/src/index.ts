@@ -100,7 +100,7 @@ export class UnmockPackage implements IUnmockPackage {
           )
         : {};
     return nockify({
-      backend: this.backend,
+      serviceStore: this.backend.serviceStore,
       baseUrl,
       requestHeaders,
       name: internalName,

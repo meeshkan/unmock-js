@@ -20,7 +20,6 @@ import {
 import { fromTraversable, Iso, Prism } from "monocle-ts";
 import { valAsConst } from "openapi-refinements";
 import * as querystring from "query-string";
-import Backend from "./backend";
 import { identityGetter } from "./generator";
 import { CodeAsInt, HTTPMethod } from "./interfaces";
 import { Schema, ValidEndpointType } from "./service/interfaces";
@@ -706,13 +705,13 @@ const buildFluentNock = (
   ) as IFluentDynamicService);
 
 export const nockify = ({
-  backend,
+  serviceStore,
   baseUrl,
   requestHeaders,
   name,
 }: {
-  backend: Backend;
+  serviceStore: ServiceStore;
   baseUrl: string;
   requestHeaders: Record<string, JSSTAnything<EJSEmpty, {}>>;
   name?: string;
-}) => buildFluentNock(backend.serviceStore, baseUrl, requestHeaders, name);
+}) => buildFluentNock(serviceStore, baseUrl, requestHeaders, name);
