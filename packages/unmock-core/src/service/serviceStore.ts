@@ -1,8 +1,45 @@
 import * as url from "whatwg-url";
-import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "../nock";
+import {
+  ExtendedJSONSchema,
+  IFluentDynamicService,
+  nockify,
+  vanillaJSONSchemify,
+} from "../nock";
 import { IObjectToService, IServiceCore, OpenAPIObject } from "./interfaces";
 import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
+
+export type NockAPI = (
+  baseUrl: string,
+  nameOrHeaders?: string | { reqheaders?: Record<string, ExtendedJSONSchema> },
+  name?: string,
+) => IFluentDynamicService;
+
+export const addFromNock = (serviceStore: ServiceStore): NockAPI => (
+  baseUrl: string,
+  nameOrHeaders?: string | { reqheaders?: Record<string, ExtendedJSONSchema> },
+  name?: string,
+) => {
+  const internalName =
+    typeof nameOrHeaders === "string"
+      ? nameOrHeaders
+      : typeof name === "string"
+      ? name
+      : undefined;
+  const requestHeaders =
+    typeof nameOrHeaders === "object" && nameOrHeaders.reqheaders
+      ? Object.entries(nameOrHeaders.reqheaders).reduce(
+          (a, b) => ({ ...a, [b[0]]: vanillaJSONSchemify(b[1]) }),
+          {},
+        )
+      : {};
+  return nockify({
+    serviceStore,
+    baseUrl,
+    requestHeaders,
+    name: internalName,
+  });
+};
 
 export class ServiceStore {
   private static extractCoresAndServices(coreServices: IServiceCore[]) {

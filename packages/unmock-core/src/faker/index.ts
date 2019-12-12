@@ -8,12 +8,11 @@ import {
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
-import { ExtendedJSONSchema } from "../nock";
 import {
   IRandomNumberGenerator,
   randomNumberGenerator,
 } from "../random-number-generator";
-import { ServiceStore } from "../service/serviceStore";
+import { addFromNock, NockAPI, ServiceStore } from "../service/serviceStore";
 
 export interface IFakerOptions {
   listeners?: IListener[];
@@ -30,10 +29,10 @@ const DEFAULT_OPTIONS: IUnmockOptions = {
 
 export default class UnmockFaker {
   public createResponse: CreateResponse;
+  public readonly nock: NockAPI;
   private readonly serviceStore: ServiceStore;
   private readonly randomNumberGenerator: IRandomNumberGenerator;
   private readonly listeners: IListener[];
-
   /**
    * Unmock faker.
    * @param options Options for creating the object.
@@ -47,6 +46,7 @@ export default class UnmockFaker {
     this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.serviceStore = serviceStore;
     this.createResponse = this.createResponseCreator();
+    this.nock = addFromNock(this.serviceStore);
   }
 
   /**
@@ -55,16 +55,6 @@ export default class UnmockFaker {
    */
   public setOptions(options: IUnmockOptions) {
     this.createResponse = this.createResponseCreator(options);
-  }
-
-  public nock(
-    baseUrl: string,
-    nameOrHeaders?:
-      | string
-      | { reqheaders?: Record<string, ExtendedJSONSchema> },
-    name?: string,
-  ) {
-    return this.serviceStore.nock(baseUrl, nameOrHeaders, name);
   }
 
   /**

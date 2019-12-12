@@ -3,9 +3,8 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import UnmockFaker from "./faker";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import { ExtendedJSONSchema } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
-import { ServiceStore } from "./service/serviceStore";
+import { addFromNock, NockAPI, ServiceStore } from "./service/serviceStore";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 import * as typeUtils from "./utils";
 
@@ -27,6 +26,7 @@ export class UnmockPackage implements IUnmockPackage {
    */
   public randomize: IBooleanSetting;
   public readonly backend: Backend;
+  public readonly nock: NockAPI;
   private readonly opts: IUnmockOptions;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
@@ -47,6 +47,7 @@ export class UnmockPackage implements IUnmockPackage {
       log: (message: string) => this.logger.log(message),
       randomize: () => this.randomize.get(),
     };
+    this.nock = addFromNock(this.backend.serviceStore);
   }
 
   public newFaker(): UnmockFaker {
@@ -79,16 +80,6 @@ export class UnmockPackage implements IUnmockPackage {
     return f;
   }
 
-  public nock(
-    baseUrl: string,
-    nameOrHeaders?:
-      | string
-      | { reqheaders?: Record<string, ExtendedJSONSchema> },
-    name?: string,
-  ) {
-    return this.backend.serviceStore.nock(baseUrl, nameOrHeaders, name);
-  }
-
   public associate(url: string, name: string) {
     this.backend.serviceStore.updateOrAdd({ baseUrl: url, name });
   }
@@ -98,6 +89,6 @@ export class UnmockPackage implements IUnmockPackage {
   }
 
   public reset() {
-    Object.values(this.backend.services).forEach(service => service.reset());
+    this.backend.serviceStore.resetServices();
   }
 }
