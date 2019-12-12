@@ -3,7 +3,7 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import UnmockFaker from "./faker";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
+import { ExtendedJSONSchema } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
 import { ServiceStore } from "./service/serviceStore";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
@@ -86,25 +86,7 @@ export class UnmockPackage implements IUnmockPackage {
       | { reqheaders?: Record<string, ExtendedJSONSchema> },
     name?: string,
   ) {
-    const internalName =
-      typeof nameOrHeaders === "string"
-        ? nameOrHeaders
-        : typeof name === "string"
-        ? name
-        : undefined;
-    const requestHeaders =
-      typeof nameOrHeaders === "object" && nameOrHeaders.reqheaders
-        ? Object.entries(nameOrHeaders.reqheaders).reduce(
-            (a, b) => ({ ...a, [b[0]]: vanillaJSONSchemify(b[1]) }),
-            {},
-          )
-        : {};
-    return nockify({
-      serviceStore: this.backend.serviceStore,
-      baseUrl,
-      requestHeaders,
-      name: internalName,
-    });
+    return this.backend.serviceStore.nock(baseUrl, nameOrHeaders, name);
   }
 
   public associate(url: string, name: string) {

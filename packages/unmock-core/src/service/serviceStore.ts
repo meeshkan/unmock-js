@@ -1,4 +1,5 @@
 import * as url from "whatwg-url";
+import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "../nock";
 import { IObjectToService, IServiceCore, OpenAPIObject } from "./interfaces";
 import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
@@ -38,6 +39,40 @@ export class ServiceStore {
     );
     this.cores = cores;
     this.services = services;
+  }
+
+  /**
+   * Add service to the store using `nock` syntax.
+   * @param baseUrl Base URL. For example: "https://api.github.com"
+   * @param nameOrHeaders Service name or the headers.
+   * @param name Service name if the second argument was headers.
+   */
+  public nock(
+    baseUrl: string,
+    nameOrHeaders?:
+      | string
+      | { reqheaders?: Record<string, ExtendedJSONSchema> },
+    name?: string,
+  ) {
+    const internalName =
+      typeof nameOrHeaders === "string"
+        ? nameOrHeaders
+        : typeof name === "string"
+        ? name
+        : undefined;
+    const requestHeaders =
+      typeof nameOrHeaders === "object" && nameOrHeaders.reqheaders
+        ? Object.entries(nameOrHeaders.reqheaders).reduce(
+            (a, b) => ({ ...a, [b[0]]: vanillaJSONSchemify(b[1]) }),
+            {},
+          )
+        : {};
+    return nockify({
+      serviceStore: this,
+      baseUrl,
+      requestHeaders,
+      name: internalName,
+    });
   }
 
   public updateOrAdd(input: IObjectToService): ServiceStore {
