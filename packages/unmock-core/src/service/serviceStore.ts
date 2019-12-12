@@ -7,13 +7,24 @@ export class ServiceStore {
   /**
    * `services` is a wrapper for each `IServiceCore` in `cores`, and is ultimately what's available for the user.
    */
-  public readonly services: Record<string, Service>;
+  public services: Record<string, Service>;
   /**
    * `cores` is an internal mapping, allowing manipulation and extraction of services as needed
    */
-  public readonly cores: Record<string, IServiceCore>;
+  public cores: Record<string, IServiceCore>;
 
   constructor(coreServices: IServiceCore[]) {
+    this.cores = coreServices.reduce(
+      (o, core) => ({ ...o, [core.name]: core }),
+      {},
+    );
+    this.services = coreServices.reduce(
+      (o, core) => ({ ...o, [core.name]: new Service(core) }),
+      {},
+    );
+  }
+
+  public update(coreServices: IServiceCore[]) {
     this.cores = coreServices.reduce(
       (o, core) => ({ ...o, [core.name]: core }),
       {},
@@ -36,7 +47,10 @@ export class ServiceStore {
         : {
             /* new service - some template schema */
             openapi: "3.0.0",
-            info: { title: "Internally built by unmock", version: "0.0.0" },
+            info: {
+              title: "Internally built by unmock",
+              version: "0.0.0",
+            },
             paths: {},
           };
     const newServiceCore = ServiceCore.from(baseSchema, {

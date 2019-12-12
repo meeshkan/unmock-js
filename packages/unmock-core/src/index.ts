@@ -1,9 +1,11 @@
 // Sinon for asserts and matchers
 import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
+import UnmockFaker from "./faker";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
 import { ExtendedJSONSchema, nockify, vanillaJSONSchemify } from "./nock";
 import internalRunner, { IRunnerOptions } from "./runner";
+import { ServiceStore } from "./service/serviceStore";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 import * as typeUtils from "./utils";
 
@@ -25,6 +27,7 @@ export class UnmockPackage implements IUnmockPackage {
    */
   public randomize: IBooleanSetting;
   public readonly backend: Backend;
+  private readonly opts: IUnmockOptions;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
     backend: Backend,
@@ -38,16 +41,20 @@ export class UnmockPackage implements IUnmockPackage {
     this.allowedHosts = new AllowedHosts();
     this.useInProduction = new BooleanSetting(false);
     this.randomize = new BooleanSetting(false);
-  }
-
-  public on() {
-    const opts: IUnmockOptions = {
+    this.opts = {
       useInProduction: () => this.useInProduction.get(),
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
       randomize: () => this.randomize.get(),
     };
-    this.backend.initialize(opts);
+  }
+
+  public newFaker(): UnmockFaker {
+    return new UnmockFaker({ serviceStore: new ServiceStore([]) });
+  }
+
+  public on() {
+    this.backend.initialize(this.opts);
     return this;
   }
   public init() {

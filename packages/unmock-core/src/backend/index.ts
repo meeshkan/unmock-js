@@ -1,6 +1,6 @@
 import debug from "debug";
 import * as _ from "lodash";
-import { responseCreatorFactory } from "../generator";
+import UnmockFaker from "../faker";
 import { IInterceptor, IInterceptorFactory } from "../interceptor";
 import {
   CreateResponse,
@@ -78,10 +78,11 @@ const NoopServiceDefLoader: IServiceDefLoader = {
 };
 
 export class Backend {
-  public serviceStore: ServiceStore = new ServiceStore([]);
+  public readonly serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
   public readonly serviceDefLoader: IServiceDefLoader;
   public readonly randomNumberGenerator: IRandomNumberGenerator;
+  public faker: UnmockFaker;
   public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
   private interceptor?: IInterceptor;
@@ -97,6 +98,7 @@ export class Backend {
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
     this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.loadServices();
+    this.faker = new UnmockFaker({ serviceStore: this.serviceStore });
   }
 
   public get services(): ServiceStoreType {
@@ -104,9 +106,10 @@ export class Backend {
   }
 
   /**
+   * Start the interceptor.
    *
    * @param options
-   * @returns `states` object, with which one can modify states of various services.
+   *
    */
   public initialize(options: IUnmockOptions) {
     if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
@@ -118,14 +121,14 @@ export class Backend {
       this.interceptor = undefined;
     }
 
-    const createResponse = responseCreatorFactory({
-      listeners: this.requestResponseListeners,
-      options,
-      rng: this.randomNumberGenerator,
-      store: this.serviceStore,
-    });
+    /**
+     * Backward compatibility: Allow setting options at run-time when initializing unmock.
+     */
+    this.faker.setOptions(options);
 
-    this.handleRequest = buildRequestHandler(createResponse);
+    this.handleRequest = buildRequestHandler(
+      this.faker.createResponse.bind(this.faker),
+    );
 
     this.interceptor = this.interceptorFactory({
       onSerializedRequest: this.handleRequest,
@@ -157,7 +160,7 @@ export class Backend {
       ServiceParser.parse(serviceDef),
     );
 
-    this.serviceStore = new ServiceStore(coreServices);
+    this.serviceStore.update(coreServices);
   }
 }
 
