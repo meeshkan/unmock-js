@@ -4,6 +4,17 @@ import { Service } from "./service";
 import { ServiceCore } from "./serviceCore";
 
 export class ServiceStore {
+  private static extractCoresAndServices(coreServices: IServiceCore[]) {
+    const cores = coreServices.reduce(
+      (o, core) => ({ ...o, [core.name]: core }),
+      {},
+    );
+    const services = coreServices.reduce(
+      (o, core) => ({ ...o, [core.name]: new Service(core) }),
+      {},
+    );
+    return { cores, services };
+  }
   /**
    * `services` is a wrapper for each `IServiceCore` in `cores`, and is ultimately what's available for the user.
    */
@@ -14,25 +25,19 @@ export class ServiceStore {
   public cores: Record<string, IServiceCore>;
 
   constructor(coreServices: IServiceCore[]) {
-    this.cores = coreServices.reduce(
-      (o, core) => ({ ...o, [core.name]: core }),
-      {},
+    const { cores, services } = ServiceStore.extractCoresAndServices(
+      coreServices,
     );
-    this.services = coreServices.reduce(
-      (o, core) => ({ ...o, [core.name]: new Service(core) }),
-      {},
-    );
+    this.cores = cores;
+    this.services = services;
   }
 
   public update(coreServices: IServiceCore[]) {
-    this.cores = coreServices.reduce(
-      (o, core) => ({ ...o, [core.name]: core }),
-      {},
+    const { cores, services } = ServiceStore.extractCoresAndServices(
+      coreServices,
     );
-    this.services = coreServices.reduce(
-      (o, core) => ({ ...o, [core.name]: new Service(core) }),
-      {},
-    );
+    this.cores = cores;
+    this.services = services;
   }
 
   public updateOrAdd(input: IObjectToService): ServiceStore {
