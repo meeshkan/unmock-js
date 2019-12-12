@@ -21,9 +21,3 @@ export const isRESTMethod = (maybeMethod: string): maybeMethod is HTTPMethod =>
 export const isKnownProtocol = (
   maybeProtocol: string,
 ): maybeProtocol is IProtocol => /^https?$/.test(maybeProtocol);
-
-// https://github.com/iliakan/detect-node/blob/master/index.js
-export const detectNode = (): boolean =>
-  Object.prototype.toString.call(
-    typeof process !== "undefined" ? process : 0,
-  ) === "[object process]";
