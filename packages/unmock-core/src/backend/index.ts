@@ -102,7 +102,7 @@ export class Backend {
   }
 
   public get services(): ServiceStoreType {
-    return (this.serviceStore && this.serviceStore.services) || {};
+    return this.serviceStore.services;
   }
 
   /**
@@ -142,12 +142,7 @@ export class Backend {
       this.interceptor = undefined;
     }
     this.handleRequest = undefined;
-    if (this.serviceStore) {
-      // TODO - this is quite ugly :shrug:
-      Object.values(this.serviceStore.services).forEach(service =>
-        service.reset(),
-      );
-    }
+    this.serviceStore.resetServices();
   }
 
   public loadServices(): void {

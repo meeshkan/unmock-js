@@ -1,4 +1,3 @@
-// import debug from "debug";
 import * as _ from "lodash";
 import { responseCreatorFactory } from "../generator";
 import {
@@ -14,8 +13,6 @@ import {
   randomNumberGenerator,
 } from "../random-number-generator";
 import { ServiceStore } from "../service/serviceStore";
-
-// const debugLog = debug("unmock:faker");
 
 export interface IFakerOptions {
   listeners?: IListener[];
@@ -36,6 +33,10 @@ export default class UnmockFaker {
   private readonly randomNumberGenerator: IRandomNumberGenerator;
   private readonly listeners: IListener[];
 
+  /**
+   * Unmock faker.
+   * @param options Options for creating the object.
+   */
   public constructor({
     listeners,
     randomNumberGenerator: rng,
@@ -47,25 +48,36 @@ export default class UnmockFaker {
     this.createResponse = this.createResponseCreator();
   }
 
+  /**
+   * Create a new faker function from the given options.
+   * @param options Options for faking responses.
+   */
   public setOptions(options: IUnmockOptions) {
     this.createResponse = this.createResponseCreator(options);
   }
 
+  /**
+   * Fake a response to a request.
+   * @param request Serialized request.
+   * @throws Error if no matcher was found for the request.
+   * @returns Serialized response.
+   */
   public fake(request: ISerializedRequest): ISerializedResponse {
     return this.createResponse(request);
   }
 
+  /**
+   * Services dictionary mapping service name to `Service` object.
+   */
   public get services(): ServiceStoreType {
     return (this.serviceStore && this.serviceStore.services) || {};
   }
 
+  /**
+   * Reset the states of all services.
+   */
   public reset() {
-    if (this.serviceStore) {
-      // TODO - this is quite ugly :shrug:
-      Object.values(this.serviceStore.services).forEach(service =>
-        service.reset(),
-      );
-    }
+    this.serviceStore.resetServices();
   }
 
   private createResponseCreator(options?: IUnmockOptions): CreateResponse {

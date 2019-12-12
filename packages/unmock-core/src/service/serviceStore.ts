@@ -17,11 +17,11 @@ export class ServiceStore {
     return { cores, services };
   }
   /**
-   * `services` is a wrapper for each `IServiceCore` in `cores`, and is ultimately what's available for the user.
+   * Internal map from the service name to `Service` object.
    */
   public services: Record<string, Service>;
   /**
-   * `cores` is an internal mapping, allowing manipulation and extraction of services as needed
+   * Internal map from the service name to `ServiceCore` object.
    */
   public cores: Record<string, IServiceCore>;
 
@@ -33,6 +33,10 @@ export class ServiceStore {
     this.services = services;
   }
 
+  /**
+   * Replace all services with the given array of services.
+   * @param coreServices List of service cores.
+   */
   public update(coreServices: IServiceCore[]) {
     const { cores, services } = ServiceStore.extractCoresAndServices(
       coreServices,
@@ -109,5 +113,19 @@ export class ServiceStore {
     this.services[serviceName] = new Service(newServiceCore);
 
     return this;
+  }
+
+  /**
+   * Remove all services from the store.
+   */
+  public removeAll() {
+    this.update([]);
+  }
+
+  /**
+   * Reset the states of all services in store.
+   */
+  public resetServices() {
+    Object.values(this.services).forEach(service => service.reset());
   }
 }
