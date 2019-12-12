@@ -29,12 +29,17 @@ const DEFAULT_OPTIONS: IUnmockOptions = {
 
 export default class UnmockFaker {
   public createResponse: CreateResponse;
+  /**
+   * Add a new service to the faker using `nock` syntax.
+   */
   public readonly nock: NockAPI;
   private readonly serviceStore: ServiceStore;
   private readonly randomNumberGenerator: IRandomNumberGenerator;
   private readonly listeners: IListener[];
   /**
-   * Unmock faker.
+   * Unmock faker. Creates fake responses to fake requests, using
+   * the services contained in `serviceStore`.
+   * Add new services with the `faker.nock` method.
    * @param options Options for creating the object.
    */
   public constructor({
