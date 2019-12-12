@@ -689,7 +689,7 @@ export interface IServiceDefFile {
   /**
    * Contents of the service definition file
    */
-  contents: string | Buffer;
+  contents: string;
 }
 
 /**
