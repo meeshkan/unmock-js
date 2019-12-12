@@ -1,5 +1,6 @@
 import { defaultsDeep, unionBy } from "lodash";
 import { ISerializedRequest } from "../interfaces";
+import { detectNode } from "../utils";
 import {
   IObjectToService,
   IServiceCore,
@@ -145,7 +146,7 @@ export class ServiceCore implements IServiceCore {
   }
 
   public readonly name: string;
-  public readonly absPath: string;
+  public readonly absPath?: string;
   private hasPaths: boolean = false;
   private readonly oasSchema: OpenAPIObject;
   private readonly callTracker: ICallTracker;
@@ -153,7 +154,7 @@ export class ServiceCore implements IServiceCore {
   constructor(opts: { schema: OpenAPIObject; name: string; absPath?: string }) {
     this.oasSchema = opts.schema;
     this.name = opts.name;
-    this.absPath = opts.absPath || process.cwd();
+    this.absPath = opts.absPath || (detectNode ? process.cwd() : undefined);
     this.hasPaths = // Find this once, as schema is immutable
       this.schema !== undefined &&
       this.schema.paths !== undefined &&

@@ -65,7 +65,7 @@ export interface IServiceCore {
   /**
    * Holds the absolute path where the service specification resides.
    */
-  readonly absPath: string;
+  readonly absPath?: string;
 
   /**
    * Spy keeping track of request response pairs
