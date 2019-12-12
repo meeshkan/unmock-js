@@ -24,7 +24,9 @@
     "version": "lerna version --no-git-tag-version",
     "unmock": "node packages/unmock-cli/dist/index.js",
     "generate-spy": "npx ts-node packages/unmock-core/scripts/generate-spy.ts > packages/unmock-core/src/service/spy/generated/index.ts && npm run lint-ts-fix",
-    "generate-spy-dry": "npx ts-node packages/unmock-core/scripts/generate-spy.ts"
+    "generate-spy-dry": "npx ts-node packages/unmock-core/scripts/generate-spy.ts",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "lint-staged": {
     "*.ts": [
@@ -96,12 +98,14 @@
     "unmock-jest": "file:packages/unmock-jest",
     "unmock-node": "file:packages/unmock-node",
     "unmock-server": "file:packages/unmock-server",
-    "openapi-refinements": "file:packages/openapi-refinements"
+    "openapi-refinements": "file:packages/openapi-refinements",
+    "snyk": "^1.258.2"
   },
   "name": "unmock",
   "jest": {
     "projects": [
       "<rootDir>/packages/*"
     ]
-  }
+  },
+  "snyk": true
 }
