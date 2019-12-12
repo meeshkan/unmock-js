@@ -30,7 +30,8 @@ module.exports = {
     "ts-jest": {
       tsConfig: "<rootDir>/src/__tests__/tsconfig.json",
       babelConfig: true,
-      diagnostics: false
+      diagnostics: false,
+      isolatedModules: true
     }
   }
 };
