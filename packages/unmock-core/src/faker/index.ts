@@ -8,6 +8,7 @@ import {
   IUnmockOptions,
   ServiceStoreType,
 } from "../interfaces";
+import { ExtendedJSONSchema } from "../nock";
 import {
   IRandomNumberGenerator,
   randomNumberGenerator,
@@ -54,6 +55,16 @@ export default class UnmockFaker {
    */
   public setOptions(options: IUnmockOptions) {
     this.createResponse = this.createResponseCreator(options);
+  }
+
+  public nock(
+    baseUrl: string,
+    nameOrHeaders?:
+      | string
+      | { reqheaders?: Record<string, ExtendedJSONSchema> },
+    name?: string,
+  ) {
+    return this.serviceStore.nock(baseUrl, nameOrHeaders, name);
   }
 
   /**
