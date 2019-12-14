@@ -97,7 +97,8 @@
     "unmock-node": "file:packages/unmock-node",
     "unmock-server": "file:packages/unmock-server",
     "unmock-browser": "file:packages/unmock-browser",
-    "openapi-refinements": "file:packages/openapi-refinements"
+    "openapi-refinements": "file:packages/openapi-refinements",
+    "unmock-types": "file:packages/unmock-types"
   },
   "name": "unmock",
   "jest": {
