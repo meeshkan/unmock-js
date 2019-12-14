@@ -1,11 +1,5 @@
 # `unmock-types`
 
-> TODO: description
+Types for [Unmock](https://unmock.io/).
 
-## Usage
-
-```
-const unmockTypes = require('unmock-types');
-
-// TODO: DEMONSTRATE API
-```
+Read full documentation at [unmock.io](https://unmock.io).
