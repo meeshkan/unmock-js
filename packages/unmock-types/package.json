@@ -1,26 +1,19 @@
 {
-  "name": "unmock-types",
   "version": "0.3.10",
-  "description": "> TODO: description",
-  "author": "k4m4 <nikolaskam@gmail.com>",
-  "homepage": "https://github.com/unmock/unmock-js/tree/master/packages/unmock-types#readme",
+  "name": "unmock-types",
+  "displayName": "unmock-types",
+  "main": "dist/index.js",
   "license": "MIT",
-  "main": "src/index.js",
-  "directories": {
-    "lib": "lib",
-    "test": "__tests__"
-  },
-  "files": [
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
   },
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
-  },
+  "homepage": "https://github.com/unmock/unmock-js",
   "bugs": {
     "url": "https://github.com/unmock/unmock-js/issues"
-  }
+  },
+  "keywords": [
+    "unmock",
+    "types"
+  ]
 }
