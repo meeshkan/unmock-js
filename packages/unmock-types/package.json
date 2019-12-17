@@ -1,0 +1,19 @@
+{
+  "version": "0.3.10",
+  "name": "unmock-types",
+  "displayName": "unmock-types",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "homepage": "https://github.com/unmock/unmock-js",
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "keywords": [
+    "unmock",
+    "types"
+  ]
+}
