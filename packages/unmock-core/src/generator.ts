@@ -2,7 +2,6 @@
  * Implements the logic for generating a response from a service file
  */
 import * as jsonschema from "@meeshkanml/jsonschema";
-// Try fixing broken imports in Node <= 8 by using require instead of default import
 const jsf = require("@meeshkanml/json-schema-faker"); // tslint:disable-line:no-var-requires
 import { array } from "fp-ts/lib/Array";
 import { fold, isNone, none, Option, some } from "fp-ts/lib/Option";
