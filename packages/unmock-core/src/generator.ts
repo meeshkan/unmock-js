@@ -1,8 +1,12 @@
 /**
  * Implements the logic for generating a response from a service file
  */
+// @ts-ignore  // No type definitions for json-schema-faker :/
+import jsfRequire = require("@meeshkanml/json-schema-faker");
+// Use default import if exists. Seems that default is needed in browser but
+// not available in Node.js/React Native.
+const jsf = jsfRequire.hasOwnProperty("default") ? jsfRequire.default : jsfRequire;
 import * as jsonschema from "@meeshkanml/jsonschema";
-const jsf = require("@meeshkanml/json-schema-faker"); // tslint:disable-line:no-var-requires
 import { array } from "fp-ts/lib/Array";
 import { fold, isNone, none, Option, some } from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/pipeable";
