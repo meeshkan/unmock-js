@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@meeshkanml/jsonschema": "^0.0.1",
-    "@meeshkanml/json-schema-faker": "^0.0.1",
+    "@meeshkanml/json-schema-faker": "^0.0.2",
     "@types/sinon": "^7.0.13",
     "@types/whatwg-url": "^6.4.0",
     "ajv": "^6.10.0",
