@@ -24,7 +24,7 @@ describe("UnmockFaker", () => {
         .nock("https://foo.com")
         .get("/foo")
         .reply(200, { foo: u.string() });
-      const res = faker.fake({
+      const res = faker.generate({
         host: "foo.com",
         protocol: "https",
         method: "get",

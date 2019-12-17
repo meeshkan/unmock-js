@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import { responseCreatorFactory } from "../generator";
 import {
   CreateResponse,
+  IFaker,
   IListener,
   ISerializedRequest,
   ISerializedResponse,
@@ -27,7 +28,7 @@ const DEFAULT_OPTIONS: IUnmockOptions = {
   log: (__: string) => {}, // tslint:disable-line:no-empty
 };
 
-export default class UnmockFaker {
+export default class UnmockFaker implements IFaker {
   public createResponse: CreateResponse;
   /**
    * Add a new service to the faker using `nock` syntax.
@@ -63,12 +64,12 @@ export default class UnmockFaker {
   }
 
   /**
-   * Fake a response to a request.
+   * Generate a fake response to a request.
    * @param request Serialized request.
    * @throws Error if no matcher was found for the request.
    * @returns Serialized response.
    */
-  public fake(request: ISerializedRequest): ISerializedResponse {
+  public generate(request: ISerializedRequest): ISerializedResponse {
     return this.createResponse(request);
   }
 
