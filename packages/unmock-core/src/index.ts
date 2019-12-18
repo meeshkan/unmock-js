@@ -51,6 +51,26 @@ export class UnmockPackage implements IUnmockPackage {
     this.nock = addFromNock(this.backend.serviceStore);
   }
 
+  /**
+   * Create a new `UnmockFaker` with empty `ServiceStore`.
+   *
+   * @example
+   *
+   * const faker = unmock.faker();
+   * faker
+   *  .nock('https://api.github.com', 'github')
+   *  .get('/v1/users')
+   *  .reply({ id: '1' });
+   * const req: ISerializedRequest = {
+   *  host: "api.github.com",
+   *  path: '/v1/users',
+   *  protocol: 'https',
+   *  ...
+   * };
+   * const res = faker.generate(request);
+   *
+   * @returns UnmockFaker instance
+   */
   public faker(): UnmockFaker {
     return new UnmockFaker({ serviceStore: new ServiceStore([]) });
   }
