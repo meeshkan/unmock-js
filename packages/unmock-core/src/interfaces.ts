@@ -1,6 +1,10 @@
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
 
+export interface IFaker {
+  generate: CreateResponse;
+}
+
 export interface IServiceDefLoader {
   loadSync(): IServiceDef[];
 }

@@ -126,8 +126,8 @@ export class Backend {
      */
     this.faker.setOptions(options);
 
-    this.handleRequest = buildRequestHandler(
-      this.faker.createResponse.bind(this.faker),
+    this.handleRequest = buildRequestHandler((req: ISerializedRequest) =>
+      this.faker.createResponse(req),
     );
 
     this.interceptor = this.interceptorFactory({
