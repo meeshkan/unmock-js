@@ -17,6 +17,7 @@ export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 export { typeUtils };
+export { UnmockFaker };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
@@ -50,7 +51,7 @@ export class UnmockPackage implements IUnmockPackage {
     this.nock = addFromNock(this.backend.serviceStore);
   }
 
-  public newFaker(): UnmockFaker {
+  public faker(): UnmockFaker {
     return new UnmockFaker({ serviceStore: new ServiceStore([]) });
   }
 
