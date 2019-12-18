@@ -17,6 +17,7 @@ export { IService } from "./service/interfaces";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 export { typeUtils };
+export { UnmockFaker };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
@@ -50,7 +51,27 @@ export class UnmockPackage implements IUnmockPackage {
     this.nock = addFromNock(this.backend.serviceStore);
   }
 
-  public newFaker(): UnmockFaker {
+  /**
+   * Create a new `UnmockFaker` with empty `ServiceStore`.
+   *
+   * @example
+   *
+   * const faker = unmock.faker();
+   * faker
+   *  .nock('https://api.github.com', 'github')
+   *  .get('/v1/users')
+   *  .reply({ id: '1' });
+   * const req: ISerializedRequest = {
+   *  host: "api.github.com",
+   *  path: '/v1/users',
+   *  protocol: 'https',
+   *  ...
+   * };
+   * const res = faker.generate(request);
+   *
+   * @returns UnmockFaker instance
+   */
+  public faker(): UnmockFaker {
     return new UnmockFaker({ serviceStore: new ServiceStore([]) });
   }
 
