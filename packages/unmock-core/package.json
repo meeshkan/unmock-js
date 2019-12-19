@@ -1,5 +1,5 @@
 {
-  "version": "0.3.10",
+  "version": "0.3.11",
   "name": "unmock-core",
   "displayName": "unmock-core",
   "main": "dist/index.js",
@@ -13,8 +13,8 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "@meeshkanml/jsonschema": "^0.0.1",
     "@meeshkanml/json-schema-faker": "^0.0.2",
+    "@meeshkanml/jsonschema": "^0.0.1",
     "@types/sinon": "^7.0.13",
     "@types/whatwg-url": "^6.4.0",
     "ajv": "^6.10.0",
