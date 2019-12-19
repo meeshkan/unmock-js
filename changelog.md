@@ -2,11 +2,6 @@
 
 ## 0.3.11 (2019-12-19)
 
-Breaking changes:
-
-  - Rename `fake()` to `generate()`
-  - Rename `unmock.newFaker()` to `unmock.faker()`
-
 Features:
 
   - Add CLI to `unmock-server`
@@ -14,6 +9,7 @@ Features:
   - Implement parsing of request headers in `unmock-fetch`
   - Add `unmock-types` package
   - Extract `UnmockFaker` class from `Backend` class
+  - Rename `unmock.newFaker()` to `unmock.faker()`
 
 Fixes:
 
