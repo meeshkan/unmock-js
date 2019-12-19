@@ -1,5 +1,24 @@
 # CHANGELOG.md
 
+## 0.3.11 (2019-12-19)
+
+Breaking changes:
+
+  - Rename `fake()` to `generate()`
+  - Rename `unmock.newFaker()` to `unmock.faker()`
+
+Features:
+
+  - Add CLI to `unmock-server`
+  - Add `unmock-browser` package, which runs `unmock-js` in browser and React Native
+  - Implement parsing of request headers in `unmock-fetch`
+  - Add `unmock-types` package
+  - Extract `UnmockFaker` class from `Backend` class
+
+Fixes:
+
+  - Remove `concurrently` dependency
+
 ## 0.3.10 (2019-11-4)
 
 Features:
