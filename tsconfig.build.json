@@ -5,13 +5,16 @@
   "files": [],
   "include": [],
   "references": [
-    { "path": "./packages/unmock" },
+    { "path": "./packages/unmock/tsconfig.node.json" },
+    { "path": "./packages/unmock/tsconfig.browser.json" },
     { "path": "./packages/unmock-cli" },
     { "path": "./packages/unmock-core" },
     { "path": "./packages/unmock-jest" },
     { "path": "./packages/unmock-node" },
     { "path": "./packages/unmock-fetch" },
     { "path": "./packages/unmock-server" },
-    { "path": "./packages/openapi-refinements" }
+    { "path": "./packages/unmock-browser" },
+    { "path": "./packages/openapi-refinements" },
+    { "path": "./packages/unmock-types" }
   ]
 }

@@ -11,7 +11,9 @@ export const testServiceDefLoader: IServiceDefLoader = {
   loadSync() {
     const petstoreDirectory = path.resolve(__dirname, "__unmock__", "petstore");
 
-    const spec = fs.readFileSync(path.join(petstoreDirectory, "spec.yaml"));
+    const spec = fs
+      .readFileSync(path.join(petstoreDirectory, "spec.yaml"))
+      .toString("utf-8");
 
     const petstoreServiceDef: IServiceDef = {
       absolutePath: petstoreDirectory,

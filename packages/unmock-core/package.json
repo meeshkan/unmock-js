@@ -1,5 +1,5 @@
 {
-  "version": "0.3.10",
+  "version": "0.3.11",
   "name": "unmock-core",
   "displayName": "unmock-core",
   "main": "dist/index.js",
@@ -13,6 +13,8 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "@meeshkanml/json-schema-faker": "^0.0.2",
+    "@meeshkanml/jsonschema": "^0.0.1",
     "@types/sinon": "^7.0.13",
     "@types/whatwg-url": "^6.4.0",
     "ajv": "^6.10.0",
@@ -26,10 +28,8 @@
     "io-ts": "^2.0.1",
     "json-pointer": "^0.6.0",
     "json-schema-deref-sync": "^0.10.1",
-    "json-schema-faker": "^0.5.0-rc17",
     "json-schema-poet": "0.0.9",
     "json-schema-strictly-typed": "0.0.14",
-    "jsonschema": "^1.2.4",
     "loas3": "^0.1.4",
     "lodash": "^4.17.14",
     "minimatch": "^3.0.4",

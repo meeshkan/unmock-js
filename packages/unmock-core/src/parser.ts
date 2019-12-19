@@ -39,10 +39,7 @@ export abstract class ServiceParser {
 
     debugLog(`Parsing service specification ${serviceFile.basename}`);
 
-    const contents: string =
-      serviceFile.contents instanceof Buffer
-        ? serviceFile.contents.toString("utf-8")
-        : serviceFile.contents;
+    const contents = serviceFile.contents;
 
     const schema = loas3(jsYaml.safeLoad(contents));
     if (isLeft(schema)) {
@@ -58,7 +55,6 @@ export abstract class ServiceParser {
     const name = serviceDef.directoryName;
 
     return new ServiceCore({
-      absPath: serviceDef.absolutePath,
       name,
       schema: schema.right,
     });

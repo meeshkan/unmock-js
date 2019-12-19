@@ -63,11 +63,6 @@ export interface IServiceCore {
   readonly schema: OpenAPIObject;
 
   /**
-   * Holds the absolute path where the service specification resides.
-   */
-  readonly absPath: string;
-
-  /**
    * Spy keeping track of request response pairs
    */
   readonly spy: ServiceSpy;

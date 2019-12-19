@@ -1,7 +1,7 @@
 {
   "license": "MIT",
   "scripts": {
-    "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.tsbuildinfo",
+    "clean": "npm prune && del-cli ./packages/*/dist ./packages/*/tsconfig.*tsbuildinfo",
     "compile:clean": "tsc --build tsconfig.build.json --clean",
     "compile:tests": "tsc --build tsconfig.test.json && tsc --build tsconfig.test.json --clean",
     "compile": "tsc --build tsconfig.build.json",
@@ -11,8 +11,8 @@
     "format-check": "prettier --check \"packages/**/*.ts\" \"packages/**/*.js\"",
     "format": "prettier --write \"packages/**/*.ts\" \"packages/**/*.js\"",
     "lint": "npm run lint-ts",
-    "lint-ts": "npm run format-check && tslint --project packages/openapi-refinements/ --config tslint.json && tslint --project packages/unmock/ --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json && tslint --project packages/unmock-server/ --config tslint.json",
-    "lint-ts-fix": "npm run format && tslint --fix --project packages/openapi-refinements/ --config tslint.json && tslint --fix --project packages/unmock/ --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json && tslint --fix --project packages/unmock-node/ --config tslint.json && tslint --fix --project packages/unmock-server/ --config tslint.json",
+    "lint-ts": "npm run format-check && tslint --project packages/unmock-types/ --config tslint.json && tslint --project packages/openapi-refinements/ --config tslint.json && tslint --project packages/unmock/tsconfig.node.json --config tslint.json && tslint --project packages/unmock/tsconfig.browser.json --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json && tslint --project packages/unmock-server/ --config tslint.json && tslint --project packages/unmock-browser/ --config tslint.json",
+    "lint-ts-fix": "npm run format && tslint --fix --project packages/unmock-types/ --config tslint.json && tslint --fix --project packages/openapi-refinements/ --config tslint.json && tslint --fix --project packages/unmock/tsconfig.node.json --config tslint.json && tslint --fix --project packages/unmock/tsconfig.browser.json --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json && tslint --fix --project packages/unmock-node/ --config tslint.json && tslint --fix --project packages/unmock-server/ --config tslint.json && tslint --fix --project packages/unmock-browser/ --config tslint.json",
     "test": "jest --verbose",
     "test:debug": "DEBUG=unmock* jest --verbose",
     "test:clean": "jest --clearCache",
@@ -96,7 +96,9 @@
     "unmock-jest": "file:packages/unmock-jest",
     "unmock-node": "file:packages/unmock-node",
     "unmock-server": "file:packages/unmock-server",
-    "openapi-refinements": "file:packages/openapi-refinements"
+    "unmock-browser": "file:packages/unmock-browser",
+    "openapi-refinements": "file:packages/openapi-refinements",
+    "unmock-types": "file:packages/unmock-types"
   },
   "name": "unmock",
   "jest": {

@@ -11,7 +11,9 @@
     { "path": "./packages/unmock-jest/src/__tests__" },
     { "path": "./packages/unmock-node/src/__tests__" },
     { "path": "./packages/unmock-fetch/src/__tests__" },
-    { "path": "./packages/openapi-refinements/src/__tests__" }
+    { "path": "./packages/unmock-browser/src/__tests__" },
+    { "path": "./packages/openapi-refinements/src/__tests__" },
+    { "path": "./packages/unmock-types/src/__tests__" }
   ],
   "exclude": ["node_modules"]
 }

@@ -1,0 +1,28 @@
+{
+  "name": "unmock-browser",
+  "version": "0.3.11",
+  "description": "Unmock for browser and React Native",
+  "keywords": [
+    "unmock",
+    "mock",
+    "http"
+  ],
+  "homepage": "https://github.com/unmock/unmock-js",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unmock/unmock-js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/unmock/unmock-js/issues"
+  },
+  "dependencies": {
+    "buffer": "^5.4.3",
+    "unmock-core": "file:../unmock-core",
+    "unmock-fetch": "file:../unmock-fetch"
+  }
+}

@@ -7,7 +7,7 @@
   "include": ["src/**/*"],
   "exclude": ["**/__tests__"],
   "references": [
-    { "path": "../unmock" },
+    { "path": "../unmock/tsconfig.node.json" },
     { "path": "../unmock-node" }
   ]
 }

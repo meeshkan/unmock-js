@@ -1,6 +1,10 @@
 import { OpenAPIObject, ServiceStoreType } from "./service/interfaces";
 import { AllowedHosts } from "./settings/allowedHosts";
 
+export interface IFaker {
+  generate: CreateResponse;
+}
+
 export interface IServiceDefLoader {
   loadSync(): IServiceDef[];
 }
@@ -624,7 +628,7 @@ export interface IUnmockPackage {
 
 /**
  * Analogous to `IncomingHttpHeaders` in @types/node.
- * Header names are expected to be _lowercased_.
+ * Header keys are expected to be _lowercased_.
  */
 export interface IIncomingHeaders {
   [header: string]: string | string[] | undefined;
@@ -689,7 +693,7 @@ export interface IServiceDefFile {
   /**
    * Contents of the service definition file
    */
-  contents: string | Buffer;
+  contents: string;
 }
 
 /**

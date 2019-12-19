@@ -1,12 +1,18 @@
 /**
  * Implements the logic for generating a response from a service file
  */
-// Try fixing broken imports in Node <= 8 by using require instead of default import
-const jsf = require("json-schema-faker"); // tslint:disable-line:no-var-requires
+// No type definitions for json-schema-faker :/
+// @ts-ignore
+import jsfRequire = require("@meeshkanml/json-schema-faker");
+// Use default import if exists. Seems that default is needed in browser but
+// not available in Node.js/React Native.
+const jsf = jsfRequire.hasOwnProperty("default")
+  ? jsfRequire.default
+  : jsfRequire;
+import * as jsonschema from "@meeshkanml/jsonschema";
 import { array } from "fp-ts/lib/Array";
 import { fold, isNone, none, Option, some } from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/lib/pipeable";
-import * as jsonschema from "jsonschema";
 import {
   isParameter,
   isResponse,
