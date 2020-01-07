@@ -10,6 +10,10 @@
     
     You will be prompted for new version.
 
+1. Update `oclif.manifest.json` for `unmock-server`:
+
+    `npm run update-oclif`
+
 1. Update the [change log](./changelog.md), commit, and push the branch
 1. Make a PR to *master*. If you use [hub](https://hub.github.com/):
 
