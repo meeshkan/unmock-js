@@ -10,6 +10,7 @@
     "postinstall": "lerna run prepare && npm run lint-ts && npm run compile:tests && npm run compile",
     "format-check": "prettier --check \"packages/**/*.ts\" \"packages/**/*.js\"",
     "format": "prettier --write \"packages/**/*.ts\" \"packages/**/*.js\"",
+    "update-oclif": "cd packages/unmock-server && ../../node_modules/@oclif/dev-cli/bin/run manifest",
     "lint": "npm run lint-ts",
     "lint-ts": "npm run format-check && tslint --project packages/unmock-types/ --config tslint.json && tslint --project packages/openapi-refinements/ --config tslint.json && tslint --project packages/unmock/tsconfig.node.json --config tslint.json && tslint --project packages/unmock/tsconfig.browser.json --config tslint.json && tslint --project packages/unmock-cli/ --config tslint.json && tslint --project packages/unmock-core/ --config tslint.json && tslint --project packages/unmock-jest/ --config tslint.json && tslint --project packages/unmock-node/ --config tslint.json && tslint --project packages/unmock-server/ --config tslint.json && tslint --project packages/unmock-browser/ --config tslint.json",
     "lint-ts-fix": "npm run format && tslint --fix --project packages/unmock-types/ --config tslint.json && tslint --fix --project packages/openapi-refinements/ --config tslint.json && tslint --fix --project packages/unmock/tsconfig.node.json --config tslint.json && tslint --fix --project packages/unmock/tsconfig.browser.json --config tslint.json && tslint --fix --project packages/unmock-cli/ --config tslint.json && tslint --fix --project packages/unmock-core/ --config tslint.json && tslint --fix --project packages/unmock-jest/ --config tslint.json && tslint --fix --project packages/unmock-node/ --config tslint.json && tslint --fix --project packages/unmock-server/ --config tslint.json && tslint --fix --project packages/unmock-browser/ --config tslint.json",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.7.7",
     "@babel/preset-react": "^7.7.4",
+    "@oclif/dev-cli": "^1.22.2",
     "@testing-library/jest-dom": "^4.2.4",
     "@types/app-root-path": "^1.2.4",
     "@types/content-type": "^1.1.3",

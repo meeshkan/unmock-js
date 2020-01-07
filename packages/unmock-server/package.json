@@ -18,7 +18,8 @@
   "files": [
     "/bin",
     "/src",
-    "/dist"
+    "/dist",
+    ".oclif.manifest.json"
   ],
   "dependencies": {
     "@oclif/command": "^1.5.19",
@@ -35,7 +36,7 @@
     "unmock-node": "file:../unmock-node"
   },
   "oclif": {
-    "commands": "./src/commands",
+    "commands": "./dist/commands",
     "bin": "unmock-server",
     "plugins": [
       "@oclif/plugin-help"

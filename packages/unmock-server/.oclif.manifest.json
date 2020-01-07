@@ -1,0 +1,1 @@
+{"version":"0.3.11","commands":{"start":{"id":"start","description":"Start unmock server and proxy","pluginName":"unmock-server","pluginType":"core","aliases":[],"examples":["$ unmock-server start\n"],"flags":{"help":{"name":"help","type":"boolean","char":"h","description":"show CLI help","allowNo":false}},"args":[]}}}
