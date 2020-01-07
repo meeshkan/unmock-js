@@ -42,7 +42,10 @@ export const objectToArray = <T>() =>
   );
 
 export const valueLens = <A, T>() =>
-  new Lens<[A, T], T>(s => s[1], a => s => [s[0], a]);
+  new Lens<[A, T], T>(
+    s => s[1],
+    a => s => [s[0], a],
+  );
 
 export type MethodNames =
   | "get"
@@ -278,7 +281,10 @@ const lensToOperations = (
     )
     .composeLens(valueLens())
     .composePrism(
-      new Prism<any, Operation>(s => (isOperation(s) ? some(s) : none), a => a),
+      new Prism<any, Operation>(
+        s => (isOperation(s) ? some(s) : none),
+        a => a,
+      ),
     );
 const lensToResponses = (
   path: RegExp | boolean,
@@ -479,7 +485,10 @@ const drillDownSchemaItems = (o: OpenAPIObject, i: number) =>
       new Prism<
         Schema | Reference | Array<Schema | Reference>,
         Array<Schema | Reference>
-      >(a => (a instanceof Array ? some(a) : none), a => a),
+      >(
+        a => (a instanceof Array ? some(a) : none),
+        a => a,
+      ),
     )
     .composeOptional(
       new Optional<Array<Schema | Reference>, Schema | Reference>(

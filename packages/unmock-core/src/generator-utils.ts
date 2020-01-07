@@ -35,7 +35,7 @@ import {
 } from "./service/interfaces";
 
 const codeConvert = (c: CodeAsInt | keyof Responses): keyof Responses =>
-  `${c}` as (keyof Responses);
+  `${c}` as keyof Responses;
 
 const withOrWithoutCodes = (withOrWithout: boolean) => (
   codes: keyof Responses | CodeAsInt | Array<keyof Responses | CodeAsInt>,
