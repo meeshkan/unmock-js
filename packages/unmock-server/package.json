@@ -37,7 +37,7 @@
   },
   "scripts": {
     "postpack": "rm -f .oclif.manifest.json",
-    "prepack": "../../node_modules/@oclif/dev-cli/bin/run --help"
+    "prepack": "../../node_modules/@oclif/dev-cli/bin/run manifest"
   },
   "oclif": {
     "commands": "./dist/commands",
