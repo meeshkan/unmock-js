@@ -35,6 +35,10 @@
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   },
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "../../node_modules/@oclif/oclif-dev/bin manifest"
+  },
   "oclif": {
     "commands": "./dist/commands",
     "bin": "unmock-server",
