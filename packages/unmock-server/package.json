@@ -36,8 +36,8 @@
     "unmock-node": "file:../unmock-node"
   },
   "scripts": {
-    "postpack": "rm -f oclif.manifest.json",
-    "prepack": "../../node_modules/@oclif/oclif-dev/bin manifest"
+    "postpack": "rm -f .oclif.manifest.json",
+    "prepack": "../../node_modules/@oclif/dev-cli/bin/run --help"
   },
   "oclif": {
     "commands": "./dist/commands",
