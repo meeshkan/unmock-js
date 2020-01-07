@@ -17,8 +17,8 @@
   },
   "files": [
     "/bin",
-    "/src",
     "/dist",
+    "/certs/ca.pem",
     ".oclif.manifest.json"
   ],
   "dependencies": {
