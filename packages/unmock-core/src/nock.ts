@@ -160,7 +160,10 @@ const keepOptionals = (i: IExtendedObjectType): ITameExtendedObjectType =>
       new Prism<
         [string, ExtendedValueType | IMaybeJSONValue],
         [string, ExtendedValueType]
-      >(a => (MaybeJSONValue.is(a[1]) ? some([a[0], a[1].val]) : none), a => a),
+      >(
+        a => (MaybeJSONValue.is(a[1]) ? some([a[0], a[1].val]) : none),
+        a => a,
+      ),
     )
     .composeGetter(identityGetter())
     .getAll(i)
@@ -657,52 +660,54 @@ const buildFluentNock = (
           ((fds as any)[method](p) as IDynamicServiceSpec).reply(code),
         ),
       ),
-  }))(Object.entries(HTTPMethodsWithCommonStatusResponses).reduce(
-    (o, [method, code]) => ({
-      ...o,
-      [method]:
-        method === "post" || method === "patch" || method === "put"
-          ? (endpoint: ValidEndpointType, requestBody?: ExtendedJSONSchema) =>
-              new DynamicServiceSpec(
-                updateStore(
+  }))(
+    Object.entries(HTTPMethodsWithCommonStatusResponses).reduce(
+      (o, [method, code]) => ({
+        ...o,
+        [method]:
+          method === "post" || method === "patch" || method === "put"
+            ? (endpoint: ValidEndpointType, requestBody?: ExtendedJSONSchema) =>
+                new DynamicServiceSpec(
+                  updateStore(
+                    baseUrl,
+                    method as HTTPMethod,
+                    naked(endpoint),
+                    endpointToQs(endpoint) || {},
+                    requestHeaders as Record<string, Schema>,
+                    requestBody !== undefined
+                      ? (vanillaJSONSchemify(requestBody) as Schema)
+                      : undefined,
+                    name,
+                  ),
+                  code as CodeAsInt,
                   baseUrl,
-                  method as HTTPMethod,
-                  naked(endpoint),
                   endpointToQs(endpoint) || {},
-                  requestHeaders as Record<string, Schema>,
-                  requestBody !== undefined
-                    ? (vanillaJSONSchemify(requestBody) as Schema)
-                    : undefined,
+                  requestHeaders,
+                  store,
+                  name,
+                )
+            : (endpoint: ValidEndpointType) =>
+                new DynamicServiceSpec(
+                  updateStore(
+                    baseUrl,
+                    method as HTTPMethod,
+                    naked(endpoint),
+                    endpointToQs(endpoint) || {},
+                    requestHeaders as Record<string, Schema>,
+                    undefined,
+                    name,
+                  ),
+                  code as CodeAsInt,
+                  baseUrl,
+                  endpointToQs(endpoint) || {},
+                  requestHeaders,
+                  store,
                   name,
                 ),
-                code as CodeAsInt,
-                baseUrl,
-                endpointToQs(endpoint) || {},
-                requestHeaders,
-                store,
-                name,
-              )
-          : (endpoint: ValidEndpointType) =>
-              new DynamicServiceSpec(
-                updateStore(
-                  baseUrl,
-                  method as HTTPMethod,
-                  naked(endpoint),
-                  endpointToQs(endpoint) || {},
-                  requestHeaders as Record<string, Schema>,
-                  undefined,
-                  name,
-                ),
-                code as CodeAsInt,
-                baseUrl,
-                endpointToQs(endpoint) || {},
-                requestHeaders,
-                store,
-                name,
-              ),
-    }),
-    {},
-  ) as IFluentDynamicService);
+      }),
+      {},
+    ) as IFluentDynamicService,
+  );
 
 export const nockify = ({
   serviceStore,

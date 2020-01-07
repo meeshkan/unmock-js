@@ -226,7 +226,10 @@ test("changeToConst accepts const with full array", () => {
   const refined = changeToConst([
     { id: 0, name: "Fluffy" },
     { id: 1, name: "Trix", tags: ["cute", "sad"] },
-  ])(responseBody("/pets", true, ["200"]), [])(petstore);
+  ])(
+    responseBody("/pets", true, ["200"]),
+    [],
+  )(petstore);
   expect(
     (<any>refined).paths["/pets"].get.responses["200"].content[
       "application/json"

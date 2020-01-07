@@ -58,7 +58,10 @@ describe("Reporter utils", () => {
       expect(result).toEqual(["dir", "stuff"]);
     });
     it("should return the whole array when all items match", () => {
-      const result = largestCommonArray([["dir", "stuff"], ["dir", "stuff"]]);
+      const result = largestCommonArray([
+        ["dir", "stuff"],
+        ["dir", "stuff"],
+      ]);
       expect(result).toEqual(["dir", "stuff"]);
     });
     it("should return empty array when one of the arrays is empty", () => {
@@ -73,11 +76,17 @@ describe("Reporter utils", () => {
       expect(result).toEqual(["dir", "stuff"]);
     });
     it("should only return the first when the first matches", () => {
-      const result = largestCommonArray([["dir", "stuff"], ["dir", "baz"]]);
+      const result = largestCommonArray([
+        ["dir", "stuff"],
+        ["dir", "baz"],
+      ]);
       expect(result).toEqual(["dir"]);
     });
     it("should return an empty array when first item is different", () => {
-      const result = largestCommonArray([["dir", "stuff"], ["dir2", "stuff"]]);
+      const result = largestCommonArray([
+        ["dir", "stuff"],
+        ["dir2", "stuff"],
+      ]);
       expect(result).toEqual([]);
     });
   });
