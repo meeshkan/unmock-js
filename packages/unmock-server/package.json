@@ -17,8 +17,9 @@
   },
   "files": [
     "/bin",
-    "/src",
-    "/dist"
+    "/dist",
+    "/certs/ca.pem",
+    ".oclif.manifest.json"
   ],
   "dependencies": {
     "@oclif/command": "^1.5.19",
@@ -34,8 +35,12 @@
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   },
+  "scripts": {
+    "postpack": "rm -f .oclif.manifest.json",
+    "prepack": "../../node_modules/@oclif/dev-cli/bin/run manifest"
+  },
   "oclif": {
-    "commands": "./src/commands",
+    "commands": "./dist/commands",
     "bin": "unmock-server",
     "plugins": [
       "@oclif/plugin-help"
