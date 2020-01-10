@@ -1,5 +1,15 @@
 # CHANGELOG.md
 
+## 0.3.12 (2020-01-09)
+
+Fixes:
+
+  - Fixed bug in `unmock-server` CLI by including `oclif.manifest.json` in the package.
+
+Features:
+
+  - Updated packages to fix security vulnerabilities
+
 ## 0.3.11 (2019-12-19)
 
 Features:

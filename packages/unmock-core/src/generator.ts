@@ -234,7 +234,10 @@ const keepMethodIfRequiredRequestBodyIsPresent = (
         ).length === 0
           ? some(p)
           : none,
-        fold(() => omit(p, req.method), a => a),
+        fold(
+          () => omit(p, req.method),
+          a => a,
+        ),
       );
 
 const keepMethodIfRequiredHeaderParametersArePresent = (
@@ -272,7 +275,10 @@ const keepMethodIfRequiredQueryOrHeaderParametersArePresent = (
           }).valid
             ? some(p)
             : none,
-        fold(() => omit(p, req.method), a => a),
+        fold(
+          () => omit(p, req.method),
+          a => a,
+        ),
       );
 
 const maybeAddStringSchema = (
@@ -457,7 +463,10 @@ export const firstElementOptional = <T>() =>
  * A lens that zooms into the `key` of a `[key, value]` pair.
  */
 export const keyLens = <A, T>() =>
-  new Lens<[A, T], A>(a => a[0], a => s => [a, s[1]]);
+  new Lens<[A, T], A>(
+    a => a[0],
+    a => s => [a, s[1]],
+  );
 
 const getFirstMethodInternal2 = (
   p: PathItem,
@@ -484,7 +493,10 @@ export const getFirstMethod = (p: PathItem): Option<[MethodNames, Operation]> =>
 export const operationOptional = new Optional<
   PathItem,
   [MethodNames, Operation]
->(a => getFirstMethod(a), a => s => ({ ...s, [a[0]]: a[1] }));
+>(
+  a => getFirstMethod(a),
+  a => s => ({ ...s, [a[0]]: a[1] }),
+);
 
 /**
  * Gets `some` header from a reference
