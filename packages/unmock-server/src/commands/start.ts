@@ -11,15 +11,12 @@ const log = (...args: any[]) => console.log(...args); // tslint:disable-line
 const addCleanUp = (callback: () => void) => {
   process.on("exit", callback);
 
-  process.on("SIGINT", () => {
-    process.exit(2);
-  });
-
   process.on("uncaughtException", e => {
     log("Uncaught exception: %s", e.stack);
     process.exit(99);
   });
 
+  process.on("SIGINT", () => process.exit(2));
   process.on("SIGTERM", () => process.exit(2));
 };
 
