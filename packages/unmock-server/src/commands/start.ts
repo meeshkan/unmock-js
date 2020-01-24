@@ -21,21 +21,21 @@ export default class Start extends Command {
   public static args = [];
 
   public async run() {
-    debugLog('Starting.');
+    debugLog("Starting.");
     const run = () => {
       const { app } = buildApp();
       const [httpServer, httpsServer] = startServer(app);
       const proxyServer = startProxy();
 
       const sigTermHandler = () => {
-        debugLog('Received SIGTERM. Stopping servers.');
+        debugLog("Received SIGTERM. Stopping servers.");
         httpServer.close();
         httpsServer.close();
         proxyServer.close();
-        debugLog('Servers closed.');
-      }
+        debugLog("Servers closed.");
+      };
 
-      process.on('SIGTERM', sigTermHandler);
+      process.on("SIGTERM", sigTermHandler);
       debugLog("Writing PID to file for closing...");
       writePid();
     };

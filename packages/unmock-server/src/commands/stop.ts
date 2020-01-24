@@ -26,15 +26,15 @@ export default class Stop extends Command {
     const pidOrNull = readPidIfExists();
 
     if (pidOrNull === null) {
-        log("Server not running.")
-        return;
+      log("Server not running.");
+      return;
     }
 
     try {
-        process.kill(pidOrNull, 0);
+      process.kill(pidOrNull, 0);
     } catch (ex) {
-        log("Server not running.");
-        return;
+      log("Server not running.");
+      return;
     }
 
     debugLog("Sending %s to PID %d", TERM_SIGNAL, pidOrNull);
