@@ -1,6 +1,6 @@
 import { Command, flags } from "@oclif/command";
 import debug from "debug";
-import { deletePidFile, readPidIfExists, TERM_SIGNAL } from "../pid";
+import { readPidIfExists, TERM_SIGNAL } from "../pid";
 
 const debugLog = debug("unmock-server:stop");
 const log = (...args: any[]) => console.log(...args); // tslint:disable-line
@@ -40,7 +40,5 @@ export default class Stop extends Command {
     debugLog("Sending %s to PID %d", TERM_SIGNAL, pidOrNull);
     process.kill(pidOrNull, TERM_SIGNAL);
     log("Server stopped.");
-
-    deletePidFile();
   }
 }
