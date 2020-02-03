@@ -1,5 +1,5 @@
 import { buildFetch, Fetch } from "unmock-fetch";
-import { Service, transform, UnmockPackage } from "..";
+import { IService, transform, UnmockPackage } from "..";
 import { Backend } from "../backend";
 import { IInterceptorOptions } from "../interceptor";
 import { testServiceDefLoader } from "./utils";
@@ -26,7 +26,7 @@ const backend = new Backend({
 const unmock = new UnmockPackage(backend);
 
 describe("Runner loop", () => {
-  let petstore: Service;
+  let petstore: IService;
 
   beforeAll(() => {
     unmock.on();
