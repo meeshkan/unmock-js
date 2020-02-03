@@ -5,7 +5,17 @@ import { ServiceCore } from "./serviceCore";
 import { ServiceSpy } from "./spy";
 
 export class Service implements IService {
-  public static fromOpenAPI(schema: OpenAPIObject, name: string): Service {
+  /**
+   * Create a new service from OpenAPI schema.
+   * @param param0 OpenAPI schema and service name.
+   */
+  public static fromOpenAPI({
+    schema,
+    name,
+  }: {
+    schema: OpenAPIObject;
+    name: string;
+  }): Service {
     const core = new ServiceCore({ schema, name });
     return new Service(core);
   }
