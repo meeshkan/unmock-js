@@ -26,6 +26,7 @@ export {
 
 export interface IService {
   readonly spy: ServiceSpy;
+  readonly core: IServiceCore;
   reset(): void;
   state(...f: IStateTransformer[]): void;
 }
