@@ -23,6 +23,7 @@ Fuzz test your REST API calls.
   + [Ignorable API calls](#ignorable-api-calls)
 * [Expectations](#expectations)
 * [Initializing Mocks](#initializing-mocks)
+* [Faker API](#faker-api)
 * [Runner](#runner)
 * [OpenAPI](#openapi)
 * [Tutorials](#tutorials)
@@ -369,6 +370,67 @@ github.state((req, schema) =>
 ```
 
 The unmock [documentation](https://www.unmock.io/docs/setting-state) contains more information about initializing the state.
+
+## Faker API
+
+`UnmockFaker` class provides a lower-level API for working with mocks. You can create a new `UnmockFaker` via `unmock.faker()`:
+
+```ts
+const unmock, { Service, ISerializedRequest} = require("unmock");
+// import unmock from "unmock";  // ES6
+
+const faker = unmock.faker();
+```
+
+To use the faker for mocking, you need to add services. The first option is to use the `nock` method:
+
+```ts
+faker
+  .nock("http://petstore.swagger.io", "petstore")
+  .get("/v1/pets")
+  .reply(200, { foo: u.string() });
+```
+
+Alternatively, you can create a service from OpenAPI specification with `Service.fromOpenAPI`:
+
+```ts
+const { Service } = require("unmock");
+
+const schema: OpenAPIObject = ...; // Load OpenAPIObject
+const petstoreService = Service.fromOpenAPI({ schema, name: "petstore" })
+
+// Add service to `faker`
+faker.add(petstoreService);
+```
+
+You can then also modify the state of the petstore service via `state` property:
+
+```ts
+const { transform } = require("unmock");
+// Service should always return code 200
+petstore.state(transform.withCodes(200));
+```
+
+Once you have added a service, you can use `faker.generate` method to create a mock for any `Request` object:
+
+```ts
+const { UnmockRequest, UnmockResponse } = require("unmock");
+
+const req: UnmockRequest = {
+  host: "petstore.swagger.io",
+  protocol: "http",
+  method: "get",
+  path: "/v1/pets",
+  pathname: "/v1/pets",
+  headers: {},
+  query: {},
+}
+
+const res: UnmockResponse = faker.generate(req);
+
+// Access res.statusCode, res.headers, res.body, etc.
+expect(res.statusCode).toBe(200);
+```
 
 ## Runner
 
