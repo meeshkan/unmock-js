@@ -388,14 +388,14 @@ Unmock supports the reading of OpenAPI specifications out of the box. Place your
 
 ## Tutorials
 
-- [Unmock ts koans](https://github.com/unmock/unmock-ts-koans)
+- [Unmock ts koans](https://github.com/meeshkan/unmock-ts-koans)
 - [Unmock js katacoda](https://www.katacoda.com/unmock/scenarios/introduction)
 
 ## Contributing
 
 Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRIBUTING.md) for notes on our commit message conventions and how to run tests.
 
-Please note that this project is governed by the [Unmock Community Code of Conduct](https://github.com/unmock/code-of-conduct). By participating in this project, you agree to abide by its terms.
+Please note that this project is governed by the [Meeshkan Community Code of Conduct](https://github.com/meeshkan/code-of-conduct). By participating in this project, you agree to abide by its terms.
 
 ## Development
 
