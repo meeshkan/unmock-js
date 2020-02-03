@@ -96,6 +96,13 @@ export default class UnmockFaker implements IFaker {
     this.serviceStore.resetServices();
   }
 
+  /**
+   * Remove all services.
+   */
+  public purge() {
+    this.serviceStore.removeAll();
+  }
+
   private createResponseCreator(options?: IUnmockOptions): CreateResponse {
     return responseCreatorFactory({
       listeners: this.listeners,
