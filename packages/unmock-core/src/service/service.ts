@@ -12,7 +12,7 @@ export class Service implements IService {
 
   public readonly spy: ServiceSpy;
 
-  constructor(private readonly core: IServiceCore) {
+  constructor(public readonly core: IServiceCore) {
     this.spy = core.spy;
   }
 

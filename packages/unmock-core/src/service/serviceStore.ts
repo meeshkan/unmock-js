@@ -82,8 +82,21 @@ export class ServiceStore {
     this.services = services;
   }
 
+  /**
+   * Add a new service to the store.
+   * @param service Service instance.
+   * @throws Error if a service with the same name already exists.
+   */
   public add(service: Service): void {
     const core = service.core;
+    const serviceName = service.core.name;
+
+    if (this.services.hasOwnProperty(serviceName)) {
+      throw Error(`Service with name ${serviceName} exists.`);
+    }
+
+    this.cores[serviceName] = core;
+    this.services[serviceName] = service;
   }
 
   /**
