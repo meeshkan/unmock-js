@@ -5,7 +5,4 @@ export {
   ISerializedResponse as UnmockResponse,
   ServiceStoreType as UnmockServices,
 } from "./interfaces";
-export {
-  IService as UnmockService,
-  IService as Service,
-} from "./service/interfaces";
+export { IService as UnmockService } from "./service/interfaces";
