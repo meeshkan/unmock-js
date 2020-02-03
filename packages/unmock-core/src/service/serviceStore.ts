@@ -82,6 +82,10 @@ export class ServiceStore {
     this.services = services;
   }
 
+  public add(service: Service): void {
+    const core = service.core;
+  }
+
   /**
    * Add service to the store using `nock` syntax.
    * @param baseUrl Base URL. For example: "https://api.github.com"
