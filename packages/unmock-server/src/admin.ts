@@ -43,7 +43,7 @@ const postServiceHandler = (unmock: UnmockPackage) => (
   debugLog(`Service ${serviceName} exists, updating`);
   unmock.backend.faker.update(service);
 
-  return res.json({ message: `Service ${serviceName} updated` });
+  return res.json({ message: `Updated service ${serviceName}` });
 };
 
 const getServices = (unmock: UnmockPackage) => (
@@ -63,7 +63,7 @@ const getServiceHandler = (unmock: UnmockPackage) => (
   const exists = serviceExists(unmock, name);
 
   if (!exists) {
-    return res.status(404).send(`Service with name: ${name} does not exist.`);
+    return res.status(404).send(`Service ${name} does not exist.`);
   }
 
   debugLog(`Service ${name} exists, updating`);
