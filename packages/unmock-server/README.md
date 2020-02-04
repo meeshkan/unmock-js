@@ -1,12 +1,11 @@
 # unmock-server
 
 [![npm](https://img.shields.io/npm/v/unmock-server.svg)](https://www.npmjs.com/package/unmock-server)
-[![CircleCI](https://circleci.com/gh/unmock/unmock-js.svg?style=svg)](https://circleci.com/gh/unmock/unmock-js)
+[![CircleCI](https://circleci.com/gh/unmock/unmock-js.svg?style=svg)](https://circleci.com/gh/Meeshkan/unmock-js)
 [![codecov](https://codecov.io/gh/unmock/unmock-js/branch/dev/graph/badge.svg)](https://codecov.io/gh/unmock/unmock-js)
 [![Known Vulnerabilities](https://snyk.io/test/github/unmock/unmock-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/unmock/unmock-js?targetFile=package.json)
 
-Unmock server mocks APIs using [unmock-js](https://github.com/unmock/unmock-js).
-
+Unmock server mocks APIs using [unmock-js](https://github.com/Meeshkan/unmock-js).
 
 ## Installation
 
@@ -59,13 +58,13 @@ Start `unmock-server` with `start` command:
 $ unmock-server start
 ```
 
-You need to add `npx` or `yarn` before the command depending on your installation method.
+You may need to add `npx` or `yarn` before the command depending on your installation method.
 
-Running `unmock-server start` starts
+The `start` command starts
 
-1. an admin server at port 8888 for managing services
-1. a proxy server at port 8008 for mocking requests
-1. a mock server at port 8000 (HTTP) and 8443 (HTTPS) for internally handling requests made to the proxy.
+1. admin server at port 8888 for managing services
+1. proxy server at port 8008 for mocking requests
+1. mock server at port 8000 (HTTP) and 8443 (HTTPS) for internally handling requests made to the proxy.
 
 ### Using the mock proxy
 
@@ -87,18 +86,31 @@ To use the proxy for mocking requests, you need to:
     > wget https://raw.githubusercontent.com/unmock/unmock-js/dev/packages/unmock-server/certs/ca.pem`
     > ```
     > You then need to add the mock server certificate to the list of trusted certificates.
-    > For `curl`: set environment variable
-    > - `SSL_CERT_FILE=ca.pem`
+    > For `curl`, set environment variable `SSL_CERT_FILE=ca.pem`
 
 #### Example calls with `cURL`
 
-- Request to proxy with HTTP: `http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos`
-- Request to proxy with HTTPS: `https_proxy=http://localhost:8008 SSL_CERT_FILE=ca.pem curl -i https://api.github.com/user/repos`
-- to mock server directly: `curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos`
+Request to proxy with HTTP: 
+
+```bash
+$ http_proxy=http://localhost:8008 curl -i http://api.github.com/user/repos
+```
+
+Request to proxy with HTTPS: 
+
+```bash
+$ https_proxy=http://localhost:8008 SSL_CERT_FILE=ca.pem curl -i https://api.github.com/user/repos
+```
+
+Request to mock server without using the proxy: 
+
+```bash
+$ curl -i --header "X-Forwarded-Host: api.github.com" http://localhost:8000/user/repos
+```
 
 ### Managing services
 
-You can manage services either via the admin API or via filesystem.
+You can manage services either via the admin REST API or through filesystem.
 
 #### Using the admin server
 
@@ -122,17 +134,13 @@ $ curl http://localhost:8888/services/my-service
 
 #### Using `__unmock__` folder
 
-Prepare `__unmock__` folder with [OpenAPI specifications](https://www.unmock.io/docs/openapi).
+At startup, `unmock-server` loads all services from `__unmock__` folder. For example, to mock `api.github.com`, you need to
 
-> To mock `api.github.com`:
-> 1. Prepare `__unmock__` folder:
-> > ```bash
-> > mkdir -p __unmock__/githubv3
-> > ```
-> 1. Put the GitHub OpenAPI specification to `__unmock__/githubv3`:
-> > ```bash
-> > wget https://raw.githubusercontent.com/unmock/DefinitelyMocked/master/services/githubv3/openapi.yaml -O __unmock__/githubv3/openapi.yaml`
-> > ```
+1. Prepare `__unmock__` folder: `mkdir -p __unmock__/githubv3`
+1. Add the GitHub OpenAPI specification to `__unmock__/githubv3`:
+> `wget https://raw.githubusercontent.com/unmock/DefinitelyMocked/master/services/githubv3/openapi.yaml -O __unmock__/githubv3/openapi.yaml`
+
+When `unmock-server` is started, it loads the GitHub API with name `githubv3`. For more detailed instructions, see the [Unmock documentation](https://www.unmock.io/docs/openapi).
 
 ## Docker
 
