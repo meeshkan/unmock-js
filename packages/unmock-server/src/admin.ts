@@ -23,24 +23,35 @@ const postServiceHandler = (unmock: UnmockPackage) => (
   req: express.Request,
   res: express.Response,
 ) => {
-  const name = req.params.service;
-  const body = req.body;
+  const serviceName = req.params.service;
+  const schema = req.body;
 
-  if (!Service.isOpenAPIObject(body)) {
+  if (!Service.isOpenAPIObject(schema)) {
     return res.status(400).send("Body not valid OpenAPI object");
   }
 
-  const exists = serviceExists(unmock, name);
+  const exists = serviceExists(unmock, serviceName);
+
+  const service = Service.fromOpenAPI({ schema, name: serviceName });
 
   if (!exists) {
-    debugLog(`Creating new service ${name}`);
-    unmock.backend.faker.add(Service.fromOpenAPI({ schema: body, name }));
-  } else {
-    debugLog(`Service ${name} exists, updating`);
-    unmock.backend.faker.update(Service.fromOpenAPI({ schema: body, name }));
+    debugLog(`Creating new service ${serviceName}`);
+    unmock.backend.faker.add(service);
+    return res.json({ message: `Created service ${serviceName}` });
   }
 
-  return res.sendStatus(200);
+  debugLog(`Service ${serviceName} exists, updating`);
+  unmock.backend.faker.update(service);
+
+  return res.json({ message: `Service ${serviceName} updated` });
+};
+
+const getServices = (unmock: UnmockPackage) => (
+  _: express.Request,
+  res: express.Response,
+) => {
+  const serviceNames = Object.keys(unmock.services);
+  return res.json(serviceNames);
 };
 
 const getServiceHandler = (unmock: UnmockPackage) => (
@@ -58,7 +69,7 @@ const getServiceHandler = (unmock: UnmockPackage) => (
   debugLog(`Service ${name} exists, updating`);
   const schema = unmock.services[name].core.schema;
 
-  return res.status(200).send(schema);
+  return res.json({ schema });
 };
 
 export const servicesRoute = ({
@@ -68,6 +79,7 @@ export const servicesRoute = ({
 }): express.Router => {
   const router = express.Router();
 
+  router.get("/", getServices(unmock));
   router.post("/:service", postServiceHandler(unmock));
   router.get("/:service", getServiceHandler(unmock));
 
