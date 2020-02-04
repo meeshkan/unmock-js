@@ -14,6 +14,7 @@ export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
 export { IService } from "./service/interfaces";
+export { Service } from "./service";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 export { typeUtils };

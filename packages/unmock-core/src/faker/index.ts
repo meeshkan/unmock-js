@@ -13,6 +13,7 @@ import {
   IRandomNumberGenerator,
   randomNumberGenerator,
 } from "../random-number-generator";
+import { Service } from "../service";
 import { addFromNock, NockAPI, ServiceStore } from "../service/serviceStore";
 
 export interface IFakerOptions {
@@ -81,10 +82,25 @@ export default class UnmockFaker implements IFaker {
   }
 
   /**
+   * Add a new service to Faker.
+   * @param service Service instance.
+   */
+  public add(service: Service) {
+    this.serviceStore.add(service);
+  }
+
+  /**
    * Reset the states of all services.
    */
   public reset() {
     this.serviceStore.resetServices();
+  }
+
+  /**
+   * Remove all services.
+   */
+  public purge() {
+    this.serviceStore.removeAll();
   }
 
   private createResponseCreator(options?: IUnmockOptions): CreateResponse {
