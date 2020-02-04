@@ -1,4 +1,4 @@
-import { OpenAPIObject } from "loas3/dist/generated/full";
+import { isOpenAPIObject, OpenAPIObject } from "loas3/dist/generated/full";
 import { ISerializedRequest, IStateTransformer } from "../interfaces";
 import { IService, IServiceCore } from "./interfaces";
 import { ServiceCore } from "./serviceCore";
@@ -18,6 +18,10 @@ export class Service implements IService {
   }): Service {
     const core = new ServiceCore({ schema, name });
     return new Service(core);
+  }
+
+  public static isOpenAPIObject(schema: any): schema is OpenAPIObject {
+    return isOpenAPIObject(schema);
   }
 
   public readonly spy: ServiceSpy;

@@ -38,10 +38,10 @@ export default class Start extends Command {
   public async run() {
     debugLog("Starting.");
     const run = () => {
-      const { app } = buildApp();
+      const { app, unmock } = buildApp();
       const [httpServer, httpsServer] = startServer(app);
 
-      const adminApp = buildAdminApp();
+      const adminApp = buildAdminApp({ unmock });
       const adminHttpServer = startAdminServer({ app: adminApp });
 
       const proxyServer = startProxy();

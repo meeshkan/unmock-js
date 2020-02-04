@@ -90,6 +90,14 @@ export default class UnmockFaker implements IFaker {
   }
 
   /**
+   * Updates service to Faker. Overwrites existing service with the same name.
+   * @param service Service instance.
+   */
+  public update(service: Service) {
+    this.serviceStore.updateOrAddService(service);
+  }
+
+  /**
    * Reset the states of all services.
    */
   public reset() {

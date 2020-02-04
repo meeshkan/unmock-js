@@ -88,12 +88,22 @@ export class ServiceStore {
    * @throws Error if a service with the same name already exists.
    */
   public add(service: Service): void {
-    const core = service.core;
     const serviceName = service.core.name;
 
-    if (this.services.hasOwnProperty(serviceName)) {
+    if (this.serviceExists(serviceName)) {
       throw Error(`Service with name ${serviceName} exists.`);
     }
+
+    this.updateOrAddService(service);
+  }
+
+  /**
+   * Update a service or add a new service if one with the given name does not exist.
+   * @param service Service instance.
+   */
+  public updateOrAddService(service: Service): void {
+    const core = service.core;
+    const serviceName = service.core.name;
 
     this.cores[serviceName] = core;
     this.services[serviceName] = service;
@@ -181,5 +191,9 @@ export class ServiceStore {
    */
   public resetServices() {
     Object.values(this.services).forEach(service => service.reset());
+  }
+
+  private serviceExists(name: string): boolean {
+    return Object.keys(this.services).includes(name);
   }
 }
