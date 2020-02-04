@@ -1,6 +1,6 @@
 # [Unmock](https://www.unmock.io/) (JavaScript SDK)
 
-[![CircleCI](https://circleci.com/gh/unmock/unmock-js.svg?style=svg)](https://circleci.com/gh/unmock/unmock-js)
+[![CircleCI](https://circleci.com/gh/meeshkan/unmock-js.svg?style=svg)](https://circleci.com/gh/meeshkan/unmock-js)
 [![codecov](https://codecov.io/gh/unmock/unmock-js/branch/dev/graph/badge.svg)](https://codecov.io/gh/unmock/unmock-js)
 [![Known Vulnerabilities](https://snyk.io/test/github/unmock/unmock-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/unmock/unmock-js?targetFile=package.json)
 [![Chat on Gitter](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/unmock/community)
