@@ -66,6 +66,12 @@ The `start` command starts
 1. proxy server at port 8008 for mocking requests
 1. mock server at port 8000 (HTTP) and 8443 (HTTPS) for internally handling requests made to the proxy.
 
+Stop `unmock-server` with `stop` command:
+
+```bash
+$ unmock-server stop
+```
+
 ### Using the mock proxy
 
 To use the proxy for mocking requests, you need to:
