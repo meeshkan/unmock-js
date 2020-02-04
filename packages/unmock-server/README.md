@@ -62,7 +62,7 @@ You may need to add `npx` or `yarn` before the command depending on your install
 
 The `start` command starts
 
-1. admin server at port 8888 for managing services
+1. admin server at port 8888 (override with `UNMOCK_ADMIN_PORT` environment variable) for managing services
 1. proxy server at port 8008 for mocking requests
 1. mock server at port 8000 (HTTP) and 8443 (HTTPS) for internally handling requests made to the proxy.
 
