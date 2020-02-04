@@ -11,9 +11,9 @@ Unmock server mocks APIs using [unmock-js](https://github.com/Meeshkan/unmock-js
 
 ### `npm`
 
-The npm package ships with `unmock-server` binary that you can add either in project or globally.
+The npm package ships with `unmock-server` CLI that you can add either in project or globally.
 
-#### Install to a project
+#### Install in project
 
 ```bash
 npm install unmock-server
