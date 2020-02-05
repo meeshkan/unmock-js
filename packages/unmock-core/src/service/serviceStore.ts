@@ -44,15 +44,11 @@ export const addFromNock = (serviceStore: ServiceStore): NockAPI => (
 
 export class ServiceStore {
   private static extractCoresAndServices(coreServices: IServiceCore[]) {
-    const cores = coreServices.reduce(
-      (o, core) => ({ ...o, [core.name]: core }),
-      {},
-    );
     const services = coreServices.reduce(
       (o, core) => ({ ...o, [core.name]: new Service(core) }),
       {},
     );
-    return { cores, services };
+    return { services };
   }
   /**
    * Internal map from the service name to `Service` object.
@@ -85,10 +81,19 @@ export class ServiceStore {
   public add(service: Service): void {
     const serviceName = service.core.name;
 
-    if (this.services.hasOwnProperty(serviceName)) {
+    if (this.serviceExists(serviceName)) {
       throw Error(`Service with name ${serviceName} exists.`);
     }
 
+    this.updateOrAddService(service);
+  }
+
+  /**
+   * Update a service or add a new service if one with the given name does not exist.
+   * @param service Service instance.
+   */
+  public updateOrAddService(service: Service): void {
+    const serviceName = service.core.name;
     this.services[serviceName] = service;
   }
 
@@ -170,5 +175,9 @@ export class ServiceStore {
    */
   public resetServices() {
     Object.values(this.services).forEach(service => service.reset());
+  }
+
+  private serviceExists(name: string): boolean {
+    return Object.keys(this.services).includes(name);
   }
 }

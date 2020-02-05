@@ -1,5 +1,6 @@
 import { Command, flags } from "@oclif/command";
 import debug from "debug";
+import { buildAdminApp, startAdminServer } from "../admin";
 import { deletePidFile, writePid } from "../pid";
 import { startProxy } from "../proxy";
 import { buildApp, startServer } from "../server";
@@ -37,8 +38,12 @@ export default class Start extends Command {
   public async run() {
     debugLog("Starting.");
     const run = () => {
-      const { app } = buildApp();
+      const { app, unmock } = buildApp();
       const [httpServer, httpsServer] = startServer(app);
+
+      const adminApp = buildAdminApp({ unmock });
+      const adminHttpServer = startAdminServer({ app: adminApp });
+
       const proxyServer = startProxy();
 
       debugLog("Writing PID to file for closing...");
@@ -49,6 +54,7 @@ export default class Start extends Command {
         httpServer.close();
         httpsServer.close();
         proxyServer.close();
+        adminHttpServer.close();
         debugLog("Servers closed.");
         deletePidFile();
       };
