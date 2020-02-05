@@ -1,6 +1,6 @@
+import { Done, Func } from "mocha";
 import Backend from "../backend";
 import { runnerConfiguration } from "../generator";
-
 export interface IRunnerOptions {
   maxLoop: number;
 }
@@ -13,7 +13,7 @@ const errorHandler = (
   nTimes: number,
   errors: Error[],
   intermediaryErrors: Array<string | { message: string }>,
-  cb?: jest.DoneCallback,
+  cb?: IMeeshkanDoneCallback,
 ) => {
   // tslint:disable-next-line:max-line-length
   const msg = (rest: string) =>
@@ -40,18 +40,25 @@ const errorHandler = (
   }
 };
 
-export default (backend: Backend) => (
-  fn?: jest.ProvidesCallback,
+interface IMeeshkanDoneCallback {
+  success(...args: any[]): any;
+  fail(error?: string | { message: string }): any;
+}
+
+type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
+
+const runnerInternal = (isJest: boolean) => (backend: Backend) => (
+  fn?: MeeshkanProvidesCallback,
   options?: Partial<IRunnerOptions>,
-) => async (cb?: jest.DoneCallback) => {
+) => async (cb?: IMeeshkanDoneCallback) => {
   const realOptions = {
     ...defaultRunnerOptions,
     ...options,
   };
   const intermediaryErrors: Array<string | { message: string }> = [];
-  const intermediaryDoneCallback: jest.DoneCallback = () => {
+  const intermediaryDoneCallback: IMeeshkanDoneCallback = { success: () => {
     /**/
-  };
+  }, fail: () => {} };
   intermediaryDoneCallback.fail = (error: string | { message: string }) => {
     intermediaryErrors.push(error);
   };
@@ -65,7 +72,7 @@ export default (backend: Backend) => (
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
     } catch (e) {
-      if (e.constructor.name === "JestAssertionError") {
+      if (!isJest || e.constructor.name === "JestAssertionError") {
         errors.push(e);
       } else {
         throw e;
@@ -83,6 +90,36 @@ export default (backend: Backend) => (
     errorHandler(realOptions.maxLoop, errors, intermediaryErrors, cb);
   } else {
     // tslint:disable-next-line:no-unused-expression
-    cb && cb();
+    cb && cb.success();
   }
 };
+
+export const mochaRunner = (backend: Backend) => (
+  fn: Func,
+  options?: Partial<IRunnerOptions>,
+) => async (cb?: Done) => {
+  
+  return runnerInternal(true)(backend)(
+    (meeshkanCallback: IMeeshkanDoneCallback) => {
+      // check fn.caller to make sure it actually does what it is
+      // supposed to do, namely get the calling instance
+      // we use success, but we could have used fail as well
+      // because it points to the same function
+      return fn ? fn.caller(meeshkanCallback.success) : undefined;
+    }, options)(cb ? { success : cb, fail: cb } : undefined);
+}
+
+export const jestRunner = (backend: Backend) => (
+  fn?: jest.ProvidesCallback,
+  options?: Partial<IRunnerOptions>,
+) => async (cb?: jest.DoneCallback) => {
+  
+  return runnerInternal(true)(backend)(
+    (meeshkanCallback: IMeeshkanDoneCallback) => {
+      const asJestCallback = () => { meeshkanCallback.success( )};
+      asJestCallback.fail = meeshkanCallback.fail;
+      return fn ? fn(asJestCallback) : undefined;
+    }, options)(cb ? { success : cb, fail: cb.fail} : undefined);
+}
+
+export default jestRunner;
