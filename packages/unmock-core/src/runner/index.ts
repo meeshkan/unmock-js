@@ -56,9 +56,12 @@ const runnerInternal = (isJest: boolean) => (backend: Backend) => (
     ...options,
   };
   const intermediaryErrors: Array<string | { message: string }> = [];
-  const intermediaryDoneCallback: IMeeshkanDoneCallback = { success: () => {
-    /**/
-  }, fail: () => {} };
+  const intermediaryDoneCallback: IMeeshkanDoneCallback = {
+    success: () => {
+      /**/
+    },
+    fail: () => {},
+  };
   intermediaryDoneCallback.fail = (error: string | { message: string }) => {
     intermediaryErrors.push(error);
   };
@@ -98,7 +101,6 @@ export const mochaRunner = (backend: Backend) => (
   fn: Func,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: Done) => {
-  
   return runnerInternal(true)(backend)(
     (meeshkanCallback: IMeeshkanDoneCallback) => {
       // check fn.caller to make sure it actually does what it is
@@ -106,20 +108,25 @@ export const mochaRunner = (backend: Backend) => (
       // we use success, but we could have used fail as well
       // because it points to the same function
       return fn ? fn.caller(meeshkanCallback.success) : undefined;
-    }, options)(cb ? { success : cb, fail: cb } : undefined);
-}
+    },
+    options,
+  )(cb ? { success: cb, fail: cb } : undefined);
+};
 
 export const jestRunner = (backend: Backend) => (
   fn?: jest.ProvidesCallback,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: jest.DoneCallback) => {
-  
   return runnerInternal(true)(backend)(
     (meeshkanCallback: IMeeshkanDoneCallback) => {
-      const asJestCallback = () => { meeshkanCallback.success( )};
+      const asJestCallback = () => {
+        meeshkanCallback.success();
+      };
       asJestCallback.fail = meeshkanCallback.fail;
       return fn ? fn(asJestCallback) : undefined;
-    }, options)(cb ? { success : cb, fail: cb.fail} : undefined);
-}
+    },
+    options,
+  )(cb ? { success: cb, fail: cb.fail } : undefined);
+};
 
 export default jestRunner;
