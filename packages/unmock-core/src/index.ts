@@ -3,10 +3,11 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import UnmockFaker from "./faker";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import internalRunner, { IRunnerOptions } from "./runner";
+import internalRunner, { IRunnerOptions, mochaRunner as internalMochaRunner } from "./runner";
 import { addFromNock, NockAPI, ServiceStore } from "./service/serviceStore";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 import * as typeUtils from "./utils";
+import { Func, Done } from "mocha";
 
 export * from "./interfaces";
 export * from "./types";
@@ -98,6 +99,13 @@ export class UnmockPackage implements IUnmockPackage {
   public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
     const f = async (cb?: jest.DoneCallback) => {
       return internalRunner(this.backend)(fn, options)(cb);
+    };
+    return f;
+  }
+
+  public mochaRunner(fn: Func, options?: Partial<IRunnerOptions>) {
+    const f = async (cb?: Done) => {
+      return internalMochaRunner(this.backend)(fn, options)(cb);
     };
     return f;
   }
