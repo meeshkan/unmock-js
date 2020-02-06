@@ -38,12 +38,12 @@ const errorHandler = (
   }
 };
 
-interface IMeeshkanDoneCallback {
+export interface IMeeshkanDoneCallback {
   success(...args: any[]): any;
   fail(error?: string | { message: string }): any;
 }
 
-type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
+export type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
 
 export default (assertionValidator: (e: Error) => boolean) => (paxage: UnmockPackage) => (
   fn?: MeeshkanProvidesCallback,
