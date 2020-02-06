@@ -81,7 +81,6 @@ export class Backend {
   public readonly serviceStore: ServiceStore = new ServiceStore([]);
   public readonly interceptorFactory: IInterceptorFactory;
   public readonly serviceDefLoader: IServiceDefLoader;
-  public readonly randomNumberGenerator: IRandomNumberGenerator;
   public faker: UnmockFaker;
   public handleRequest?: OnSerializedRequest;
   protected readonly requestResponseListeners: IListener[];
@@ -96,9 +95,11 @@ export class Backend {
     this.interceptorFactory = interceptorFactory;
     this.requestResponseListeners = listeners || [];
     this.serviceDefLoader = serviceDefLoader || NoopServiceDefLoader;
-    this.randomNumberGenerator = rng || randomNumberGenerator({});
     this.loadServices();
-    this.faker = new UnmockFaker({ serviceStore: this.serviceStore });
+    this.faker = new UnmockFaker({
+      serviceStore: this.serviceStore,
+      randomNumberGenerator: rng || randomNumberGenerator({})
+    });
   }
 
   public get services(): ServiceStoreType {

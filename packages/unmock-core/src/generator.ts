@@ -51,7 +51,7 @@ import {
   ISerializedResponse,
   IUnmockOptions,
 } from "./interfaces";
-import { IRandomNumberGenerator } from "./random-number-generator";
+import { IFakerOptions } from "./faker";
 import {
   Header,
   isReference,
@@ -66,14 +66,6 @@ import {
 } from "./service/interfaces";
 import { ServiceStore } from "./service/serviceStore";
 
-export const runnerConfiguration = {
-  optionalsProbability: 1.0,
-  minItems: 0,
-  reset() {
-    this.minItems = 0;
-    this.optionalsProbability = 1.0;
-  },
-};
 /**
  * Finds server URLs that match a given protocol and host
  * @param protocol like http or https
@@ -806,12 +798,12 @@ const bodyFromResponse = (
 export function responseCreatorFactory({
   listeners = [],
   options,
-  rng,
+  fakerOptions,
   store,
 }: {
   listeners?: IListener[];
   options: IUnmockOptions;
-  rng: IRandomNumberGenerator;
+  fakerOptions: IFakerOptions;
   store: ServiceStore;
 }): CreateResponse {
   return (req: ISerializedRequest) => {
@@ -867,11 +859,11 @@ export function responseCreatorFactory({
      * Ensure that every generation starts from the same seed if not randomizing.
      */
     if (!options.randomize()) {
-      rng.restore();
+      fakerOptions.randomNumberGenerator.restore();
     }
 
     const res = generateMockFromTemplate({
-      rng: () => rng.get(),
+      fakerOptions: fakerOptions,
       statusCode,
       headerSchema: {
         definitions,
@@ -904,29 +896,29 @@ export function responseCreatorFactory({
 }
 
 const generateMockFromTemplate = ({
-  rng,
+  fakerOptions,
   statusCode,
   headerSchema,
   bodySchema,
 }: {
-  rng: () => number;
+  fakerOptions: IFakerOptions;
   statusCode: number;
   headerSchema?: any;
   bodySchema?: any;
 }): ISerializedResponse => {
   jsf.extend("faker", () => require("faker"));
-  jsf.option("optionalsProbability", runnerConfiguration.optionalsProbability);
+  jsf.option("optionalsProbability", fakerOptions.optionalsProbability);
   // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
   // otherwise, generate up to optionalsProbability% of optionals
   jsf.option(
     "fixedProbabilities",
-    runnerConfiguration.optionalsProbability === 1,
+    fakerOptions.optionalsProbability === 1,
   );
   // disables this temporarily as it messes with user-defined min items
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
   jsf.option("useDefaultValue", false);
-  jsf.option("random", rng);
+  jsf.option("random", () => fakerOptions.randomNumberGenerator.get());
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
   const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
   jsf.option("useDefaultValue", true);

@@ -12,6 +12,5 @@ if (typeof Buffer === "undefined") {
 export const unmock = new UnmockPackage(new RnBackend());
 
 export const nock = unmock.nock.bind(unmock);
-export const runner = unmock.runner.bind(unmock);
 
 export default unmock;
