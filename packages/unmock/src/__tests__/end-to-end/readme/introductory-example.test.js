@@ -1,5 +1,5 @@
 const unmock = require("unmock");
-const { nock, runner, transform, u } = unmock;
+const { nock, transform, u } = unmock;
 const { withCodes } = transform;
 const runner = require("unmock-runner");
 
@@ -40,7 +40,7 @@ const jestRunner = (fn, options) => async cb => {
 describe("getHoroscope", () => {
   it(
     "augments the API call with seen=false",
-    runner(async () => {
+    jestRunner(async () => {
       zodiac.spy.resetHistory();
       zodiac.state(withCodes(200));
       const res = await getHoroscope();
