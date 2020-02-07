@@ -22,16 +22,15 @@ beforeAll(() => {
 afterAll(() => unmock.default.off());
 
 const jestRunner = (fn, options) => async cb => {
-  return runner(e => e.constructor.name === "JestAssertionError")(unmock.default)(
-    meeshkanCallback => {
-      const asJestCallback = () => {
-        meeshkanCallback.success();
-      };
-      asJestCallback.fail = meeshkanCallback.fail;
-      return fn ? fn(asJestCallback) : undefined;
-    },
-    options,
-  )(cb ? { success: cb, fail: cb.fail } : undefined);
+  return runner(e => e.constructor.name === "JestAssertionError")(
+    unmock.default,
+  )(meeshkanCallback => {
+    const asJestCallback = () => {
+      meeshkanCallback.success();
+    };
+    asJestCallback.fail = meeshkanCallback.fail;
+    return fn ? fn(asJestCallback) : undefined;
+  }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
 };
 
 describe("getName", () => {
