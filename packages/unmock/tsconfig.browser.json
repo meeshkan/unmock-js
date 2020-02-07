@@ -9,7 +9,6 @@
   "references": [
     { "path": "../unmock-cli" },
     { "path": "../unmock-core" },
-    { "path": "../unmock-browser" },
-    { "path": "../unmock-runner" }
+    { "path": "../unmock-browser" }
   ]
 }
