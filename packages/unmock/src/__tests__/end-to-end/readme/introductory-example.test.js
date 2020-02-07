@@ -25,7 +25,7 @@ beforeAll(() => {
 afterAll(() => unmock.default.off());
 
 const jestRunner = (fn, options) => async cb => {
-  return runner(e => e.constructor.name === "JestAssertionError")(unmock)(
+  return runner(e => e.constructor.name === "JestAssertionError")(unmock.default)(
     meeshkanCallback => {
       const asJestCallback = () => {
         meeshkanCallback.success();
