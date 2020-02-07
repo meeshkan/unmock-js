@@ -1,6 +1,7 @@
 const unmock = require("unmock");
 const { nock, runner, transform, u } = unmock;
 const { withCodes } = transform;
+const runner = require("unmock-runner");
 
 unmock
   .nock("http://www.foo.com")
@@ -20,10 +21,23 @@ beforeAll(() => {
 });
 afterAll(() => unmock.default.off());
 
+const jestRunner = (fn, options) => async cb => {
+  return runner(e => e.constructor.name === "JestAssertionError")(unmock)(
+    meeshkanCallback => {
+      const asJestCallback = () => {
+        meeshkanCallback.success();
+      };
+      asJestCallback.fail = meeshkanCallback.fail;
+      return fn ? fn(asJestCallback) : undefined;
+    },
+    options,
+  )(cb ? { success: cb, fail: cb.fail } : undefined);
+};
+
 describe("getName", () => {
   it(
     "gets fuzzed version of the name",
-    runner(async () => {
+    jestRunner(async () => {
       const res = await getName();
       expect(typeof res.firstName).toBe("string");
       expect(typeof res.lastName).toBe("string");

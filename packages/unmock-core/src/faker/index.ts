@@ -59,7 +59,7 @@ export default class UnmockFaker implements IFaker {
     randomNumberGenerator: rng,
     serviceStore,
     optionalsProbability,
-    minItems
+    minItems,
   }: IFakerConstructorArguments) {
     this.listeners = listeners ? listeners : [];
     this.randomNumberGenerator = rng || randomNumberGenerator({});
@@ -132,7 +132,7 @@ export default class UnmockFaker implements IFaker {
       fakerOptions: {
         randomNumberGenerator: this.randomNumberGenerator,
         minItems: this.minItems,
-        optionalsProbability: this.optionalsProbability
+        optionalsProbability: this.optionalsProbability,
       },
       store: this.serviceStore,
     });

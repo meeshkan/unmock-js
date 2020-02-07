@@ -98,7 +98,7 @@ export class Backend {
     this.loadServices();
     this.faker = new UnmockFaker({
       serviceStore: this.serviceStore,
-      randomNumberGenerator: rng || randomNumberGenerator({})
+      randomNumberGenerator: rng || randomNumberGenerator({}),
     });
   }
 

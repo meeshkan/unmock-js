@@ -94,7 +94,6 @@ export class UnmockPackage implements IUnmockPackage {
     return this.backend.services;
   }
 
-
   public associate(url: string, name: string) {
     this.backend.serviceStore.updateOrAdd({ baseUrl: url, name });
   }

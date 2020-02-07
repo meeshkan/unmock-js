@@ -45,7 +45,9 @@ export interface IMeeshkanDoneCallback {
 
 export type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
 
-export default (assertionValidator: (e: Error) => boolean) => (paxage: UnmockPackage) => (
+export default (assertionValidator: (e: Error) => boolean) => (
+  paxage: UnmockPackage,
+) => (
   fn?: MeeshkanProvidesCallback,
   options?: Partial<IRunnerOptions>,
 ) => async (cb?: IMeeshkanDoneCallback) => {
@@ -81,9 +83,11 @@ export default (assertionValidator: (e: Error) => boolean) => (paxage: UnmockPac
       }
     } finally {
       // reset histories
-      Object.entries(paxage.backend.serviceStore.services).forEach(([_, service]) => {
-        service.spy.resetHistory();
-      });
+      Object.entries(paxage.backend.serviceStore.services).forEach(
+        ([_, service]) => {
+          service.spy.resetHistory();
+        },
+      );
     }
     // this resets the values going into the faker
     paxage.backend.faker.optionalsProbability = 1.0;
@@ -150,4 +154,3 @@ export default jestRunner;
     return f;
   }
 */
-

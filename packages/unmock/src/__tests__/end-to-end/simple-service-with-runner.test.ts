@@ -1,6 +1,7 @@
 import axios from "axios";
 import { IService } from "unmock-core";
-import unmock, { runner, transform, u } from "../../node";
+import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
+import unmock, { transform, u } from "../../node";
 const { responseBody } = transform;
 
 unmock
@@ -30,10 +31,27 @@ beforeAll(() => {
 });
 afterAll(() => unmock.off());
 
+unmock.randomize.on();
+
+const jestRunner = (
+  fn?: jest.ProvidesCallback,
+  options?: Partial<IRunnerOptions>,
+) => async (cb?: jest.DoneCallback) => {
+  return runner((e: Error) => e.constructor.name === "JestAssertionError")(
+    unmock,
+  )((meeshkanCallback: IMeeshkanDoneCallback) => {
+    const asJestCallback = () => {
+      meeshkanCallback.success();
+    };
+    asJestCallback.fail = meeshkanCallback.fail;
+    return fn ? fn(asJestCallback) : undefined;
+  }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
+};
+
 describe("Simple service test with runner", () => {
   it(
     "Should reset spies correctly",
-    runner(async () => {
+    jestRunner(async () => {
       foo.state(responseBody().minItems(56));
       const response0 = await axios("https://api.foo.com/v1/users");
       // because we are running the runner, this spy

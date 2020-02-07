@@ -910,10 +910,7 @@ const generateMockFromTemplate = ({
   jsf.option("optionalsProbability", fakerOptions.optionalsProbability);
   // When optionalsProbability is set to 100%, generate exactly 100% of all optionals.
   // otherwise, generate up to optionalsProbability% of optionals
-  jsf.option(
-    "fixedProbabilities",
-    fakerOptions.optionalsProbability === 1,
-  );
+  jsf.option("fixedProbabilities", fakerOptions.optionalsProbability === 1);
   // disables this temporarily as it messes with user-defined min items
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);

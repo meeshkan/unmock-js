@@ -5,7 +5,6 @@ import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
 import NodeBackend from "../backend";
 const { withCodes } = transform;
 
-
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
 describe("Node.js interceptor", () => {
@@ -16,18 +15,17 @@ describe("Node.js interceptor", () => {
       fn?: jest.ProvidesCallback,
       options?: Partial<IRunnerOptions>,
     ) => async (cb?: jest.DoneCallback) => {
-      return runner((e: Error) => e.constructor.name === "JestAssertionError")(unmock)(
-        (meeshkanCallback: IMeeshkanDoneCallback) => {
-          const asJestCallback = () => {
-            meeshkanCallback.success();
-          };
-          asJestCallback.fail = meeshkanCallback.fail;
-          return fn ? fn(asJestCallback) : undefined;
-        },
-        options,
-      )(cb ? { success: cb, fail: cb.fail } : undefined);
+      return runner((e: Error) => e.constructor.name === "JestAssertionError")(
+        unmock,
+      )((meeshkanCallback: IMeeshkanDoneCallback) => {
+        const asJestCallback = () => {
+          meeshkanCallback.success();
+        };
+        asJestCallback.fail = meeshkanCallback.fail;
+        return fn ? fn(asJestCallback) : undefined;
+      }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
     };
-    
+
     let petstore: Service;
 
     beforeAll(() => {
@@ -39,6 +37,8 @@ describe("Node.js interceptor", () => {
     beforeEach(() => {
       petstore.reset();
     });
+
+    unmock.randomize.on();
 
     test(
       "runner loop works",

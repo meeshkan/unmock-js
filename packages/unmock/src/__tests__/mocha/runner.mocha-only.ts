@@ -19,12 +19,15 @@ beforeEach(() => {
 });
 
 describe("an awesome test", () => {
-    it("rocks my socks", mochaRunner((done) => {
-        axios("https://api.foo.com/v1/users").then(({ data }) => {
-            assert.equal(data.hello.bar.a, 1);
-            // very, very small chance that this will be 2...
-            assert.notEqual(data.hello.z[1], 2);
-            done();
-        });
-    }));
+  it(
+    "rocks my socks",
+    mochaRunner(done => {
+      axios("https://api.foo.com/v1/users").then(({ data }) => {
+        assert.equal(data.hello.bar.a, 1);
+        // very, very small chance that this will be 2...
+        assert.notEqual(data.hello.z[1], 2);
+        done();
+      });
+    }),
+  );
 });
