@@ -1,7 +1,7 @@
 const unmock = require("unmock");
 const { nock, transform, u } = unmock;
 const { withCodes } = transform;
-const runner = require("unmock-runner");
+const runner = require("unmock-runner").default;
 
 nock("https://zodiac.com", "zodiac")
   .get("/horoscope/{sign}")
