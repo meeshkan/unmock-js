@@ -44,6 +44,7 @@ import {
   valueLens,
 } from "openapi-refinements";
 import * as url from "whatwg-url";
+import { IFakerOptions } from "./faker";
 import {
   CreateResponse,
   IListener,
@@ -51,7 +52,6 @@ import {
   ISerializedResponse,
   IUnmockOptions,
 } from "./interfaces";
-import { IFakerOptions } from "./faker";
 import {
   Header,
   isReference,
@@ -863,7 +863,7 @@ export function responseCreatorFactory({
     }
 
     const res = generateMockFromTemplate({
-      fakerOptions: fakerOptions,
+      fakerOptions,
       statusCode,
       headerSchema: {
         definitions,
