@@ -1,4 +1,4 @@
-import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
+import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "./";
 import unmock from "unmock";
 
 // Jest configuration for runner in existing tests
