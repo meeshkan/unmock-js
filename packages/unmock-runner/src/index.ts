@@ -46,7 +46,7 @@ export interface IMeeshkanDoneCallback {
 export type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
 
 export default (assertionValidator: (e: Error) => boolean) => (
-  paxage: UnmockPackage,
+  unmockPackage: UnmockPackage,
 ) => (
   fn?: MeeshkanProvidesCallback,
   options?: Partial<IRunnerOptions>,
@@ -68,9 +68,11 @@ export default (assertionValidator: (e: Error) => boolean) => (
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
-    paxage.backend.faker.randomNumberGenerator.setSeed(i);
-    paxage.backend.faker.optionalsProbability = Math.random();
-    paxage.backend.faker.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
+    unmockPackage.backend.faker.randomNumberGenerator.setSeed(i);
+    unmockPackage.backend.faker.optionalsProbability = Math.random();
+    unmockPackage.backend.faker.minItems = Math.floor(
+      Math.random() * 2 ** (i % 5),
+    ); // 2^5 seems enough for min items/length
 
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
@@ -83,15 +85,15 @@ export default (assertionValidator: (e: Error) => boolean) => (
       }
     } finally {
       // reset histories
-      Object.entries(paxage.backend.serviceStore.services).forEach(
+      Object.entries(unmockPackage.backend.serviceStore.services).forEach(
         ([_, service]) => {
           service.spy.resetHistory();
         },
       );
     }
     // this resets the values going into the faker
-    paxage.backend.faker.optionalsProbability = 1.0;
-    paxage.backend.faker.minItems = 0;
+    unmockPackage.backend.faker.optionalsProbability = 1.0;
+    unmockPackage.backend.faker.minItems = 0;
   }
   // >= in case fail is called multiple times... fix
   if (errors.length + intermediaryErrors.length > 0) {
@@ -101,56 +103,3 @@ export default (assertionValidator: (e: Error) => boolean) => (
     cb && cb.success();
   }
 };
-
-/*
-export const mochaRunner = (paxage: UnmockPackage) => (
-  fn: Func,
-  options?: Partial<IRunnerOptions>,
-) => async (cb?: Done) => {
-  return runnerInternal(true)(paxage)(
-    (meeshkanCallback: IMeeshkanDoneCallback) => {
-      // check fn.caller to make sure it actually does what it is
-      // supposed to do, namely get the calling instance
-      // we use success, but we could have used fail as well
-      // because it points to the same function
-      return fn ? fn.caller(meeshkanCallback.success) : undefined;
-    },
-    options,
-  )(cb ? { success: cb, fail: cb } : undefined);
-};
-
-
-export const jestRunner = (paxage: UnmockPackage) => (
-  fn?: jest.ProvidesCallback,
-  options?: Partial<IRunnerOptions>,
-) => async (cb?: jest.DoneCallback) => {
-  return runnerInternal(true)(paxage)(
-    (meeshkanCallback: IMeeshkanDoneCallback) => {
-      const asJestCallback = () => {
-        meeshkanCallback.success();
-      };
-      asJestCallback.fail = meeshkanCallback.fail;
-      return fn ? fn(asJestCallback) : undefined;
-    },
-    options,
-  )(cb ? { success: cb, fail: cb.fail } : undefined);
-};
-
-export default jestRunner;
-*/
-
-/*
-  public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
-    const f = async (cb?: jest.DoneCallback) => {
-      return internalRunner(this.backend)(fn, options)(cb);
-    };
-    return f;
-  }
-
-  public mochaRunner(fn: Func, options?: Partial<IRunnerOptions>) {
-    const f = async (cb?: Done) => {
-      return internalMochaRunner(this.backend)(fn, options)(cb);
-    };
-    return f;
-  }
-*/

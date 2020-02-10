@@ -1,6 +1,6 @@
 import unmock, { transform, IService } from "unmock";
-import runner, { IRunnerOptions, IMeeshkanDoneCallback } from "../";
 import fetch from "node-fetch";
+import jestRunner from "../jestRunner"
 
 unmock
   .nock("http://petstore.swagger.io", "petstore")
@@ -23,22 +23,6 @@ describe("Runner loop", () => {
   });
   unmock.randomize.on();
 
-  const jestRunner = (
-    fn?: jest.ProvidesCallback,
-    options?: Partial<IRunnerOptions>,
-  ) => async (cb?: jest.DoneCallback) => {
-    return runner((e: Error) => e.constructor.name === "JestAssertionError")(
-      unmock,
-    )((meeshkanCallback: IMeeshkanDoneCallback) => {
-      const asJestCallback = () => {
-        meeshkanCallback.success();
-      };
-      asJestCallback.fail = meeshkanCallback.fail;
-      return fn ? fn(asJestCallback) : undefined;
-    }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
-  };
-
-  runner((e: Error) => e.name === "JestAssertionError")(unmock);
   test(
     "should run successfully when API calls succeeds",
     jestRunner(async () => {

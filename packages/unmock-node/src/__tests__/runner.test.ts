@@ -1,9 +1,9 @@
 import axios from "axios";
 import * as path from "path";
 import { Service, transform, UnmockPackage } from "unmock-core";
-import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
 import NodeBackend from "../backend";
 const { withCodes } = transform;
+import jestRunner from "../../../unmock-runner/src/jestRunner"
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
@@ -11,20 +11,6 @@ describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
     const nodeBackend = new NodeBackend({ servicesDirectory });
     const unmock = new UnmockPackage(nodeBackend);
-    const jestRunner = (
-      fn?: jest.ProvidesCallback,
-      options?: Partial<IRunnerOptions>,
-    ) => async (cb?: jest.DoneCallback) => {
-      return runner((e: Error) => e.constructor.name === "JestAssertionError")(
-        unmock,
-      )((meeshkanCallback: IMeeshkanDoneCallback) => {
-        const asJestCallback = () => {
-          meeshkanCallback.success();
-        };
-        asJestCallback.fail = meeshkanCallback.fail;
-        return fn ? fn(asJestCallback) : undefined;
-      }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
-    };
 
     let petstore: Service;
 

@@ -2,6 +2,7 @@ import axios from "axios";
 import { IService } from "unmock-core";
 import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
 import unmock, { transform, u } from "../../node";
+import jestRunner from "../../../../unmock-runner/src/jestRunner"
 const { responseBody } = transform;
 
 unmock
@@ -32,21 +33,6 @@ beforeAll(() => {
 afterAll(() => unmock.off());
 
 unmock.randomize.on();
-
-const jestRunner = (
-  fn?: jest.ProvidesCallback,
-  options?: Partial<IRunnerOptions>,
-) => async (cb?: jest.DoneCallback) => {
-  return runner((e: Error) => e.constructor.name === "JestAssertionError")(
-    unmock,
-  )((meeshkanCallback: IMeeshkanDoneCallback) => {
-    const asJestCallback = () => {
-      meeshkanCallback.success();
-    };
-    asJestCallback.fail = meeshkanCallback.fail;
-    return fn ? fn(asJestCallback) : undefined;
-  }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
-};
 
 describe("Simple service test with runner", () => {
   it(
