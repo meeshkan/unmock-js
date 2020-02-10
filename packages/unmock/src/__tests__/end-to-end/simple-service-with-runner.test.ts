@@ -1,6 +1,5 @@
 import axios from "axios";
 import { IService } from "unmock-core";
-import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
 import unmock, { transform, u } from "../../node";
 import jestRunner from "../../../../unmock-runner/src/jestRunner";
 const { responseBody } = transform;
