@@ -1,7 +1,7 @@
-import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "../";
-import unmock from "../../unmock/src/node";
+import runner, { IMeeshkanDoneCallback, IRunnerOptions } from "unmock-runner";
+import unmock from "unmock";
 
-// Jest runner used for existing runner tests
+// Jest configuration for runner in existing tests
 // This will be replaced once unmock-jest-runner package is published
 export const jestRunner = (
   fn?: jest.ProvidesCallback,
