@@ -1,6 +1,6 @@
 import unmock, { transform, IService } from "unmock";
 import fetch from "node-fetch";
-import jestRunner from "../jestRunner"
+import jestRunner from "../jestRunner";
 
 unmock
   .nock("http://petstore.swagger.io", "petstore")

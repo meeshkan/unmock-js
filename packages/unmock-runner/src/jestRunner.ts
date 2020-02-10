@@ -18,5 +18,4 @@ export const jestRunner = (
   }, options)(cb ? { success: cb, fail: cb.fail } : undefined);
 };
 
-
 export default jestRunner;
