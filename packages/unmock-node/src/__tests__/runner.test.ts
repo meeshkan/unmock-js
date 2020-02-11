@@ -1,9 +1,9 @@
 import axios from "axios";
 import * as path from "path";
 import { Service, transform, UnmockPackage } from "unmock-core";
-import { runner } from "..";
 import NodeBackend from "../backend";
 const { withCodes } = transform;
+import jestRunner from "../../../unmock-runner/src/jestRunner";
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 
@@ -11,6 +11,7 @@ describe("Node.js interceptor", () => {
   describe("with state requests in place", () => {
     const nodeBackend = new NodeBackend({ servicesDirectory });
     const unmock = new UnmockPackage(nodeBackend);
+
     let petstore: Service;
 
     beforeAll(() => {
@@ -23,9 +24,11 @@ describe("Node.js interceptor", () => {
       petstore.reset();
     });
 
+    unmock.randomize.on();
+
     test(
       "runner loop works",
-      runner(async () => {
+      jestRunner(async () => {
         petstore.state(withCodes(200));
         const resp = await axios("http://petstore.swagger.io/v1/pets/54");
         expect(typeof resp.data.name).toBe("string");
@@ -36,7 +39,7 @@ describe("Node.js interceptor", () => {
       let threw = false;
       petstore.state(withCodes(200));
       try {
-        await runner(async () => {
+        await jestRunner(async () => {
           const resp = await axios("http://petstore.swagger.io/v1/pets/54");
           expect(resp.data.name).toBe("id");
         })();
@@ -56,7 +59,7 @@ describe("Node.js interceptor", () => {
         failure.push(error);
       };
       petstore.state(withCodes(200));
-      await runner(async c => {
+      await jestRunner(async c => {
         try {
           const resp = await axios("http://petstore.swagger.io/v1/pets/54");
           if (resp.data.name !== "id") {

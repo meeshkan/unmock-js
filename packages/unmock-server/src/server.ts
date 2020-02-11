@@ -147,4 +147,6 @@ export const startServer = (app: express.Express) => {
   httpsServer.listen(httpsPort, () => {
     log("HTTPS server starting on port: " + httpsPort);
   });
+
+  return [httpServer, httpsServer];
 };

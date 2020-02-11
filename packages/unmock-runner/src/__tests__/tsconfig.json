@@ -2,7 +2,7 @@
   "extends": "../../../../tsconfig.test.base",
   "include": ["**/*"],
   "references": [
-    { "path": "../../tsconfig.node.json" },
-    { "path": "../../../unmock-runner" }
+    { "path": "../../" },
+    { "path": "../../../unmock-core" }
   ]
 }

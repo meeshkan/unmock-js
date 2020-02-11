@@ -90,15 +90,16 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
+    "openapi-refinements": "file:packages/openapi-refinements",
     "unmock": "file:packages/unmock",
+    "unmock-browser": "file:packages/unmock-browser",
     "unmock-cli": "file:packages/unmock-cli",
     "unmock-core": "file:packages/unmock-core",
     "unmock-fetch": "file:packages/unmock-fetch",
     "unmock-jest": "file:packages/unmock-jest",
     "unmock-node": "file:packages/unmock-node",
+    "unmock-runner": "file:packages/unmock-runner",
     "unmock-server": "file:packages/unmock-server",
-    "unmock-browser": "file:packages/unmock-browser",
-    "openapi-refinements": "file:packages/openapi-refinements",
     "unmock-types": "file:packages/unmock-types"
   },
   "name": "unmock",

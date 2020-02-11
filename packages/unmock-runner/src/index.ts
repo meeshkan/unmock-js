@@ -1,6 +1,4 @@
-import Backend from "../backend";
-import { runnerConfiguration } from "../generator";
-
+import { UnmockPackage } from "unmock-core";
 export interface IRunnerOptions {
   maxLoop: number;
 }
@@ -13,7 +11,7 @@ const errorHandler = (
   nTimes: number,
   errors: Error[],
   intermediaryErrors: Array<string | { message: string }>,
-  cb?: jest.DoneCallback,
+  cb?: IMeeshkanDoneCallback,
 ) => {
   // tslint:disable-next-line:max-line-length
   const msg = (rest: string) =>
@@ -40,17 +38,29 @@ const errorHandler = (
   }
 };
 
-export default (backend: Backend) => (
-  fn?: jest.ProvidesCallback,
+export interface IMeeshkanDoneCallback {
+  success(...args: any[]): any;
+  fail(error?: string | { message: string }): any;
+}
+
+export type MeeshkanProvidesCallback = (cb: IMeeshkanDoneCallback) => any;
+
+export default (assertionValidator: (e: Error) => boolean) => (
+  unmockPackage: UnmockPackage,
+) => (
+  fn?: MeeshkanProvidesCallback,
   options?: Partial<IRunnerOptions>,
-) => async (cb?: jest.DoneCallback) => {
+) => async (cb?: IMeeshkanDoneCallback) => {
   const realOptions = {
     ...defaultRunnerOptions,
     ...options,
   };
   const intermediaryErrors: Array<string | { message: string }> = [];
-  const intermediaryDoneCallback: jest.DoneCallback = () => {
-    /**/
+  const intermediaryDoneCallback: IMeeshkanDoneCallback = {
+    success: () => {
+      /**/
+    },
+    fail: () => {},
   };
   intermediaryDoneCallback.fail = (error: string | { message: string }) => {
     intermediaryErrors.push(error);
@@ -58,31 +68,38 @@ export default (backend: Backend) => (
   const errors: Error[] = [];
   const res = [];
   for (let i = 0; i < realOptions.maxLoop; i++) {
-    backend.randomNumberGenerator.setSeed(i);
-    runnerConfiguration.optionalsProbability = Math.random();
-    runnerConfiguration.minItems = Math.floor(Math.random() * 2 ** (i % 5)); // 2^5 seems enough for min items/length
+    unmockPackage.backend.faker.randomNumberGenerator.setSeed(i);
+    unmockPackage.backend.faker.optionalsProbability = Math.random();
+    unmockPackage.backend.faker.minItems = Math.floor(
+      Math.random() * 2 ** (i % 5),
+    ); // 2^5 seems enough for min items/length
+
     try {
       const r = await (fn ? fn(intermediaryDoneCallback) : undefined);
       res.push(r);
     } catch (e) {
-      if (e.constructor.name === "JestAssertionError") {
+      if (assertionValidator(e)) {
         errors.push(e);
       } else {
         throw e;
       }
     } finally {
       // reset histories
-      Object.entries(backend.serviceStore.services).forEach(([_, service]) => {
-        service.spy.resetHistory();
-      });
+      Object.entries(unmockPackage.backend.serviceStore.services).forEach(
+        ([_, service]) => {
+          service.spy.resetHistory();
+        },
+      );
     }
+    // this resets the values going into the faker
+    unmockPackage.backend.faker.optionalsProbability = 1.0;
+    unmockPackage.backend.faker.minItems = 0;
   }
-  runnerConfiguration.reset();
   // >= in case fail is called multiple times... fix
   if (errors.length + intermediaryErrors.length > 0) {
     errorHandler(realOptions.maxLoop, errors, intermediaryErrors, cb);
   } else {
     // tslint:disable-next-line:no-unused-expression
-    cb && cb();
+    cb && cb.success();
   }
 };

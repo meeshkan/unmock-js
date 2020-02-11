@@ -14,6 +14,5 @@ export const unmock = new UnmockPackage(new NodeBackend(), {
 });
 
 export const nock = unmock.nock.bind(unmock);
-export const runner = unmock.runner.bind(unmock);
 
 export default unmock;

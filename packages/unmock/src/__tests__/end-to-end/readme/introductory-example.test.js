@@ -1,6 +1,8 @@
 const unmock = require("unmock");
-const { nock, runner, transform, u } = unmock;
+const { nock, transform, u } = unmock;
 const { withCodes } = transform;
+const jestRunner = require("../../../../../unmock-runner/src/jestRunner")
+  .default;
 
 nock("https://zodiac.com", "zodiac")
   .get("/horoscope/{sign}")
@@ -26,7 +28,7 @@ afterAll(() => unmock.default.off());
 describe("getHoroscope", () => {
   it(
     "augments the API call with seen=false",
-    runner(async () => {
+    jestRunner(async () => {
       zodiac.spy.resetHistory();
       zodiac.state(withCodes(200));
       const res = await getHoroscope();

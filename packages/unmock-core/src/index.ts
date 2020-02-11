@@ -3,7 +3,6 @@ import * as sinon from "sinon";
 import Backend, { buildRequestHandler } from "./backend";
 import UnmockFaker from "./faker";
 import { ILogger, IUnmockOptions, IUnmockPackage } from "./interfaces";
-import internalRunner, { IRunnerOptions } from "./runner";
 import { addFromNock, NockAPI, ServiceStore } from "./service/serviceStore";
 import { AllowedHosts, BooleanSetting, IBooleanSetting } from "./settings";
 import * as typeUtils from "./utils";
@@ -14,6 +13,7 @@ export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
 export { IService } from "./service/interfaces";
+export { Service } from "./service";
 export { ServiceCore } from "./service/serviceCore";
 export { Backend, buildRequestHandler };
 export { typeUtils };
@@ -92,13 +92,6 @@ export class UnmockPackage implements IUnmockPackage {
 
   public get services() {
     return this.backend.services;
-  }
-
-  public runner(fn?: jest.ProvidesCallback, options?: Partial<IRunnerOptions>) {
-    const f = async (cb?: jest.DoneCallback) => {
-      return internalRunner(this.backend)(fn, options)(cb);
-    };
-    return f;
   }
 
   public associate(url: string, name: string) {

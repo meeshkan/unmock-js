@@ -1,6 +1,6 @@
 # [Unmock](https://www.unmock.io/) (JavaScript SDK)
 
-[![CircleCI](https://circleci.com/gh/unmock/unmock-js.svg?style=svg)](https://circleci.com/gh/unmock/unmock-js)
+[![CircleCI](https://circleci.com/gh/Meeshkan/unmock-js.svg?style=svg)](https://circleci.com/gh/Meeshkan/unmock-js)
 [![codecov](https://codecov.io/gh/unmock/unmock-js/branch/dev/graph/badge.svg)](https://codecov.io/gh/unmock/unmock-js)
 [![Known Vulnerabilities](https://snyk.io/test/github/unmock/unmock-js/badge.svg?targetFile=package.json)](https://snyk.io/test/github/unmock/unmock-js?targetFile=package.json)
 [![Chat on Gitter](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/unmock/community)
@@ -23,6 +23,7 @@ Fuzz test your REST API calls.
   + [Ignorable API calls](#ignorable-api-calls)
 * [Expectations](#expectations)
 * [Initializing Mocks](#initializing-mocks)
+* [Faker API](#faker-api)
 * [Runner](#runner)
 * [OpenAPI](#openapi)
 * [Tutorials](#tutorials)
@@ -370,6 +371,67 @@ github.state((req, schema) =>
 
 The unmock [documentation](https://www.unmock.io/docs/setting-state) contains more information about initializing the state.
 
+## Faker API
+
+`UnmockFaker` class provides a lower-level API for working with mocks. You can create a new `UnmockFaker` via `unmock.faker()`:
+
+```ts
+const unmock, { Service, ISerializedRequest} = require("unmock");
+// import unmock from "unmock";  // ES6
+
+const faker = unmock.faker();
+```
+
+To use the faker for mocking, you need to add services. The first option is to use the `nock` method:
+
+```ts
+faker
+  .nock("http://petstore.swagger.io", "petstore")
+  .get("/v1/pets")
+  .reply(200, { foo: u.string() });
+```
+
+Alternatively, you can create a service from OpenAPI specification with `Service.fromOpenAPI`:
+
+```ts
+const { Service } = require("unmock");
+
+const schema: OpenAPIObject = ...; // Load OpenAPIObject
+const petstoreService = Service.fromOpenAPI({ schema, name: "petstore" })
+
+// Add service to `faker`
+faker.add(petstoreService);
+```
+
+You can then also modify the state of the petstore service via `state` property:
+
+```ts
+const { transform } = require("unmock");
+// Service should always return code 200
+petstore.state(transform.withCodes(200));
+```
+
+Once you have added a service, you can use `faker.generate` method to create a mock for any `Request` object:
+
+```ts
+const { UnmockRequest, UnmockResponse } = require("unmock");
+
+const req: UnmockRequest = {
+  host: "petstore.swagger.io",
+  protocol: "http",
+  method: "get",
+  path: "/v1/pets",
+  pathname: "/v1/pets",
+  headers: {},
+  query: {},
+}
+
+const res: UnmockResponse = faker.generate(req);
+
+// Access res.statusCode, res.headers, res.body, etc.
+expect(res.statusCode).toBe(200);
+```
+
 ## Runner
 
 The unmock runner runs the same test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
@@ -388,14 +450,14 @@ Unmock supports the reading of OpenAPI specifications out of the box. Place your
 
 ## Tutorials
 
-- [Unmock ts koans](https://github.com/unmock/unmock-ts-koans)
+- [Unmock ts koans](https://github.com/meeshkan/unmock-ts-koans)
 - [Unmock js katacoda](https://www.katacoda.com/unmock/scenarios/introduction)
 
 ## Contributing
 
 Thanks for wanting to contribute! Take a look at our [Contributing Guide](CONTRIBUTING.md) for notes on our commit message conventions and how to run tests.
 
-Please note that this project is governed by the [Unmock Community Code of Conduct](https://github.com/unmock/code-of-conduct). By participating in this project, you agree to abide by its terms.
+Please note that this project is governed by the [Meeshkan Community Code of Conduct](https://github.com/meeshkan/code-of-conduct). By participating in this project, you agree to abide by its terms.
 
 ## Development
 

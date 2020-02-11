@@ -13,12 +13,21 @@ import {
   IRandomNumberGenerator,
   randomNumberGenerator,
 } from "../random-number-generator";
+import { Service } from "../service";
 import { addFromNock, NockAPI, ServiceStore } from "../service/serviceStore";
 
-export interface IFakerOptions {
+export interface IFakerConstructorArguments {
   listeners?: IListener[];
   serviceStore: ServiceStore;
   randomNumberGenerator?: IRandomNumberGenerator;
+  optionalsProbability?: 1.0;
+  minItems?: 0;
+}
+
+export interface IFakerOptions {
+  randomNumberGenerator: IRandomNumberGenerator;
+  minItems: number;
+  optionalsProbability: number;
 }
 
 const DEFAULT_OPTIONS: IUnmockOptions = {
@@ -34,8 +43,10 @@ export default class UnmockFaker implements IFaker {
    * Add a new service to the faker using `nock` syntax.
    */
   public readonly nock: NockAPI;
+  public minItems: number;
+  public optionalsProbability: number;
+  public readonly randomNumberGenerator: IRandomNumberGenerator;
   private readonly serviceStore: ServiceStore;
-  private readonly randomNumberGenerator: IRandomNumberGenerator;
   private readonly listeners: IListener[];
   /**
    * Unmock faker. Creates fake responses to fake requests, using
@@ -47,9 +58,13 @@ export default class UnmockFaker implements IFaker {
     listeners,
     randomNumberGenerator: rng,
     serviceStore,
-  }: IFakerOptions) {
+    optionalsProbability,
+    minItems,
+  }: IFakerConstructorArguments) {
     this.listeners = listeners ? listeners : [];
     this.randomNumberGenerator = rng || randomNumberGenerator({});
+    this.optionalsProbability = optionalsProbability || 1.0;
+    this.minItems = minItems || 0;
     this.serviceStore = serviceStore;
     this.createResponse = this.createResponseCreator();
     this.nock = addFromNock(this.serviceStore);
@@ -81,17 +96,44 @@ export default class UnmockFaker implements IFaker {
   }
 
   /**
+   * Add a new service to Faker.
+   * @param service Service instance.
+   */
+  public add(service: Service) {
+    this.serviceStore.add(service);
+  }
+
+  /**
+   * Updates service to Faker. Overwrites existing service with the same name.
+   * @param service Service instance.
+   */
+  public update(service: Service) {
+    this.serviceStore.updateOrAddService(service);
+  }
+
+  /**
    * Reset the states of all services.
    */
   public reset() {
     this.serviceStore.resetServices();
   }
 
+  /**
+   * Remove all services.
+   */
+  public purge() {
+    this.serviceStore.removeAll();
+  }
+
   private createResponseCreator(options?: IUnmockOptions): CreateResponse {
     return responseCreatorFactory({
       listeners: this.listeners,
       options: options || DEFAULT_OPTIONS,
-      rng: this.randomNumberGenerator,
+      fakerOptions: {
+        randomNumberGenerator: this.randomNumberGenerator,
+        minItems: this.minItems,
+        optionalsProbability: this.optionalsProbability,
+      },
       store: this.serviceStore,
     });
   }
