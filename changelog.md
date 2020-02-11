@@ -1,5 +1,14 @@
 # CHANGELOG.md
 
+## 0.3.13 (2020-02-11)
+
+Features:
+
+  - Add programmatic `Faker API` for creating and managing services
+  - Add `stop` command to `unmock-server` 
+  - Extract `runner` from `unmock-core`
+  - Add new `unmock-runner` package with `jestRunner` for Jest configuration
+
 ## 0.3.12 (2020-01-09)
 
 Fixes:
