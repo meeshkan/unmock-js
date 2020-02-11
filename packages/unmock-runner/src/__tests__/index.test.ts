@@ -1,29 +1,13 @@
-import { buildFetch, Fetch } from "unmock-fetch";
-import { IService, transform, UnmockPackage } from "..";
-import { Backend } from "../backend";
-import { IInterceptorOptions } from "../interceptor";
-import { testServiceDefLoader } from "./utils";
+import unmock, { transform, IService } from "unmock";
+import fetch from "node-fetch";
+import jestRunner from "../jestRunner";
+
+unmock
+  .nock("http://petstore.swagger.io", "petstore")
+  .get("/v1/pets/54")
+  .reply(200, { id: 10, name: "foo", tags: "bar" });
 
 const { withCodes } = transform;
-
-let fetch: Fetch;
-
-const interceptorFactory = (opts: IInterceptorOptions) => {
-  fetch = buildFetch(opts.onSerializedRequest);
-  return {
-    disable() {
-      // @ts-ignore
-      fetch = undefined;
-    },
-  };
-};
-
-const backend = new Backend({
-  interceptorFactory,
-  serviceDefLoader: testServiceDefLoader,
-});
-
-const unmock = new UnmockPackage(backend);
 
 describe("Runner loop", () => {
   let petstore: IService;
@@ -37,10 +21,11 @@ describe("Runner loop", () => {
   beforeEach(() => {
     petstore.reset();
   });
+  unmock.randomize.on();
 
   test(
     "should run successfully when API calls succeeds",
-    unmock.runner(async () => {
+    jestRunner(async () => {
       petstore.state(withCodes(200));
       const resp = await fetch("http://petstore.swagger.io/v1/pets/54");
       const data = await resp.json();
@@ -52,7 +37,7 @@ describe("Runner loop", () => {
     let threw = false;
     petstore.state(withCodes(200));
     try {
-      await unmock.runner(async () => {
+      await jestRunner(async () => {
         const resp = await fetch("http://petstore.swagger.io/v1/pets/54");
         const data = await resp.json();
         expect(data.name).toBe("id");
@@ -73,7 +58,7 @@ describe("Runner loop", () => {
       failure.push(error);
     };
     petstore.state(withCodes(200));
-    await unmock.runner(async c => {
+    await jestRunner(async c => {
       try {
         const resp = await fetch("http://petstore.swagger.io/v1/pets/54");
         const data = await resp.json();

@@ -1,6 +1,8 @@
 const unmock = require("unmock");
-const { nock, runner, transform, u } = unmock;
+const { nock, transform, u } = unmock;
 const { withCodes } = transform;
+const jestRunner = require("../../../../../unmock-runner/src/jestRunner")
+  .default;
 
 unmock
   .nock("http://www.foo.com")
@@ -23,7 +25,7 @@ afterAll(() => unmock.default.off());
 describe("getName", () => {
   it(
     "gets fuzzed version of the name",
-    runner(async () => {
+    jestRunner(async () => {
       const res = await getName();
       expect(typeof res.firstName).toBe("string");
       expect(typeof res.lastName).toBe("string");
