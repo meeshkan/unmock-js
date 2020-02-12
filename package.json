@@ -97,6 +97,7 @@
     "unmock-core": "file:packages/unmock-core",
     "unmock-fetch": "file:packages/unmock-fetch",
     "unmock-jest": "file:packages/unmock-jest",
+    "unmock-jest-runner": "0.0.0",
     "unmock-node": "file:packages/unmock-node",
     "unmock-runner": "file:packages/unmock-runner",
     "unmock-server": "file:packages/unmock-server",
