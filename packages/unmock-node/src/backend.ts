@@ -1,8 +1,4 @@
-import { Backend } from "unmock-core";
-import {
-  IInterceptorFactory,
-  IInterceptorOptions,
-} from "unmock-core/src/interceptor";
+import { Backend, IInterceptorFactory, IInterceptorOptions } from "unmock-core";
 import createFsServiceDefLoader from "./fs-service-def-loader";
 import NodeInterceptor from "./interceptor/node-interceptor";
 import FSLogger from "./loggers/filesystem-logger";

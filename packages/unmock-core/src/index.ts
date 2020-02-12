@@ -12,6 +12,7 @@ export * from "./types";
 export { sinon };
 export { u } from "./nock";
 export { transform, Addl, Arr } from "./generator-utils";
+export { IInterceptorFactory, IInterceptorOptions } from "./interceptor";
 export { IService } from "./service/interfaces";
 export { Service } from "./service";
 export { ServiceCore } from "./service/serviceCore";
