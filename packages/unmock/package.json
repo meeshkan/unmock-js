@@ -20,6 +20,7 @@
     "unmock-browser": "file:../unmock-browser",
     "unmock-cli": "file:../unmock-cli",
     "unmock-core": "file:../unmock-core",
+    "unmock-jest-runner": "0.0.0",
     "unmock-node": "file:../unmock-node"
   }
 }

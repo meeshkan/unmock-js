@@ -3,7 +3,7 @@ import * as path from "path";
 import { Service, transform, UnmockPackage } from "unmock-core";
 import NodeBackend from "../backend";
 const { withCodes } = transform;
-import jestRunner from "../../../unmock-runner/src/jestRunner";
+import jestRunner from "unmock-jest-runner";
 
 const servicesDirectory = path.join(__dirname, "__unmock__");
 

@@ -25,6 +25,7 @@
     "readable-stream": "^3.4.0",
     "shimmer": "^1.2.1",
     "unmock-core": "file:../unmock-core",
+    "unmock-jest-runner": "0.0.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1"
   }

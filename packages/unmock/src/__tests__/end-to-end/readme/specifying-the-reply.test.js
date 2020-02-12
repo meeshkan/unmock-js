@@ -1,8 +1,7 @@
 const unmock = require("unmock");
 const { nock, transform, u } = unmock;
 const { withCodes } = transform;
-const jestRunner = require("../../../../../unmock-runner/src/jestRunner")
-  .default;
+const jestRunner = require("unmock-jest-runner").default;
 
 unmock
   .nock("http://www.foo.com")

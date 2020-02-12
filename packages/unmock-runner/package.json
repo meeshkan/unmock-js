@@ -14,5 +14,8 @@
   },
   "dependencies": {
     "unmock-core": "file:../unmock-core"
+  },
+  "devDependencies": {
+    "unmock-jest-runner": "0.0.0"
   }
 }
