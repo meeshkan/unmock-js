@@ -1,5 +1,11 @@
 # CHANGELOG.md
 
+## 0.3.14 (2020-02-12)
+
+Fixes:
+
+  - Fix import type error that made Unmock fail to compile
+
 ## 0.3.13 (2020-02-11)
 
 Features:
