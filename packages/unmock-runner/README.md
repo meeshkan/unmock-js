@@ -1,8 +1,10 @@
 # unmock-runner
 
-Core functions for the Unmock `runner`.
+With the Unmock `runner`, you can run any test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
 
-The Unmock `runner` wraps any test and runs that same test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
+### Default
+
+By default, the `runner` is set to run your test 20 times.
 
 ### Jest
 
@@ -15,7 +17,7 @@ npm install -D unmock-jest-runner
 yarn add unmock-jest-runner
 ```
 
-Once installed, it can be imported and used as a wrapper for your tests:
+Once installed, the `runner` can be imported as a default and used as a wrapper for your tests:
 
 ```js
 const runner = require("unmock-jest-runner").default;
@@ -30,4 +32,4 @@ test("my API always works as expected", runner(async () => {
 
 As of now, Jest is the only package we have available. 
 
-However, we're currently building out support for [Mocha]() and [Qunit](). You can follow the progress of those implementations in the corresponding issues.
+However, we're currently building out support for [Mocha](https://github.com/Meeshkan/unmock-js/issues/299) and [QUnit](https://github.com/Meeshkan/unmock-js/issues/300). You can follow the progress of those implementations in the corresponding issues.
