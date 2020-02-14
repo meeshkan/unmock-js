@@ -79,7 +79,8 @@
     "ts-node": "^8.5.4",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "unmock-jest-runner": "0.0.0"
   },
   "repository": {
     "type": "git",
@@ -97,7 +98,6 @@
     "unmock-core": "file:packages/unmock-core",
     "unmock-fetch": "file:packages/unmock-fetch",
     "unmock-jest": "file:packages/unmock-jest",
-    "unmock-jest-runner": "0.0.0",
     "unmock-node": "file:packages/unmock-node",
     "unmock-runner": "file:packages/unmock-runner",
     "unmock-server": "file:packages/unmock-server",
