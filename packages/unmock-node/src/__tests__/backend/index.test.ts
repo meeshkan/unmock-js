@@ -11,6 +11,9 @@ describe("Loads services properly", () => {
   it("loads all paths in __unmock__", () => {
     const backend = new NodeBackend({ servicesDirectory });
     backend.services.slack.state((_, __) => __); // should pass
+    // we have intentionally set an incorrect format in petstore's yml file
+    // grep for `intentionally_broken_format`
+    // it should load anyway
     backend.services.petstore.state((_, __) => __); // should pass
     expect(() => backend.services.github.state((_, __) => __)).toThrow(
       "property 'state' of undefined",
