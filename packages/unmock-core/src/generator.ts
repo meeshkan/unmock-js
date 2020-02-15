@@ -914,6 +914,9 @@ const generateMockFromTemplate = ({
   // disables this temporarily as it messes with user-defined min items
   // jsf.option("minItems", runnerConfiguration.minItems);
   // jsf.option("minLength", runnerConfiguration.minItems);
+  // some specs have invalid formats. we do not want this to fail - we
+  // still want a comprehensible result
+  jsf.option("failOnInvalidFormat", false);
   jsf.option("useDefaultValue", false);
   jsf.option("random", () => fakerOptions.randomNumberGenerator.get());
   const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;

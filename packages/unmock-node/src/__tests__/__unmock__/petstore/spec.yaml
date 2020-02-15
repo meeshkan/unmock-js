@@ -109,6 +109,6 @@ components:
       properties:
         code:
           type: integer
-          format: int32
+          format: intentionally_broken_format
         message:
           type: string
