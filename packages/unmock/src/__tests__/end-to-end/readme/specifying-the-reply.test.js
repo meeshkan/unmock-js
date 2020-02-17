@@ -1,7 +1,7 @@
 const unmock = require("unmock");
 const { nock, transform, u } = unmock;
 const { withCodes } = transform;
-const jestRunner = require("../../../../../unmock-runner/src/jestRunner")
+const jestRunner = require("unmock-jest-runner")
   .default;
 
 unmock
