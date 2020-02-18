@@ -438,7 +438,7 @@ With the [Unmock `runner`](packages/unmock-runner), you can run any test multipl
 
 ### Default
 
-By default, the `runner` is set to run your test 20 times.
+By default, the `runner` is set to run your test 20 times. If you want to change this value, please refer to our docs on [changing the `runner` default](https://github.com/Meeshkan/unmock-js/blob/unmock-runner-docs/packages/unmock-runner/README.md#changing-the-default).
 
 ### Jest
 
