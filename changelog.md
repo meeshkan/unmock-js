@@ -1,5 +1,9 @@
 # CHANGELOG.md
 
+Features:
+
+  - Adds `unmock-xmlhttprequest`.
+
 ## 0.3.14 (2020-02-12)
 
 Fixes:

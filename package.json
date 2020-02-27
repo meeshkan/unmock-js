@@ -100,7 +100,8 @@
     "unmock-node": "file:packages/unmock-node",
     "unmock-runner": "file:packages/unmock-runner",
     "unmock-server": "file:packages/unmock-server",
-    "unmock-types": "file:packages/unmock-types"
+    "unmock-types": "file:packages/unmock-types",
+    "unmock-xmlhttprequest": "file:packages/unmock-xmlhttprequest"
   },
   "name": "unmock",
   "jest": {
