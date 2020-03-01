@@ -1,78 +1,54 @@
 import {
   CreateResponse,
-  ISerializedRequest,
-  ISerializedResponse,
   OnSerializedRequest,
 } from "unmock-core/dist/interfaces";
-import buildFetch from "./fetch";
-export { buildFetch };
+import replaceOpenAndReturnOriginal from "./xmlhttprequest";
+export { replaceOpenAndReturnOriginal };
 
-export type Listener = (
-  req: ISerializedRequest,
-  respond: (res: ISerializedResponse) => void,
-) => void;
+let xmlhttprequestInterceptor: XMLHttpRequestInterceptor | undefined;
 
-export type Fetch = (url: RequestInfo, init?: RequestInit) => Promise<Response>;
-
-// tslint:disable-next-line:no-namespace
-declare namespace global {
-  let fetch: Fetch;
-}
-
-// tslint:disable-next-line:no-namespace
-declare namespace window {
-  let fetch: Fetch;
-}
-
-let fetchInterceptor: FetchInterceptor | undefined;
-
-/**
- * Fill global `fetch` object with mock fetch.
- */
-export class FetchInterceptor {
-  public readonly fetch: Fetch;
-  private originalFetch?: { where: any; fetch: any };
+export class XMLHttpRequestInterceptor {
+  private originalXMLHttpRequestOpen: (
+    method: string,
+    url: string,
+    async?: boolean,
+    username?: string | null,
+    password?: string | null,
+  ) => void;
   constructor(onSerializedRequest: CreateResponse | OnSerializedRequest) {
-    this.fetch = buildFetch(onSerializedRequest);
-    if (typeof global !== "undefined") {
-      this.originalFetch = {
-        where: global,
-        fetch: global.fetch,
-      };
-      global.fetch = this.fetch;
-    } else if (typeof window !== "undefined") {
-      this.originalFetch = { where: window, fetch: window.fetch };
-      window.fetch = this.fetch;
-    }
+    this.originalXMLHttpRequestOpen = replaceOpenAndReturnOriginal(
+      onSerializedRequest,
+    );
   }
 
   public disable() {
-    if (this.originalFetch) {
-      this.originalFetch.where.fetch = this.originalFetch.fetch;
-      this.originalFetch = undefined;
+    if (this.originalXMLHttpRequestOpen) {
+      XMLHttpRequest.prototype.open = this.originalXMLHttpRequestOpen;
     }
   }
 }
 
 export default {
   /**
-   * Start intercepting `fetch` requests by overriding
-   * global.fetch and/or window.fetch.
+   * Start intercepting `xmlhttprequest` requests by overriding
+   * global.xmlhttprequest and/or window.xmlhttprequest.
    * @param onSerializedRequest Optional "algorithm" for determining the fake response
    */
   on(onSerializedRequest: CreateResponse | OnSerializedRequest) {
     this.off();
-    fetchInterceptor = new FetchInterceptor(onSerializedRequest);
-    return fetchInterceptor;
+    xmlhttprequestInterceptor = new XMLHttpRequestInterceptor(
+      onSerializedRequest,
+    );
+    return xmlhttprequestInterceptor;
   },
 
   /**
-   * Stop intercepting `fetch`, restore original `fetch`.
+   * Stop intercepting `xmlhttprequest`, restore original `xmlhttprequest`.
    */
   off() {
-    if (fetchInterceptor) {
-      fetchInterceptor.disable();
-      fetchInterceptor = undefined;
+    if (xmlhttprequestInterceptor) {
+      xmlhttprequestInterceptor.disable();
+      xmlhttprequestInterceptor = undefined;
     }
   },
 };
