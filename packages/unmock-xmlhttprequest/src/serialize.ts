@@ -40,7 +40,9 @@ export default (
     body: useableBody,
     bodyAsJson: maybeJson,
     method,
-    headers: Object.entries(headers).map(([a, b]) => ({[a.toLowerCase()]: b})).reduce((a, b) => ({ ...a, ...b }), {}),
+    headers: Object.entries(headers)
+      .map(([a, b]) => ({ [a.toLowerCase()]: b }))
+      .reduce((a, b) => ({ ...a, ...b }), {}),
     host: parsedUrl.host,
     path: parsedUrl.pathname, // TODO
     pathname: parsedUrl.pathname,

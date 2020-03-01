@@ -2,7 +2,6 @@ import { IInterceptorOptions } from "unmock-core/dist/interceptor";
 import FetchInterceptor from "unmock-fetch";
 import XMLHttpRequestInterecptor from "unmock-xmlhttprequest";
 
-
 export class BrowserInterecptor {
   private readonly config: IInterceptorOptions;
   constructor(options: IInterceptorOptions) {
