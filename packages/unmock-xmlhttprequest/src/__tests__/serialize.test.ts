@@ -1,7 +1,7 @@
 import { ISerializedRequest } from "unmock-core";
 import serialize from "../serialize";
 
-describe("Fetch request serializer", () => {
+describe("XMLHttpRequest request serializer", () => {
   it("should serialize method correctly", () => {
     const req: ISerializedRequest = serialize(
       "https://example.com",

@@ -27,7 +27,7 @@ export default (
   }
 
   const useableBody = typeof body === "string" ? body : undefined; // TODO use more than string
-  let maybeJson: any | undefined = undefined;
+  let maybeJson: any | undefined;
   try {
     if (useableBody) {
       maybeJson = JSON.parse(useableBody);
