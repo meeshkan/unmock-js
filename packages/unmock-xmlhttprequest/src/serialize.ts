@@ -35,7 +35,7 @@ export default (
   } catch {
     // do nothing
   }
-
+  const path = '/'+url.replace('https://', '').replace('http://','').split('/').slice(1).join('/');
   const req: ISerializedRequest = {
     body: useableBody,
     bodyAsJson: maybeJson,
@@ -44,7 +44,7 @@ export default (
       .map(([a, b]) => ({ [a.toLowerCase()]: b }))
       .reduce((a, b) => ({ ...a, ...b }), {}),
     host: parsedUrl.host,
-    path: parsedUrl.pathname, // TODO
+    path,
     pathname: parsedUrl.pathname,
     query: parsedUrl.query,
     protocol: protocolWithoutColon,
