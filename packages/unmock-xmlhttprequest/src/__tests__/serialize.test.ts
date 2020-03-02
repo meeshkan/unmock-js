@@ -11,7 +11,7 @@ describe("XMLHttpRequest request serializer", () => {
     expect(req).toHaveProperty("method", "delete");
   });
 
-  it.skip("should serialize a plain request URL", () => {
+  it("should serialize a plain request URL", () => {
     const req: ISerializedRequest = serialize(
       "https://example.com/v1?q=a",
       "GET",

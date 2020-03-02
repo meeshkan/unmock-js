@@ -14,7 +14,13 @@ const isCreateResponse = (
 
 export const replaceOpenAndReturnOriginal = (
   cb: CreateResponse | OnSerializedRequest,
-) => {
+): ((
+  method: string,
+  url: string,
+  async?: boolean,
+  username?: string | null,
+  password?: string | null,
+) => void) => {
   const XMLHttpRequestOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function(
     method: string,

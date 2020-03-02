@@ -33,7 +33,20 @@ const respondOk: OnSerializedRequest = (
   }
 };
 
-replaceOpenAndReturnOriginal(respondOk);
+let openCommand: (
+  method: string,
+  url: string,
+  async?: boolean,
+  username?: string | null,
+  password?: string | null,
+) => void;
+
+beforeAll(() => {
+  openCommand = replaceOpenAndReturnOriginal(respondOk);
+});
+afterAll(() => {
+  XMLHttpRequest.prototype.open = openCommand;
+});
 
 describe("Monkey patched XMLHttpResponse", () => {
   it("should respond as expected when used with callback", done => {

@@ -26,7 +26,20 @@ const okResponseCreator: CreateResponse = (
   };
 };
 
-replaceOpenAndReturnOriginal(okResponseCreator);
+let openCommand: (
+  method: string,
+  url: string,
+  async?: boolean,
+  username?: string | null,
+  password?: string | null,
+) => void;
+
+beforeAll(() => {
+  openCommand = replaceOpenAndReturnOriginal(okResponseCreator);
+});
+afterAll(() => {
+  XMLHttpRequest.prototype.open = openCommand;
+});
 
 describe("Monkey patched XMLHttpResponse", () => {
   it("should respond as expected when used with callback", done => {
