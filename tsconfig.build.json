@@ -16,6 +16,7 @@
     { "path": "./packages/unmock-server" },
     { "path": "./packages/unmock-browser" },
     { "path": "./packages/openapi-refinements" },
-    { "path": "./packages/unmock-types" }
+    { "path": "./packages/unmock-types" },
+    { "path": "./packages/unmock-xmlhttprequest" }
   ]
 }

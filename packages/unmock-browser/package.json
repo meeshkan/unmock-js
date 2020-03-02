@@ -1,6 +1,6 @@
 {
   "name": "unmock-browser",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "description": "Unmock for browser and React Native",
   "keywords": [
     "unmock",
@@ -23,6 +23,7 @@
   "dependencies": {
     "buffer": "^5.4.3",
     "unmock-core": "file:../unmock-core",
-    "unmock-fetch": "file:../unmock-fetch"
+    "unmock-fetch": "file:../unmock-fetch",
+    "unmock-xmlhttprequest": "file:../unmock-xmlhttprequest"
   }
 }

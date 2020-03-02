@@ -1,13 +1,9 @@
 {
   "version": "0.3.15",
-  "name": "unmock",
-  "displayName": "unmock",
+  "name": "unmock-xmlhttprequest",
+  "displayName": "unmock-xmlhttprequest",
+  "main": "dist/index.js",
   "license": "MIT",
-  "bin": {
-    "unmock": "./index.js"
-  },
-  "main": "dist/node/index.js",
-  "browser": "dist/browser/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unmock/unmock-js.git"
@@ -17,9 +13,8 @@
     "url": "https://github.com/unmock/unmock-js/issues"
   },
   "dependencies": {
-    "unmock-browser": "file:../unmock-browser",
-    "unmock-cli": "file:../unmock-cli",
+    "debug": "^4.1.1",
     "unmock-core": "file:../unmock-core",
-    "unmock-node": "file:../unmock-node"
+    "url-parse": "^1.4.7"
   }
 }

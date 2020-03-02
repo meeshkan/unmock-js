@@ -3,10 +3,10 @@ import {
   IInterceptorFactory,
   IInterceptorOptions,
 } from "unmock-core/dist/interceptor";
-import { FetchInterceptorWrapper } from "./fetch-interceptor";
+import { BrowserInterecptor } from "./browser-interceptor";
 
 const interceptorFactory: IInterceptorFactory = (opts: IInterceptorOptions) => {
-  return new FetchInterceptorWrapper(opts);
+  return new BrowserInterecptor(opts);
 };
 
 /**
