@@ -35,7 +35,14 @@ export default (
   } catch {
     // do nothing
   }
-  const path = '/'+url.replace('https://', '').replace('http://','').split('/').slice(1).join('/');
+  const path =
+    "/" +
+    url
+      .replace("https://", "")
+      .replace("http://", "")
+      .split("/")
+      .slice(1)
+      .join("/");
   const req: ISerializedRequest = {
     body: useableBody,
     bodyAsJson: maybeJson,
