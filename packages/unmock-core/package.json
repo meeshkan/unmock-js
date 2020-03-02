@@ -43,6 +43,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "unmock-fetch": "file:../unmock-fetch"
+    "unmock-fetch": "file:../unmock-fetch",
+    "unmock-xmlhttprequest": "file:../unmock-xmlhttprequest"
   }
 }

@@ -23,6 +23,7 @@
   "dependencies": {
     "buffer": "^5.4.3",
     "unmock-core": "file:../unmock-core",
-    "unmock-fetch": "file:../unmock-fetch"
+    "unmock-fetch": "file:../unmock-fetch",
+    "unmock-xmlhttprequest": "file:../unmock-xmlhttprequest"
   }
 }

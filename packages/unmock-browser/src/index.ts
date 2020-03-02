@@ -1,5 +1,5 @@
 import { UnmockPackage } from "unmock-core";
-import RnBackend from "./backend";
+import BrowserBackend from "./backend";
 
 /**
  * Polyfill Buffer if undefined, required by URL operations
@@ -9,7 +9,7 @@ if (typeof Buffer === "undefined") {
   global.Buffer = require("buffer").Buffer; // tslint:disable-line:no-var-requires
 }
 
-export const unmock = new UnmockPackage(new RnBackend());
+export const unmock = new UnmockPackage(new BrowserBackend());
 
 export const nock = unmock.nock.bind(unmock);
 
