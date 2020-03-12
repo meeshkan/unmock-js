@@ -113,10 +113,6 @@ export class Backend {
    *
    */
   public initialize(options: IUnmockOptions) {
-    if (process.env.NODE_ENV === "production" && !options.useInProduction()) {
-      throw new Error("Are you trying to run unmock in production?");
-    }
-
     if (this.interceptor) {
       this.interceptor.disable();
       this.interceptor = undefined;
