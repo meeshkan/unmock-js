@@ -113,7 +113,6 @@ export class Backend {
    *
    */
   public initialize(options: IUnmockOptions) {
-
     if (this.interceptor) {
       this.interceptor.disable();
       this.interceptor = undefined;
