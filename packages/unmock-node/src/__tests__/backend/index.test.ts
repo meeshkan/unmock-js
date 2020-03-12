@@ -31,7 +31,6 @@ describe("Node.js interceptor", () => {
         isWhitelisted: (_: string) => false,
         log: (_: string) => undefined,
         randomize: () => false,
-        useInProduction: () => false,
       });
       const petstore = nodeInterceptor.services.petstore;
       petstore.state((_, o) => removeCodes(true, true, ["default"])(o));

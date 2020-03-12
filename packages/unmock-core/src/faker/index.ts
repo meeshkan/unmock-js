@@ -31,7 +31,6 @@ export interface IFakerOptions {
 }
 
 const DEFAULT_OPTIONS: IUnmockOptions = {
-  useInProduction: () => true,
   isWhitelisted: (__: string) => false,
   randomize: () => true,
   log: (__: string) => {}, // tslint:disable-line:no-empty
