@@ -1,5 +1,14 @@
 # CHANGELOG.md
 
+## 0.3.16 (2020-03-12)
+
+Features:
+
+  - Gets rid of `useInProduction`.
+
+
+## 0.3.15 (2020-03-01)
+
 Features:
 
   - Adds `unmock-xmlhttprequest`.
