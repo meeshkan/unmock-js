@@ -4,7 +4,7 @@
 
 Features:
 
-  - Gets rid of `useInProduction`.
+  - Removes `useInProduction`.
 
 
 ## 0.3.15 (2020-03-01)
