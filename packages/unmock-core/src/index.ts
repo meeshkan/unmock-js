@@ -22,7 +22,6 @@ export { UnmockFaker };
 
 export class UnmockPackage implements IUnmockPackage {
   public allowedHosts: AllowedHosts;
-  public useInProduction: BooleanSetting;
   /**
    * Always return a new randomized response instead of using a fixed seed.
    */
@@ -41,10 +40,9 @@ export class UnmockPackage implements IUnmockPackage {
     this.logger = (options && options.logger) || this.logger;
 
     this.allowedHosts = new AllowedHosts();
-    this.useInProduction = new BooleanSetting(false);
+
     this.randomize = new BooleanSetting(false);
     this.opts = {
-      useInProduction: () => this.useInProduction.get(),
       isWhitelisted: (url: string) => this.allowedHosts.isWhitelisted(url),
       log: (message: string) => this.logger.log(message),
       randomize: () => this.randomize.get(),
