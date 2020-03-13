@@ -562,7 +562,6 @@ export interface IListener {
 }
 
 export interface IUnmockOptions extends ILogger {
-  useInProduction(): boolean;
   isWhitelisted(url: string): boolean;
   /**
    * Randomize responses instead of using a fixed seed.
