@@ -5,7 +5,7 @@ import jestRunner from "../../../../unmock-runner/src/jestRunner";
 const { responseBody } = transform;
 
 unmock
-  .nock("https://api.foo.com/v1", "foo")
+  .mock("https://api.foo.com/v1", "foo")
   .get("/users")
   .reply(
     200,

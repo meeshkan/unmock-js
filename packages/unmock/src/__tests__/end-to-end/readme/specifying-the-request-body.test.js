@@ -2,7 +2,7 @@ const unmock = require("unmock");
 const { u } = unmock;
 
 unmock
-  .nock("http://www.example.com")
+  .mock("http://www.example.com")
   .post("/login", u.type({ token: u.string() }, { expires: u.integer() }))
   .reply(200, { id: u.string() });
 

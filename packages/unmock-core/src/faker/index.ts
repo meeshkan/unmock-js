@@ -38,8 +38,13 @@ const DEFAULT_OPTIONS: IUnmockOptions = {
 
 export default class UnmockFaker implements IFaker {
   public createResponse: CreateResponse;
+
   /**
    * Add a new service to the faker using `nock` syntax.
+   */
+  public readonly mock: NockAPI;
+  /**
+   * Equivalent to `mock`, use that instead.
    */
   public readonly nock: NockAPI;
   public minItems: number;
@@ -67,6 +72,7 @@ export default class UnmockFaker implements IFaker {
     this.serviceStore = serviceStore;
     this.createResponse = this.createResponseCreator();
     this.nock = addFromNock(this.serviceStore);
+    this.mock = addFromNock(this.serviceStore);
   }
 
   /**
