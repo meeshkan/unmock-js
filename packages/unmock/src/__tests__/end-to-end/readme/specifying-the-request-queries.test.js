@@ -2,7 +2,7 @@ const unmock = require("unmock");
 const { u } = unmock;
 
 unmock
-  .nock("http://www.example.com")
+  .mock("http://www.example.com")
   .get("/?foo=bar")
   .reply(200, { baz: u.string() })
   .get("/hello")

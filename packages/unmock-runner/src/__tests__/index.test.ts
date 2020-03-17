@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import jestRunner from "../jestRunner";
 
 unmock
-  .nock("http://petstore.swagger.io", "petstore")
+  .mock("http://petstore.swagger.io", "petstore")
   .get("/v1/pets/54")
   .reply(200, { id: 10, name: "foo", tags: "bar" });
 

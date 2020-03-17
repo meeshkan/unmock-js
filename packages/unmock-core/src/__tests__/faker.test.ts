@@ -18,7 +18,7 @@ describe("UnmockFaker", () => {
   describe("purge()", () => {
     it("should remove a service", () => {
       faker
-        .nock("https://foo.com")
+        .mock("https://foo.com")
         .get("/foo")
         .reply(200, { foo: u.string() });
       expectNServices(1);
@@ -59,14 +59,14 @@ describe("UnmockFaker", () => {
   describe("adding service with nock syntax", () => {
     it("adds a service", () => {
       faker
-        .nock("https://foo.com")
+        .mock("https://foo.com")
         .get("/foo")
         .reply(200, { foo: u.string() });
       expectNServices(1);
     });
     it("adds a service and allows faking it", () => {
       faker
-        .nock("https://foo.com")
+        .mock("https://foo.com")
         .get("/foo")
         .reply(200, { foo: u.string() });
       const res = faker.generate({

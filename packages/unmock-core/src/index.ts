@@ -63,7 +63,7 @@ export class UnmockPackage implements IUnmockPackage {
    *
    * const faker = unmock.faker();
    * faker
-   *  .nock('https://api.github.com', 'github')
+   *  .mock('https://api.github.com', 'github')
    *  .get('/v1/users')
    *  .reply({ id: '1' });
    * const req: ISerializedRequest = {

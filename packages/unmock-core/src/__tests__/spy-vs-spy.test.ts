@@ -31,7 +31,7 @@ const unmock = new UnmockPackage(backend);
 let foo: IService;
 beforeAll(() => {
   unmock
-    .nock("https://www.foo.com", "foo")
+    .mock("https://www.foo.com", "foo")
     .get("/hello")
     .reply(200, { foo: "bar" }, { my: "header" })
     .post("/hello")
