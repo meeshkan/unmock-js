@@ -103,7 +103,7 @@ export class ServiceStore {
    * @param nameOrHeaders Service name or the headers.
    * @param name Service name if the second argument was headers.
    */
-  public nock(
+  public mock(
     baseUrl: string,
     nameOrHeaders?:
       | string

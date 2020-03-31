@@ -13,7 +13,7 @@ describe("Tests dynamic path tests", () => {
     it("Also handles multiple parameters", async () => {
       expect(nServices()).toEqual(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get(["foo", ["baz", /\W+/], "bar", /\d+/, ["spam", /eggs/]])
         .reply(200);
       expect(nServices()).toEqual(1);
@@ -37,7 +37,7 @@ describe("Tests dynamic path tests", () => {
   describe("schema generates valid stuff", () => {
     it("faker works out of the box", async () => {
       unmock
-        .nock("https://www.foo.com")
+        .mock("https://www.foo.com")
         .get("/")
         .reply(200, u.string("date.future"));
       unmock.on();

@@ -5,7 +5,7 @@ const jestRunner = require("../../../../../unmock-runner/src/jestRunner")
   .default;
 
 unmock
-  .nock("http://www.foo.com")
+  .mock("http://www.foo.com")
   .get("/")
   // produces { firstName: "a random string", lastName: "another random string" }
   .reply(200, u.fuzz({ firstName: "Bob", lastName: "Smith" }));

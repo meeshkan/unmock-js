@@ -27,7 +27,12 @@ export class UnmockPackage implements IUnmockPackage {
    */
   public randomize: IBooleanSetting;
   public readonly backend: Backend;
+  /**
+   * Add a new service using declarative syntax.
+   */
+  public readonly mock: NockAPI;
   public readonly nock: NockAPI;
+
   private readonly opts: IUnmockOptions;
   private logger: ILogger = { log: () => undefined }; // Default logger does nothing
   constructor(
@@ -47,6 +52,7 @@ export class UnmockPackage implements IUnmockPackage {
       log: (message: string) => this.logger.log(message),
       randomize: () => this.randomize.get(),
     };
+    this.mock = addFromNock(this.backend.serviceStore);
     this.nock = addFromNock(this.backend.serviceStore);
   }
 
@@ -57,7 +63,7 @@ export class UnmockPackage implements IUnmockPackage {
    *
    * const faker = unmock.faker();
    * faker
-   *  .nock('https://api.github.com', 'github')
+   *  .mock('https://api.github.com', 'github')
    *  .get('/v1/users')
    *  .reply({ id: '1' });
    * const req: ISerializedRequest = {

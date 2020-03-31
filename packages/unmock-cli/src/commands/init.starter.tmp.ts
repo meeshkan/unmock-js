@@ -32,7 +32,7 @@ signs = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpi
 
 unmock
   .default
-  .nock("https://api.example.com/v1", "example")
+  .mock("https://api.example.com/v1", "example")
   .get("/users")
   .reply(200, {
     users: u.array({ // an array of arbitrary length
