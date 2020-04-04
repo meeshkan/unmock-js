@@ -643,6 +643,7 @@ export const matcher = (
  */
 export const hoistTransformer = (
   f: (req: ISerializedRequest, r: OpenAPIObject) => OpenAPIObject,
+  schema: OpenAPIObject,
 ) => (
   req: ISerializedRequest,
   r: Record<string, OpenAPIObject>,
@@ -650,7 +651,7 @@ export const hoistTransformer = (
   objectToArray<OpenAPIObject>()
     .composeTraversal(
       fromTraversable(array)<[string, OpenAPIObject]>().filter(
-        ([__, o]) => matchUrls(req.protocol, req.host, o).length > 0,
+        () => matchUrls(req.protocol, req.host, schema).length > 0,
       ),
     )
     .composeLens(valueLens())
@@ -812,7 +813,7 @@ export function responseCreatorFactory({
       matcher,
       // subsequent developer-defined transformers
       ...Object.values(store.cores).map(core =>
-        hoistTransformer(core.transformer),
+        hoistTransformer(core.transformer, core.schema),
       ),
     ];
     const schemas = Object.entries(store.cores).reduce(
