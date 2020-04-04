@@ -164,7 +164,7 @@ test("hoist transformer brings a transformer from OpenAPIObject to Record<string
     ...o,
     openapi: "foobar",
   });
-  const hoisted = hoistTransformer(foo, baseO);
+  const hoisted = hoistTransformer(foo, "baseO");
   expect(
     hoisted(
       {
