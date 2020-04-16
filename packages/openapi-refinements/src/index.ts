@@ -723,7 +723,11 @@ const includeCodesInternal = (
     operations,
     typeof r === "boolean"
       ? z => (r ? z : {})
-      : z => r.map(i => ({ [i]: z[i] })).reduce((a, b) => ({ ...a, ...b }), {}),
+      : z =>
+          r
+            .filter(i => i in z)
+            .map(i => ({ [i]: z[i] }))
+            .reduce((a, b) => ({ ...a, ...b }), {}),
   );
 
 export const includeCodes = (

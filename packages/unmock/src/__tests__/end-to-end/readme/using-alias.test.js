@@ -2,7 +2,7 @@ const unmock = require("unmock");
 const { u } = unmock;
 
 unmock
-  .nock("http://www.example.com", "foo")
+  .mock("http://www.example.com", "foo")
   .get("/resource")
   .reply(200, u.integer());
 

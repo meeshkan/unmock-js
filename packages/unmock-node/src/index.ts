@@ -13,6 +13,6 @@ export const unmock = new UnmockPackage(new NodeBackend(), {
   logger: new WinstonLogger(),
 });
 
-export const nock = unmock.nock.bind(unmock);
-
+export const nock = unmock.mock.bind(unmock);
+export const mock = unmock.mock.bind(unmock);
 export default unmock;

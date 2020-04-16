@@ -4,7 +4,7 @@ import unmock, { Arr, transform, u } from "../../node";
 const { responseBody } = transform;
 
 unmock
-  .nock("https://api.foo.com/v1", "foo")
+  .mock("https://api.foo.com/v1", "foo")
   .get("/users")
   .reply(
     200,

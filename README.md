@@ -66,7 +66,7 @@ const { runner, transform, u } = unmock;
 const { withCodes } = transform;
 
 unmock
-  .nock("https://zodiac.com", "zodiac")
+  .mock("https://zodiac.com", "zodiac")
   .get("/horoscope/{sign}") // 1
   .reply(200, {
     horoscope: u.string(), // 2
@@ -107,7 +107,7 @@ With unmock, you can (1) override a REST endpoint to provide (2) variable and (3
 The request hostname should be a string.
 
 ```js
-unmock.nock('http://www.example.com')
+unmock.mock('http://www.example.com')
   .get('/resource')
   .reply(200, u.integer())
 ```
@@ -115,7 +115,7 @@ unmock.nock('http://www.example.com')
 Unmock will then refer to the service as `example`. To specify the name of the service as `foo`, we would write.
 
 ```js
-unmock.nock('http://www.example.com', 'foo')
+unmock.mock('http://www.example.com', 'foo')
   .get('/resource')
   .reply(200, u.string())
 ```
@@ -131,7 +131,7 @@ unmock.default.associate('https://www2.example.com', 'foo')
 The request path should be a string, and you can use any [HTTP verb](#http-verbs). Wild-cards in the string should be enclosed in curly braces.
 
 ```js
-unmock.nock('http://www.example.com')
+unmock.mock('http://www.example.com')
   .get('/resource/{id}')
   .reply(200, u.string())
 ```
@@ -139,7 +139,7 @@ unmock.nock('http://www.example.com')
 Alternatively, you can use an array of path segments, where each segment is either a string, a string in curly-braces for an open parameter, or a key/value pair associating a name of a path parameter to a regex matching it.
 
 ```js
-unmock.nock('http://www.example.com')
+unmock.mock('http://www.example.com')
   .get(["users", /[0-9]+/, "status"]) // "/users/{id}/status"
   .reply(200, u.string())
 ```
@@ -151,7 +151,7 @@ You can specify the request body to be matched as the second argument to the `ge
 Here is an example of a post request that will only validate if it contains a token.
 
 ```js
-unmock.nock('http://www.example.com')
+unmock.mock('http://www.example.com')
   .post('/login', u.type({ token: u.string()}, {expires: u.integer()}))
   .reply(200, { id: u.string() })
 ```
@@ -167,7 +167,7 @@ Unmock automatically ignores query strings. However, it understands query string
 These parameters can be included as part of the path:
 
 ```js
-unmock.nock('http://example.com')
+unmock.mock('http://example.com')
   .get('/users?foo=bar')
   .reply(200)
 ```
@@ -175,7 +175,7 @@ unmock.nock('http://example.com')
 Instead of placing the entire URL, you can specify the query part as an object:
 
 ```js
-unmock.nock('http://example.com')
+unmock.mock('http://example.com')
   .get('/users')
   .query({ name:u.string(), surname: u.string() })
   .reply(200, { results: u.array({id: u.integer() }) })
@@ -186,7 +186,7 @@ unmock.nock('http://example.com')
 You can specify the request headers like this:
 
 ```js
-unmock.nock('http://www.example.com', {
+unmock.mock('http://www.example.com', {
   reqheaders: {
     authorization: 'Basic Auth',
   },
@@ -198,7 +198,7 @@ unmock.nock('http://www.example.com', {
 Or you can use a regular expression to check the header values.
 
 ```js
-const scope = nock('http://www.example.com', {
+unmock.mock('http://www.example.com', {
   reqheaders: {
     'X-My-Awesome-Header': /Awesome/i,
   },
@@ -214,7 +214,7 @@ Headers in unmock are always a partial match, meaning that additional headers ar
 You can specify the return status code for a path on the first argument of reply like this:
 
 ```js
-unmock.nock('http://myapp.iriscouch.com')
+unmock.mock('http://myapp.iriscouch.com')
   .get('/users/1')
   .reply(404)
 ```
@@ -222,7 +222,7 @@ unmock.nock('http://myapp.iriscouch.com')
 You can also specify the reply body as valid JSON, `json-schema-poet`, or any combination thereof.
 
 ```js
-unmock.nock('http://www.google.com')
+unmock.mock('http://www.google.com')
   .get('/')
   .reply(200, u.stringEnum(['Hello from Google!', 'Do no evil']))
 ```
@@ -230,7 +230,7 @@ unmock.nock('http://www.google.com')
 If you would like to transform any part of a constant reply (ie a fixture recorded from real API traffic) into a variable version of itself, use `u.fuzz`. This command infers the type of its input and produces output following the same schema.
 
 ```js
-unmock.nock('http://www.foo.com')
+unmock.mock('http://www.foo.com')
   .get('/')
   // produces { firstName: "a random string", lastName: "another random string" }
   .reply(200, u.fuzz({ firstName: "Bob", lastName: "Smith" }))
@@ -241,7 +241,7 @@ unmock.nock('http://www.foo.com')
 You can specify the reply headers like this:
 
 ```js
-unmock.nock('https://api.github.com')
+unmock.mock('https://api.github.com')
   .get('/repos/atom/atom/license')
   .reply(200, { license: 'MIT' }, { 'X-RateLimit-Remaining': u.integer() })
 ```
@@ -251,7 +251,7 @@ unmock.nock('https://api.github.com')
 You can chain behavior like this:
 
 ```js
-unmock. nock('http://myapp.iriscouch.com')
+unmock.mock('http://myapp.iriscouch.com')
   .get('/users/1')
   .reply(404)
   .post('/users', {
@@ -278,7 +278,7 @@ For ignorable API calls where you are passing through information but don't care
 
 ```js
 unmock
-  .nock("https://my-analytics-api.vendor.com)
+   .mock("https://my-analytics-api.vendor.com)
   .tldr();
 ```
 
@@ -382,11 +382,11 @@ const unmock, { Service, ISerializedRequest} = require("unmock");
 const faker = unmock.faker();
 ```
 
-To use the faker for mocking, you need to add services. The first option is to use the `nock` method:
+To use the faker for mocking, you need to add services. The first option is to use the `mock` method:
 
 ```ts
 faker
-  .nock("http://petstore.swagger.io", "petstore")
+  .mock("http://petstore.swagger.io", "petstore")
   .get("/v1/pets")
   .reply(200, { foo: u.string() });
 ```
@@ -434,15 +434,39 @@ expect(res.statusCode).toBe(200);
 
 ## Runner
 
-The unmock runner runs the same test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
+With the [Unmock `runner`](packages/unmock-runner), you can run any test multiple times with different potential outcomes from the API. All of your unmock tests should use the `runner` unless you are absolutely certain that the API response will be the same every time.
+
+### Default
+
+By default, the `runner` is set to run your test 20 times. If you want to change this value, please refer to our docs on [changing the `runner` default](https://github.com/Meeshkan/unmock-js/blob/unmock-runner-docs/packages/unmock-runner/README.md#changing-the-default).
+
+### Jest
+
+A Jest configuration for the `runner` is available through a separate [`unmock-jest-runner`](https://github.com/meeshkan/unmock-jest-runner) package. While the standard `unmock-runner` is available via NPM, you'll want to use the `unmock-jest-runner` when executing your tests to ensure proper error handling. 
+
+The `unmock-jest-runner` can be installed via NPM or Yarn:
+
+```
+npm install -D unmock-jest-runner
+yarn add unmock-jest-runner
+```
+
+Once installed, the `runner` can be imported as a default and used as a wrapper for your tests:
 
 ```js
-const { runner } = "unmock";
+const runner = require("unmock-jest-runner").default;
+
 test("my API always works as expected", runner(async () => {
   const res = await myApiFunction();
   // some expectations
 }));
 ```
+
+### Other configurations
+
+As of now, Jest is the only package we have available. 
+
+However, we're currently building out support for [Mocha](https://github.com/Meeshkan/unmock-js/issues/299) and [QUnit](https://github.com/Meeshkan/unmock-js/issues/300). You can follow the progress of those implementations in the corresponding issues.
 
 ## OpenAPI
 

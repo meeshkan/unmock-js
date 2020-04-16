@@ -15,7 +15,7 @@ describe("Tests dynamic path tests", () => {
   it("Adds a service", () => {
     expectNServices(0);
     unmock
-      .nock("https://foo.com")
+      .mock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
     expectNServices(1);
@@ -24,7 +24,7 @@ describe("Tests dynamic path tests", () => {
   it("should add a service when used with named export", () => {
     expectNServices(0);
     unmock
-      .nock("https://foo.com")
+      .mock("https://foo.com")
       .get("/foo")
       .reply(200, { foo: u.string() });
     expectNServices(1);
@@ -33,7 +33,7 @@ describe("Tests dynamic path tests", () => {
   it("Adds a service and changes state", () => {
     expectNServices(0);
     unmock
-      .nock("https://foo.com")
+      .mock("https://foo.com")
       .get("foo") // slash is prepended automatically
       .reply(200, { foo: u.string() });
     expectNServices(1);
@@ -47,11 +47,11 @@ describe("Tests dynamic path tests", () => {
   it("Adds a service and updates it on consecutive calls", () => {
     expectNServices(0);
     unmock
-      .nock("https://foo.com")
+      .mock("https://foo.com")
       .get("foo") // slash is prepended automatically
       .reply(200, { foo: u.string("address.city") });
     unmock
-      .nock("https://foo.com")
+      .mock("https://foo.com")
       .post("/foo")
       .reply(201);
     expectNServices(1);
@@ -65,7 +65,7 @@ describe("Tests dynamic path tests", () => {
   it("Adds a named service", () => {
     expectNServices(0);
     unmock
-      .nock("https://abc.com", "foo")
+      .mock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
       .reply(200, { foo: u.string() });
     expectNServices(1);
@@ -74,7 +74,7 @@ describe("Tests dynamic path tests", () => {
   it("Chains multiple endpoints", () => {
     expectNServices(0);
     unmock
-      .nock("https://abc.com", "foo")
+      .mock("https://abc.com", "foo")
       .get("abc") // slash is prepended automatically
       .reply(200, { foo: u.string() })
       .post("bar")
@@ -85,7 +85,7 @@ describe("Tests dynamic path tests", () => {
   it("Chains multiple endpoints in multiple calls", () => {
     expectNServices(0);
     const dynamicSpec = unmock
-      .nock("https://abc.com", "foo")
+      .mock("https://abc.com", "foo")
       .get("foo")
       .reply(200, { city: u.string("address.city") });
     dynamicSpec.get("foo").reply(404, { msg: u.string("address.city") });
@@ -95,15 +95,15 @@ describe("Tests dynamic path tests", () => {
   it("Allows using same name with multiple servers", () => {
     expectNServices(0);
     unmock
-      .nock("https://abc.com", "foo")
+      .mock("https://abc.com", "foo")
       .get("foo")
       .reply(200, { city: u.string("address.city") });
     unmock
-      .nock("https://def.com", "foo")
+      .mock("https://def.com", "foo")
       .get("foo")
       .reply(404, { msg: u.string("address.city") });
     unmock
-      .nock("https://abc.com", "foo")
+      .mock("https://abc.com", "foo")
       .get("foo")
       .reply(500);
     expect(getPrivateSchema("foo").servers).toEqual([
@@ -115,7 +115,7 @@ describe("Tests dynamic path tests", () => {
   it("Defines different responses on same endpoint and method", () => {
     expectNServices(0);
     unmock
-      .nock("https://foo.com", "foo")
+      .mock("https://foo.com", "foo")
       .get("bar")
       .reply(200, { msg: u.string() })
       .reply(404, { msg: "Page not found!" });
@@ -137,7 +137,7 @@ describe("Tests dynamic path tests", () => {
     it("Associates a service by url", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com")
+        .mock("https://www.foo.com")
         .get("")
         .reply(200);
       expect(unmock.services["www.foo.com"]).toBeDefined();
@@ -151,7 +151,7 @@ describe("Tests dynamic path tests", () => {
     it("Associates a url by name", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("")
         .reply(200);
       expect(unmock.services.foo).toBeDefined();
@@ -169,11 +169,11 @@ describe("Tests dynamic path tests", () => {
     it("A URL can be associated with multiple services", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("")
         .reply(200);
       unmock
-        .nock("https://www.bar.com", "bar")
+        .mock("https://www.bar.com", "bar")
         .get("")
         .reply(200);
       expect(unmock.services.foo).toBeDefined();
@@ -192,11 +192,11 @@ describe("Tests dynamic path tests", () => {
     it("A URL can be associated with multiple services and won't delete other services if they share name and URL", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("")
         .reply(200);
       unmock
-        .nock("https://www.bar.com")
+        .mock("https://www.bar.com")
         .get("")
         .reply(200);
       expect(unmock.services.foo).toBeDefined();
@@ -217,7 +217,7 @@ describe("Tests dynamic path tests", () => {
       unmock.associate("https://www.foo.com", "foo"); // empty service
       expectNServices(1);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("")
         .reply(200);
       expectNServices(1);
@@ -226,7 +226,7 @@ describe("Tests dynamic path tests", () => {
       expectNServices(2);
       // since a name is not given, it cannot be associated with previously declared www.bar.com.
       unmock
-        .nock("https://www.bar.com")
+        .mock("https://www.bar.com")
         .get("")
         .reply(200);
       expectNServices(3);
@@ -237,7 +237,7 @@ describe("Tests dynamic path tests", () => {
     it("An empty array of strings is equal to root path", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get([])
         .reply(200);
       expectNServices(1);
@@ -247,7 +247,7 @@ describe("Tests dynamic path tests", () => {
     it("An array of strings is equal to the string of its parts", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get(["foo", "foo", "foo"])
         .reply(200);
       expectNServices(1);
@@ -259,7 +259,7 @@ describe("Tests dynamic path tests", () => {
     it("A simple regex is added as a parameter with randomly generated name", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get(["foo", /\w+/, "bar"])
         .reply(200);
       expectNServices(1);
@@ -277,7 +277,7 @@ describe("Tests dynamic path tests", () => {
     it("A regex is added as a parameter given name", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get(["foo", ["baz", /\W+/], "bar"])
         .reply(200);
       expectNServices(1);
@@ -294,7 +294,7 @@ describe("Tests dynamic path tests", () => {
     it("Also handles multiple parameters", async () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get(["foo", ["baz", /\W+/], "bar", /\d+/, ["spam", /eggs/]])
         .reply(200);
       expectNServices(1);
@@ -314,7 +314,7 @@ describe("Tests dynamic path tests", () => {
     it("An empty query results in a viable spec", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", {}, "foo")
+        .mock("https://www.foo.com", {}, "foo")
         .get("/")
         .query({})
         .reply(200);
@@ -325,7 +325,7 @@ describe("Tests dynamic path tests", () => {
     it("A query is correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("/")
         .query({ foo: "bar" })
         .reply(200);
@@ -344,7 +344,7 @@ describe("Tests dynamic path tests", () => {
     it("A query in the path correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("/?q&m=1&") // include an empty query
         .reply(200);
       expectNServices(1);
@@ -372,7 +372,7 @@ describe("Tests dynamic path tests", () => {
     it("An empty request header results in a viable spec", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", {}, "foo")
+        .mock("https://www.foo.com", {}, "foo")
         .get("/")
         .reply(200);
       expectNServices(1);
@@ -382,7 +382,7 @@ describe("Tests dynamic path tests", () => {
     it("A request header is correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
+        .mock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
         .get("/")
         .reply(200);
       expectNServices(1);
@@ -402,7 +402,7 @@ describe("Tests dynamic path tests", () => {
   describe("tldr adds 9 levels of arbitrary paths to requests", () => {
     it("ignores unimportant stuff", () => {
       expectNServices(0);
-      unmock.nock("https://www.foo.com", "foo").tldr();
+      unmock.mock("https://www.foo.com", "foo").tldr();
       expectNServices(1);
       expect(Object.keys(getPrivateSchema("foo").paths).length).toEqual(9);
     });
@@ -412,7 +412,7 @@ describe("Tests dynamic path tests", () => {
     it("An empty reply header results in a viable spec", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("/")
         .reply(200, "", {});
       expectNServices(1);
@@ -422,7 +422,7 @@ describe("Tests dynamic path tests", () => {
     it("A reply header is correctly propagated", () => {
       expectNServices(0);
       unmock
-        .nock("https://www.foo.com", "foo")
+        .mock("https://www.foo.com", "foo")
         .get("/")
         .reply(200, "", { hello: "world" });
       expectNServices(1);

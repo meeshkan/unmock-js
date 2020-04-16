@@ -2,7 +2,7 @@ const unmock = require("unmock");
 const { u } = unmock;
 
 unmock
-  .nock("http://www.example.com")
+  .mock("http://www.example.com")
   .get(["users", /[0-9]+/, "status"]) // "/users/{id}/status"
   .reply(200, { hello: u.string() });
 

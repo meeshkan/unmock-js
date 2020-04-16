@@ -3,7 +3,7 @@ import { IService } from "unmock-core";
 import unmock from "../";
 
 unmock
-  .nock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
+  .mock("https://www.foo.com", { reqheaders: { hello: "world" } }, "foo")
   .get("/hello")
   .reply(200, { foo: "bar" }, { my: "header" })
   .post("/hello")

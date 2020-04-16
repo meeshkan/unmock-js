@@ -1,5 +1,12 @@
 # CHANGELOG.md
 
+## 0.3.17 (2020-04-16)
+
+Fixes:
+
+  - Fixes the adding of erroneous response codes for certain endpoints.
+  - Fixes transformations when multiple endpoints are used.
+
 ## 0.3.16 (2020-03-12)
 
 Features:
