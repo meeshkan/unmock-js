@@ -1,5 +1,5 @@
 {
-  "version": "0.3.16",
+  "version": "0.3.17",
   "name": "unmock-fetch",
   "displayName": "unmock-fetch",
   "main": "dist/index.js",
