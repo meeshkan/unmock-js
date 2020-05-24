@@ -778,6 +778,12 @@ const headersFromResponse = (
     .composeGetter(identityGetter())
     .getAll(operation);
 
+const lensToMimeType = (schema: OpenAPIObject, code: keyof Responses) =>
+  makeLensToResponseStartingFromOperation(schema, code)
+    .composeOptional(Optional.fromNullableProp<Response>()("content"))
+    .composeIso(objectToArray())
+    .composeOptional(firstElementOptional());
+
 /**
  * Gets a body schema from a response
  * @param schema A schema to get any definitions from for references.
@@ -789,12 +795,24 @@ const bodyFromResponse = (
   operation: Operation,
   code: keyof Responses,
 ) =>
-  makeLensToResponseStartingFromOperation(schema, code)
-    .composeOptional(Optional.fromNullableProp<Response>()("content"))
-    .composeIso(objectToArray())
-    .composeOptional(firstElementOptional())
+  lensToMimeType(schema, code)
     .composeLens(valueLens())
     .composeOptional(Optional.fromNullableProp<MediaType>()("schema"))
+    .getOption(operation);
+
+/**
+ * Gets a mime type from a response
+ * @param schema A schema to get any definitions from for references.
+ * @param operation An operation that may or may not contain parameters
+ * @param code The response code corresponding to the response we want
+ */
+const mimeTypeFromResponse = (
+  schema: OpenAPIObject,
+  operation: Operation,
+  code: keyof Responses,
+) =>
+  lensToMimeType(schema, code)
+    .composeLens(keyLens())
     .getOption(operation);
 
 export function responseCreatorFactory({
@@ -848,6 +866,7 @@ export function responseCreatorFactory({
       operation.value,
       code,
     );
+    const mimeType = mimeTypeFromResponse(schema.value, operation.value, code);
     const bodySchema = bodyFromResponse(schema.value, operation.value, code);
     // all headers as properties in an object
     const headerProperties = {
@@ -867,6 +886,7 @@ export function responseCreatorFactory({
     const res = generateMockFromTemplate({
       fakerOptions,
       statusCode,
+      mimeType: isNone(mimeType) ? undefined : mimeType.value,
       headerSchema: {
         definitions,
         type: "object",
@@ -897,15 +917,20 @@ export function responseCreatorFactory({
   };
 }
 
+const isNonEnumString = (s: Schema) => s.type === "string" && !s.enum;
+const chop = (s: string) => s.substring(1, s.length - 2);
+
 const generateMockFromTemplate = ({
   fakerOptions,
   statusCode,
   headerSchema,
   bodySchema,
+  mimeType,
 }: {
   fakerOptions: IFakerOptions;
   statusCode: number;
   headerSchema?: any;
+  mimeType?: string;
   bodySchema?: any;
 }): ISerializedResponse => {
   jsf.extend("faker", () => require("faker"));
@@ -921,12 +946,24 @@ const generateMockFromTemplate = ({
   jsf.option("failOnInvalidFormat", false);
   jsf.option("useDefaultValue", false);
   jsf.option("random", () => fakerOptions.randomNumberGenerator.get());
-  const bodyAsJson = bodySchema ? jsf.generate(bodySchema) : undefined;
-  const body = bodyAsJson ? JSON.stringify(bodyAsJson) : undefined;
+  const bodyAsJson =
+    bodySchema && mimeType && mimeType.indexOf("application/json") !== -1
+      ? jsf.generate(bodySchema)
+      : undefined;
+  const body = bodyAsJson
+    ? JSON.stringify(bodyAsJson)
+    : bodySchema && mimeType && isNonEnumString(bodySchema)
+    ? chop(jsf.generate(bodySchema))
+    : bodySchema && mimeType
+    ? jsf.generate(bodySchema)
+    : undefined;
   jsf.option("useDefaultValue", true);
   const resHeaders = headerSchema ? jsf.generate(headerSchema) : undefined;
   jsf.option("useDefaultValue", false);
 
+  if (mimeType) {
+    resHeaders["Content-Type"] = mimeType;
+  }
   return {
     body,
     bodyAsJson,

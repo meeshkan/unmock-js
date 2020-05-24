@@ -31,7 +31,10 @@ export class ServiceCore implements IServiceCore {
   ): IServiceCore {
     // TODO: Very basic guessing for mediaType; extend this as needed (maybe @mime-types or similar?)
     const mediaType =
-      typeof response === "string" ? "text/*" : "application/json";
+      typeof response === "string" ||
+      (response !== undefined && response.type === "string")
+        ? "text/*"
+        : "application/json";
     // TODO: Decouple from ServiceCore :( - this is nasty
     // Create a new endpoint from array if needed
     const endpointParameters = {
