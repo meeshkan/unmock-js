@@ -33,7 +33,7 @@
     "helmet": "^3.21.1",
     "http-proxy": "^1.18.0",
     "mkdirp": "^0.5.1",
-    "node-forge": "^0.9.1",
+    "node-forge": "^0.10.0",
     "unmock-core": "file:../unmock-core",
     "unmock-node": "file:../unmock-node"
   },
